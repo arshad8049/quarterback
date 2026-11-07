@@ -26,9 +26,11 @@
       </li>
       <li class="qb-panel qb-panel-wide">
         <div class="qb-step-label"><span>3</span> The verdict</div>
-        <figure class="qb-term" style="margin: 0;" aria-label="Terminal output from the run">
-          <pre><span style="color:#E08A4C">$ qb "formatDuration should show durations under one minute as seconds only, …" --contract-file contract.json</span>&#10;[L1]   Using the reviewed contract file ~/demo/hero-demo-contract.json (sha256 baa7c3f237de)&#10;[L1]   Oracle approved (contract-file); frozen as 96682f70adb8&#10;[L2]   Context ready  (31639ms)&#10;[L3]   Execution done  (79470ms)  status=completed&#10;   src/duration.js                        +2 -1&#10;<span style="color:#7FCBAA">[L4]   Verdict: ✓ PASS  (82ms)</span>&#10;<span style="color:#7FCBAA">   ✓ [AC-1] formatDuration(30000) should return "30s"</span>&#10;<span style="color:#7FCBAA">   ✓ [AC-2] formatDuration(90000) should return "1m 30s"</span>&#10;<span style="color:#A7B0AB">…</span>&#10;<span style="color:#7FCBAA">RESULT: ✓ PASS</span>&#10;Attempts: 1 / 3&#10;Total time: 111.4s</pre>
-        </figure>
+        <ul class="qb-check">
+          <li><code>[AC-1] formatDuration(30000)</code> returned <code>"30s"</code></li>
+          <li><code>[AC-2] formatDuration(90000)</code> returned <code>"1m 30s"</code></li>
+          <li><code>RESULT: ✓ PASS</code>, attempt 1 of 3, 111.4 s; the terminal output is at the <a href="#main">top of this page</a></li>
+        </ul>
       </li>
       <li class="qb-panel qb-panel-wide">
         <div class="qb-step-label"><span>4</span> The patch, proposed and not applied</div>

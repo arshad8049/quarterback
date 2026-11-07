@@ -1,7 +1,48 @@
 (function () {
   'use strict';
 
-  /* ── Sticky nav blur on scroll ── */
+  /* ── Motion: honour prefers-reduced-motion at load AND when it changes mid-session ── */
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const reduced = () => motionQuery.matches;
+  const orbits = Array.from(document.querySelectorAll('.qb-orbit'));
+  let driftOn = false;
+  const drift = () => {
+    // Slow vertical drift of the hero orbit while scrolling: transform only, one frame per event
+    const y = Math.min(window.scrollY, 900) * 0.18;
+    orbits.forEach((o) => { o.style.transform = 'translate3d(0,' + y.toFixed(1) + 'px,0)'; });
+  };
+  let ticking = false;
+  const onScrollDrift = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; drift(); });
+  };
+  function applyMotion() {
+    const off = reduced();
+    document.documentElement.classList.toggle('qb-motion-off', off);
+    // SVG SMIL animations ignore CSS: pause and resume them explicitly
+    orbits.forEach((o) => { if (o.pauseAnimations) (off ? o.pauseAnimations() : o.unpauseAnimations()); });
+    if (off && driftOn) { window.removeEventListener('scroll', onScrollDrift); driftOn = false; orbits.forEach((o) => { o.style.transform = ''; }); }
+    if (!off && !driftOn && orbits.length) { window.addEventListener('scroll', onScrollDrift, { passive: true }); driftOn = true; drift(); }
+    if (off) document.querySelectorAll('.qb-reveal').forEach((el) => el.classList.add('qb-visible'));
+  }
+  applyMotion();
+  if (motionQuery.addEventListener) motionQuery.addEventListener('change', applyMotion);
+  else if (motionQuery.addListener) motionQuery.addListener(applyMotion);
+
+  /* ── Scroll reveal (content is visible without JavaScript: see .qb-js in the CSS) ── */
+  document.documentElement.classList.add('qb-js');
+  const reveals = document.querySelectorAll('.qb-reveal');
+  if ('IntersectionObserver' in window && !reduced()) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('qb-visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach((el) => obs.observe(el));
+  } else {
+    reveals.forEach((el) => el.classList.add('qb-visible'));
+  }
+
+  /* ── Sticky nav background after scrolling ── */
   const nav = document.querySelector('.qb-nav');
   if (nav) {
     const onScroll = () => nav.classList.toggle('qb-nav--scrolled', window.scrollY > 40);
@@ -9,156 +50,19 @@
     onScroll();
   }
 
-  /* ── Scroll reveal ── */
-  const revealObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          // Small delay so batched siblings stagger naturally
-          requestAnimationFrame(() => e.target.classList.add('qb-visible'));
-          revealObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -48px 0px' }
-  );
-  document.querySelectorAll('.qb-reveal').forEach((el) => revealObs.observe(el));
-
-  /* ── Auto-reveal section children ── */
-  const sectionDivs = document.querySelectorAll(
-    '#problem, #metric, #loop, #verification, #beta, #footer'
-  );
-  const autoRevealObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const kids = e.target.querySelectorAll(
-            'h2, p, [style*="display: grid"] > div, [style*="display: flex; flex-direction: column; gap"] > div'
-          );
-          kids.forEach((k, i) => {
-            // Stagger: 60ms between items, capped at 400ms total delay
-            k.style.transitionDelay = Math.min(i * 0.06, 0.4) + 's';
-            k.classList.add('qb-reveal');
-            requestAnimationFrame(() => requestAnimationFrame(() => k.classList.add('qb-visible')));
-          });
-          autoRevealObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.05 }
-  );
-  sectionDivs.forEach((s) => autoRevealObs.observe(s));
-
-  /* ── Bar animation trigger ── */
-  const barObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('qb-bar--run');
-          barObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.4 }
-  );
-  document.querySelectorAll('.qb-bar').forEach((b) => barObs.observe(b));
-
-  /* ── Counter animation ── */
-  function animateCount(el, target, duration) {
-    const start = performance.now();
-    function tick(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = (eased * target).toFixed(1);
-      if (p < 1) requestAnimationFrame(tick);
-      else {
-        el.textContent = target.toFixed(1);
-        el.classList.add('qb-lit');
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-
-  const countObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const target = parseFloat(e.target.dataset.target);
-          if (!isNaN(target)) animateCount(e.target, target, 1400);
-          countObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.6 }
-  );
-
-  /* Tag metric numbers with data-target so the counter knows what to count to */
-  document.querySelectorAll('.qb-count').forEach((el) => countObs.observe(el));
-
-  /* Auto-detect the four metric numbers by their known values */
-  const METRIC_VALS = [7.4, 2.1, 1.4, 0.8];
-  document.querySelectorAll('[style*="font-size: 26px"][style*="font-weight: 600"]').forEach((el) => {
-    const v = parseFloat(el.textContent);
-    if (METRIC_VALS.includes(v)) {
-      el.dataset.target = v;
-      el.classList.add('qb-count');
-      el.textContent = '0.0';
-      countObs.observe(el);
-    }
-  });
-
-  /* ── Orbit: SMIL animations ignore CSS, so pause them for reduced-motion users ── */
-  const orbit = document.querySelector('.qb-orbit');
-  if (orbit && window.matchMedia('(prefers-reduced-motion: reduce)').matches && orbit.pauseAnimations) orbit.pauseAnimations();
-
-  /* ── Terminal cursor ── */
-  const terminalCmd = document.querySelector('[style*="color: #6FBF9F"]');
-  if (terminalCmd && terminalCmd.textContent.trim().startsWith('$')) {
-    terminalCmd.classList.add('qb-cursor');
-  }
-
-  /* ── Card hover class injection ── */
-  /* Cards are divs with a specific border + background pattern */
-  document.querySelectorAll(
-    '[style*="background: #121615"][style*="border: 1px solid #262E2B"]'
-  ).forEach((el) => el.classList.add('qb-card'));
-
-  /* ── Smooth anchor scroll (override default jump on older browsers) ── */
+  /* ── In-page links: move focus to the target so keyboard users continue from there ── */
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
       const id = link.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if (target) {
-        e.preventDefault();
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-        // Keyboard users continue from the target (skip link, "Request early access"), not the link
-        if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea')) target.setAttribute('tabindex', '-1');
-        target.focus({ preventScroll: true });
-      }
+      const target = id && document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' });
+      if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      history.replaceState(null, '', '#' + id);
     });
   });
-
-  /* ── Gap section X-icon hover tint ── */
-  document.querySelectorAll('[style*="background: #0D100F"][style*="padding: 30px 34px"]').forEach((el) => {
-    el.style.transition = 'background 0.25s ease';
-    el.addEventListener('mouseenter', () => { el.style.background = '#101310'; });
-    el.addEventListener('mouseleave', () => { el.style.background = '#0D100F'; });
-  });
-
-  /* ── GitHub link hover ── */
-  const ghLink = document.querySelector('.qb-github-link');
-  if (ghLink) {
-    ghLink.addEventListener('mouseenter', () => {
-      ghLink.style.borderColor = '#4A5C56';
-      ghLink.style.color = '#C6CFCB';
-    });
-    ghLink.addEventListener('mouseleave', () => {
-      ghLink.style.borderColor = '#2E3C38';
-      ghLink.style.color = '#8A948F';
-    });
-  }
-
 
   /* ── Hamburger nav toggle ── */
   const navToggle = document.querySelector('.qb-nav-toggle');
