@@ -7,9 +7,9 @@
 
 Quarterback runs Claude Code against requirements you approve, checks the resulting changes, and returns a reviewable patch with verification evidence. You decide whether to apply it.
 
-**Status: pre-release, in supervised evaluation.** Quarterback is not yet ready for self-service installation: no current commit has been qualified for unsupervised use. If you use Claude Code on JavaScript projects and want to try it on real work, [request a supervised evaluation](https://quaterback.velorallc.workers.dev/#beta).
+**Status: pre-release, in supervised evaluation.** Quarterback is not yet ready for self-service installation: no current commit has been qualified for unsupervised use. If you use Claude Code on JavaScript projects and want to try it on real work, [request a supervised evaluation](https://quarterback.velorallc.workers.dev/#beta).
 
-[Request a supervised evaluation](https://quaterback.velorallc.workers.dev/#beta) · [Setup guide](docs/onboarding.md) · [Supported environments](docs/support.md)
+[Request a supervised evaluation](https://quarterback.velorallc.workers.dev/#beta) · [Setup guide](docs/onboarding.md) · [Supported environments](docs/support.md)
 
 ---
 
@@ -71,7 +71,7 @@ The full matrix is in [support.md](docs/support.md).
 
 ## Start here
 
-1. **[Request a supervised evaluation](https://quaterback.velorallc.workers.dev/#beta).** You'll get the exact commit to install, and help while you set it up.
+1. **[Request a supervised evaluation](https://quarterback.velorallc.workers.dev/#beta).** You'll get the exact commit to install, and help while you set it up.
 2. **Follow the [setup guide](docs/onboarding.md)** from top to bottom. It covers requirements and cost, a dry run that needs no Docker or Claude access, a real Claude Code run, applying the patch, and removing the demo.
 3. **Send feedback** through your evaluation contact or a [GitHub issue](https://github.com/arshad8049/quarterback/issues). The guide has a [template](docs/onboarding.md#sending-feedback) that keeps private code and credentials out.
 

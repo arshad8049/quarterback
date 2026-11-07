@@ -2,7 +2,7 @@
 
 This guide takes you from a fresh machine to a verified demo run and an applied patch, in order. Follow it top to bottom: every step says where it runs, what you should see, and what to do next.
 
-**Before you install: this is a supervised evaluation.** Quarterback (QB) is pre-release software. There is no published release, and no current commit has been qualified for installation without support. You install the exact commit you are given when you [request a supervised evaluation](https://quaterback.velorallc.workers.dev/#beta), and the maintainer is available while you go through this guide.
+**Before you install: this is a supervised evaluation.** Quarterback (QB) is pre-release software. There is no published release, and no current commit has been qualified for installation without support. You install the exact commit you are given when you [request a supervised evaluation](https://quarterback.velorallc.workers.dev/#beta), and the maintainer is available while you go through this guide.
 
 **Contents:**
 - [Before you start](#before-you-start): requirements, cost, which commit, what approving a contract means
