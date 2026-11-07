@@ -20,7 +20,7 @@ Quarterback runs Claude Code against requirements you approve, checks the result
 3. **You approve the contract.** The coding agent does not execute before approval, and changing the contract later voids it.
 4. **Claude Code runs in an isolated workspace**, briefed with the contract and the relevant code.
 5. **Quarterback verifies the result.** The repository's tests and the contract's executable checks run on the exact captured change. A separate model reviews only the criteria that can't be executed, such as documentation or naming. If verification fails, the agent gets repair hints for another attempt.
-6. **You get a verdict and a patch**, with the evidence behind it, and decide whether to apply it. Your checkout is not changed until you apply the patch.
+6. **You get a verdict and a patch**, with the evidence behind it, and decide whether to apply it. Your checkout is not changed until you apply the patch. A run can also stop before anything is checked (`BLOCKED`, for example when the contract isn't approved); that is not a failed verification.
 
 Every run is recorded, so you can inspect or replay its verdict later. Architecture: [engineering reference](docs/engineering.md).
 
@@ -62,7 +62,7 @@ The checkout was not touched; the change came back as a patch to read and apply.
 |---|---|
 | Coding agent | **Claude Code** only, run in Quarterback's Docker sandbox. Cursor, Codex and Gemini are not supported. |
 | Repositories | JavaScript / Node.js, tested with **node:test**, with an npm lockfile. Agent runs on repositories using another test runner (Jest, Mocha, Vitest, …) are refused before any model call. |
-| Platform | **Ubuntu 24.04 LTS on x86_64 with Docker Engine and 16 GB RAM** is the validated profile. macOS with Docker Desktop works for development but is not validated. Windows is not supported. |
+| Platform | **Ubuntu 24.04 LTS on x86_64 with Docker Engine and 16 GB RAM** is the validated profile. macOS with Docker Desktop: limited successful runs; not a validated supported environment. Windows is not supported. |
 | Also needed | Node 20+, git, [Ollama](https://ollama.com) with `deepseek-r1:7b`, and a Claude subscription or Anthropic API key. |
 
 The full matrix is in [support.md](docs/support.md).

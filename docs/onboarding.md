@@ -31,7 +31,7 @@ This guide takes you from a fresh machine to a verified demo run and an applied 
 
 | | Dry run (step 6) | Claude Code run (steps 7–10) |
 |---|---|---|
-| OS | Linux or macOS | **Ubuntu 24.04 LTS on x86_64** is the validated profile. macOS with Docker Desktop works for development but is not validated. Windows is not supported. |
+| OS | Linux or macOS | **Ubuntu 24.04 LTS on x86_64** is the validated profile. macOS with Docker Desktop: limited successful runs; not a validated supported environment. Windows is not supported. |
 | Node.js 20 or newer, git | ✓ | ✓ |
 | Docker Engine | — | ✓ |
 | Memory | — | **16 GB RAM**. A run starts only with about 11.1 GiB free (the sandbox's peak plus a 2 GiB reserve), so an 8 GB machine cannot run it. QB unloads the local model before the sandbox starts, so its memory is not counted on top. |
@@ -360,6 +360,8 @@ Exit code 0 means no `✗`; 1 means fix the `✗` lines first.
 Two other states mean nothing was verified: `error` (the execution itself failed) and `no-diff` (there was no change to verify).
 
 **Run outcomes:** `VERIFIED` (pass), `FAILED`, `UNRESOLVED`, `ERROR`, `BLOCKED` (stopped before verification, with a recorded reason), `CANCELLED` (deadline or interruption), `DRY_RUN` or `ABANDONED`. `qb` exits 0 only when the verdict is `pass`.
+
+A verdict says how the **change** fared when it was checked. A run outcome says how the **run** ended. `BLOCKED`, `CANCELLED` and `ERROR` mean the run stopped before or during checking: they say nothing about whether a change would have passed, and `BLOCKED` is not a failed verification.
 
 - **`qb patch`** exports the patch with its verification status in the header, which may be fail or partial. It refuses to export a patch it can't trust and never writes into your checkout.
 - **`qb replay`** recomputes each verdict from the saved evidence and checks it matches the record. It does not rerun the agent or the tests.
