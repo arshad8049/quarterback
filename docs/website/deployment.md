@@ -25,7 +25,7 @@ npx wrangler d1 execute qb-beta --remote --file=landing_page/migrations/0005_del
 ## After every deploy
 
 ```
-npm run smoke                       # https://quaterback.velorallc.workers.dev
+npm run smoke                       # https://quarterback.velorallc.workers.dev
 npm run smoke -- https://<preview>  # any other deployment
 ```
 

@@ -3,7 +3,7 @@
  * scripts/smoke.js — post-deploy smoke checks for the one canonical deployment (QB-37):
  * Cloudflare Workers (wrangler.toml: landing_page/_worker.js + landing_page static assets).
  *
- *   node scripts/smoke.js [base-url]      default https://quaterback.velorallc.workers.dev
+ *   node scripts/smoke.js [base-url]      default https://quarterback.velorallc.workers.dev
  *
  * Every check is NON-DESTRUCTIVE: it never creates a signup, a telemetry token, a metric or
  * an email. It proves each public route is wired to the worker (not a stale static file or
@@ -12,7 +12,7 @@
  * Exit code 0 = all passed; 1 = a failure (each listed).
  */
 
-const DEFAULT_BASE = 'https://quaterback.velorallc.workers.dev';
+const DEFAULT_BASE = 'https://quarterback.velorallc.workers.dev';
 
 const CHECKS = [
   ['GET / serves the landing page', 'GET', '/', {}, (r, t) => r.status === 200 && /<html/i.test(t) && /Quarterback/.test(t)],

@@ -5,16 +5,11 @@ const fs = require('fs');
 const sections = [
   'nav',
   'hero',
-  'social-proof',
-  'today-vs-future',
-  'the-gap',
-  'north-star-metric',
-  'the-loop',
-  'task-contract',
-  'verification',
-  'proof',
-  'repair',
-  'positioning',
+  'example',
+  'steps',
+  'supported',
+  'progress',
+  'evidence',
   'beta-cta',
   'footer',
 ];
@@ -36,10 +31,10 @@ const html = `<!DOCTYPE html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quarterback — Check AI-written code against your requirements</title>
-  <meta name="description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. In development.">
+  <meta name="description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.">
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://quaterback.velorallc.workers.dev/">
+  <link rel="canonical" href="https://quarterback.velorallc.workers.dev/">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="./favicon.png">
@@ -48,19 +43,19 @@ const html = `<!DOCTYPE html>
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
   <meta property="og:site_name"   content="Quarterback">
-  <meta property="og:url"         content="https://quaterback.velorallc.workers.dev/">
+  <meta property="og:url"         content="https://quarterback.velorallc.workers.dev/">
   <meta property="og:title"       content="Quarterback — Check AI-written code against your requirements">
-  <meta property="og:description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. In development.">
-  <meta property="og:image"       content="https://quaterback.velorallc.workers.dev/og-image.png">
+  <meta property="og:description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.">
+  <meta property="og:image"       content="https://quarterback.velorallc.workers.dev/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt"   content="Quarterback — AI coding runtime diagram showing Intent → Context → Agent → Verify pipeline">
+  <meta property="og:image:alt"   content="Quarterback">
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:title"       content="Quarterback — Check AI-written code against your requirements">
-  <meta name="twitter:description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. In development.">
-  <meta name="twitter:image"       content="https://quaterback.velorallc.workers.dev/og-image.png">
+  <meta name="twitter:description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.">
+  <meta name="twitter:image"       content="https://quarterback.velorallc.workers.dev/og-image.png">
 
   <!-- Security -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -73,10 +68,10 @@ const html = `<!DOCTYPE html>
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Quarterback",
-    "description": "Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. In development.",
-    "url": "https://quaterback.velorallc.workers.dev/",
+    "description": "Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.",
+    "url": "https://quarterback.velorallc.workers.dev/",
     "applicationCategory": "DeveloperApplication",
-    "operatingSystem": "macOS, Linux, Windows",
+    "operatingSystem": "Linux",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": { "@type": "Organization", "name": "Velora", "url": "https://velorallc.netlify.app/" }
   }

@@ -678,3 +678,85 @@ button, a { min-height: 44px; }
   .qb-nav-links .qb-github-link { display: none !important; }
   .qb-nav-links .qb-cta-btn { display: inline-flex !important; margin-top: 28px !important; }
 }
+
+/* ── Product-update page (KAN-67 senior review, 2026-11-05): one accent (amber), plain sections ── */
+.qb-sec { padding: 96px 80px; border-top: 1px solid #222A27; }
+.qb-sec.qb-hero { border-top: none; }
+.qb-wrap { max-width: 1080px; margin: 0 auto; }
+.qb-eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #E08A4C; margin-bottom: 20px; }
+.qb-h1 { margin: 0; font-family: "Instrument Serif", Georgia, serif; font-size: 64px; line-height: 1.06; font-weight: 400; letter-spacing: -0.01em; color: #F4F1EA; max-width: 900px; }
+.qb-h2 { margin: 0 0 20px 0; font-family: "Instrument Serif", Georgia, serif; font-size: 44px; line-height: 1.12; font-weight: 400; color: #F4F1EA; max-width: 860px; }
+.qb-h3 { margin: 0 0 12px 0; font-size: 20px; font-weight: 600; line-height: 1.35; color: #F4F1EA; }
+.qb-lead { margin: 28px 0 0 0; max-width: 760px; font-size: 21px; line-height: 1.6; color: #D6DFDB; }
+.qb-body { margin: 16px 0 0 0; max-width: 760px; font-size: 17px; line-height: 1.7; color: #B4BEB9; }
+.qb-small { margin: 12px 0 0 0; font-size: 15px; line-height: 1.6; color: #A7B0AB; }
+.qb-caption { margin: 28px 0 0 0; max-width: 860px; font-size: 14px; line-height: 1.65; color: #A7B0AB; }
+.qb-sec code, .qb-caption code { font-family: "IBM Plex Mono", monospace; font-size: 0.9em; color: #D6DFDB; background: #151A18; padding: 1px 5px; border-radius: 3px; }
+.qb-sec a:not(.qb-btn-primary), .qb-caption a { color: #E08A4C; text-decoration: underline; text-decoration-color: rgba(224,138,76,0.45); text-underline-offset: 3px; }
+.qb-sec a:not(.qb-btn-primary):hover { color: #F0A369; text-decoration-color: currentColor; }
+.qb-link { font-size: 16px; font-weight: 500; }
+.qb-status { margin-top: 32px; max-width: 760px; padding: 18px 22px; border-left: 3px solid #E08A4C; background: #121615; font-size: 16px; line-height: 1.65; color: #D6DFDB; }
+.qb-status strong { color: #F4F1EA; }
+
+.qb-example { list-style: none; margin: 40px 0 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.qb-panel { background: #121615; border: 1px solid #262E2B; border-radius: 8px; padding: 24px 26px; min-width: 0; }
+.qb-panel-wide { grid-column: 1 / -1; }
+.qb-step-label { display: flex; align-items: center; gap: 10px; font-family: "IBM Plex Mono", monospace; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #C6CFCB; margin-bottom: 14px; }
+.qb-step-label span { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #E08A4C; color: #E08A4C; font-size: 12px; letter-spacing: 0; }
+.qb-quote { margin: 0; font-size: 17px; line-height: 1.65; color: #D6DFDB; }
+.qb-diff { margin: 0; padding: 16px 18px; background: #090C0B; border: 1px solid #1A211E; border-radius: 6px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.65; color: #C6CFCB; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
+.qb-diff-meta { color: #A7B0AB; }
+.qb-diff-add { color: #7FCBAA; }
+.qb-diff-del { color: #E9A0A0; }
+
+.qb-table-wrap { margin-top: 20px; overflow-x: auto; }
+.qb-table { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.6; color: #C6CFCB; }
+.qb-table th, .qb-table td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid #222A27; }
+.qb-table thead th { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; color: #A7B0AB; border-bottom-color: #2E3C38; }
+.qb-table tbody th { color: #F4F1EA; font-weight: 600; }
+.qb-table-lg tbody th { width: 180px; }
+.qb-table-ev { font-size: 14.5px; }
+.qb-table-ev tbody th { width: 22%; }
+.qb-table strong { color: #F4F1EA; }
+
+.qb-cols { list-style: none; margin: 40px 0 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+.qb-num { font-family: "IBM Plex Mono", monospace; font-size: 14px; color: #E08A4C; margin-bottom: 14px; }
+.qb-cols .qb-body { font-size: 16px; }
+.qb-tag { margin: 18px 0 8px 0; font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A7B0AB; }
+.qb-cols-progress .qb-h3 + .qb-tag { margin-top: 0; }
+.qb-list { margin: 0; padding-left: 18px; font-size: 15.5px; line-height: 1.65; color: #B4BEB9; }
+.qb-list li { margin-bottom: 12px; }
+.qb-list strong { color: #F4F1EA; }
+.qb-foot-link { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: #A7B0AB; text-decoration: none; letter-spacing: 0.04em; }
+.qb-foot-link:hover { color: #F4F1EA; }
+
+@media (max-width: 900px) {
+  .qb-cols { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .qb-example { grid-template-columns: minmax(0, 1fr); }
+  .qb-beta-grid { flex-direction: column !important; gap: 40px !important; }
+  .qb-beta-grid > * { flex-basis: auto !important; width: 100%; }
+}
+@media (max-width: 768px) {
+  .qb-sec, #beta.qb-sec { padding: 64px 24px !important; }
+  .qb-hero.qb-sec { padding-top: 64px !important; }
+  .qb-h1 { font-size: 42px; }
+  .qb-h2 { font-size: 32px; }
+  .qb-lead { font-size: 18px; }
+  footer { padding: 36px 24px !important; }
+}
+@media (max-width: 640px) {
+  .qb-sec, #beta.qb-sec { padding: 52px 16px !important; }
+  .qb-hero.qb-sec { padding-top: 48px !important; }
+  .qb-h1 { font-size: 36px; }
+  .qb-h2 { font-size: 28px; }
+  .qb-panel { padding: 18px 14px; }
+  .qb-table { font-size: 14px; }
+  .qb-table th, .qb-table td { padding: 10px 8px; }
+  .qb-table code { font-size: 12px; padding: 1px 3px; }
+  .qb-glass { padding: 28px 20px !important; }
+  /* Tables become stacked rows on a phone: no sideways scrolling */
+  .qb-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .qb-table-lg tr, .qb-table-ev tr { display: block; padding: 12px 0; border-bottom: 1px solid #222A27; }
+  .qb-table-lg th, .qb-table-lg td, .qb-table-ev th, .qb-table-ev td { display: block; width: auto !important; padding: 4px 0; border: none; }
+  footer { padding: 32px 16px !important; }
+}

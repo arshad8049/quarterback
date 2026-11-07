@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /website_audit/
 
-Sitemap: https://quaterback.velorallc.workers.dev/sitemap.xml
+Sitemap: https://quarterback.velorallc.workers.dev/sitemap.xml

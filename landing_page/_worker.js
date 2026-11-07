@@ -206,7 +206,7 @@ const CODE_TTL_MS = 30 * 60 * 1000;
 const MAX_CODE_REQUESTS_PER_HOUR = 3;
 const MAX_METRICS_PER_HOUR = 60;
 const MAX_METRICS_BODY_BYTES = 4096;
-const SITE = 'https://quaterback.velorallc.workers.dev';
+const SITE = 'https://quarterback.velorallc.workers.dev';
 
 /**
  * Quota admission atomic with its write (QB-33 re-review 2): one INSERT … SELECT … WHERE count < max.
@@ -583,7 +583,7 @@ cd quaterback &amp;&amp; npm install</pre>
   </p>
   <div style="margin-top:40px;padding-top:22px;border-top:1px solid #1A211E;">
     <p style="margin:0;font-size:13px;color:#4A5652;">— Arshad, Velora<br>
-    <a href="https://quaterback.velorallc.workers.dev" style="color:#6FBF9F;text-decoration:none;">quaterback.velorallc.workers.dev</a></p>
+    <a href="https://quarterback.velorallc.workers.dev" style="color:#6FBF9F;text-decoration:none;">quarterback.velorallc.workers.dev</a></p>
   </div>
 </div></body></html>`;
   return resendSend(to, "You're on the Quarterback beta list", html, apiKey, idempotencyKey);
