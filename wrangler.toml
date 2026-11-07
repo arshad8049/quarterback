@@ -1,4 +1,6 @@
-name               = "quaterback"
+# Production: the Worker "quarterback" (renamed from "quaterback" on 2026-11-05; its versions,
+# bindings, cron and secrets carried over). Deployed from main by Cloudflare's Git integration.
+name               = "quarterback"
 main               = "landing_page/_worker.js"
 compatibility_date = "2024-09-23"
 
@@ -13,4 +15,24 @@ database_id   = "6bb621d5-e492-4154-bb38-a7bd567e363f"
 
 # QB-35: retry pending/failed email deliveries
 [triggers]
+crons = ["*/10 * * * *"]
+
+# Staging: a separate Worker, database, cron and secrets. Never deployed by the Git integration;
+# deploy by hand with `npx wrangler deploy --env staging` (docs/website/deployment.md).
+# Email is simulated (EMAIL_MODE=test): nothing is sent except to EMAIL_ALLOWLIST.
+[env.staging]
+name = "quarterback-staging"
+
+[env.staging.vars]
+SITE_URL        = "https://quarterback-staging.velorallc.workers.dev"
+EMAIL_MODE      = "test"
+EMAIL_ALLOWLIST = ""
+ALLOWED_ORIGINS = "https://arshad8049.github.io"
+
+[[env.staging.d1_databases]]
+binding       = "DB"
+database_name = "qb-beta-staging"
+database_id   = "493ee940-b736-42e2-a858-f746cb0bf920"
+
+[env.staging.triggers]
 crons = ["*/10 * * * *"]

@@ -107,7 +107,7 @@ describe('staging isolation', { skip: SKIP }, () => {
   test('EMAIL_MODE=test sends nothing and records the delivery as simulated', async () => {
     const w = await workerEnv({ env: { EMAIL_MODE: 'test' } });
     const r = await post(w, { email: 'stage@example.com' });
-    assert.deepEqual([r.status, r.json.registered], [200, true]);
+    assert.deepEqual([r.status, r.json.registered, r.json.welcome_email], [200, true, 'simulated']);
     assert.equal(w.emails.length, 0, 'staging sent a real email');
     const d = w.db.prepare("SELECT status, last_error FROM email_deliveries WHERE kind = 'welcome'").get();
     assert.equal(d.status, 'sent');
@@ -170,5 +170,29 @@ describe('CORS is scoped to the signup endpoint and its allowed origins', { skip
       const r = await w.call(m, p, { headers: { Origin: ORIGIN } });
       assert.equal(r.headers.get('Access-Control-Allow-Origin'), null, `${m} ${p}`);
     }
+  });
+});
+
+describe('migration 0006', { skip: SKIP }, () => {
+  test('rebuilds email_deliveries: every row and column kept, blocked_config allowed, the index restored', () => {
+    const fs = require('fs'); const path = require('path');
+    const { DatabaseSync } = require('node:sqlite');
+    const LP = path.join(__dirname, '..', '..', 'landing_page');
+    const schema = fs.readFileSync(path.join(LP, 'schema.sql'), 'utf8');
+    const before = schema.replace(", 'blocked_config'", '');
+    assert.notEqual(before, schema, 'the schema allows blocked_config');
+    const db = new DatabaseSync(':memory:');
+    db.exec(before);
+    assert.throws(() => db.prepare("INSERT INTO email_deliveries (idempotency_key, kind, recipient, status, created_at, next_attempt_at) VALUES ('x', 'welcome', 'a@b.co', 'blocked_config', 't', 't')").run());
+    const ins = db.prepare('INSERT INTO email_deliveries (idempotency_key, kind, recipient, payload, status, attempts, last_error, created_at, next_attempt_at, claimed_at, sent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
+    ins.run('welcome:a@b.co', 'welcome', 'a@b.co', '{}', 'failed', 3, 'provider HTTP 403', 'c1', 'n1', null, null);
+    ins.run('owner-notify:a@b.co', 'owner_notify', 'o@b.co', '{"email":"a@b.co"}', 'sent', 1, null, 'c2', 'n2', 'k2', 's2');
+    const rowsBefore = db.prepare('SELECT * FROM email_deliveries ORDER BY id').all();
+    db.exec(fs.readFileSync(path.join(LP, 'migrations', '0006_delivery_blocked_config.sql'), 'utf8'));
+    assert.deepEqual(db.prepare('SELECT * FROM email_deliveries ORDER BY id').all(), rowsBefore);
+    db.prepare("UPDATE email_deliveries SET status = 'blocked_config' WHERE id = 1").run();
+    assert.ok(db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_ed_status_next'").get());
+    const next = db.prepare("INSERT INTO email_deliveries (idempotency_key, kind, recipient, status, created_at, next_attempt_at) VALUES ('new', 'welcome', 'n@b.co', 'pending', 't', 't')").run();
+    assert.equal(Number(next.lastInsertRowid), 3, 'ids continue after the rebuild');
   });
 });

@@ -94,3 +94,34 @@ The senior's reproduction: register, let retention delete the sent delivery rows
   - legacy markers expire, then a repeat signup → no welcome (pre-fix: 1);
   - a never-enqueued registration is still repaired after retention ran, while a completed one isn't re-sent;
   - completion rows contain no address.
+
+## Hardening (2026-11-07): configuration errors, crashes after commit, staging
+
+**Why:** production showed every welcome email retried six times and then `dead` with `provider HTTP 403 … You can only send testing emails to your own email address`. That error repeats until the sender domain is fixed, so retrying it only hides it.
+
+- **`blocked_config`:** a send that fails because of configuration stops there and is **not retried by the cron**. That covers no `RESEND_API_KEY`, the provider answering 401/403, or an unknown `EMAIL_MODE`. It gets no completion record, so it can be re-queued. Transient errors (5xx, network) stay `failed` with backoff, as before. Migration `0006` allows the new status.
+- **The response:** `welcome_email` is `sent`, `simulated` (staging), `not_sent` (blocked by configuration) or `pending_retry`. The form says each one plainly.
+- **Nothing after the commit turns into an error:** the signup and both jobs commit in one batch, as before. Each job is then claimed and sent in its own `try`, so a database or provider error on one job neither fails the response nor stops the other job. The cron sends what was left pending, once.
+- **Re-queue after a repair** (for example, after a sender domain is verified):
+
+  ```
+  npx wrangler d1 execute qb-beta --remote --command "UPDATE email_deliveries SET status = 'pending', next_attempt_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE status = 'blocked_config'"
+  ```
+
+  The next cron run (within 10 minutes) sends each job once, with its idempotency key.
+- **Staging** (`wrangler.toml [env.staging]`): the Worker `quarterback-staging` with the database `qb-beta-staging`, its own `ADMIN_SECRET` and its own cron.
+  - `EMAIL_MODE = "test"` records deliveries as `sent` with `last_error = "simulated (EMAIL_MODE=test): not sent"` and never calls the provider, except for addresses in `EMAIL_ALLOWLIST` (empty by default).
+  - `ALLOWED_ORIGINS = "https://arshad8049.github.io"`: only the preview may call its signup endpoint from a browser.
+- **CORS:** only `POST /api/beta-access` can grant CORS, and only to an origin in `ALLOWED_ORIGINS`, echoed with `Vary: Origin`. Production leaves it unset, because the site's own form is same-origin. Before this change, every endpoint answered `Access-Control-Allow-Origin: *`. No endpoint other than the site form had a browser caller (inventory, 2026-11-07). CORS only limits browsers: validation, the 2 KiB size limit and the per-IP rate limit apply to every caller.
+- **The form's endpoint:** chosen by the page's host, and it fails closed. The production and staging hosts post to themselves, `arshad8049.github.io` posts to staging, and any other host disables the form with a link to the live site.
+- **Tests:** `test/unit/signup-delivery-config.test.js`:
+  - provider 401/403 and no key → `blocked_config`, with no cron retry and a visible report;
+  - re-queue → sent once;
+  - 5xx stays retryable;
+  - a crash after the commit → `registered` and sent once by the cron;
+  - a crash before the commit → nothing saved, and the retry succeeds;
+  - concurrent duplicates against a failing provider;
+  - test mode, the allowlist, and an unknown mode failing closed;
+  - `SITE_URL` in email links;
+  - CORS by origin and by endpoint;
+  - the 0006 table rebuild keeping every row.

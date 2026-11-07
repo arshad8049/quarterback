@@ -202,7 +202,23 @@
 
   /* ── Beta form submission ── */
   const betaForm = document.getElementById('beta-form');
-  if (betaForm) {
+  // Where sign-ups go, by the host serving this page. Unknown hosts fail closed: the form is
+  // disabled, never silently pointed at production. The preview (GitHub Pages) uses staging,
+  // whose database and email are separate and which never sends real email.
+  const SIGNUP_API = {
+    'quarterback.velorallc.workers.dev': '',
+    'quarterback-staging.velorallc.workers.dev': '',
+    'arshad8049.github.io': 'https://quarterback-staging.velorallc.workers.dev',
+    'localhost': '',
+    '127.0.0.1': '',
+  };
+  const signupBase = Object.prototype.hasOwnProperty.call(SIGNUP_API, location.hostname) ? SIGNUP_API[location.hostname] : null;
+  if (betaForm && signupBase === null) {
+    betaForm.querySelectorAll('input, button').forEach((el) => { el.disabled = true; });
+    const fb = document.getElementById('form-feedback');
+    if (fb) fb.innerHTML = 'This copy of the page can’t take sign-ups. Please use the form on <a href="https://quarterback.velorallc.workers.dev/#beta" style="color:#E08A4C;">quarterback.velorallc.workers.dev</a>.';
+  }
+  if (betaForm && signupBase !== null) {
     betaForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = betaForm.querySelector('button[type="submit"]');
@@ -216,7 +232,7 @@
       // pending retry; invalid input; rate limited) — show exactly that.
       let res = null, data = null;
       try {
-        res = await fetch('/api/beta-access', {
+        res = await fetch(signupBase + '/api/beta-access', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: emailVal, agent: agentVal.slice(0, 80) }),
@@ -225,9 +241,13 @@
       } catch (_) {}
 
       if (res && res.ok && data && data.registered) {
+        const NOTES = {
+          sent: 'confirmation email sent',
+          simulated: 'saved in the test environment (preview): no email is sent',
+          not_sent: 'you are registered; we could not send a confirmation email, and we will contact you directly',
+        };
         const note = data.duplicate ? 'you were already on the list'
-          : data.welcome_email === 'sent' ? 'confirmation email sent'
-            : 'you are registered — the confirmation email is delayed and will be retried';
+          : NOTES[data.welcome_email] || 'you are registered; the confirmation email is delayed and will be retried';
         betaForm.innerHTML =
           '<div style="text-align:center;padding:48px 0;font-family:\'IBM Plex Mono\',monospace;font-size:15px;color:#6FBF9F;letter-spacing:0.06em;">✓ request received<br><span style="font-size:13px;color:#8A948F;letter-spacing:0.04em;display:block;margin-top:12px;">' + note + '</span></div>';
         // KAN-67: announce the outcome; #form-status is outside the form, so it survives the replacement

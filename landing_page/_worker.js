@@ -6,10 +6,19 @@
  *   DB           — D1 database  (qb-beta)
  *   RESEND_API_KEY — secret env var
  *   ADMIN_SECRET   — secret env var
+ * Optional vars (wrangler.toml; the staging environment sets them):
+ *   SITE_URL        — base URL used in email links (default: the production workers.dev host)
+ *   EMAIL_MODE      — 'live' (default) or 'test'. 'test' records deliveries as simulated and never
+ *                     sends, except to EMAIL_ALLOWLIST. Any other value sends nothing (fails closed).
+ *   EMAIL_ALLOWLIST — comma-separated recipients that EMAIL_MODE=test may really send to
+ *   ALLOWED_ORIGINS — comma-separated browser origins allowed to call POST /api/beta-access
+ *                     cross-origin. Unset in production: the site's own form is same-origin.
  */
 
 const RESEND_URL = 'https://api.resend.com/emails';
 const FROM       = 'Quarterback Beta <onboarding@resend.dev>';
+const DEFAULT_SITE = 'https://quarterback.velorallc.workers.dev';
+const siteUrl = (env) => (env && env.SITE_URL) || DEFAULT_SITE;
 const OWNER      = 'ashaik8.us@gmail.com';
 
 export default {
@@ -23,7 +32,9 @@ export default {
 
     // ── API routes ────────────────────────────────────────────────────────────
     if (url.pathname === '/api/beta-access') {
-      return handleBetaAccess(request, env);
+      // CORS is granted only here, and only to ALLOWED_ORIGINS (CORS limits browsers; the
+      // server-side validation, size limit and per-IP rate limit apply to every caller).
+      return withCors(request, env, await handleBetaAccess(request, env));
     }
     if (url.pathname === '/api/metrics') {
       return handleMetrics(request, env);
@@ -67,7 +78,10 @@ export default {
 // duplicates create one row. Registration is tracked separately from email DELIVERY: each
 // email is a row in email_deliveries with an idempotency key (welcome:<email>,
 // owner-notify:<email>), sent with that key, and retried by the cron handler with backoff
-// until sent or dead. The response says whether the welcome email was actually sent.
+// until sent or dead. A configuration error (no API key, provider 401/403) is not retried:
+// the job stops at 'blocked_config' until the configuration is repaired and the job re-queued
+// (docs/website/signup.md). Once the signup is saved, nothing about email can turn the
+// response into an error. The response says whether the welcome email was actually sent.
 
 const MAX_SIGNUP_BYTES = 2048;
 const MAX_SIGNUPS_PER_IP_HOUR = 10;
@@ -123,44 +137,63 @@ async function handleBetaAccess(request, env) {
   const duplicate = !ins.meta || ins.meta.changes !== 1;
   // Sends happen outside the transaction; only pending/failed jobs are claimed, so completed
   // jobs are never re-sent (and each send carries its idempotency key).
-  const results = await sendDeliveries(env, [welcomeKey, ownerKey]);
+  // The signup and both jobs are committed. A failure from here on (claiming, sending,
+  // recording) leaves the jobs pending for the cron; it never turns this into an error.
+  let results = {};
+  try { results = await sendDeliveries(env, [welcomeKey, ownerKey]); } catch { results = {}; }
   if (duplicate) return json({ ok: true, registered: true, duplicate: true });
-  return json({ ok: true, registered: true, welcome_email: results[welcomeKey] === 'sent' ? 'sent' : 'pending_retry' });
+  const w = results[welcomeKey];
+  // sent | simulated (staging) | not_sent (blocked by configuration) | pending_retry (anything else)
+  const WELCOME = { sent: 'sent', simulated: 'simulated', blocked_config: 'not_sent' };
+  return json({ ok: true, registered: true, welcome_email: WELCOME[w] || 'pending_retry' });
 }
 
 /** Claim and send the given deliveries (idempotent). Returns { key: status }. */
 async function sendDeliveries(env, keys) {
   const out = {};
   for (const key of keys) {
-    const now = new Date().toISOString();
-    // claim: only a pending/failed row that is due moves to 'sending' (one sender at a time)
-    const claim = await env.DB.prepare(`UPDATE email_deliveries SET status = 'sending', claimed_at = ?
-      WHERE idempotency_key = ? AND status IN ('pending', 'failed') AND next_attempt_at <= ?`).bind(now, key, now).run();
-    if (!claim.meta || claim.meta.changes !== 1) {
-      const row = await env.DB.prepare('SELECT status FROM email_deliveries WHERE idempotency_key = ?').bind(key).first();
-      out[key] = row ? row.status : 'missing';
-      continue;
-    }
-    const d = await env.DB.prepare('SELECT id, kind, recipient, payload, attempts FROM email_deliveries WHERE idempotency_key = ?').bind(key).first();
-    let res;
-    try { res = await deliver(d, key, env); } catch (e) { res = { ok: false, error: String(e && e.message || e) }; }
-    const attempts = d.attempts + 1;
-    if (res.ok) {
-      await env.DB.batch([
-        env.DB.prepare(`UPDATE email_deliveries SET status = 'sent', attempts = ?, sent_at = ?, last_error = NULL WHERE id = ?`).bind(attempts, new Date().toISOString(), d.id),
-        await completion(env, key, 'sent'),
-      ]);
-      out[key] = 'sent';
-    } else {
-      const dead = attempts >= MAX_DELIVERY_ATTEMPTS;
-      const backoff = Math.min(6 * 3600 * 1000, 60 * 1000 * 2 ** attempts);
-      const update = env.DB.prepare(`UPDATE email_deliveries SET status = ?, attempts = ?, last_error = ?, next_attempt_at = ? WHERE id = ?`)
-        .bind(dead ? 'dead' : 'failed', attempts, String(res.error || 'send failed').slice(0, 300), isoIn(backoff), d.id);
-      await env.DB.batch(dead ? [update, await completion(env, key, 'dead')] : [update]);
-      out[key] = dead ? 'dead' : 'failed';
-    }
+    // One job's database or provider error must not stop the others; a job whose claim or
+    // bookkeeping fails stays as it was (or 'sending', reclaimed after 10 minutes) for the cron.
+    try { out[key] = await sendOne(env, key); } catch { out[key] = 'pending_retry'; }
   }
   return out;
+}
+
+/** Claim, send and record one delivery job. Returns its status. */
+async function sendOne(env, key) {
+  const now = new Date().toISOString();
+  // claim: only a pending/failed row that is due moves to 'sending' (one sender at a time)
+  const claim = await env.DB.prepare(`UPDATE email_deliveries SET status = 'sending', claimed_at = ?
+    WHERE idempotency_key = ? AND status IN ('pending', 'failed') AND next_attempt_at <= ?`).bind(now, key, now).run();
+  if (!claim.meta || claim.meta.changes !== 1) {
+    const row = await env.DB.prepare('SELECT status FROM email_deliveries WHERE idempotency_key = ?').bind(key).first();
+    return row ? row.status : 'missing';
+  }
+  const d = await env.DB.prepare('SELECT id, kind, recipient, payload, attempts FROM email_deliveries WHERE idempotency_key = ?').bind(key).first();
+  let res;
+  try { res = await deliver(d, key, env); } catch (e) { res = { ok: false, error: String(e && e.message || e) }; }
+  const attempts = d.attempts + 1;
+  if (res.ok) {
+    await env.DB.batch([
+      env.DB.prepare(`UPDATE email_deliveries SET status = 'sent', attempts = ?, sent_at = ?, last_error = ? WHERE id = ?`)
+        .bind(attempts, new Date().toISOString(), res.simulated ? 'simulated (EMAIL_MODE=test): not sent' : null, d.id),
+      await completion(env, key, 'sent'),
+    ]);
+    return res.simulated ? 'simulated' : 'sent';
+  } else if (res.config) {
+    // A configuration error repeats until someone fixes it: stop here, do not retry, and keep
+    // no completion record so the job can be re-queued after the repair.
+    await env.DB.prepare(`UPDATE email_deliveries SET status = 'blocked_config', attempts = ?, last_error = ? WHERE id = ?`)
+      .bind(attempts, String(res.error || 'email configuration error').slice(0, 300), d.id).run();
+    return 'blocked_config';
+  } else {
+    const dead = attempts >= MAX_DELIVERY_ATTEMPTS;
+    const backoff = Math.min(6 * 3600 * 1000, 60 * 1000 * 2 ** attempts);
+    const update = env.DB.prepare(`UPDATE email_deliveries SET status = ?, attempts = ?, last_error = ?, next_attempt_at = ? WHERE id = ?`)
+      .bind(dead ? 'dead' : 'failed', attempts, String(res.error || 'send failed').slice(0, 300), isoIn(backoff), d.id);
+    await env.DB.batch(dead ? [update, await completion(env, key, 'dead')] : [update]);
+    return dead ? 'dead' : 'failed';
+  }
 }
 
 // Durable delivery completion (QB-35 re-review 2): one row per completed delivery, keyed by a
@@ -174,11 +207,11 @@ async function completion(env, key, outcome) {
 }
 
 async function deliver(d, key, env) {
-  if (d.kind === 'welcome') return sendWelcome(d.recipient, env.RESEND_API_KEY, key);
+  if (d.kind === 'welcome') return sendWelcome(env, d.recipient, key);
   if (d.kind === 'owner_notify') {
     const p = JSON.parse(d.payload || '{}');
     const { count } = await env.DB.prepare('SELECT COUNT(*) AS count FROM submissions').first();
-    return sendOwnerNotify(p.email, p.agent, count, p.ip, p.referrer, env.RESEND_API_KEY, key);
+    return sendOwnerNotify(env, p.email, p.agent, count, p.ip, p.referrer, key);
   }
   return { ok: false, error: `unknown delivery kind ${d.kind}` };
 }
@@ -206,7 +239,6 @@ const CODE_TTL_MS = 30 * 60 * 1000;
 const MAX_CODE_REQUESTS_PER_HOUR = 3;
 const MAX_METRICS_PER_HOUR = 60;
 const MAX_METRICS_BODY_BYTES = 4096;
-const SITE = 'https://quarterback.velorallc.workers.dev';
 
 /**
  * Quota admission atomic with its write (QB-33 re-review 2): one INSERT … SELECT … WHERE count < max.
@@ -279,7 +311,7 @@ async function handleTelemetryRequest(request, env) {
   const code = randomHex(32);
   await env.DB.prepare('INSERT INTO telemetry_verifications (code_hash, email, created_at, expires_at) VALUES (?, ?, ?, ?)')
     .bind(await sha256Hex(code), email, new Date().toISOString(), isoIn(CODE_TTL_MS)).run();
-  await sendTelemetryLink(email, `${SITE}/api/telemetry/verify?code=${code}`, env.RESEND_API_KEY);
+  await sendTelemetryLink(env, email, `${siteUrl(env)}/api/telemetry/verify?code=${code}`);
   return accepted;
 }
 
@@ -506,7 +538,7 @@ async function handleReport(request, env) {
     email_deliveries: {
       by_status: (await env.DB.prepare('SELECT status, COUNT(*) AS n FROM email_deliveries GROUP BY status ORDER BY status').all()).results,
       recent_failures: (await env.DB.prepare(`SELECT kind, recipient, status, attempts, last_error, next_attempt_at FROM email_deliveries
-        WHERE status IN ('failed', 'dead') ORDER BY id DESC LIMIT 20`).all()).results,
+        WHERE status IN ('failed', 'dead', 'blocked_config') ORDER BY id DESC LIMIT 20`).all()).results,
     },
   });
 }
@@ -547,7 +579,8 @@ async function handleSubmissions(request, env) {
 
 // ─── Email helpers ────────────────────────────────────────────────────────────
 
-async function sendWelcome(to, apiKey, idempotencyKey) {
+async function sendWelcome(env, to, idempotencyKey) {
+  const SITE = siteUrl(env);
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0D100F;font-family:'Helvetica Neue',Arial,sans-serif;color:#C6CFCB;">
@@ -556,21 +589,15 @@ async function sendWelcome(to, apiKey, idempotencyKey) {
     <span style="font-family:monospace;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#6FBF9F;">Quarterback</span>
     <span style="font-size:13px;color:#4A5652;margin-left:8px;">· by Velora</span>
   </div>
-  <h1 style="margin:0 0 20px 0;font-size:28px;font-weight:400;color:#F4F1EA;line-height:1.3;">You're on the beta list.</h1>
-  <p style="margin:0 0 24px 0;font-size:16px;line-height:1.65;color:#9AA5A0;">
-    Quarterback is a control loop that runs around your coding agent. You write the intent — it compiles it, supplies your codebase context, watches execution, verifies the result, and repairs failures automatically. You stop correcting. You start accepting.
+  <h1 style="margin:0 0 20px 0;font-size:28px;font-weight:400;color:#F4F1EA;line-height:1.3;">We received your request.</h1>
+  <p style="margin:0 0 20px 0;font-size:16px;line-height:1.65;color:#9AA5A0;">
+    Thanks for asking to try Quarterback. It runs Claude Code against requirements you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.
   </p>
-  <div style="margin:32px 0;padding:24px 28px;background:#121615;border:1px solid #262E2B;border-radius:8px;">
-    <div style="font-family:monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#E08A4C;margin-bottom:16px;">Early access — try it now</div>
-    <p style="margin:0 0 10px 0;font-size:14px;color:#C6CFCB;"><strong style="color:#F4F1EA;">1.</strong> Install Ollama</p>
-    <pre style="margin:0 0 18px 0;padding:10px 14px;background:#0D100F;border:1px solid #1A211E;border-radius:4px;font-size:13px;color:#6FBF9F;">brew install ollama &amp;&amp; ollama pull deepseek-r1:7b</pre>
-    <p style="margin:0 0 10px 0;font-size:14px;color:#C6CFCB;"><strong style="color:#F4F1EA;">2.</strong> Clone &amp; install</p>
-    <pre style="margin:0 0 18px 0;padding:10px 14px;background:#0D100F;border:1px solid #1A211E;border-radius:4px;font-size:13px;color:#6FBF9F;">git clone https://github.com/arshad8049/quaterback
-cd quaterback &amp;&amp; npm install</pre>
-    <p style="margin:0 0 10px 0;font-size:14px;color:#C6CFCB;"><strong style="color:#F4F1EA;">3.</strong> Run your first task</p>
-    <pre style="margin:0 0 16px 0;padding:10px 14px;background:#0D100F;border:1px solid #1A211E;border-radius:4px;font-size:13px;color:#6FBF9F;">node qb.js "add getVersion() to src/utils.js" \\
-  --repo /path/to/repo --agent claude-code</pre>
-    <p style="margin:0;font-size:13px;color:#8A948F;">Quarterback's own model calls run locally via Ollama. With <code>--agent claude-code</code>, the coding agent runs Claude Code under your Claude account: your task and the code it reads are sent to Anthropic. Details: ${SITE}/privacy.html</p>
+  <div style="margin:28px 0;padding:22px 26px;background:#121615;border:1px solid #262E2B;border-radius:8px;">
+    <div style="font-family:monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#E08A4C;margin-bottom:12px;">What happens next</div>
+    <p style="margin:0 0 10px 0;font-size:15px;line-height:1.6;color:#C6CFCB;">Quarterback is pre-release and in supervised evaluation. We will reply with the exact version to install and help you set it up. Please don't install from the main branch before then.</p>
+    <p style="margin:0 0 10px 0;font-size:15px;line-height:1.6;color:#C6CFCB;">Supported today: Claude Code on JavaScript or Node.js projects tested with node:test. Ubuntu 24.04 with Docker and 16 GB of RAM is the validated setup.</p>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#8A948F;">During a Claude Code run, your task and the code the agent reads are sent to Anthropic under your Claude account. Quarterback's own model calls run locally by default. Details: ${SITE}/privacy.html</p>
   </div>
   <div style="margin:28px 0;padding:18px 22px;border:1px solid #2E4F44;border-radius:6px;background:#0A0D0C;">
     <div style="font-family:monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#6FBF9F;margin-bottom:8px;">Help us improve QB</div>
@@ -579,17 +606,17 @@ cd quaterback &amp;&amp; npm install</pre>
     </p>
   </div>
   <p style="margin:28px 0 0 0;font-size:15px;line-height:1.65;color:#9AA5A0;">
-    We'll send cohort onboarding details within a few days. Reply to this email with any questions.
+    Reply to this email with any questions.
   </p>
   <div style="margin-top:40px;padding-top:22px;border-top:1px solid #1A211E;">
     <p style="margin:0;font-size:13px;color:#4A5652;">— Arshad, Velora<br>
     <a href="https://quarterback.velorallc.workers.dev" style="color:#6FBF9F;text-decoration:none;">quarterback.velorallc.workers.dev</a></p>
   </div>
 </div></body></html>`;
-  return resendSend(to, "You're on the Quarterback beta list", html, apiKey, idempotencyKey);
+  return sendMail(env, to, "You're on the Quarterback beta list", html, idempotencyKey);
 }
 
-async function sendTelemetryLink(to, link, apiKey) {
+async function sendTelemetryLink(env, to, link) {
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0D100F;font-family:'Helvetica Neue',Arial,sans-serif;color:#C6CFCB;">
 <div style="max-width:560px;margin:0 auto;padding:40px 28px;">
@@ -597,10 +624,10 @@ async function sendTelemetryLink(to, link, apiKey) {
   <p style="font-size:14px;word-break:break-all;"><a href="${escHtml(link)}" style="color:#6FBF9F;">${escHtml(link)}</a></p>
   <p style="font-size:13px;color:#8A948F;">If you did not ask for this, ignore this email; nothing is enabled without the link.</p>
 </div></body></html>`;
-  return resendSend(to, 'Your Quarterback telemetry link', html, apiKey);
+  return sendMail(env, to, 'Your Quarterback telemetry link', html);
 }
 
-async function sendOwnerNotify(email, agent, count, ip, referrer, apiKey, idempotencyKey) {
+async function sendOwnerNotify(env, email, agent, count, ip, referrer, idempotencyKey) {
   const now  = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0D100F;font-family:monospace;color:#C6CFCB;">
@@ -618,12 +645,32 @@ async function sendOwnerNotify(email, agent, count, ip, referrer, apiKey, idempo
     <span style="color:#8A948F;font-size:14px;margin-left:10px;">total signups</span>
   </div>
 </div></body></html>`;
-  return resendSend(OWNER, `QB beta signup #${count}: ${email} (${agent || 'no agent'})`, html, apiKey, idempotencyKey);
+  return sendMail(env, OWNER, `QB beta signup #${count}: ${email} (${agent || 'no agent'})`, html, idempotencyKey);
 }
 
-/** One send. Returns { ok, error? } — never throws. The idempotency key stops a retried send from duplicating. */
+/**
+ * The one way email leaves the worker. EMAIL_MODE (default 'live'):
+ *   'test' — never sends, except to EMAIL_ALLOWLIST; returns { ok, simulated } (staging);
+ *   anything else unknown — sends nothing and reports a configuration error (fails closed).
+ */
+async function sendMail(env, to, subject, html, idempotencyKey) {
+  const mode = (env.EMAIL_MODE || 'live').trim();
+  if (mode === 'test') {
+    const allow = String(env.EMAIL_ALLOWLIST || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+    if (!allow.includes(String(to).toLowerCase())) return { ok: true, simulated: true };
+  } else if (mode !== 'live') {
+    return { ok: false, config: true, error: `unknown EMAIL_MODE ${JSON.stringify(mode).slice(0, 40)}: nothing sent` };
+  }
+  return resendSend(to, subject, html, env.RESEND_API_KEY, idempotencyKey);
+}
+
+/**
+ * One send. Returns { ok, error?, config? } — never throws. The idempotency key stops a retried
+ * send from duplicating. config: true marks errors that repeat until the configuration changes
+ * (no key; the provider refusing the key or the sender: 401/403).
+ */
 async function resendSend(to, subject, html, apiKey, idempotencyKey) {
-  if (!apiKey) return { ok: false, error: 'RESEND_API_KEY not configured' };
+  if (!apiKey) return { ok: false, config: true, error: 'RESEND_API_KEY not configured' };
   try {
     const res = await fetch(RESEND_URL, {
       method:  'POST',
@@ -632,7 +679,7 @@ async function resendSend(to, subject, html, apiKey, idempotencyKey) {
     });
     if (res.ok) return { ok: true };
     let detail = ''; try { detail = (await res.text()).slice(0, 200); } catch { /* none */ }
-    return { ok: false, error: `provider HTTP ${res.status} ${detail}`.trim() };
+    return { ok: false, config: res.status === 401 || res.status === 403, error: `provider HTTP ${res.status} ${detail}`.trim() };
   } catch (e) { return { ok: false, error: `network: ${e && e.message || e}` }; }
 }
 
@@ -641,20 +688,26 @@ async function resendSend(to, subject, html, apiKey, idempotencyKey) {
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsObject() },
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
+/** A preflight answer. It grants nothing by itself: withCors() adds a grant on the signup route only. */
 function cors204() {
-  return new Response(null, { status: 204, headers: corsObject() });
+  return new Response(null, { status: 204 });
 }
 
-function corsObject() {
-  return {
-    'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
+/** Grant CORS on a signup response only when the request's Origin is in ALLOWED_ORIGINS. */
+function withCors(request, env, res) {
+  const origin = request.headers.get('Origin');
+  const allowed = String(env.ALLOWED_ORIGINS || '').split(',').map((x) => x.trim()).filter(Boolean);
+  if (!origin || !allowed.includes(origin)) return res;
+  const h = new Headers(res.headers);
+  h.set('Access-Control-Allow-Origin', origin);
+  h.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  h.set('Access-Control-Allow-Headers', 'Content-Type');
+  h.set('Vary', 'Origin');
+  return new Response(res.body, { status: res.status, headers: h });
 }
 
 function escHtml(str) {

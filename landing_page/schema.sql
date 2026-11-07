@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS email_deliveries (
   kind            TEXT    NOT NULL CHECK (kind IN ('welcome', 'owner_notify')),
   recipient       TEXT    NOT NULL,
   payload         TEXT    NOT NULL DEFAULT '{}',
-  status          TEXT    NOT NULL CHECK (status IN ('pending', 'sending', 'sent', 'failed', 'dead')),
+  status          TEXT    NOT NULL CHECK (status IN ('pending', 'sending', 'sent', 'failed', 'dead', 'blocked_config')),
   attempts        INTEGER NOT NULL DEFAULT 0,
   last_error      TEXT,
   created_at      TEXT    NOT NULL,
