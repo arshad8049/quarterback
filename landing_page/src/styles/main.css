@@ -131,16 +131,19 @@ a:hover { color: #F0A369; }
 }
 .qb-agent-tag:hover { color: #F4F1EA !important; }
 
-/* ── Section scroll-reveal ── */
-.qb-reveal {
+/* ── Section scroll-reveal: hidden only once the script runs (.qb-js), so content never
+   depends on JavaScript; shown at once when motion is off ── */
+.qb-js .qb-reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-.qb-reveal.qb-visible {
+.qb-js .qb-reveal.qb-visible,
+.qb-motion-off .qb-reveal {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+  transition: none;
 }
 
 /* ── Card hover ── */
@@ -298,7 +301,6 @@ button, a { min-height: 44px; }
   [style*="font-size: 21px"]  { font-size: 17px !important; }
 
   /* Hide orbit SVG — 980px wide, bleeds off-screen */
-  .qb-orbit { display: none !important; }
 
   /* Loop rows: stack vertically */
   .qb-loop-row {
@@ -448,7 +450,6 @@ button, a { min-height: 44px; }
 
 /* ── Tablet ≤ 900px — orbit hide, loop collapse ── */
 @media (max-width: 900px) {
-  .qb-orbit { display: none !important; }
   .qb-glass-chip { display: none !important; }
   .qb-loop-row {
     flex-direction: column !important;
@@ -760,3 +761,43 @@ button, a { min-height: 44px; }
   .qb-table-lg th, .qb-table-lg td, .qb-table-ev th, .qb-table-ev td { display: block; width: auto !important; padding: 4px 0; border: none; }
   footer { padding: 32px 16px !important; }
 }
+
+/* ── Hero motion (restored 2026-11-07): radar orbit, grid, glow and a slow scroll drift ── */
+.qb-hero-wrap { position: relative; overflow: hidden; }
+.qb-hero-wrap .qb-grid, .qb-hero-wrap .qb-glow { position: absolute; inset: 0; pointer-events: none; }
+.qb-hero-wrap .qb-grid { opacity: 0.35; animation: qb-drift 18s linear infinite; }
+.qb-hero-wrap .qb-orbit { position: absolute; right: -240px; top: -90px; width: 940px; height: 940px; opacity: 0.6; will-change: transform; }
+.qb-hero-wrap > .qb-wrap { position: relative; z-index: 1; }
+/* Text sits on a solid backdrop above the motion, so contrast never depends on the animation */
+.qb-backdrop { background: rgba(13, 16, 15, 0.9); border: 1px solid rgba(46, 60, 56, 0.6); border-radius: 10px; padding: 36px 40px; box-shadow: 0 30px 80px rgba(0,0,0,0.35); }
+.qb-hero-cols { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+@media (max-width: 1000px) { .qb-hero-cols { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) {
+  .qb-hero-wrap .qb-orbit { width: 620px; height: 620px; right: -260px; top: -60px; opacity: 0.4; }
+}
+@media (max-width: 640px) {
+  .qb-hero-wrap .qb-orbit { width: 460px; height: 460px; right: -220px; top: -40px; opacity: 0.32; }
+  .qb-backdrop { padding: 24px 18px; }
+}
+/* Motion off: the OS setting at load, or changed mid-session (interactions.js adds .qb-motion-off) */
+.qb-motion-off .qb-grid, .qb-motion-off .qb-ring-a, .qb-motion-off .qb-ring-b, .qb-motion-off .qb-pulse,
+.qb-motion-off .qb-sweep, .qb-motion-off .qb-line { animation: none !important; }
+.qb-motion-off .qb-orbit { transform: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .qb-grid, .qb-ring-a, .qb-ring-b, .qb-pulse { animation: none !important; }
+  .qb-js .qb-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ── Homepage pieces ── */
+.qb-steps4 { list-style: none; margin: 36px 0 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+@media (max-width: 1000px) { .qb-steps4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .qb-steps4 { grid-template-columns: minmax(0, 1fr); } }
+.qb-defs { margin: 12px 0 0 0; }
+.qb-defs div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid #222A27; font-size: 15.5px; line-height: 1.6; color: #B4BEB9; }
+.qb-defs dt { color: #F4F1EA; font-weight: 600; }
+.qb-defs dd { margin: 0; }
+@media (max-width: 640px) { .qb-defs div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+.qb-check { list-style: none; margin: 10px 0 0 0; padding: 0; font-size: 16px; line-height: 1.6; color: #D6DFDB; }
+.qb-check li { padding: 6px 0 6px 28px; position: relative; }
+.qb-check li::before { content: "✓"; position: absolute; left: 4px; color: #7FCBAA; font-weight: 700; }
+.qb-check.qb-plain li::before { content: "•"; color: #E08A4C; }
