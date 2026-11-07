@@ -4,88 +4,68 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Quarterback — Check AI-written code against your requirements</title>
-  <meta name="description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.">
-
-  <!-- Canonical -->
+  <title>Quarterback — AI writes the code. Quarterback shows you the evidence.</title>
+  <meta name="description" content="Quarterback runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and the change to review. Early, supervised testing.">
   <link rel="canonical" href="https://quarterback.velorallc.workers.dev/">
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="./favicon.png">
-  <link rel="apple-touch-icon" href="./favicon.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
-  <!-- Open Graph -->
-  <meta property="og:type"        content="website">
-  <meta property="og:site_name"   content="Quarterback">
-  <meta property="og:url"         content="https://quarterback.velorallc.workers.dev/">
-  <meta property="og:title"       content="Quarterback — Check AI-written code against your requirements">
-  <meta property="og:description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.">
-  <meta property="og:image"       content="https://quarterback.velorallc.workers.dev/og-image.png">
-  <meta property="og:image:width" content="1200">
+  <meta property="og:type"         content="website">
+  <meta property="og:site_name"    content="Quarterback">
+  <meta property="og:url"          content="https://quarterback.velorallc.workers.dev/">
+  <meta property="og:title"        content="Quarterback — AI writes the code. Quarterback shows you the evidence.">
+  <meta property="og:description"  content="Quarterback runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and the change to review. Early, supervised testing.">
+  <meta property="og:image"        content="https://quarterback.velorallc.workers.dev/og-image.png">
+  <meta property="og:image:width"  content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt"   content="Quarterback">
-
-  <!-- Twitter Card -->
+  <meta property="og:image:alt"    content="Quarterback: AI writes the code, Quarterback shows you the evidence. Early, supervised testing.">
   <meta name="twitter:card"        content="summary_large_image">
-  <meta name="twitter:title"       content="Quarterback — Check AI-written code against your requirements">
-  <meta name="twitter:description" content="Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.">
+  <meta name="twitter:title"       content="Quarterback — AI writes the code. Quarterback shows you the evidence.">
+  <meta name="twitter:description" content="Quarterback runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and the change to review. Early, supervised testing.">
   <meta name="twitter:image"       content="https://quarterback.velorallc.workers.dev/og-image.png">
-
-  <!-- Security -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
-  <!-- JSON-LD structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Quarterback",
-    "description": "Quarterback turns a coding request into requirements you approve, runs Claude Code in an isolated workspace, and checks the resulting changes. You get a proposed patch, test results and a record of what remains unresolved. Pre-release, in supervised evaluation.",
+    "description": "Quarterback runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and the change to review. Early, supervised testing.",
     "url": "https://quarterback.velorallc.workers.dev/",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Linux",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": { "@type": "Organization", "name": "Velora", "url": "https://velorallc.netlify.app/" }
   }
   </script>
 
-  <!-- Fonts → edit: src/styles/fonts.css -->
   <link rel="stylesheet" href="./src/styles/fonts.css">
-
-  <!-- Styles → edit: src/styles/main.css -->
   <link rel="stylesheet" href="./src/styles/main.css">
-
-  <!-- Scripts (order matters) -->
-  <script src="./src/scripts/react.js"></script>
-  <script src="./src/scripts/react-dom.js"></script>
-  <script src="./src/scripts/dc-runtime.js"></script>
 </head>
 <body>
 <a class="qb-skip" href="#main">Skip to content</a>
 <div style="width: 100%; background: #0D100F; color: #F4F1EA; font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased;">
 
   <!-- ============================================================ -->
-  <!-- SECTION: NAV → edit: src/nav.html -->
+  <!-- SECTION: HOME-NAV → edit: src/home-nav.html -->
   <!-- ============================================================ -->
   <!-- NAV -->
   <nav class="qb-nav" aria-label="Main" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 80px; border-bottom: 1px solid rgba(34,42,39,0.8);">
     <div style="display: flex; align-items: center; gap: 14px;">
       <a href="./" class="qb-logo-link" style="display: flex; align-items: center; gap: 11px; text-decoration: none;">
-        <img src="./logo.png" alt="Quarterback" width="30" height="30" style="border-radius: 7px; display: block; flex-shrink: 0;">
+        <img src="./logo.png" alt="Quarterback home" width="30" height="30" style="border-radius: 7px; display: block; flex-shrink: 0;">
         <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; letter-spacing: 0.02em; color: #F4F1EA;">Quarterback</span>
       </a>
     </div>
     <button class="qb-nav-toggle" aria-label="Open navigation menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
-    <div class="qb-nav-links" style="display: flex; align-items: center; gap: 30px;">
+    <div class="qb-nav-links" style="display: flex; align-items: center; gap: 28px;">
+      <a href="#what" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">What it does</a>
       <a href="#example" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">Example</a>
-      <a href="#how" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">How it works</a>
       <a href="#supported" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">Supported</a>
       <a href="#progress" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">Progress</a>
-      <a href="#evidence" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">Evidence</a>
+      <a href="./developers" class="qb-nav-link" style="font-size: 14px; color: #A7B0AB; text-decoration: none;">For developers</a>
       <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener noreferrer" class="qb-github-link qb-nav-link" style="display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: #A7B0AB; text-decoration: none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.341-3.369-1.341-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg><span>GitHub</span></a>
       <a href="#beta" class="qb-cta-btn" style="display: inline-flex; align-items: center; height: 38px; padding: 0 18px; border: 1px solid rgba(224,138,76,0.7); border-radius: 8px; font-size: 14px; font-weight: 500; color: #E08A4C; text-decoration: none; letter-spacing: 0.01em;">Request an evaluation</a>
     </div>
@@ -93,97 +73,180 @@
 
 
   <!-- ============================================================ -->
-  <!-- SECTION: HERO → edit: src/hero.html -->
+  <!-- SECTION: HOME-HERO → edit: src/home-hero.html -->
   <!-- ============================================================ -->
   <main id="main" tabindex="-1">
-  <!-- HERO: what QB does, for whom, and its current status -->
-  <div class="qb-sec qb-hero" style="padding-top: 112px; padding-bottom: 96px;">
+  <!-- HOMEPAGE HERO: plain language, scoped claims, dated status -->
+  <div class="qb-sec qb-hero qb-hero-wrap" style="padding-top: 104px; padding-bottom: 96px;">
+    <div class="qb-grid" aria-hidden="true"></div>
+    <div class="qb-glow" aria-hidden="true"></div>
+    <!-- Decorative radar orbit (restored from 2e0e374). aria-hidden; paused when motion is off. -->
+  <svg class="qb-orbit" aria-hidden="true" focusable="false" viewBox="0 0 200 200" fill="none">
+      <defs>
+        <filter id="glow-a" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="1.8" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-b" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="1.8" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-core" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <linearGradient id="scan-grad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#E08A4C" stop-opacity="0"/>
+          <stop offset="85%" stop-color="#E08A4C" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#E08A4C" stop-opacity="0.9"/>
+        </linearGradient>
+        <radialGradient id="sweep-fade" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#E08A4C" stop-opacity="0.06"/>
+          <stop offset="100%" stop-color="#E08A4C" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+  
+      <!-- Outermost range rings -->
+      <circle cx="100" cy="100" r="97" stroke="#161C19" stroke-width="0.5"/>
+      <circle cx="100" cy="100" r="90" stroke="#1A2118" stroke-width="0.3" stroke-dasharray="0.8 5"/>
+  
+      <!-- Amber rotating orbit -->
+      <circle class="qb-ring-a" cx="100" cy="100" r="78" stroke="#E08A4C" stroke-width="0.75" stroke-dasharray="3 8" filter="url(#glow-a)"/>
+  
+      <!-- Intermediate reference -->
+      <circle cx="100" cy="100" r="66" stroke="#182019" stroke-width="0.4"/>
+  
+      <!-- Green counter-rotating orbit -->
+      <circle class="qb-ring-b" cx="100" cy="100" r="56" stroke="#6FBF9F" stroke-width="0.75" stroke-dasharray="2 7" filter="url(#glow-b)"/>
+  
+      <!-- Inner rings -->
+      <circle cx="100" cy="100" r="44" stroke="#161C19" stroke-width="0.35" stroke-dasharray="0.6 4"/>
+      <circle cx="100" cy="100" r="34" stroke="#1A2118" stroke-width="0.5"/>
+      <circle cx="100" cy="100" r="22" stroke="#141A17" stroke-width="0.3"/>
+      <circle cx="100" cy="100" r="12" stroke="#1A2118" stroke-width="0.3" stroke-dasharray="1 3"/>
+  
+      <!-- Quadrant crosshairs -->
+      <line x1="100" y1="2"   x2="100" y2="24"  stroke="#223028" stroke-width="0.4"/>
+      <line x1="100" y1="176" x2="100" y2="198" stroke="#223028" stroke-width="0.4"/>
+      <line x1="2"   y1="100" x2="24"  y2="100" stroke="#223028" stroke-width="0.4"/>
+      <line x1="176" y1="100" x2="198" y2="100" stroke="#223028" stroke-width="0.4"/>
+  
+      <!-- 45° diagonal ticks -->
+      <line x1="169" y1="31"  x2="174" y2="36"  stroke="#1B2621" stroke-width="0.4"/>
+      <line x1="26"  y1="31"  x2="31"  y2="36"  stroke="#1B2621" stroke-width="0.4"/>
+      <line x1="169" y1="169" x2="174" y2="164" stroke="#1B2621" stroke-width="0.4"/>
+      <line x1="26"  y1="169" x2="31"  y2="164" stroke="#1B2621" stroke-width="0.4"/>
+  
+      <!-- Degree tick marks on outer ring -->
+      <g stroke="#1E2B23" stroke-width="0.4">
+        <line x1="100" y1="3"   x2="100" y2="8"/>
+        <line x1="127" y1="5.5" x2="126" y2="10.5"/>
+        <line x1="150" y1="14"  x2="148" y2="18.5"/>
+        <line x1="168" y1="28"  x2="165" y2="32"/>
+        <line x1="180" y1="47"  x2="176" y2="49.5"/>
+        <line x1="186" y1="70"  x2="182" y2="71"/>
+        <line x1="186" y1="100" x2="182" y2="100"/>
+        <line x1="100" y1="197" x2="100" y2="192"/>
+        <line x1="14"  y1="70"  x2="18"  y2="71"/>
+        <line x1="50"  y1="5.5" x2="51"  y2="10.5"/>
+      </g>
+  
+      <!-- Cardinal labels -->
+      <text x="103" y="8.5" font-family="monospace" font-size="4.5" fill="#2C3E36" opacity="0.9">N</text>
+      <text x="103" y="196" font-family="monospace" font-size="4.5" fill="#2C3E36" opacity="0.7">S</text>
+      <text x="190" y="102" font-family="monospace" font-size="4.5" fill="#2C3E36" opacity="0.7">E</text>
+      <text x="5"   y="102" font-family="monospace" font-size="4.5" fill="#2C3E36" opacity="0.7">W</text>
+  
+      <!-- Scanning sweep (wedge fill) -->
+      <path d="M100 100 L100 4 A96 96 0 0 1 120 5.8 Z" fill="url(#sweep-fade)" opacity="0.6">
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 100 100" to="360 100 100" dur="10s" repeatCount="indefinite"/>
+      </path>
+  
+      <!-- Scanning beam line -->
+      <g>
+        <line x1="100" y1="100" x2="100" y2="4" stroke="url(#scan-grad)" stroke-width="0.7"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 100 100" to="360 100 100" dur="10s" repeatCount="indefinite"/>
+      </g>
+  
+      <!-- Satellite on amber orbit -->
+      <g>
+        <circle cx="100" cy="22" r="3.2" fill="#E08A4C" filter="url(#glow-a)"/>
+        <rect x="95.5" y="20" width="9" height="0.9" fill="#E08A4C" opacity="0.45"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 100 100" to="360 100 100" dur="46s" repeatCount="indefinite"/>
+      </g>
+  
+      <!-- Two satellites on green orbit (opposite sides) -->
+      <g>
+        <circle cx="156" cy="100" r="2.4" fill="#6FBF9F" filter="url(#glow-b)"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="360 100 100" to="0 100 100" dur="30s" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <circle cx="44" cy="100" r="2.0" fill="#6FBF9F" filter="url(#glow-b)"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="180 100 100" to="-180 100 100" dur="30s" repeatCount="indefinite"/>
+      </g>
+  
+      <!-- Static pulsing data points at fixed coordinates -->
+      <circle class="qb-pulse" cx="100"  cy="178" r="2.3" fill="#E08A4C" style="animation-delay:0.8s"  filter="url(#glow-a)"/>
+      <circle class="qb-pulse" cx="168"  cy="143" r="1.9" fill="#6FBF9F" style="animation-delay:1.7s"  filter="url(#glow-b)"/>
+      <circle class="qb-pulse" cx="32"   cy="57"  r="1.9" fill="#6FBF9F" style="animation-delay:2.6s"  filter="url(#glow-b)"/>
+      <circle class="qb-pulse" cx="178"  cy="72"  r="1.6" fill="#E08A4C" style="animation-delay:3.1s"  filter="url(#glow-a)"/>
+  
+      <!-- Core -->
+      <circle cx="100" cy="100" r="6"   fill="#0D100F" stroke="#2A3D37" stroke-width="0.6"/>
+      <circle cx="100" cy="100" r="2.4" fill="#E08A4C" filter="url(#glow-core)"/>
+      <circle cx="100" cy="100" r="0.9" fill="#F4F1EA"/>
+    </svg>
     <div class="qb-wrap">
-      <div class="qb-eyebrow">Pre-release · in supervised evaluation</div>
-      <h1 class="qb-h1">Check AI-written code against requirements you approve.</h1>
-      <p class="qb-lead">Quarterback runs Claude Code in an isolated workspace, checks the change against a contract you approved, and hands back a patch with the evidence. You decide whether to apply it.</p>
-      <p class="qb-body" style="max-width: 720px;">For developers who use Claude Code on JavaScript and Node.js projects and want to know whether a generated change does what was asked.</p>
-      <div class="qb-status" role="note">
-        <strong>Where it stands, November 5, 2026.</strong> Quarterback is in supervised evaluation and is not yet ready for self-service installation. Automatic contract drafting is not yet reliable, so evaluations start from a contract a person has written or reviewed. We have not yet shown that Quarterback saves review time compared with Claude Code alone.
-      </div>
-      <div class="qb-hero-cta" style="display: flex; align-items: center; gap: 14px 24px; margin-top: 36px; flex-wrap: wrap;">
-        <a href="#beta" class="qb-btn-primary" style="display: inline-flex; align-items: center; height: 52px; padding: 0 28px; background: #E08A4C; border-radius: 4px; font-size: 16px; font-weight: 600; color: #0D100F; text-decoration: none;">Request a supervised evaluation</a>
-        <a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener" class="qb-link">Read the setup guide →</a>
-        <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-link">View on GitHub →</a>
+      <div class="qb-backdrop" style="max-width: 820px;">
+        <div class="qb-eyebrow">Early testing · supervised evaluation · November 2026</div>
+        <h1 class="qb-h1">AI writes the code. Quarterback shows you the evidence.</h1>
+        <p class="qb-lead">You agree on a short list of requirements. Claude Code, an AI coding assistant, makes the change in a separate workspace. Quarterback runs your project’s tests and the agreed checks, then hands you the results and the change to review. Your project isn’t touched until you apply it.</p>
+        <div class="qb-status" role="note">
+          <strong>Where it stands, November 7, 2026:</strong> early, supervised testing with a small group. Writing the requirements list automatically isn’t reliable yet, and we haven’t yet shown that Quarterback saves review time.
+        </div>
+        <div class="qb-hero-cta" style="display: flex; align-items: center; gap: 14px 24px; margin-top: 32px; flex-wrap: wrap;">
+          <a href="#beta" class="qb-btn-primary" style="display: inline-flex; align-items: center; height: 52px; padding: 0 28px; background: #E08A4C; border-radius: 4px; font-size: 16px; font-weight: 600; color: #0D100F; text-decoration: none;">Request a supervised evaluation</a>
+          <a href="#what" class="qb-link">How it works →</a>
+        </div>
       </div>
     </div>
   </div>
 
 
   <!-- ============================================================ -->
-  <!-- SECTION: EXAMPLE → edit: src/example.html -->
+  <!-- SECTION: HOME-WHAT → edit: src/home-what.html -->
   <!-- ============================================================ -->
-  <!-- REAL EXAMPLE: request → reviewed checks → actual verdict → patch (run of October 15, 2026) -->
-  <section id="example" class="qb-sec" aria-labelledby="example-h">
-    <div class="qb-wrap">
-      <div class="qb-eyebrow">A real run</div>
-      <h2 id="example-h" class="qb-h2">From a request to a patch you can check.</h2>
-      <p class="qb-body">One run on a two-file sample project, recorded on October 15, 2026. Nothing below is a mock-up: each part links to the files from the run.</p>
-  
-      <ol class="qb-example">
-        <li class="qb-panel">
-          <div class="qb-step-label"><span>1</span> The request</div>
-          <p class="qb-quote">“formatDuration should show durations under one minute as seconds only, for example 30000 ms as "30s" instead of "0m 30s". Durations of one minute or more keep the current format.”</p>
-        </li>
-        <li class="qb-panel">
-          <div class="qb-step-label"><span>2</span> The reviewed checks</div>
-          <p class="qb-small">The contract was drafted by the local model on October 14, then reviewed and edited by a person before approval.</p>
-          <div class="qb-table-wrap">
-            <table class="qb-table">
-              <thead><tr><th scope="col">Check</th><th scope="col">Call</th><th scope="col">Must return</th></tr></thead>
-              <tbody>
-                <tr><td>CHK-1</td><td><code>formatDuration(30000)</code></td><td><code>"30s"</code></td></tr>
-                <tr><td>CHK-2</td><td><code>formatDuration(90000)</code></td><td><code>"1m 30s"</code></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="qb-small">Only <code>src/duration.js</code> may change.</p>
-        </li>
-        <li class="qb-panel qb-panel-wide">
-          <div class="qb-step-label"><span>3</span> The verdict</div>
-          <figure class="qb-term" style="margin: 0;" aria-label="Terminal output from the run">
-            <pre><span style="color:#E08A4C">$ qb "formatDuration should show durations under one minute as seconds only, …" --contract-file contract.json</span>&#10;[L1]   Using the reviewed contract file ~/demo/hero-demo-contract.json (sha256 baa7c3f237de)&#10;[L1]   Oracle approved (contract-file); frozen as 96682f70adb8&#10;[L2]   Context ready  (31639ms)&#10;[L3]   Execution done  (79470ms)  status=completed&#10;   src/duration.js                        +2 -1&#10;<span style="color:#7FCBAA">[L4]   Verdict: ✓ PASS  (82ms)</span>&#10;<span style="color:#7FCBAA">   ✓ [AC-1] formatDuration(30000) should return "30s"</span>&#10;<span style="color:#7FCBAA">   ✓ [AC-2] formatDuration(90000) should return "1m 30s"</span>&#10;<span style="color:#A7B0AB">…</span>&#10;<span style="color:#7FCBAA">RESULT: ✓ PASS</span>&#10;Attempts: 1 / 3&#10;Total time: 111.4s</pre>
-          </figure>
-        </li>
-        <li class="qb-panel qb-panel-wide">
-          <div class="qb-step-label"><span>4</span> The patch, proposed and not applied</div>
-          <pre class="qb-diff" aria-label="The proposed patch to src/duration.js"><span class="qb-diff-meta">--- a/src/duration.js</span>&#10;<span class="qb-diff-meta">+++ b/src/duration.js</span>&#10;<span class="qb-diff-del">-/** Formats a duration in milliseconds for the status line, e.g. 90000 -&gt; "1m 30s". */</span>&#10;<span class="qb-diff-add">+/** Formats a duration in milliseconds for the status line, e.g. 90000 -&gt; "1m 30s", 30000 -&gt; "30s". */</span>&#10; function formatDuration(ms) {&#10;   const minutes = Math.floor(ms / 60000);&#10;   const seconds = Math.floor((ms % 60000) / 1000);&#10;<span class="qb-diff-add">+  if (minutes === 0) return `${seconds}s`;</span>&#10;   return `${minutes}m ${seconds}s`;&#10; }</pre>
-        </li>
-      </ol>
-  
-      <p class="qb-caption">Claude Code 2.1.288 in Quarterback’s Docker sandbox, Quarterback at main as of October 15, 2026 (<code>3fc08fd</code>), local model <code>deepseek-r1:7b</code>. On main the local model did not produce a usable contract for this request in 22 attempts, which is why this run uses the reviewed one. The command line is abbreviated, and a cut in the output is marked “…”. A PASS means these checks and the project’s tests passed; it does not rule out every bug. <a href="./evidence/2026-10-15-hero-run/hero-run.log">Full log</a> · <a href="./evidence/2026-10-15-hero-run/README.md">Contract, patch and run bundle</a></p>
-    </div>
-  </section>
-
-
-  <!-- ============================================================ -->
-  <!-- SECTION: STEPS → edit: src/steps.html -->
-  <!-- ============================================================ -->
-  <!-- HOW IT WORKS: three steps -->
-  <section id="how" class="qb-sec" aria-labelledby="how-h">
-    <div class="qb-wrap">
-      <div class="qb-eyebrow">How it works</div>
-      <h2 id="how-h" class="qb-h2">Three steps, and you decide at both ends.</h2>
-      <ol class="qb-cols">
+  <!-- 1. WHAT QUARTERBACK DOES -->
+  <section id="what" class="qb-sec" aria-labelledby="what-h">
+    <div class="qb-wrap qb-reveal">
+      <div class="qb-eyebrow">What Quarterback does</div>
+      <h2 id="what-h" class="qb-h2">A checklist before the work, evidence after it.</h2>
+      <p class="qb-body">AI coding assistants are fast, but their changes can look finished while missing part of what was asked. Today someone has to read every line to be sure. Quarterback adds structure around the assistant so you can see what was checked and how it turned out.</p>
+      <ol class="qb-steps4">
         <li>
           <div class="qb-num">01</div>
-          <h3 class="qb-h3">Approve the requirements</h3>
-          <p class="qb-body">The task is written down as a contract: what must be true, which files may and may not change, and the executable checks that decide the result. The coding agent does not run until you approve it, and changing it later voids the approval.</p>
+          <h3 class="qb-h3">Agree on the requirements</h3>
+          <p class="qb-body">A short list: what must be true, which files may change, and checks that can be run automatically. You approve it. The coding assistant doesn’t start before you do.</p>
         </li>
         <li>
           <div class="qb-num">02</div>
-          <h3 class="qb-h3">Run and check</h3>
-          <p class="qb-body">Claude Code works in an isolated sandbox. Quarterback then runs your project’s tests and the contract’s checks on the exact change. A separate model reviews only what can’t be executed, such as naming. A failed check can be sent back for another attempt.</p>
+          <h3 class="qb-h3">The AI works in a separate workspace</h3>
+          <p class="qb-body">Claude Code makes the change on a copy of your project, inside an isolated container with limited network access. Your own files stay as they are.</p>
         </li>
         <li>
           <div class="qb-num">03</div>
-          <h3 class="qb-h3">Review the patch</h3>
-          <p class="qb-body">You get a verdict, the evidence behind it, and a patch labelled with its verification status. Your checkout is unchanged until you apply the patch yourself. Every run is recorded and its verdict can be replayed.</p>
+          <h3 class="qb-h3">Quarterback checks the result</h3>
+          <p class="qb-body">It runs your project’s tests and the agreed checks on exactly what changed. A pass means those checks passed. It doesn’t rule out every possible bug.</p>
+        </li>
+        <li>
+          <div class="qb-num">04</div>
+          <h3 class="qb-h3">You review and decide</h3>
+          <p class="qb-body">You get the outcome, the evidence behind it and the change itself. Nothing is applied to your project unless you choose to apply it.</p>
         </li>
       </ol>
     </div>
@@ -191,116 +254,84 @@
 
 
   <!-- ============================================================ -->
-  <!-- SECTION: SUPPORTED → edit: src/supported.html -->
+  <!-- SECTION: HOME-EXAMPLE → edit: src/home-example.html -->
   <!-- ============================================================ -->
-  <!-- SUPPORTED TODAY -->
+  <!-- 2. ONE REAL EXAMPLE: request, checklist, verdict, patch, limits -->
+  <section id="example" class="qb-sec" aria-labelledby="example-h">
+    <div class="qb-wrap qb-reveal">
+      <div class="qb-eyebrow">One real example</div>
+      <h2 id="example-h" class="qb-h2">A small change, start to finish.</h2>
+      <div class="qb-example">
+        <div class="qb-panel">
+          <div class="qb-step-label"><span>1</span> The request</div>
+          <p class="qb-quote">“Show durations under one minute as seconds only: 30 seconds should read <code>30s</code>, not <code>0m 30s</code>. Longer durations keep their current format.”</p>
+        </div>
+        <div class="qb-panel">
+          <div class="qb-step-label"><span>2</span> The agreed checklist</div>
+          <ul class="qb-check qb-plain">
+            <li>30,000 milliseconds is shown as <code>30s</code></li>
+            <li>90,000 milliseconds is still shown as <code>1m 30s</code></li>
+            <li>Only the file <code>src/duration.js</code> may change</li>
+          </ul>
+        </div>
+        <div class="qb-panel">
+          <div class="qb-step-label"><span>3</span> The result</div>
+          <ul class="qb-check">
+            <li>Both checks passed</li>
+            <li>The project’s own tests passed</li>
+            <li>One attempt, 111 seconds in total</li>
+          </ul>
+        </div>
+        <div class="qb-panel">
+          <div class="qb-step-label"><span>4</span> The change, for you to review</div>
+          <pre class="qb-diff" aria-label="The proposed change: one added line"><span class="qb-diff-add">+  if (minutes === 0) return `${seconds}s`;</span></pre>
+          <p class="qb-small">One added line (and an updated comment). It was proposed, not applied.</p>
+        </div>
+      </div>
+      <div class="qb-status" role="note" style="max-width: 860px;">
+        <strong>The limits of this example.</strong> A person reviewed and edited the checklist before the run, because Quarterback’s automatic drafting didn’t produce a usable one for this request. The pass covers these two checks and the project’s tests, nothing more. Run of October 15, 2026, Quarterback version <code>3fc08fd</code>. <a href="./developers#example">Full output and files</a>
+      </div>
+  
+      <div class="qb-cols" style="margin-top: 44px;">
+        <div>
+          <h3 class="qb-h3">What a check result can be</h3>
+          <dl class="qb-defs">
+            <div><dt>Pass</dt><dd>Every agreed check and the project’s tests passed.</dd></div>
+            <div><dt>Fail</dt><dd>A check or test failed, or a file that was off-limits was changed.</dd></div>
+            <div><dt>Partial</dt><dd>Some checks couldn’t be decided.</dd></div>
+            <div><dt>Unresolved</dt><dd>The evidence couldn’t settle it, for example a requirement with no runnable check.</dd></div>
+          </dl>
+        </div>
+        <div style="grid-column: span 2;">
+          <h3 class="qb-h3">How a run can end</h3>
+          <dl class="qb-defs">
+            <div><dt>Verified</dt><dd>The change was checked and passed.</dd></div>
+            <div><dt>Failed / Unresolved</dt><dd>The change was checked, and the result was a fail or couldn’t be settled.</dd></div>
+            <div><dt>Blocked</dt><dd>The run stopped <em>before</em> checking anything, for example because the requirements weren’t approved or a project dependency was refused. It says nothing about whether a change would have passed.</dd></div>
+            <div><dt>Error / Cancelled</dt><dd>The run itself broke (such as a timeout or running out of memory) or was stopped.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-SUPPORTED → edit: src/home-supported.html -->
+  <!-- ============================================================ -->
+  <!-- 3. SUPPORTED SETUP -->
   <section id="supported" class="qb-sec" aria-labelledby="supported-h">
-    <div class="qb-wrap">
-      <div class="qb-eyebrow">Supported today</div>
-      <h2 id="supported-h" class="qb-h2">A narrow, stated boundary.</h2>
-      <p class="qb-body">Anything not listed here is unsupported. <code>qb doctor</code> checks a machine against this list.</p>
-      <div class="qb-table-wrap">
-        <table class="qb-table qb-table-lg">
-          <tbody>
-            <tr><th scope="row">Coding agent</th><td><strong>Claude Code</strong> only, run in Quarterback’s Docker sandbox, with your Claude subscription or Anthropic API key. Cursor, Codex and Gemini are not supported.</td></tr>
-            <tr><th scope="row">Projects</th><td>JavaScript and Node.js, tested with <strong>node:test</strong>, with an npm lockfile. Projects using another test runner (Jest, Mocha, Vitest and others) are refused before any model call.</td></tr>
-            <tr><th scope="row">What it checks</th><td>Your project’s node:test suite, and executable checks in the contract: that a module exports something, that a call returns or throws a value, or a sequence of calls. Changes to protected files fail the task. Type checking, linting, browser tests and security scanning are not part of verification.</td></tr>
-            <tr><th scope="row">Platform</th><td><strong>Ubuntu 24.04 on x86_64, with Docker Engine and 16 GB of RAM</strong>, is the validated profile. macOS with Docker Desktop works for development but is not validated. Windows is not supported.</td></tr>
-            <tr><th scope="row">Also needed</th><td>Node.js 20 or newer, git, and <a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> with <code>deepseek-r1:7b</code> for Quarterback’s local model calls.</td></tr>
-            <tr><th scope="row">Your code</th><td>Quarterback’s own model calls stay on your machine by default. During a Claude Code run, the task and the code the agent reads are sent to Anthropic under your account. Telemetry is off unless you opt in, and it is not anonymous. <a href="./privacy.html">Data flows</a></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="qb-small"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md" target="_blank" rel="noopener">Full support matrix →</a></p>
-    </div>
-  </section>
-
-
-  <!-- ============================================================ -->
-  <!-- SECTION: PROGRESS → edit: src/progress.html -->
-  <!-- ============================================================ -->
-  <!-- PROGRESS UPDATE: dated; separates merged, in-review and planned work -->
-  <section id="progress" class="qb-sec" aria-labelledby="progress-h">
-    <div class="qb-wrap">
-      <div class="qb-eyebrow">Progress update · November 5, 2026</div>
-      <h2 id="progress-h" class="qb-h2">What changed, what remains, what’s next.</h2>
-      <p class="qb-body">“Merged” means merged into Quarterback’s main branch. There is no published release, so nothing here has shipped as a release yet.</p>
-      <div class="qb-cols qb-cols-progress">
-        <div>
-          <h3 class="qb-h3">Changed</h3>
-          <p class="qb-tag">Merged into main</p>
-          <ul class="qb-list">
-            <li><strong>Bounded draft recovery.</strong> When a drafted contract fails validation, or the model’s reply isn’t valid JSON, Quarterback makes one correction attempt and then stops with a clear message instead of retrying. <a href="https://github.com/arshad8049/quarterback/pull/19" target="_blank" rel="noopener">#19</a>, <a href="https://github.com/arshad8049/quarterback/pull/20" target="_blank" rel="noopener">#20</a>, <a href="https://github.com/arshad8049/quarterback/pull/21" target="_blank" rel="noopener">#21</a>, November 4.</li>
-            <li><strong>Impossible-scope guard.</strong> A draft whose only allowed change is a protected file is rejected before any agent runs. <a href="https://github.com/arshad8049/quarterback/pull/23" target="_blank" rel="noopener">#23</a>, November 5.</li>
-            <li><strong>Reproducible drafting evaluation.</strong> A harness that measures how often each local model produces a valid contract, with recorded model digests and settings. <a href="https://github.com/arshad8049/quarterback/pull/22" target="_blank" rel="noopener">#22</a>, November 5.</li>
-          </ul>
-          <p class="qb-tag">In review, not merged</p>
-          <ul class="qb-list">
-            <li><strong>Clearer installation documentation:</strong> a shorter README and one linear setup guide. It has been run end to end on macOS, which is not the validated profile.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="qb-h3">Remains</h3>
-          <ul class="qb-list">
-            <li><strong>Automatic drafting is unreliable.</strong> Most local drafts still fail validation (see <a href="#evidence">evidence</a>).</li>
-            <li><strong>Contradictions can get through.</strong> A draft can pass validation while contradicting the request, and validation doesn’t reliably catch that yet.</li>
-            <li><strong>The current version isn’t qualified for onboarding.</strong> The only passing fresh-machine walkthrough is from October 12, at an older commit.</li>
-            <li><strong>Customer benefit is unproven.</strong> We have not shown that Quarterback reduces review time or raises accepted task completion.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="qb-h3">Next</h3>
-          <p class="qb-tag">Planned</p>
-          <ul class="qb-list">
-            <li><strong>Qualify one supported installation path</strong> at a current commit, on the validated profile, with the evidence recorded.</li>
-            <li><strong>Measure Quarterback against Claude Code alone</strong> on tasks whose results are checked independently, not by Quarterback itself.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ============================================================ -->
-  <!-- SECTION: EVIDENCE → edit: src/evidence.html -->
-  <!-- ============================================================ -->
-  <!-- EVIDENCE: a few dated, linked results with denominators and limitations -->
-  <section id="evidence" class="qb-sec" aria-labelledby="evidence-h">
-    <div class="qb-wrap">
-      <div class="qb-eyebrow">Evidence</div>
-      <h2 id="evidence-h" class="qb-h2">The numbers so far, with their limits.</h2>
-      <p class="qb-body">Each result gives its denominator, method, date and revision, and links to the data. None of these numbers measures customer benefit.</p>
-      <div class="qb-table-wrap">
-        <table class="qb-table qb-table-ev">
-          <thead><tr><th scope="col">What was measured</th><th scope="col">Result</th><th scope="col">Method, date and revision</th><th scope="col">Limits</th></tr></thead>
-          <tbody>
-            <tr>
-              <th scope="row">Drafted contracts that passed Quarterback’s validation</th>
-              <td><strong>deepseek-r1:7b: 3 / 30</strong><br><strong>qwen2.5-coder:14b: 12 / 30</strong></td>
-              <td>6 small JavaScript tasks × 5 drafts per model, on a local Ollama on one Mac (Apple silicon, 18 GB). November 4, 2026. Drafting code as on main at <code>d946ff3</code>; it predates the impossible-scope guard. <a href="https://github.com/arshad8049/quarterback/blob/main/bench/results/l1-eval/2026-11-04/summary.md" target="_blank" rel="noopener">Results</a> · <a href="https://github.com/arshad8049/quarterback/blob/main/bench/results/l1-eval/2026-11-04/PROVENANCE.md" target="_blank" rel="noopener">Provenance</a></td>
-              <td>Exploratory, with a small task set on one machine. A comparison of models for diagnosis, not a product result. Passing validation does not mean the contract is correct.</td>
-            </tr>
-            <tr>
-              <th scope="row">Drafted contracts that also contained every expected check</th>
-              <td><strong>deepseek-r1:7b: 2 / 30</strong><br><strong>qwen2.5-coder:14b: 12 / 30</strong></td>
-              <td>The same 60 drafts, scored against the checks each task is expected to have. <a href="https://github.com/arshad8049/quarterback/blob/main/bench/results/l1-eval/2026-11-04/summary.md" target="_blank" rel="noopener">Results</a></td>
-              <td><strong>Proxy pass: not correctness or coding success.</strong> It doesn’t penalise extra, meaningless checks, and no code was written.</td>
-            </tr>
-            <tr>
-              <th scope="row">Fresh-machine onboarding walkthrough</th>
-              <td><strong>Passed once</strong>, including a real Claude Code run and a recovery drill</td>
-              <td>GitHub Codespace, Ubuntu 24.04, 4-core / 16 GB, at commit <code>54c2f24</code>. October 12, 2026. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/review/qb31-walkthrough/attempt-4-2026-10-12-codespaces/evidence.md" target="_blank" rel="noopener">Record</a></td>
-              <td>Historical: it validates that commit in that environment only. Qualifying a current commit is pending.</td>
-            </tr>
-            <tr>
-              <th scope="row">Benefit to developers: less review time, more tasks accepted</th>
-              <td><strong>Not yet established</strong></td>
-              <td>Two exploratory comparisons of Claude Code alone against Claude Code with Quarterback. <a href="./research.html">Evaluation</a></td>
-              <td>Neither showed a measured advantage for Quarterback. A controlled evaluation with independently checked tasks is planned.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="qb-wrap qb-reveal">
+      <div class="qb-eyebrow">Supported setup</div>
+      <h2 id="supported-h" class="qb-h2">What you need today.</h2>
+      <p class="qb-body">Quarterback is deliberately narrow while it’s being tested. Anything not listed here isn’t supported yet.</p>
+      <dl class="qb-defs" style="max-width: 900px; margin-top: 24px;">
+        <div><dt>AI assistant</dt><dd>Claude Code only, used with your own Claude subscription or Anthropic API key.</dd></div>
+        <div><dt>Projects</dt><dd>JavaScript or Node.js projects whose tests use Node’s built-in test runner (node:test).</dd></div>
+        <div><dt>Computer</dt><dd>Ubuntu 24.04 on a standard 64-bit (x86_64) machine with Docker and 16 GB of memory is the validated setup. macOS: limited successful runs; not a validated supported environment. Windows: not supported.</dd></div>
+        <div><dt>Also installed</dt><dd>Node.js 20 or newer, git, and Ollama with a small local model that Quarterback uses for its own steps.</dd></div>
+        <div><dt>Your code</dt><dd>During a run, the task and the code Claude Code reads are sent to Anthropic under your account. Quarterback’s own model calls stay on your machine by default. <a href="./privacy.html">Data and privacy</a></dd></div>
+      </dl>
     </div>
   </section>
 
@@ -314,7 +345,7 @@
       <div style="flex-grow: 1; flex-basis: 0;">
         <div class="qb-eyebrow">Supervised evaluation</div>
         <h2 id="beta-h" class="qb-h2">Request a supervised evaluation.</h2>
-        <p class="qb-body">We are looking for developers who use Claude Code on JavaScript or Node.js projects and regularly need to check whether a generated change does what was asked. We send you the exact commit to install and stay available while you set it up and try it.</p>
+        <p class="qb-body">We are looking for developers who use Claude Code on JavaScript or Node.js projects and regularly need to check whether a generated change does what was asked. We send you the exact version to install and stay available while you set it up and try it. Then follow the setup guide.</p>
         <p class="qb-body">If you opt in, we measure how much correction and review your own tasks need with and without Quarterback, and share the results with you. Metrics are opt-in, tied to your account (not anonymous), deletable by you, and we publish nothing without your say-so.</p>
         <p class="qb-body" style="margin-top: 22px;"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener" class="qb-link">Read the setup guide →</a>&nbsp;&nbsp; <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-link">View on GitHub →</a></p>
       </div>
@@ -336,12 +367,51 @@
       </div>
     </div>
   </section>
-  </main>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-PROGRESS → edit: src/home-progress.html -->
+  <!-- ============================================================ -->
+  <!-- 5. PROGRESS UPDATE (dated). "Shipped" = merged into Quarterback's main code and verified there. -->
+  <section id="progress" class="qb-sec" aria-labelledby="progress-h">
+    <div class="qb-wrap qb-reveal">
+      <div class="qb-eyebrow">Progress update · November 7, 2026</div>
+      <h2 id="progress-h" class="qb-h2">What’s done, what isn’t, what we’re testing.</h2>
+      <div class="qb-cols qb-cols-progress">
+        <div>
+          <h3 class="qb-h3">Shipped</h3>
+          <p class="qb-tag">In Quarterback’s main code, November 4–5</p>
+          <ul class="qb-list">
+            <li>When an automatically written requirements list doesn’t pass Quarterback’s own validation, it makes one correction attempt and then stops with a clear message.</li>
+            <li>It rejects a requirements list that would only allow changes to files marked off-limits.</li>
+            <li>A repeatable way to measure how often local AI models write a usable requirements list.</li>
+          </ul>
+          <p class="qb-small">There’s no packaged release yet; testers install a specific version we give them.</p>
+        </div>
+        <div>
+          <h3 class="qb-h3">Still unreliable</h3>
+          <ul class="qb-list">
+            <li><strong>Writing the requirements list automatically.</strong> Most automatic drafts are rejected, so evaluations start from a list a person writes or reviews.</li>
+            <li><strong>Setup on the current version</strong> hasn’t yet been confirmed end to end on the validated setup.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="qb-h3">Being evaluated</h3>
+          <ul class="qb-list">
+            <li><strong>Does it save review time compared with using Claude Code alone?</strong> Not established. Two early, small comparisons showed no measured advantage.</li>
+            <li><strong>Next:</strong> confirm one installation path on the current version, then compare against Claude Code alone on tasks whose results are checked independently.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="qb-small" style="margin-top: 28px;">Numbers, versions and evidence: <a href="./developers#evidence">for developers</a> · <a href="./research.html">evaluation notes</a></p>
+    </div>
+  </section>
 
 
   <!-- ============================================================ -->
   <!-- SECTION: FOOTER → edit: src/footer.html -->
   <!-- ============================================================ -->
+  </main>
   <!-- FOOTER -->
   <footer style="padding: 44px 80px; border-top: 1px solid #222A27; background: #0A0D0C;">
     <div style="max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
@@ -352,6 +422,7 @@
       <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
         <a href="./privacy.html" class="qb-foot-link">Privacy</a>
         <a href="mailto:ashaik8.us@gmail.com" class="qb-foot-link">Contact</a>
+        <a href="./developers" class="qb-foot-link">For developers</a>
         <a href="./engineering.html" class="qb-foot-link">Engineering</a>
         <a href="./research.html" class="qb-foot-link">Evaluation</a>
         <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-foot-link">GitHub</a>
@@ -362,7 +433,6 @@
 
 </div>
 
-<!-- Interactions → edit: src/scripts/interactions.js -->
 <script src="./src/scripts/interactions.js" defer></script>
 </body>
 </html>

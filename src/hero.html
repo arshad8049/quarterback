@@ -1,17 +1,26 @@
-<!-- HERO: what QB does, for whom, and its current status -->
-<div class="qb-sec qb-hero" style="padding-top: 112px; padding-bottom: 96px;">
-  <div class="qb-wrap">
-    <div class="qb-eyebrow">Pre-release · in supervised evaluation</div>
-    <h1 class="qb-h1">Check AI-written code against requirements you approve.</h1>
-    <p class="qb-lead">Quarterback runs Claude Code in an isolated workspace, checks the change against a contract you approved, and hands back a patch with the evidence. You decide whether to apply it.</p>
-    <p class="qb-body" style="max-width: 720px;">For developers who use Claude Code on JavaScript and Node.js projects and want to know whether a generated change does what was asked.</p>
-    <div class="qb-status" role="note">
-      <strong>Where it stands, November 5, 2026.</strong> Quarterback is in supervised evaluation and is not yet ready for self-service installation. Automatic contract drafting is not yet reliable, so evaluations start from a contract a person has written or reviewed. We have not yet shown that Quarterback saves review time compared with Claude Code alone.
-    </div>
-    <div class="qb-hero-cta" style="display: flex; align-items: center; gap: 14px 24px; margin-top: 36px; flex-wrap: wrap;">
-      <a href="#beta" class="qb-btn-primary" style="display: inline-flex; align-items: center; height: 52px; padding: 0 28px; background: #E08A4C; border-radius: 4px; font-size: 16px; font-weight: 600; color: #0D100F; text-decoration: none;">Request a supervised evaluation</a>
-      <a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener" class="qb-link">Read the setup guide →</a>
-      <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-link">View on GitHub →</a>
+<!-- DEVELOPER HERO: what QB does, status, and the real terminal capture -->
+<div class="qb-sec qb-hero qb-hero-wrap" style="padding-top: 96px; padding-bottom: 88px;">
+  <div class="qb-grid" aria-hidden="true"></div>
+  <div class="qb-glow" aria-hidden="true"></div>
+  {{ORBIT}}
+  <div class="qb-wrap" style="max-width: 1180px;">
+    <div class="qb-hero-cols">
+      <div class="qb-backdrop">
+        <div class="qb-eyebrow">For developers · pre-release · supervised evaluation</div>
+        <h1 class="qb-h1" style="font-size: 52px;">Check AI-written code against requirements you approve.</h1>
+        <p class="qb-lead" style="font-size: 19px;">Quarterback runs Claude Code in an isolated workspace, runs your tests and the contract’s executable checks on the captured change, and hands back the evidence and a patch. You decide whether to apply it.</p>
+        <div class="qb-status" role="note">
+          <strong>Where it stands, November 7, 2026.</strong> In supervised evaluation; not yet ready for self-service installation. Automatic contract drafting is not yet reliable, so evaluations start from a contract a person has written or reviewed. A benefit over Claude Code alone is not established.
+        </div>
+        <div class="qb-hero-cta" style="display: flex; align-items: center; gap: 14px 24px; margin-top: 28px; flex-wrap: wrap;">
+          <a href="#beta" class="qb-btn-primary" style="display: inline-flex; align-items: center; height: 50px; padding: 0 26px; background: #E08A4C; border-radius: 4px; font-size: 16px; font-weight: 600; color: #0D100F; text-decoration: none;">Request a supervised evaluation</a>
+          <a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener" class="qb-link">Setup guide →</a>
+          <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-link">GitHub →</a>
+        </div>
+      </div>
+      <figure class="qb-term" style="margin: 0;" aria-label="Terminal output from a real Quarterback run, October 15, 2026">
+          <div class="qb-term-bar" aria-hidden="true"><span class="qb-term-dot"></span><span class="qb-term-dot"></span><span class="qb-term-dot"></span></div><pre><span style="color:#E08A4C">$ qb "formatDuration should show durations under one minute as seconds only, …" --contract-file contract.json</span>&#10;[L1]   Using the reviewed contract file ~/demo/hero-demo-contract.json (sha256 baa7c3f237de)&#10;[L1]   Oracle approved (contract-file); frozen as 96682f70adb8&#10;[L2]   Context ready  (31639ms)&#10;[L3]   Execution done  (79470ms)  status=completed&#10;   src/duration.js                        +2 -1&#10;<span style="color:#7FCBAA">[L4]   Verdict: ✓ PASS  (82ms)</span>&#10;<span style="color:#7FCBAA">   ✓ [AC-1] formatDuration(30000) should return "30s"</span>&#10;<span style="color:#7FCBAA">   ✓ [AC-2] formatDuration(90000) should return "1m 30s"</span>&#10;<span style="color:#A7B0AB">…</span>&#10;<span style="color:#7FCBAA">RESULT: ✓ PASS</span>&#10;Attempts: 1 / 3&#10;Total time: 111.4s</pre><figcaption class="qb-term-cap">Real run, October 15, 2026, Quarterback <code>3fc08fd</code>, Claude Code 2.1.288. Command abbreviated; a cut is marked “…”. <a href="#example">The request, checks and patch</a></figcaption>
+        </figure>
     </div>
   </div>
 </div>
