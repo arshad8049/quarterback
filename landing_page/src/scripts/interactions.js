@@ -146,22 +146,6 @@
     el.addEventListener('mouseleave', () => { el.style.background = '#0D100F'; });
   });
 
-  /* ── GitHub star count (live fetch, silent fail) ── */
-  const starEl = document.getElementById('qb-stars');
-  if (starEl) {
-    fetch('https://api.github.com/repos/arshad8049/quaterback', {
-      headers: { 'Accept': 'application/vnd.github.v3+json' }
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data && typeof data.stargazers_count === 'number') {
-          const n = data.stargazers_count;
-          starEl.textContent = n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
-        }
-      })
-      .catch(() => {});
-  }
-
   /* ── GitHub link hover ── */
   const ghLink = document.querySelector('.qb-github-link');
   if (ghLink) {
