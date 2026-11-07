@@ -40,7 +40,7 @@ describe('QB-33 re-review: no enumeration, hard body limit', { skip: SKIP }, () 
       pull(ctl) { pulled++; if (pulled > 1024) ctl.close(); else ctl.enqueue(chunk); },
       cancel() { cancelled = true; },
     });
-    const req = new Request('https://quaterback.velorallc.workers.dev/api/beta-access', { method: 'POST', body, duplex: 'half', headers: { 'Content-Type': 'application/json' } });
+    const req = new Request('https://quarterback.velorallc.workers.dev/api/beta-access', { method: 'POST', body, duplex: 'half', headers: { 'Content-Type': 'application/json' } });
     assert.equal(req.headers.get('content-length'), null);
     const res = await w.worker.fetch(req, w.env);
     assert.equal(res.status, 413);
@@ -49,7 +49,7 @@ describe('QB-33 re-review: no enumeration, hard body limit', { skip: SKIP }, () 
     for (const p of ['/api/metrics', '/api/telemetry/request']) {
       let n = 0;
       const s2 = new ReadableStream({ pull(ctl) { n++; if (n > 1024) ctl.close(); else ctl.enqueue(chunk); } });
-      const r2 = await w.worker.fetch(new Request(`https://quaterback.velorallc.workers.dev${p}`, { method: 'POST', body: s2, duplex: 'half', headers: { Authorization: `Bearer qbt_${'0'.repeat(64)}` } }), w.env);
+      const r2 = await w.worker.fetch(new Request(`https://quarterback.velorallc.workers.dev${p}`, { method: 'POST', body: s2, duplex: 'half', headers: { Authorization: `Bearer qbt_${'0'.repeat(64)}` } }), w.env);
       assert.ok([401, 413].includes(r2.status), `${p}: ${r2.status}`);
       assert.ok(n <= 8, `${p}: read ${n} KiB`);
     }

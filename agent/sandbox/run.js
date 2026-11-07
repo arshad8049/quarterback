@@ -1,4 +1,4 @@
-// Layer 3 sandbox — run from quaterback/ root:
+// Layer 3 sandbox — run from the repository root:
 //   node agent/sandbox/run.js
 //   node agent/sandbox/run.js --contract <path> --context <path>
 //   node agent/sandbox/run.js --live  (chains Layers 1+2+3 against the cue repo)

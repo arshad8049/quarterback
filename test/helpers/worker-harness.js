@@ -99,7 +99,7 @@ async function workerEnv({ schema = fs.readFileSync(path.join(__dirname, '../../
       else if (body !== undefined) { init.body = JSON.stringify(body); init.headers['Content-Type'] = 'application/json'; }
       let res;
       // an uncaught exception in the worker is a 500 on Cloudflare
-      try { res = await worker.fetch(new Request(`https://quaterback.velorallc.workers.dev${p}`, init), env); }
+      try { res = await worker.fetch(new Request(`https://quarterback.velorallc.workers.dev${p}`, init), env); }
       catch (e) { return { status: 500, headers: new Headers(), text: String(e && e.message), json: null, thrown: e }; }
       const text = await res.text();
       let json = null; try { json = JSON.parse(text); } catch { /* not json */ }
