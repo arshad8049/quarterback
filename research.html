@@ -172,15 +172,15 @@
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Original experiment</td>
-              <td><a href="https://github.com/arshad8049/quaterback/actions/runs/38409518314" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">GitHub run 38409518314</a> (October 13, 2026): 14 tasks × 2 repetitions × 2 arms = 56 trials. The 48 trials that ran to completion all passed the task-specific hidden checks (24 per arm).</td>
+              <td><a href="https://github.com/arshad8049/quarterback/actions/runs/38409518314" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">GitHub run 38409518314</a> (October 13, 2026): 14 tasks × 2 repetitions × 2 arms = 56 trials. The 48 trials that ran to completion all passed the task-specific hidden checks (24 per arm).</td>
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Execution failures</td>
-              <td>8 trials (tasks FY-07 and FY-14, 4 per arm) were agent crashes: about one second, empty patch; likely a usage limit, unconfirmed. They were first graded as fails. A harness fix (<a href="https://github.com/arshad8049/quaterback/commit/7443bd0" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">commit 7443bd0</a>) now counts an agent failure as attrition, not a fail.</td>
+              <td>8 trials (tasks FY-07 and FY-14, 4 per arm) were agent crashes: about one second, empty patch; likely a usage limit, unconfirmed. They were first graded as fails. A harness fix (<a href="https://github.com/arshad8049/quarterback/commit/7443bd0" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">commit 7443bd0</a>) now counts an agent failure as attrition, not a fail.</td>
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Replacement runs</td>
-              <td><a href="https://github.com/arshad8049/quaterback/actions/runs/38459455639" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">GitHub run 38459455639</a> (October 13, 2026) reran those 8 trials: Claude Code alone 4 of 4, Claude Code inside Quarterback 4 of 4 passed the hidden checks.</td>
+              <td><a href="https://github.com/arshad8049/quarterback/actions/runs/38459455639" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">GitHub run 38459455639</a> (October 13, 2026) reran those 8 trials: Claude Code alone 4 of 4, Claude Code inside Quarterback 4 of 4 passed the hidden checks.</td>
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Combined totals</td>
@@ -188,11 +188,11 @@
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Verifier disagreements</td>
-              <td>Quarterback’s verifier flagged patches that passed the hidden checks. Fixed and merged: a test failure that already existed before the change, whose message names the run folder, was misclassified as a regression (<a href="https://github.com/arshad8049/quaterback/pull/12" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">PR #12</a>, <a href="https://github.com/arshad8049/quaterback/commit/9cdda81" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">commit 9cdda81</a>). Under review: fixes that pass the hidden checks but change behaviour an existing test asserts are reported as regressions (test-update policy), and a build defect in the task repositories is being corrected, with the tasks re-qualified as a disclosed new version.</td>
+              <td>Quarterback’s verifier flagged patches that passed the hidden checks. Fixed and merged: a test failure that already existed before the change, whose message names the run folder, was misclassified as a regression (<a href="https://github.com/arshad8049/quarterback/pull/12" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">PR #12</a>, <a href="https://github.com/arshad8049/quarterback/commit/9cdda81" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">commit 9cdda81</a>). Under review: fixes that pass the hidden checks but change behaviour an existing test asserts are reported as regressions (test-update policy), and a build defect in the task repositories is being corrected, with the tasks re-qualified as a disclosed new version.</td>
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Development task set</td>
-              <td><a href="https://github.com/arshad8049/quaterback/tree/phase-4-evaluation/bench/specs" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">30 frozen tasks across 5 repositories, linked to the frozen specs</a></td>
+              <td><a href="https://github.com/arshad8049/quarterback/tree/phase-4-evaluation/bench/specs" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">30 frozen tasks across 5 repositories, linked to the frozen specs</a></td>
             </tr>
             <tr>
               <td style="color:#F4F1EA; font-weight:600; white-space:nowrap;">Controlled performance results</td>
@@ -351,7 +351,7 @@
     <div style="max-width: 1180px; margin: 0 auto; padding-top: 72px;">
       <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A948F; margin-bottom: 20px;">Archive · September 2026</div>
       <h2 style="margin: 0 0 12px 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 42px; font-weight: 400; color: #F4F1EA;">Legacy record (tuned during development, ungraded)</h2>
-      <div style="margin: 0 0 24px 0; padding: 22px 28px; background: #12100E; border-left: 2px solid #E08A4C; border-radius: 4px; font-size: 16px; line-height: 1.65; color: #9AA5A0; max-width: 900px;"><strong style="color: #C6CFCB;">Not a performance result.</strong> These six tasks were tuned during development and are excluded from the controlled evaluation. Our own engineering review found this setup can favour QB: QB wrote the acceptance contract that graded both sides, only QB's agent saw it, the baseline got less time, and this table mixes runs from different versions. We keep it as a record, not as evidence. <a href="https://github.com/arshad8049/quaterback/blob/main/docs/review/issue-register.md" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">Review findings QB-27 to QB-30 →</a></div>
+      <div style="margin: 0 0 24px 0; padding: 22px 28px; background: #12100E; border-left: 2px solid #E08A4C; border-radius: 4px; font-size: 16px; line-height: 1.65; color: #9AA5A0; max-width: 900px;"><strong style="color: #C6CFCB;">Not a performance result.</strong> These six tasks were tuned during development and are excluded from the controlled evaluation. Our own engineering review found this setup can favour QB: QB wrote the acceptance contract that graded both sides, only QB's agent saw it, the baseline got less time, and this table mixes runs from different versions. We keep it as a record, not as evidence. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/review/issue-register.md" style="color: #6FBF9F; text-decoration: none; border-bottom: 1px solid rgba(111,191,159,0.4);">Review findings QB-27 to QB-30 →</a></div>
       <p style="margin: 0 0 44px 0; font-size: 17px; color: #9AA5A0; max-width: 740px;">Tested against <code style="font-family:'IBM Plex Mono',monospace; font-size:14px; background:#121615; padding:2px 6px; border-radius:3px; color:#C6CFCB;">cue</code> — an Electron desktop AI interview assistant, JS/CJS, 27 tests. Tasks range from single-file utilities to multi-file exports requiring coordinated changes.</p>
 
       <div style="background: #0A0D0C; border: 1px solid #262E2B; border-radius: 6px; overflow: hidden;">

@@ -1,0 +1,40 @@
+<!-- PROGRESS UPDATE: dated; separates merged, in-review and planned work -->
+<section id="progress" class="qb-sec" aria-labelledby="progress-h">
+  <div class="qb-wrap">
+    <div class="qb-eyebrow">Progress update · November 5, 2026</div>
+    <h2 id="progress-h" class="qb-h2">What changed, what remains, what’s next.</h2>
+    <p class="qb-body">“Merged” means merged into Quarterback’s main branch. There is no published release, so nothing here has shipped as a release yet.</p>
+    <div class="qb-cols qb-cols-progress">
+      <div>
+        <h3 class="qb-h3">Changed</h3>
+        <p class="qb-tag">Merged into main</p>
+        <ul class="qb-list">
+          <li><strong>Bounded draft recovery.</strong> When a drafted contract fails validation, or the model’s reply isn’t valid JSON, Quarterback makes one correction attempt and then stops with a clear message instead of retrying. <a href="https://github.com/arshad8049/quarterback/pull/19" target="_blank" rel="noopener">#19</a>, <a href="https://github.com/arshad8049/quarterback/pull/20" target="_blank" rel="noopener">#20</a>, <a href="https://github.com/arshad8049/quarterback/pull/21" target="_blank" rel="noopener">#21</a>, November 4.</li>
+          <li><strong>Impossible-scope guard.</strong> A draft whose only allowed change is a protected file is rejected before any agent runs. <a href="https://github.com/arshad8049/quarterback/pull/23" target="_blank" rel="noopener">#23</a>, November 5.</li>
+          <li><strong>Reproducible drafting evaluation.</strong> A harness that measures how often each local model produces a valid contract, with recorded model digests and settings. <a href="https://github.com/arshad8049/quarterback/pull/22" target="_blank" rel="noopener">#22</a>, November 5.</li>
+        </ul>
+        <p class="qb-tag">In review, not merged</p>
+        <ul class="qb-list">
+          <li><strong>Clearer installation documentation:</strong> a shorter README and one linear setup guide. It has been run end to end on macOS, which is not the validated profile.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="qb-h3">Remains</h3>
+        <ul class="qb-list">
+          <li><strong>Automatic drafting is unreliable.</strong> Most local drafts still fail validation (see <a href="#evidence">evidence</a>).</li>
+          <li><strong>Contradictions can get through.</strong> A draft can pass validation while contradicting the request, and validation doesn’t reliably catch that yet.</li>
+          <li><strong>The current version isn’t qualified for onboarding.</strong> The only passing fresh-machine walkthrough is from October 12, at an older commit.</li>
+          <li><strong>Customer benefit is unproven.</strong> We have not shown that Quarterback reduces review time or raises accepted task completion.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="qb-h3">Next</h3>
+        <p class="qb-tag">Planned</p>
+        <ul class="qb-list">
+          <li><strong>Qualify one supported installation path</strong> at a current commit, on the validated profile, with the evidence recorded.</li>
+          <li><strong>Measure Quarterback against Claude Code alone</strong> on tasks whose results are checked independently, not by Quarterback itself.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
