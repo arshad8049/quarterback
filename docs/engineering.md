@@ -171,7 +171,7 @@ Every job publishes an evidence record (`scripts/ci-evidence.js`): the runtime a
 | Controlled performance results | Not yet available |
 | Independent holdout | Authoring and protocol review pending |
 
-The test results come from a founder-run engineering checkpoint on 2026-10-08 (Ubuntu ARM64, commit `99682a6`), reviewed from supplied logs; it is not independent validation. Its integration tests use a scripted agent and mocked model responses. [Evidence, commands and logs](https://quaterback.velorallc.workers.dev/evidence/2026-10-08-ubuntu-arm64.html).
+The test results come from a founder-run engineering checkpoint on 2026-10-08 (Ubuntu ARM64, commit `99682a6`), reviewed from supplied logs; it is not independent validation. Its integration tests use a scripted agent and mocked model responses. [Evidence, commands and logs](https://quarterback.velorallc.workers.dev/evidence/2026-10-08-ubuntu-arm64.html).
 
 The fresh-machine onboarding walkthrough (QB-31) passed on 2026-10-12 in a GitHub Codespace (Ubuntu 24.04, 4-core / 16 GB) at commit `54c2f24` ([record](review/qb31-walkthrough.md)). That validates that revision and environment, not later revisions.
 
