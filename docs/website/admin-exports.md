@@ -22,8 +22,8 @@
 ## Usage
 
 ```
-curl -H "Authorization: Bearer $ADMIN_SECRET" https://quaterback.velorallc.workers.dev/api/report
-curl -H "Authorization: Bearer $ADMIN_SECRET" "https://quaterback.velorallc.workers.dev/api/submissions?format=csv&limit=500" -o signups.csv
+curl -H "Authorization: Bearer $ADMIN_SECRET" https://quarterback.velorallc.workers.dev/api/report
+curl -H "Authorization: Bearer $ADMIN_SECRET" "https://quarterback.velorallc.workers.dev/api/submissions?format=csv&limit=500" -o signups.csv
 ```
 
 ## Verified spreadsheet client (re-review 1)

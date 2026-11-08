@@ -1,0 +1,34 @@
+<!-- 5. PROGRESS UPDATE (dated). "Shipped" = merged into Quarterback's main code and verified there. -->
+<section id="progress" class="qb-sec" aria-labelledby="progress-h">
+  <div class="qb-wrap qb-reveal">
+    <div class="qb-eyebrow">Progress update · November 7, 2026</div>
+    <h2 id="progress-h" class="qb-h2">What’s done, what isn’t, what we’re testing.</h2>
+    <div class="qb-cols qb-cols-progress">
+      <div>
+        <h3 class="qb-h3">Shipped</h3>
+        <p class="qb-tag">In Quarterback’s main code, November 4–5</p>
+        <ul class="qb-list">
+          <li>When an automatically written requirements list doesn’t pass Quarterback’s own validation, it makes one correction attempt and then stops with a clear message.</li>
+          <li>It rejects a requirements list that would only allow changes to files marked off-limits.</li>
+          <li>A repeatable way to measure how often local AI models write a usable requirements list.</li>
+        </ul>
+        <p class="qb-small">There’s no packaged release yet; testers install a specific version we give them.</p>
+      </div>
+      <div>
+        <h3 class="qb-h3">Still unreliable</h3>
+        <ul class="qb-list">
+          <li><strong>Writing the requirements list automatically.</strong> Most automatic drafts are rejected, so evaluations start from a list a person writes or reviews.</li>
+          <li><strong>Setup on the current version</strong> hasn’t yet been confirmed end to end on the validated setup.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="qb-h3">Being evaluated</h3>
+        <ul class="qb-list">
+          <li><strong>Does it save review time compared with using Claude Code alone?</strong> Not established. Two early, small comparisons showed no measured advantage.</li>
+          <li><strong>Next:</strong> confirm one installation path on the current version, then compare against Claude Code alone on tasks whose results are checked independently.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="qb-small" style="margin-top: 28px;">Numbers, versions and evidence: <a href="./developers#evidence">for developers</a> · <a href="./research.html">evaluation notes</a></p>
+  </div>
+</section>

@@ -69,7 +69,7 @@ Pre-fix, all 5 fail, the first with `TypeError: Cannot read properties of null (
 
 ## Limits
 
-Welcome emails can only reach the account owner until a verified Resend sender domain replaces `onboarding@resend.dev`. Until then they fail visibly (`failed`/`dead`) instead of silently.
+With Resend, welcome emails can only reach the account owner until a verified sender domain replaces `onboarding@resend.dev`. With no domain, the Worker sends through the owner's Gmail account instead (see "Email via Gmail" below).
 
 ## Re-review 1: registration and delivery intents commit atomically
 
@@ -94,3 +94,93 @@ The senior's reproduction: register, let retention delete the sent delivery rows
   - legacy markers expire, then a repeat signup → no welcome (pre-fix: 1);
   - a never-enqueued registration is still repaired after retention ran, while a completed one isn't re-sent;
   - completion rows contain no address.
+
+## Hardening (2026-11-07): configuration errors, crashes after commit, staging
+
+**Why:** production showed every welcome email retried six times and then `dead` with `provider HTTP 403 … You can only send testing emails to your own email address`. That error repeats until the sender domain is fixed, so retrying it only hides it.
+
+- **`blocked_config`:** a send that fails because of configuration stops there and is **not retried by the cron**. That covers no `RESEND_API_KEY`, the provider answering 401/403, or an unknown `EMAIL_MODE`. It gets no completion record, so it can be re-queued. Transient errors (5xx, network) stay `failed` with backoff, as before. Migration `0006` allows the new status.
+- **The response:** `welcome_email` is `sent`, `simulated` (staging), `not_sent` (blocked by configuration) or `pending_retry`. The form says each one plainly.
+- **Nothing after the commit turns into an error:** the signup and both jobs commit in one batch, as before. Each job is then claimed and sent in its own `try`, so a database or provider error on one job neither fails the response nor stops the other job. The cron sends what was left pending, once.
+- **Re-queue after a repair** (for example, after a sender domain is verified):
+
+  ```
+  npx wrangler d1 execute qb-beta --remote --command "UPDATE email_deliveries SET status = 'pending', next_attempt_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE status = 'blocked_config'"
+  ```
+
+  The next cron run (within 10 minutes) sends each job once, with its idempotency key.
+- **Staging** (`wrangler.toml [env.staging]`): the Worker `quarterback-staging` with the database `qb-beta-staging`, its own `ADMIN_SECRET` and its own cron.
+  - `EMAIL_MODE = "test"` records deliveries as `sent` with `last_error = "simulated (EMAIL_MODE=test): not sent"` and never calls the provider, except for addresses in `EMAIL_ALLOWLIST` (empty by default).
+  - `ALLOWED_ORIGINS = "https://arshad8049.github.io"`: only the preview may call its signup endpoint from a browser.
+- **CORS:** only `POST /api/beta-access` can grant CORS, and only to an origin in `ALLOWED_ORIGINS`, echoed with `Vary: Origin`. Production leaves it unset, because the site's own form is same-origin. Before this change, every endpoint answered `Access-Control-Allow-Origin: *`. No endpoint other than the site form had a browser caller (inventory, 2026-11-07). CORS only limits browsers: validation, the 2 KiB size limit and the per-IP rate limit apply to every caller.
+- **The form's endpoint:** chosen by the page's host, and it fails closed. The production and staging hosts post to themselves, `arshad8049.github.io` posts to staging, and any other host disables the form with a link to the live site.
+- **Tests:** `test/unit/signup-delivery-config.test.js`:
+  - provider 401/403 and no key → `blocked_config`, with no cron retry and a visible report;
+  - re-queue → sent once;
+  - 5xx stays retryable;
+  - a crash after the commit → `registered` and sent once by the cron;
+  - a crash before the commit → nothing saved, and the retry succeeds;
+  - concurrent duplicates against a failing provider;
+  - test mode, the allowlist, and an unknown mode failing closed;
+  - `SITE_URL` in email links;
+  - CORS by origin and by endpoint;
+  - the 0006 table rebuild keeping every row.
+
+## Email via Gmail (2026-11-07, owner decision: no domain)
+
+Resend needs a verified domain to reach anyone but the account owner, and there is no domain. So the Worker can send from the owner's own Gmail account through the Gmail API: `EMAIL_PROVIDER = "gmail"`.
+
+**How it sends:**
+- It exchanges a refresh token for an access token, which is cached for about an hour.
+- It then posts one MIME message to `gmail/v1/users/me/messages/send`. The message is `multipart/alternative` (plain text and HTML), from `Quarterback by Velora <GMAIL_SENDER>`, with `Reply-To` and `List-Unsubscribe` set to the same address.
+- The OAuth scope is `gmail.send` only: the Worker can send mail as the owner but can't read the mailbox.
+
+**Secrets** (never in the repository): `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`. The var `GMAIL_SENDER` defaults to the owner's address.
+
+**Errors:**
+
+| What happened | Result |
+|---|---|
+| no credentials, a revoked or expired refresh token (`invalid_grant`), or a 403 such as the API being disabled | `blocked_config` (stopped; re-queue after the repair) |
+| a 403 quota error, 429, 5xx or a network error | `failed` (retried with backoff) |
+| a 401 on send | the cached token is dropped and the retry gets a new one |
+
+**Duplicates:** Gmail has no idempotency key. Each delivery gets a stable `Message-ID` (a hash of its idempotency key), so a re-sent job collapses in the recipient's mailbox. The claim step still allows only one sender at a time.
+
+**Limits:**
+- A personal Gmail account sends about 500 messages a day.
+- Mail comes from a `gmail.com` address, which suits a supervised beta.
+
+### One-time setup (about 10 minutes)
+
+1. In Google Cloud Console (console.cloud.google.com), signed in as the sending account:
+   - create a project named `quarterback-mail`;
+   - in **APIs & Services → Library**, enable the **Gmail API**.
+2. In **OAuth consent screen** (Google Auth Platform):
+   - User type **External**, app name `Quarterback`, support and contact email = the sending account.
+   - Under **Audience**, click **Publish app**. While an app is in "Testing", refresh tokens expire after 7 days. A published app that isn't verified still works for its owner, after a one-time "unverified app" warning.
+3. In **Credentials**, choose **Create credentials → OAuth client ID → Desktop app**, then **Download JSON**.
+4. From the repository root, run:
+
+   ```
+   node tools/gmail-oauth/setup.js ~/Downloads/client_secret_*.json --env=both
+   ```
+
+   In the browser, choose the account, click **Advanced → Go to Quarterback (unsafe)** (the app is yours), then **Allow** (send email on your behalf). The script stores the three secrets on `quarterback` and `quarterback-staging`. It prints no secret and writes none to disk.
+5. Set `EMAIL_PROVIDER = "gmail"` in `wrangler.toml` `[vars]` and deploy. Then re-queue the `blocked_config` jobs (command above).
+
+**To revoke:** remove "Quarterback" at myaccount.google.com/permissions. Sends then stop at `blocked_config` (`invalid_grant`).
+
+**Staging:** it keeps `EMAIL_MODE = "test"`, so it never calls Google, except for addresses in `EMAIL_ALLOWLIST`.
+
+**Tests** (`test/unit/signup-gmail.test.js`):
+- a send through the Gmail API with headers and both parts;
+- the cached token;
+- a stable Message-ID;
+- missing credentials, `invalid_grant` and a non-quota 403 → `blocked_config`;
+- 429, 5xx and a quota 403 retried;
+- a 401 refreshes the token;
+- CR/LF refused before saving;
+- an unknown provider fails closed;
+- staging never calls Google;
+- the telemetry link appears in both parts.

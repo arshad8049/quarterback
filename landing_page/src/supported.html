@@ -1,0 +1,21 @@
+<!-- SUPPORTED TODAY -->
+<section id="supported" class="qb-sec" aria-labelledby="supported-h">
+  <div class="qb-wrap">
+    <div class="qb-eyebrow">Supported today</div>
+    <h2 id="supported-h" class="qb-h2">A narrow, stated boundary.</h2>
+    <p class="qb-body">Anything not listed here is unsupported. <code>qb doctor</code> checks a machine against this list.</p>
+    <div class="qb-table-wrap">
+      <table class="qb-table qb-table-lg">
+        <tbody>
+          <tr><th scope="row">Coding agent</th><td><strong>Claude Code</strong> only, run in Quarterback’s Docker sandbox, with your Claude subscription or Anthropic API key. Cursor, Codex and Gemini are not supported.</td></tr>
+          <tr><th scope="row">Projects</th><td>JavaScript and Node.js, tested with <strong>node:test</strong>, with an npm lockfile. Projects using another test runner (Jest, Mocha, Vitest and others) are refused before any model call.</td></tr>
+          <tr><th scope="row">What it checks</th><td>Your project’s node:test suite, and executable checks in the contract: that a module exports something, that a call returns or throws a value, or a sequence of calls. Changes to protected files fail the task. Type checking, linting, browser tests and security scanning are not part of verification.</td></tr>
+          <tr><th scope="row">Platform</th><td><strong>Ubuntu 24.04 on x86_64, with Docker Engine and 16 GB of RAM</strong>, is the validated profile. macOS: limited successful runs; not a validated supported environment. Windows is not supported.</td></tr>
+          <tr><th scope="row">Also needed</th><td>Node.js 20 or newer, git, and <a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> with <code>deepseek-r1:7b</code> for Quarterback’s local model calls.</td></tr>
+          <tr><th scope="row">Your code</th><td>Quarterback’s own model calls stay on your machine by default. During a Claude Code run, the task and the code the agent reads are sent to Anthropic under your account. Telemetry is off unless you opt in, and it is not anonymous. <a href="./privacy.html">Data flows</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="qb-small"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md" target="_blank" rel="noopener">Full support matrix →</a></p>
+  </div>
+</section>
