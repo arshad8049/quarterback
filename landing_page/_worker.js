@@ -4,13 +4,16 @@
  * Handles API routes, then falls through to static assets for everything else.
  * Bindings required (set in Cloudflare dashboard → Workers → Settings):
  *   DB           — D1 database  (qb-beta)
- *   RESEND_API_KEY — secret env var
+ *   RESEND_API_KEY — secret env var (EMAIL_PROVIDER=resend)
+ *   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN — secrets (EMAIL_PROVIDER=gmail)
  *   ADMIN_SECRET   — secret env var
  * Optional vars (wrangler.toml; the staging environment sets them):
  *   SITE_URL        — base URL used in email links (default: the production workers.dev host)
  *   EMAIL_MODE      — 'live' (default) or 'test'. 'test' records deliveries as simulated and never
  *                     sends, except to EMAIL_ALLOWLIST. Any other value sends nothing (fails closed).
  *   EMAIL_ALLOWLIST — comma-separated recipients that EMAIL_MODE=test may really send to
+ *   EMAIL_PROVIDER  — 'resend' (default) or 'gmail' (the owner's Gmail account, no domain needed)
+ *   GMAIL_SENDER    — From address for 'gmail' (default: the owner's address)
  *   ALLOWED_ORIGINS — comma-separated browser origins allowed to call POST /api/beta-access
  *                     cross-origin. Unset in production: the site's own form is same-origin.
  */
@@ -578,90 +581,160 @@ async function handleSubmissions(request, env) {
 }
 
 // ─── Email helpers ────────────────────────────────────────────────────────────
+//
+// One layout for every email: table-based, inline styles, light background (dark mode in mail
+// clients inverts light designs cleanly; it mangles dark ones), a hidden preheader, and a
+// plain-text version sent alongside the HTML.
+
+const BRAND = { ink: '#14201C', body: '#3B4A44', muted: '#6B7A74', line: '#E3E8E5', accent: '#2F7D62', warm: '#B8642B', bg: '#F4F6F5' };
+
+function emailLayout({ preheader, heading, bodyHtml, footerHtml, site }) {
+  const b = BRAND;
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${escHtml(heading)}</title></head>
+<body style="margin:0;padding:0;background:${b.bg};-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${b.bg};">${escHtml(preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${b.bg};">
+<tr><td align="center" style="padding:32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#FFFFFF;border:1px solid ${b.line};border-radius:10px;">
+    <tr><td style="padding:28px 36px 0 36px;font-family:Helvetica,Arial,sans-serif;">
+      <span style="font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${b.accent};">Quarterback</span>
+      <span style="font-size:13px;color:${b.muted};">&nbsp;by Velora</span>
+    </td></tr>
+    <tr><td style="padding:20px 36px 8px 36px;font-family:Helvetica,Arial,sans-serif;">
+      <h1 style="margin:0;font-size:24px;line-height:1.3;font-weight:600;color:${b.ink};">${escHtml(heading)}</h1>
+    </td></tr>
+    <tr><td style="padding:8px 36px 28px 36px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.65;color:${b.body};">
+${bodyHtml}
+    </td></tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
+    <tr><td style="padding:18px 36px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:${b.muted};text-align:center;">
+      ${footerHtml}<br><a href="${escHtml(site)}" style="color:${b.muted};">${escHtml(site.replace(/^https:\/\//, ''))}</a>
+    </td></tr>
+  </table>
+</td></tr></table>
+</body></html>`;
+}
+
+const P = (html) => `      <p style="margin:0 0 16px 0;">${html}</p>`;
+const button = (href, label) => `      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 20px 0;"><tr>
+        <td style="background:${BRAND.accent};border-radius:6px;"><a href="${escHtml(href)}" style="display:inline-block;padding:12px 22px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;">${escHtml(label)}</a></td>
+      </tr></table>`;
+const panel = (title, html) => `      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 20px 0;background:${BRAND.bg};border-radius:8px;"><tr><td style="padding:18px 22px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.warm};margin-bottom:10px;">${escHtml(title)}</div>
+${html}
+      </td></tr></table>`;
+
+function welcomeEmail(env) {
+  const SITE = siteUrl(env);
+  const steps = [
+    'We reply from this address with the exact version to install and a time to help you set it up.',
+    'Please don’t install from the main branch before then: it changes daily during the evaluation.',
+    'You run Quarterback on one real task in your own project and tell us what helped and what didn’t.',
+  ];
+  const bodyHtml = [
+    P('Thanks for asking to try Quarterback. It runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.'),
+    panel('What happens next', `        <ol style="margin:0;padding-left:20px;font-size:15px;line-height:1.6;color:${BRAND.body};">
+${steps.map((s) => `          <li style="margin:0 0 8px 0;">${escHtml(s)}</li>`).join('\n')}
+        </ol>`),
+    P(`<strong style="color:${BRAND.ink};">Supported today:</strong> Claude Code on JavaScript or Node.js projects tested with node:test. The validated setup is Ubuntu 24.04 with Docker and 16 GB of RAM. macOS: limited successful runs; not a validated supported environment.`),
+    button(SITE, 'See how Quarterback works'),
+    P(`<span style="font-size:13px;color:${BRAND.muted};">Privacy: during a Claude Code run, your task and the code the agent reads go to Anthropic under your own Claude account. Quarterback’s own model calls run locally by default. Telemetry is off unless you turn it on. Details: <a href="${escHtml(SITE)}/privacy.html" style="color:${BRAND.accent};">privacy</a>.</span>`),
+    P('Questions? Just reply to this email.'),
+    `      <p style="margin:0;">Arshad<br><span style="color:${BRAND.muted};">Velora</span></p>`,
+  ].join('\n');
+  const html = emailLayout({
+    preheader: 'You’re on the list. Here is what happens next.',
+    heading: 'You’re on the Quarterback beta list',
+    bodyHtml,
+    footerHtml: 'You received this because you asked for early access to Quarterback. Reply “unsubscribe” and we’ll remove you.',
+    site: SITE,
+  });
+  const text = [
+    'You’re on the Quarterback beta list',
+    '',
+    'Thanks for asking to try Quarterback. It runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.',
+    '',
+    'What happens next',
+    ...steps.map((s, i) => `${i + 1}. ${s}`),
+    '',
+    'Supported today: Claude Code on JavaScript or Node.js projects tested with node:test. The validated setup is Ubuntu 24.04 with Docker and 16 GB of RAM. macOS: limited successful runs; not a validated supported environment.',
+    '',
+    `How it works: ${SITE}`,
+    `Privacy: ${SITE}/privacy.html`,
+    '',
+    'Questions? Just reply to this email.',
+    '',
+    'Arshad, Velora',
+    '',
+    '--',
+    'You received this because you asked for early access to Quarterback. Reply "unsubscribe" and we’ll remove you.',
+  ].join('\n');
+  return { subject: 'You’re on the Quarterback beta list', html, text };
+}
 
 async function sendWelcome(env, to, idempotencyKey) {
-  const SITE = siteUrl(env);
-  const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#0D100F;font-family:'Helvetica Neue',Arial,sans-serif;color:#C6CFCB;">
-<div style="max-width:580px;margin:0 auto;padding:48px 32px;">
-  <div style="margin-bottom:32px;">
-    <span style="font-family:monospace;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#6FBF9F;">Quarterback</span>
-    <span style="font-size:13px;color:#4A5652;margin-left:8px;">· by Velora</span>
-  </div>
-  <h1 style="margin:0 0 20px 0;font-size:28px;font-weight:400;color:#F4F1EA;line-height:1.3;">We received your request.</h1>
-  <p style="margin:0 0 20px 0;font-size:16px;line-height:1.65;color:#9AA5A0;">
-    Thanks for asking to try Quarterback. It runs Claude Code against requirements you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.
-  </p>
-  <div style="margin:28px 0;padding:22px 26px;background:#121615;border:1px solid #262E2B;border-radius:8px;">
-    <div style="font-family:monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#E08A4C;margin-bottom:12px;">What happens next</div>
-    <p style="margin:0 0 10px 0;font-size:15px;line-height:1.6;color:#C6CFCB;">Quarterback is pre-release and in supervised evaluation. We will reply with the exact version to install and help you set it up. Please don't install from the main branch before then.</p>
-    <p style="margin:0 0 10px 0;font-size:15px;line-height:1.6;color:#C6CFCB;">Supported today: Claude Code on JavaScript or Node.js projects tested with node:test. Ubuntu 24.04 with Docker and 16 GB of RAM is the validated setup.</p>
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#8A948F;">During a Claude Code run, your task and the code the agent reads are sent to Anthropic under your Claude account. Quarterback's own model calls run locally by default. Details: ${SITE}/privacy.html</p>
-  </div>
-  <div style="margin:28px 0;padding:18px 22px;border:1px solid #2E4F44;border-radius:6px;background:#0A0D0C;">
-    <div style="font-family:monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#6FBF9F;margin-bottom:8px;">Help us improve QB</div>
-    <p style="margin:0;font-size:14px;line-height:1.65;color:#8A948F;">
-      Telemetry is off unless you turn it on. To share run outcome metrics, request a telemetry token (we email you a one-time link), then run with <code style="font-family:monospace;background:#121615;padding:2px 5px;border-radius:3px;color:#C6CFCB;">--telemetry</code> and <code style="font-family:monospace;background:#121615;padding:2px 5px;border-radius:3px;color:#C6CFCB;">QB_TELEMETRY_TOKEN</code> set. It sends pass/fail, attempts, duration, repair count, layers and the QB version, tied to your token — which is linked to your email, so it is not anonymous. Preview the exact payload with <code style="font-family:monospace;background:#121615;padding:2px 5px;border-radius:3px;color:#C6CFCB;">--telemetry-dry-run</code>; delete everything you sent with POST /api/telemetry/delete.
-    </p>
-  </div>
-  <p style="margin:28px 0 0 0;font-size:15px;line-height:1.65;color:#9AA5A0;">
-    Reply to this email with any questions.
-  </p>
-  <div style="margin-top:40px;padding-top:22px;border-top:1px solid #1A211E;">
-    <p style="margin:0;font-size:13px;color:#4A5652;">— Arshad, Velora<br>
-    <a href="https://quarterback.velorallc.workers.dev" style="color:#6FBF9F;text-decoration:none;">quarterback.velorallc.workers.dev</a></p>
-  </div>
-</div></body></html>`;
-  return sendMail(env, to, "You're on the Quarterback beta list", html, idempotencyKey);
+  const m = welcomeEmail(env);
+  return sendMail(env, { to, ...m, idempotencyKey });
 }
 
 async function sendTelemetryLink(env, to, link) {
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#0D100F;font-family:'Helvetica Neue',Arial,sans-serif;color:#C6CFCB;">
-<div style="max-width:560px;margin:0 auto;padding:40px 28px;">
-  <p style="font-size:15px;line-height:1.6;">Someone asked for a Quarterback telemetry token for this email. If it was you, open this link within 30 minutes. It works once and shows your token once:</p>
-  <p style="font-size:14px;word-break:break-all;"><a href="${escHtml(link)}" style="color:#6FBF9F;">${escHtml(link)}</a></p>
-  <p style="font-size:13px;color:#8A948F;">If you did not ask for this, ignore this email; nothing is enabled without the link.</p>
-</div></body></html>`;
-  return sendMail(env, to, 'Your Quarterback telemetry link', html);
+  const SITE = siteUrl(env);
+  const html = emailLayout({
+    preheader: 'Your one-time link expires in 30 minutes.',
+    heading: 'Your Quarterback telemetry link',
+    bodyHtml: [
+      P('Someone asked for a Quarterback telemetry token for this email address. If it was you, open the link below within 30 minutes. It works once and shows your token once.'),
+      button(link, 'Get my telemetry token'),
+      P(`<span style="font-size:13px;color:${BRAND.muted};word-break:break-all;">Or paste this address into your browser: ${escHtml(link)}</span>`),
+      P('If you didn’t ask for this, ignore this email. Nothing is turned on without the link.'),
+    ].join('\n'),
+    footerHtml: 'You received this because a telemetry token was requested for this address.',
+    site: SITE,
+  });
+  const text = `Someone asked for a Quarterback telemetry token for this email address. If it was you, open this link within 30 minutes. It works once and shows your token once:\n\n${link}\n\nIf you didn’t ask for this, ignore this email. Nothing is turned on without the link.`;
+  return sendMail(env, { to, subject: 'Your Quarterback telemetry link', html, text });
 }
 
 async function sendOwnerNotify(env, email, agent, count, ip, referrer, idempotencyKey) {
   const now  = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#0D100F;font-family:monospace;color:#C6CFCB;">
-<div style="max-width:480px;margin:0 auto;padding:40px 28px;">
-  <div style="margin-bottom:24px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#E08A4C;">new beta signup · qb</div>
-  <table style="width:100%;font-size:14px;border-collapse:collapse;">
-    <tr><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#8A948F;width:90px;">Email</td><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#F4F1EA;">${escHtml(email)}</td></tr>
-    <tr><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#8A948F;">Agent</td><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#C6CFCB;">${escHtml(agent || 'not specified')}</td></tr>
-    <tr><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#8A948F;">Time</td><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#C6CFCB;">${now}</td></tr>
-    <tr><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#8A948F;">IP</td><td style="padding:10px 0;border-bottom:1px solid #1A211E;color:#C6CFCB;">${escHtml(ip || 'unknown')}</td></tr>
-    <tr><td style="padding:10px 0;color:#8A948F;">Referrer</td><td style="padding:10px 0;color:#C6CFCB;">${escHtml(referrer || 'direct')}</td></tr>
-  </table>
-  <div style="margin-top:28px;padding:16px 20px;background:#121615;border:1px solid #262E2B;border-radius:4px;">
-    <span style="color:#6FBF9F;font-size:26px;font-weight:700;">${count}</span>
-    <span style="color:#8A948F;font-size:14px;margin-left:10px;">total signups</span>
-  </div>
-</div></body></html>`;
-  return sendMail(env, OWNER, `QB beta signup #${count}: ${email} (${agent || 'no agent'})`, html, idempotencyKey);
+  const rowsData = [['Email', email], ['Agent', agent || 'not specified'], ['Time', now], ['IP', ip || 'unknown'], ['Referrer', referrer || 'direct']];
+  const rowsHtml = rowsData.map(([k, v], i) => `        <tr><td style="padding:9px 0;${i < rowsData.length - 1 ? `border-bottom:1px solid ${BRAND.line};` : ''}color:${BRAND.muted};width:90px;">${k}</td><td style="padding:9px 0;${i < rowsData.length - 1 ? `border-bottom:1px solid ${BRAND.line};` : ''}color:${BRAND.ink};">${escHtml(v)}</td></tr>`).join('\n');
+  const html = emailLayout({
+    preheader: `${email} asked for beta access (signup #${count}).`,
+    heading: `New beta signup #${count}`,
+    bodyHtml: `      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;border-collapse:collapse;margin:0 0 16px 0;">
+${rowsHtml}
+      </table>
+${P(`<strong style="color:${BRAND.ink};">${count}</strong> total signups.`)}`,
+    footerHtml: 'Owner notification from the Quarterback signup form.',
+    site: siteUrl(env),
+  });
+  const text = rowsData.map(([k, v]) => `${k}: ${v}`).join('\n') + `\n\nTotal signups: ${count}`;
+  return sendMail(env, { to: OWNER, subject: `QB beta signup #${count}: ${email} (${agent || 'no agent'})`, html, text, idempotencyKey });
 }
 
 /**
  * The one way email leaves the worker. EMAIL_MODE (default 'live'):
  *   'test' — never sends, except to EMAIL_ALLOWLIST; returns { ok, simulated } (staging);
  *   anything else unknown — sends nothing and reports a configuration error (fails closed).
+ * EMAIL_PROVIDER (default 'resend'): 'gmail' sends from the owner's Gmail account through the
+ * Gmail API; any other value sends nothing (configuration error).
  */
-async function sendMail(env, to, subject, html, idempotencyKey) {
+async function sendMail(env, msg) {
   const mode = (env.EMAIL_MODE || 'live').trim();
   if (mode === 'test') {
     const allow = String(env.EMAIL_ALLOWLIST || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
-    if (!allow.includes(String(to).toLowerCase())) return { ok: true, simulated: true };
+    if (!allow.includes(String(msg.to).toLowerCase())) return { ok: true, simulated: true };
   } else if (mode !== 'live') {
     return { ok: false, config: true, error: `unknown EMAIL_MODE ${JSON.stringify(mode).slice(0, 40)}: nothing sent` };
   }
-  return resendSend(to, subject, html, env.RESEND_API_KEY, idempotencyKey);
+  const provider = (env.EMAIL_PROVIDER || 'resend').trim();
+  if (provider === 'gmail') return gmailSend(env, msg);
+  if (provider === 'resend') return resendSend(msg, env.RESEND_API_KEY);
+  return { ok: false, config: true, error: `unknown EMAIL_PROVIDER ${JSON.stringify(provider).slice(0, 40)}: nothing sent` };
 }
 
 /**
@@ -669,18 +742,116 @@ async function sendMail(env, to, subject, html, idempotencyKey) {
  * send from duplicating. config: true marks errors that repeat until the configuration changes
  * (no key; the provider refusing the key or the sender: 401/403).
  */
-async function resendSend(to, subject, html, apiKey, idempotencyKey) {
+async function resendSend({ to, subject, html, text, idempotencyKey }, apiKey) {
   if (!apiKey) return { ok: false, config: true, error: 'RESEND_API_KEY not configured' };
   try {
     const res = await fetch(RESEND_URL, {
       method:  'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
-      body:    JSON.stringify({ from: FROM, to, subject, html }),
+      body:    JSON.stringify({ from: FROM, to, subject, html, ...(text ? { text } : {}) }),
     });
     if (res.ok) return { ok: true };
     let detail = ''; try { detail = (await res.text()).slice(0, 200); } catch { /* none */ }
     return { ok: false, config: res.status === 401 || res.status === 403, error: `provider HTTP ${res.status} ${detail}`.trim() };
   } catch (e) { return { ok: false, error: `network: ${e && e.message || e}` }; }
+}
+
+// ─── Gmail API (no domain needed: mail is sent from the owner's own Gmail account) ─────────────
+//
+// Secrets: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN (scope gmail.send only),
+// created once by tools/gmail-oauth/setup.js. Var GMAIL_SENDER (default OWNER) is the From address
+// and must be the account that granted the token. Gmail has no idempotency key, so a stable
+// Message-ID derived from the delivery key lets the recipient's mailbox collapse a duplicate.
+
+const GMAIL_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GMAIL_SEND_URL  = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
+let gmailToken = null; // { value, expires, id } cached per isolate
+
+async function gmailAccessToken(env) {
+  const id = env.GMAIL_CLIENT_ID, secret = env.GMAIL_CLIENT_SECRET, refresh = env.GMAIL_REFRESH_TOKEN;
+  if (!id || !secret || !refresh) return { config: true, error: 'Gmail API not configured (GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN)' };
+  if (gmailToken && gmailToken.id === id && gmailToken.expires > Date.now() + 60000) return { token: gmailToken.value };
+  let res;
+  try {
+    res = await fetch(GMAIL_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: id, client_secret: secret, refresh_token: refresh, grant_type: 'refresh_token' }).toString(),
+    });
+  } catch (e) { return { error: `network (token): ${e && e.message || e}` }; }
+  let data = {}; try { data = await res.json(); } catch { /* none */ }
+  if (res.ok && data.access_token) {
+    gmailToken = { value: data.access_token, expires: Date.now() + (Number(data.expires_in) || 3600) * 1000, id };
+    return { token: data.access_token };
+  }
+  // invalid_grant (revoked or expired refresh token) and invalid_client repeat until repaired
+  const code = String(data.error || '').slice(0, 40);
+  const config = res.status === 400 || res.status === 401 || /invalid_(grant|client)|unauthorized_client/.test(code);
+  return { config, error: `Gmail token HTTP ${res.status} ${code}`.trim() };
+}
+
+function b64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+const utf8 = (s) => new TextEncoder().encode(s);
+const b64url = (s) => b64(utf8(s)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const wrap76 = (s) => s.replace(/.{1,76}/g, '$&\r\n');
+// RFC 2047 for headers; header values never carry CR/LF (no header injection)
+const hdr = (s) => String(s).replace(/[\r\n]+/g, ' ');
+const encWord = (s) => (/^[\x20-\x7E]*$/.test(s) ? hdr(s) : `=?UTF-8?B?${b64(utf8(hdr(s)))}?=`);
+
+async function buildMime({ from, fromName, to, replyTo, subject, html, text, idempotencyKey }) {
+  const boundary = `qb_${randomHex(12)}`;
+  const domain = String(from).split('@')[1] || 'gmail.com';
+  const id = idempotencyKey ? (await sha256Hex(`qb-msg:${idempotencyKey}`)).slice(0, 32) : randomHex(16);
+  return [
+    `From: ${encWord(fromName)} <${hdr(from)}>`,
+    `To: ${hdr(to)}`,
+    `Reply-To: ${hdr(replyTo || from)}`,
+    `Subject: ${encWord(subject)}`,
+    `Message-ID: <${id}@${domain}>`,
+    `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`,
+    'MIME-Version: 1.0',
+    `List-Unsubscribe: <mailto:${hdr(replyTo || from)}?subject=unsubscribe>`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    wrap76(b64(utf8(text || html.replace(/<[^>]+>/g, ' ')))),
+    `--${boundary}`,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    wrap76(b64(utf8(html))),
+    `--${boundary}--`,
+    '',
+  ].join('\r\n');
+}
+
+async function gmailSend(env, msg) {
+  const tok = await gmailAccessToken(env);
+  if (!tok.token) return { ok: false, config: Boolean(tok.config), error: tok.error };
+  const from = (env.GMAIL_SENDER || OWNER).trim();
+  const raw = b64url(await buildMime({ ...msg, from, fromName: 'Quarterback by Velora', replyTo: from }));
+  let res;
+  try {
+    res = await fetch(GMAIL_SEND_URL, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${tok.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ raw }),
+    });
+  } catch (e) { return { ok: false, error: `network: ${e && e.message || e}` }; }
+  if (res.ok) return { ok: true };
+  let detail = ''; try { detail = (await res.text()).slice(0, 300); } catch { /* none */ }
+  if (res.status === 401) gmailToken = null; // a stale cached token: retry with a fresh one
+  // 403 is a configuration error (API disabled, scope missing) unless it is a quota limit
+  const quota = /rateLimit|dailyLimit|quota|userRateLimitExceeded/i.test(detail);
+  const config = res.status === 403 && !quota;
+  return { ok: false, config, error: `Gmail HTTP ${res.status} ${detail.replace(/\s+/g, ' ').slice(0, 200)}`.trim() };
 }
 
 // ─── Utilities ────────────────────────────────────────────────────────────────

@@ -69,7 +69,7 @@ Pre-fix, all 5 fail, the first with `TypeError: Cannot read properties of null (
 
 ## Limits
 
-Welcome emails can only reach the account owner until a verified Resend sender domain replaces `onboarding@resend.dev`. Until then they fail visibly (`failed`/`dead`) instead of silently.
+With Resend, welcome emails can only reach the account owner until a verified sender domain replaces `onboarding@resend.dev`. With no domain, the Worker sends through the owner's Gmail account instead (see "Email via Gmail" below).
 
 ## Re-review 1: registration and delivery intents commit atomically
 
@@ -125,3 +125,62 @@ The senior's reproduction: register, let retention delete the sent delivery rows
   - `SITE_URL` in email links;
   - CORS by origin and by endpoint;
   - the 0006 table rebuild keeping every row.
+
+## Email via Gmail (2026-11-07, owner decision: no domain)
+
+Resend needs a verified domain to reach anyone but the account owner, and there is no domain. So the Worker can send from the owner's own Gmail account through the Gmail API: `EMAIL_PROVIDER = "gmail"`.
+
+**How it sends:**
+- It exchanges a refresh token for an access token, which is cached for about an hour.
+- It then posts one MIME message to `gmail/v1/users/me/messages/send`. The message is `multipart/alternative` (plain text and HTML), from `Quarterback by Velora <GMAIL_SENDER>`, with `Reply-To` and `List-Unsubscribe` set to the same address.
+- The OAuth scope is `gmail.send` only: the Worker can send mail as the owner but can't read the mailbox.
+
+**Secrets** (never in the repository): `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`. The var `GMAIL_SENDER` defaults to the owner's address.
+
+**Errors:**
+
+| What happened | Result |
+|---|---|
+| no credentials, a revoked or expired refresh token (`invalid_grant`), or a 403 such as the API being disabled | `blocked_config` (stopped; re-queue after the repair) |
+| a 403 quota error, 429, 5xx or a network error | `failed` (retried with backoff) |
+| a 401 on send | the cached token is dropped and the retry gets a new one |
+
+**Duplicates:** Gmail has no idempotency key. Each delivery gets a stable `Message-ID` (a hash of its idempotency key), so a re-sent job collapses in the recipient's mailbox. The claim step still allows only one sender at a time.
+
+**Limits:**
+- A personal Gmail account sends about 500 messages a day.
+- Mail comes from a `gmail.com` address, which suits a supervised beta.
+
+### One-time setup (about 10 minutes)
+
+1. In Google Cloud Console (console.cloud.google.com), signed in as the sending account:
+   - create a project named `quarterback-mail`;
+   - in **APIs & Services → Library**, enable the **Gmail API**.
+2. In **OAuth consent screen** (Google Auth Platform):
+   - User type **External**, app name `Quarterback`, support and contact email = the sending account.
+   - Under **Audience**, click **Publish app**. While an app is in "Testing", refresh tokens expire after 7 days. A published app that isn't verified still works for its owner, after a one-time "unverified app" warning.
+3. In **Credentials**, choose **Create credentials → OAuth client ID → Desktop app**, then **Download JSON**.
+4. From the repository root, run:
+
+   ```
+   node tools/gmail-oauth/setup.js ~/Downloads/client_secret_*.json --env=both
+   ```
+
+   In the browser, choose the account, click **Advanced → Go to Quarterback (unsafe)** (the app is yours), then **Allow** (send email on your behalf). The script stores the three secrets on `quarterback` and `quarterback-staging`. It prints no secret and writes none to disk.
+5. Set `EMAIL_PROVIDER = "gmail"` in `wrangler.toml` `[vars]` and deploy. Then re-queue the `blocked_config` jobs (command above).
+
+**To revoke:** remove "Quarterback" at myaccount.google.com/permissions. Sends then stop at `blocked_config` (`invalid_grant`).
+
+**Staging:** it keeps `EMAIL_MODE = "test"`, so it never calls Google, except for addresses in `EMAIL_ALLOWLIST`.
+
+**Tests** (`test/unit/signup-gmail.test.js`):
+- a send through the Gmail API with headers and both parts;
+- the cached token;
+- a stable Message-ID;
+- missing credentials, `invalid_grant` and a non-quota 403 → `blocked_config`;
+- 429, 5xx and a quota 403 retried;
+- a 401 refreshes the token;
+- CR/LF refused before saving;
+- an unknown provider fails closed;
+- staging never calls Google;
+- the telemetry link appears in both parts.
