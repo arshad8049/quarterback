@@ -36,7 +36,7 @@ async function exportCsv(values) {
   const worker = await loadWorker();
   const rows = values.map((v, i) => ({ id: values.length - i, email: `u${i}@example.com`, agent: v, created_at: '2026-10-08 00:00:00', ip: null, referrer: v }));
   const DB = { prepare: () => ({ bind() { return this; }, async all() { return { results: rows }; }, async first() { return null; } }) };
-  const res = await worker.fetch(new Request('https://quaterback.velorallc.workers.dev/api/submissions?format=csv&limit=500', { headers: { Authorization: 'Bearer s3cret' } }),
+  const res = await worker.fetch(new Request('https://quarterback.velorallc.workers.dev/api/submissions?format=csv&limit=500', { headers: { Authorization: 'Bearer s3cret' } }),
     { DB, ADMIN_SECRET: 's3cret', ASSETS: { fetch: async () => new Response('') } });
   assert.equal(res.status, 200);
   return res.text();

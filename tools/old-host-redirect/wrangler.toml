@@ -1,0 +1,6 @@
+# The old host only: quaterback.velorallc.workers.dev (the misspelled name, on purpose).
+# Deploy by hand with the owner's approval: npx wrangler deploy -c tools/old-host-redirect/wrangler.toml
+name               = "quaterback"
+main               = "worker.js"
+compatibility_date = "2024-09-23"
+workers_dev        = true
