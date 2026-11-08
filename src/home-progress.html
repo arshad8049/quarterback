@@ -1,34 +1,42 @@
-<!-- 5. PROGRESS UPDATE (dated). "Shipped" = merged into Quarterback's main code and verified there. -->
-<section id="progress" class="qb-sec" aria-labelledby="progress-h">
-  <div class="qb-wrap qb-reveal">
-    <div class="qb-eyebrow">Progress update · November 7, 2026</div>
-    <h2 id="progress-h" class="qb-h2">What’s done, what isn’t, what we’re testing.</h2>
-    <div class="qb-cols qb-cols-progress">
-      <div>
-        <h3 class="qb-h3">Shipped</h3>
-        <p class="qb-tag">In Quarterback’s main code, November 4–5</p>
-        <ul class="qb-list">
-          <li>When an automatically written requirements list doesn’t pass Quarterback’s own validation, it makes one correction attempt and then stops with a clear message.</li>
-          <li>It rejects a requirements list that would only allow changes to files marked off-limits.</li>
-          <li>A repeatable way to measure how often local AI models write a usable requirements list.</li>
+<!-- PROGRESS, dated. "Available now" = merged into main and verified there (CLI), or deployed with a recorded version (site).
+     Sources: PRs #19-#21 (2026-11-04, d946ff3), #23 (2026-11-05, eea8a5c), #30 (2026-11-08, 784e721, Worker version 4b842e11);
+     run e01b3273 (2026-10-15, 3fc08fd); docs/support.md validated commits (54c2f24, 2026-10-12). -->
+<section id="progress" class="qbx-sec" aria-labelledby="progress-h">
+  <div class="qbx-wrap">
+    <header class="qbx-sec-head qb-reveal">
+      <p class="qbx-eyebrow">Progress · updated November 8, 2026</p>
+      <h2 id="progress-h" class="qbx-h2">Where Quarterback stands.</h2>
+      <p class="qbx-sub">What works today, what we’re fixing, and what we haven’t proven yet.</p>
+    </header>
+
+    <div class="qbx-progress">
+      <article class="qbx-pcard qb-reveal" style="--d:0">
+        <p class="qbx-pcard-tag qbx-tag-now">Available now</p>
+        <h3 class="qbx-h3">Run, check and review a change</h3>
+        <ul>
+          <li>Claude Code works in an isolated workspace against requirements you approve; your tests and the agreed checks run on its change, and you get a patch to review. <a href="#run">The run above</a></li>
+          <li>Quarterback stops with a clear message when a drafted requirements list is invalid, or would only allow changes to off-limits files. <span class="qbx-dim">Merged November 4 and 5.</span> <a href="https://github.com/arshad8049/quarterback/pull/21">Evidence</a></li>
+          <li>Signing up emails you the setup guide right away. <span class="qbx-dim">Live since November 8.</span></li>
         </ul>
-        <p class="qb-small">There’s no packaged release yet; testers install a specific version we give them.</p>
-      </div>
-      <div>
-        <h3 class="qb-h3">Still unreliable</h3>
-        <ul class="qb-list">
-          <li><strong>Writing the requirements list automatically.</strong> Most automatic drafts are rejected, so evaluations start from a list a person writes or reviews.</li>
-          <li><strong>Setup on the current version</strong> hasn’t yet been confirmed end to end on the validated setup.</li>
+      </article>
+
+      <article class="qbx-pcard qb-reveal" style="--d:1">
+        <p class="qbx-pcard-tag qbx-tag-fix">Being improved</p>
+        <h3 class="qbx-h3">Writing the requirements automatically</h3>
+        <ul>
+          <li>Most automatic drafts are still rejected, so trials start from a list a person writes or reviews. <a href="./developers#progress">Measurements</a></li>
+          <li>The full setup walkthrough last passed on October 12, on an earlier version. We’re confirming it on the current one. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#validated-commits">Record</a></li>
         </ul>
-      </div>
-      <div>
-        <h3 class="qb-h3">Being evaluated</h3>
-        <ul class="qb-list">
-          <li><strong>Does it save review time compared with using Claude Code alone?</strong> Not established. Two early, small comparisons showed no measured advantage.</li>
-          <li><strong>Next:</strong> confirm one installation path on the current version, then compare against Claude Code alone on tasks whose results are checked independently.</li>
+      </article>
+
+      <article class="qbx-pcard qb-reveal" style="--d:2">
+        <p class="qbx-pcard-tag qbx-tag-eval">Being evaluated</p>
+        <h3 class="qbx-h3">Does it save you review time?</h3>
+        <ul>
+          <li>Not established. Two early, small comparisons with Claude Code alone showed no measured advantage. <a href="./research.html">Evaluation notes</a></li>
+          <li>Next: compare the two on tasks whose results are checked independently.</li>
         </ul>
-      </div>
+      </article>
     </div>
-    <p class="qb-small" style="margin-top: 28px;">Numbers, versions and evidence: <a href="./developers#evidence">for developers</a> · <a href="./research.html">evaluation notes</a></p>
   </div>
 </section>

@@ -1,0 +1,100 @@
+<!-- ONE REAL RUN, start to finish. Every panel is an excerpt from run e01b3273 (2026-10-15, QB 3fc08fd):
+     landing_page/evidence/2026-10-15-hero-run/ (hero-run.log, contract.json, run/manifest.json, run/artifacts/0213…87ea.diff).
+     Desktop with motion: the panels are moved into the sticky stage by interactions.js. Otherwise each panel stays under its step. -->
+<section id="run" class="qbx-sec" aria-labelledby="run-h">
+  <div class="qbx-wrap">
+    <header class="qbx-sec-head qb-reveal">
+      <p class="qbx-eyebrow">One real run</p>
+      <h2 id="run-h" class="qbx-h2">See one task from start to finish.</h2>
+      <p class="qbx-sub">A small change to a two-file sample project, run on October 15, 2026. Each panel is an excerpt from that run’s record.</p>
+    </header>
+
+    <div class="qbx-run" data-qbx-run>
+      <div class="qbx-run-stage" data-qbx-stage></div>
+      <ol class="qbx-run-steps">
+        <li class="qbx-run-step" data-step="0">
+          <div class="qbx-run-text">
+            <span class="qbx-step-num">1</span>
+            <h3 class="qbx-h3">The request</h3>
+            <p>A plain-language request, typed into the terminal. The project printed 30 seconds as <code>0m 30s</code>.</p>
+          </div>
+          <figure class="qbx-panel" data-panel="0">
+            <div class="qbx-panel-bar"><span>Terminal</span></div>
+            <div class="qbx-panel-body">
+              <p class="qbx-req">“formatDuration should show durations under one minute as seconds only, for example 30000 ms as "30s" instead of "0m 30s". Durations of one minute or more keep the current format.”</p>
+              <pre class="qbx-mono"><span class="qbx-dim">$</span> qb "&lt;request&gt;" --repo ~/demo/hero-demo \
+     --agent claude-code --contract-file contract.json</pre>
+            </div>
+            <figcaption class="qbx-panel-cap">Excerpt from the run log. Run e01b3273, October 15, 2026, Quarterback <code>3fc08fd</code>.</figcaption>
+          </figure>
+        </li>
+
+        <li class="qbx-run-step" data-step="1">
+          <div class="qbx-run-text">
+            <span class="qbx-step-num">2</span>
+            <h3 class="qbx-h3">The requirements you approve</h3>
+            <p>Two checks that must pass, and the one file the change may touch. A local model drafted this list; a person edited it and approved it before the run.</p>
+          </div>
+          <figure class="qbx-panel" data-panel="1">
+            <div class="qbx-panel-bar"><span>Approved requirements</span></div>
+            <div class="qbx-panel-body">
+              <ul class="qbx-rows">
+                <li><span class="qbx-key">CHK-1</span><span><code>formatDuration(30000)</code> returns <code>"30s"</code></span></li>
+                <li><span class="qbx-key">CHK-2</span><span><code>formatDuration(90000)</code> returns <code>"1m 30s"</code></span></li>
+                <li><span class="qbx-key">Scope</span><span>Only <code>src/duration.js</code> may change</span></li>
+                <li class="qbx-row-muted"><span class="qbx-key">Advisory</span><span>“Handle edge cases such as 0 ms.” Recorded, but no check enforces it.</span></li>
+              </ul>
+            </div>
+            <figcaption class="qbx-panel-cap">Excerpt from <code>contract.json</code>, the approved file the run used.</figcaption>
+          </figure>
+        </li>
+
+        <li class="qbx-run-step" data-step="2">
+          <div class="qbx-run-text">
+            <span class="qbx-step-num">3</span>
+            <h3 class="qbx-h3">The checks and the result</h3>
+            <p>Claude Code made the change in an isolated workspace. Quarterback then ran the project’s tests and both checks on it.</p>
+          </div>
+          <figure class="qbx-panel" data-panel="2">
+            <div class="qbx-panel-bar"><span>Verification</span></div>
+            <div class="qbx-panel-body">
+              <ul class="qbx-rows qbx-results">
+                <li><span class="qbx-pass">Pass</span><span>Project tests (<code>npm test</code>), 136 ms</span></li>
+                <li><span class="qbx-pass">Pass</span><span>CHK-1: <code>formatDuration(30000)</code> returned <code>"30s"</code></span></li>
+                <li><span class="qbx-pass">Pass</span><span>CHK-2: <code>formatDuration(90000)</code> returned <code>"1m 30s"</code></span></li>
+                <li><span class="qbx-key">Changed</span><span><code>src/duration.js</code>, 2 lines added, 1 removed</span></li>
+              </ul>
+              <p class="qbx-outcome"><strong>Verified</strong> on the first of 3 allowed attempts, 111 seconds in total.</p>
+            </div>
+            <figcaption class="qbx-panel-cap">Excerpt from the run log and manifest. A replay of the stored record reproduces this outcome.</figcaption>
+          </figure>
+        </li>
+
+        <li class="qbx-run-step" data-step="3">
+          <div class="qbx-run-text">
+            <span class="qbx-step-num">4</span>
+            <h3 class="qbx-h3">The patch you review</h3>
+            <p>One new line of logic and an updated comment. It was proposed, not applied: you read it and decide.</p>
+          </div>
+          <figure class="qbx-panel" data-panel="3">
+            <div class="qbx-panel-bar"><span>src/duration.js</span></div>
+            <div class="qbx-panel-body">
+              <pre class="qbx-diff" aria-label="The proposed patch"><span class="qbx-dim">@@ -1,9 +1,10 @@</span>
+<span class="qbx-del">-/** Formats a duration … e.g. 90000 -&gt; "1m 30s". */</span>
+<span class="qbx-add">+/** Formats a duration … e.g. 90000 -&gt; "1m 30s", 30000 -&gt; "30s". */</span>
+ function formatDuration(ms) {
+   const minutes = Math.floor(ms / 60000);
+   const seconds = Math.floor((ms % 60000) / 1000);
+<span class="qbx-add">+  if (minutes === 0) return `${seconds}s`;</span>
+   return `${minutes}m ${seconds}s`;
+ }</pre>
+            </div>
+            <figcaption class="qbx-panel-cap">The proposed patch, from the run’s stored artifacts. The comment line is shortened here.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+
+    <p class="qbx-note qb-reveal">This is one small, successful run on a sample project. An earlier attempt the same day stopped as <strong>blocked</strong>: another Quarterback run held the lock, so nothing was checked. <a href="https://github.com/arshad8049/quarterback/tree/main/landing_page/evidence/2026-10-15-hero-run">Full run record and how to check it yourself</a></p>
+  </div>
+</section>

@@ -42,6 +42,88 @@
     reveals.forEach((el) => el.classList.add('qb-visible'));
   }
 
+
+  /* ── Homepage hero: pointer light and shallow parallax (2026-11-08) ──
+     Hero only, pointer position relative to the hero, one rAF loop that stops when settled,
+     when the hero is off screen or the tab is hidden. Off on touch devices and under reduced motion. */
+  const hero = document.querySelector('[data-qbx-hero]');
+  if (hero) {
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const flow = hero.querySelector('.qbx-flow-steps');
+    const orbit = hero.querySelector('.qbx-flow-orbit');
+    const svg = hero.querySelector('.qb-orbit');
+    let target = { x: 0.5, y: 0.4, on: false }, cur = { x: 0.5, y: 0.4 }, raf = 0, inView = true;
+    const allowed = () => fine.matches && !reduced() && inView && !document.hidden;
+    const frame = () => {
+      raf = 0;
+      cur.x += (target.x - cur.x) * 0.12; cur.y += (target.y - cur.y) * 0.12;
+      const r = hero.getBoundingClientRect();
+      hero.style.setProperty('--qbx-mx', (cur.x * r.width).toFixed(1) + 'px');
+      hero.style.setProperty('--qbx-my', (cur.y * r.height).toFixed(1) + 'px');
+      const dx = cur.x - 0.5, dy = cur.y - 0.5; // -0.5..0.5
+      if (flow) { flow.style.setProperty('--qbx-px', (dx * -10).toFixed(2) + 'px'); flow.style.setProperty('--qbx-py', (dy * -8).toFixed(2) + 'px'); }
+      if (orbit) { orbit.style.setProperty('--qbx-ox', (dx * 18).toFixed(2) + 'px'); orbit.style.setProperty('--qbx-oy', (dy * 14).toFixed(2) + 'px'); }
+      if (Math.abs(target.x - cur.x) + Math.abs(target.y - cur.y) > 0.001 && allowed()) raf = requestAnimationFrame(frame);
+    };
+    const kick = () => { if (!raf && allowed()) raf = requestAnimationFrame(frame); };
+    const reset = () => {
+      target = { x: 0.5, y: 0.4, on: false }; hero.classList.remove('is-pointer');
+      [flow, orbit].forEach((el) => el && el.removeAttribute('style'));
+    };
+    hero.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !allowed()) return;
+      const r = hero.getBoundingClientRect();
+      target = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, on: true };
+      hero.classList.add('is-pointer'); kick();
+    }, { passive: true });
+    hero.addEventListener('pointerleave', () => { target.x = 0.5; target.y = 0.4; hero.classList.remove('is-pointer'); kick(); });
+    const setActive = () => {
+      hero.classList.toggle('qbx-paused', !inView || document.hidden);
+      if (svg && svg.pauseAnimations) ((!inView || document.hidden || reduced()) ? svg.pauseAnimations() : svg.unpauseAnimations());
+      if (!allowed()) { if (raf) cancelAnimationFrame(raf); raf = 0; if (!fine.matches || reduced()) reset(); }
+    };
+    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { inView = es[0].isIntersecting; setActive(); }).observe(hero);
+    document.addEventListener('visibilitychange', setActive);
+    const onPref = () => setActive();
+    [motionQuery, fine].forEach((q) => (q.addEventListener ? q.addEventListener('change', onPref) : q.addListener && q.addListener(onPref)));
+  }
+
+  /* ── One real run: on desktop with motion, panels move into a sticky stage and change as
+     each step reaches the middle of the screen. Native scrolling; nothing is hijacked.
+     Otherwise (mobile, reduced motion, no JS) each panel stays under its own step. ── */
+  const run = document.querySelector('[data-qbx-run]');
+  if (run) {
+    const stage = run.querySelector('[data-qbx-stage]');
+    const steps = Array.from(run.querySelectorAll('.qbx-run-step'));
+    const panels = steps.map((st) => st.querySelector('.qbx-panel'));
+    const wide = window.matchMedia('(min-width: 1001px)');
+    let obs = null, staged = false;
+    const show = (i) => {
+      steps.forEach((st, k) => st.classList.toggle('is-active', k === i));
+      panels.forEach((p, k) => p.setAttribute('data-state', k === i ? 'active' : k < i ? 'past' : 'next'));
+    };
+    const enter = () => {
+      staged = true; run.classList.add('is-staged');
+      panels.forEach((p) => stage.appendChild(p)); show(0);
+      obs = new IntersectionObserver((es) => {
+        es.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
+      }, { rootMargin: '-45% 0px -45% 0px' });
+      steps.forEach((st) => obs.observe(st));
+    };
+    const leave = () => {
+      staged = false; run.classList.remove('is-staged');
+      if (obs) { obs.disconnect(); obs = null; }
+      panels.forEach((p, k) => { p.removeAttribute('data-state'); steps[k].appendChild(p); });
+      steps.forEach((st) => st.classList.remove('is-active'));
+    };
+    const decide = () => {
+      const want = wide.matches && !reduced() && 'IntersectionObserver' in window;
+      if (want && !staged) enter(); else if (!want && staged) leave();
+    };
+    decide();
+    [motionQuery, wide].forEach((q) => (q.addEventListener ? q.addEventListener('change', decide) : q.addListener && q.addListener(decide)));
+  }
+
   /* ── Sticky nav background after scrolling ── */
   const nav = document.querySelector('.qb-nav');
   if (nav) {
