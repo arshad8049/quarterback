@@ -32,16 +32,28 @@ describe('Gmail provider', { skip: SKIP }, () => {
     const welcome = w.emails.find((e) => e.body.to === 'new.user@example.com');
     assert.equal(welcome.body.from, 'Quarterback by Velora <ashaik8.us@gmail.com>');
     assert.equal(welcome.body.mimeHeaders['Reply-To'], 'ashaik8.us@gmail.com');
-    assert.equal(welcome.body.subject, 'You’re on the Quarterback beta list');
+    assert.equal(welcome.body.subject, 'You’re on the Quarterback beta list: your setup guide');
     assert.match(welcome.body.mimeHeaders['Content-Type'], /^multipart\/alternative/);
     assert.match(welcome.body.mimeHeaders['List-Unsubscribe'], /^<mailto:ashaik8\.us@gmail\.com\?subject=unsubscribe>$/);
-    assert.match(welcome.body.html, /What happens next/);
+    assert.match(welcome.body.html, /How to get started/);
     assert.match(welcome.body.html, /macOS: limited successful runs; not a validated supported environment/);
-    assert.match(welcome.body.text, /What happens next\n1\. /);
+    assert.match(welcome.body.text, /How to get started\n1\. /);
     assert.doesNotMatch(welcome.body.text, /<[a-z]/i, 'the text part has no markup');
     const owner = w.emails.find((e) => e.body.to === 'ashaik8.us@gmail.com');
     assert.match(owner.body.subject, /^QB beta signup #1: new\.user@example\.com \(Claude Code\)$/);
     assert.equal(w.control.tokenCalls, 1, 'the access token is cached across the two sends');
+  });
+
+  test('the welcome email sends people to the setup guide on main (owner decision 2026-11-08)', async () => {
+    const w = await workerEnv({ env: GMAIL });
+    await post(w, { email: 'guide@example.com', agent: 'Claude Code' });
+    const welcome = w.emails.find((e) => e.body.to === 'guide@example.com');
+    const GUIDE = 'https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md';
+    assert.ok(welcome.body.html.includes(`href="${GUIDE}"`), 'a button links to the setup guide');
+    assert.match(welcome.body.html, /Open the setup guide/);
+    assert.ok(welcome.body.text.includes(GUIDE), 'the text part carries the link too');
+    assert.match(welcome.body.text, /git rev-parse --short HEAD/);
+    assert.doesNotMatch(welcome.body.html + welcome.body.text, /don.t install from the main branch|exact version to install/i, 'pre-fix: told people not to install from main');
   });
 
   test('the Message-ID is stable per delivery, so a re-sent job collapses in the mailbox', async () => {

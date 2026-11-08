@@ -627,52 +627,59 @@ const panel = (title, html) => `      <table role="presentation" width="100%" ce
 ${html}
       </td></tr></table>`;
 
+const SETUP_GUIDE = 'https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md';
+
 function welcomeEmail(env) {
   const SITE = siteUrl(env);
+  const code = (t) => `<code style="font-family:Menlo,Consolas,monospace;font-size:13px;background:${BRAND.bg};padding:1px 5px;border-radius:3px;color:${BRAND.ink};">${t}</code>`;
   const steps = [
-    'We reply from this address with the exact version to install and a time to help you set it up.',
-    'Please don’t install from the main branch before then: it changes daily during the evaluation.',
-    'You run Quarterback on one real task in your own project and tell us what helped and what didn’t.',
+    ['Follow the setup guide. It installs Quarterback from the main branch and takes you, step by step, from a fresh machine to a verified demo run.', null],
+    ['Note the version you installed: the guide shows you how (', ') in step 2. Include it in any feedback.'],
+    ['Try it on one real task in your own project, then reply to this email with what helped and what didn\u2019t.', null],
   ];
+  const stepHtml = (s) => (s[1] === null ? escHtml(s[0]) : `${escHtml(s[0])}${code('git rev-parse --short HEAD')}${escHtml(s[1])}`);
+  const stepText = (s) => (s[1] === null ? s[0] : `${s[0]}git rev-parse --short HEAD${s[1]}`);
   const bodyHtml = [
-    P('Thanks for asking to try Quarterback. It runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.'),
-    panel('What happens next', `        <ol style="margin:0;padding-left:20px;font-size:15px;line-height:1.6;color:${BRAND.body};">
-${steps.map((s) => `          <li style="margin:0 0 8px 0;">${escHtml(s)}</li>`).join('\n')}
+    P('Thanks for signing up to try Quarterback. It runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.'),
+    button(SETUP_GUIDE, 'Open the setup guide'),
+    panel('How to get started', `        <ol style="margin:0;padding-left:20px;font-size:15px;line-height:1.6;color:${BRAND.body};">
+${steps.map((s) => `          <li style="margin:0 0 8px 0;">${stepHtml(s)}</li>`).join('\n')}
         </ol>`),
-    P(`<strong style="color:${BRAND.ink};">Supported today:</strong> Claude Code on JavaScript or Node.js projects tested with node:test. The validated setup is Ubuntu 24.04 with Docker and 16 GB of RAM. macOS: limited successful runs; not a validated supported environment.`),
-    button(SITE, 'See how Quarterback works'),
-    P(`<span style="font-size:13px;color:${BRAND.muted};">Privacy: during a Claude Code run, your task and the code the agent reads go to Anthropic under your own Claude account. Quarterback’s own model calls run locally by default. Telemetry is off unless you turn it on. Details: <a href="${escHtml(SITE)}/privacy.html" style="color:${BRAND.accent};">privacy</a>.</span>`),
-    P('Questions? Just reply to this email.'),
+    P(`<strong style="color:${BRAND.ink};">Supported today:</strong> Claude Code on JavaScript or Node.js projects tested with node:test. The validated setup is Ubuntu 24.04 with Docker and 16 GB of RAM. macOS: limited successful runs; not a validated supported environment. You also need a Claude subscription or an API key.`),
+    P(`Quarterback is pre-release, and <strong style="color:${BRAND.ink};">main</strong> changes as we fix things. If a step doesn\u2019t match what you see, reply with the step number and the output and we\u2019ll help. <a href="${escHtml(SITE)}" style="color:${BRAND.accent};">See how Quarterback works</a>.`),
+    P(`<span style="font-size:13px;color:${BRAND.muted};">Privacy: during a Claude Code run, your task and the code the agent reads go to Anthropic under your own Claude account. Quarterback\u2019s own model calls run locally by default. Telemetry is off unless you turn it on. Details: <a href="${escHtml(SITE)}/privacy.html" style="color:${BRAND.accent};">privacy</a>.</span>`),
     `      <p style="margin:0;">Arshad<br><span style="color:${BRAND.muted};">Velora</span></p>`,
   ].join('\n');
   const html = emailLayout({
-    preheader: 'You’re on the list. Here is what happens next.',
-    heading: 'You’re on the Quarterback beta list',
+    preheader: 'Here is the setup guide and how to get started.',
+    heading: 'You\u2019re on the Quarterback beta list',
     bodyHtml,
-    footerHtml: 'You received this because you asked for early access to Quarterback. Reply “unsubscribe” and we’ll remove you.',
+    footerHtml: 'You received this because you asked for early access to Quarterback. Reply \u201cunsubscribe\u201d and we\u2019ll remove you.',
     site: SITE,
   });
   const text = [
-    'You’re on the Quarterback beta list',
+    'You\u2019re on the Quarterback beta list',
     '',
-    'Thanks for asking to try Quarterback. It runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.',
+    'Thanks for signing up to try Quarterback. It runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and a patch to review. You decide whether to apply it.',
     '',
-    'What happens next',
-    ...steps.map((s, i) => `${i + 1}. ${s}`),
+    `Setup guide: ${SETUP_GUIDE}`,
     '',
-    'Supported today: Claude Code on JavaScript or Node.js projects tested with node:test. The validated setup is Ubuntu 24.04 with Docker and 16 GB of RAM. macOS: limited successful runs; not a validated supported environment.',
+    'How to get started',
+    ...steps.map((s, i) => `${i + 1}. ${stepText(s)}`),
+    '',
+    'Supported today: Claude Code on JavaScript or Node.js projects tested with node:test. The validated setup is Ubuntu 24.04 with Docker and 16 GB of RAM. macOS: limited successful runs; not a validated supported environment. You also need a Claude subscription or an API key.',
+    '',
+    'Quarterback is pre-release, and main changes as we fix things. If a step doesn\u2019t match what you see, reply with the step number and the output and we\u2019ll help.',
     '',
     `How it works: ${SITE}`,
     `Privacy: ${SITE}/privacy.html`,
     '',
-    'Questions? Just reply to this email.',
-    '',
     'Arshad, Velora',
     '',
     '--',
-    'You received this because you asked for early access to Quarterback. Reply "unsubscribe" and we’ll remove you.',
+    'You received this because you asked for early access to Quarterback. Reply "unsubscribe" and we\u2019ll remove you.',
   ].join('\n');
-  return { subject: 'You’re on the Quarterback beta list', html, text };
+  return { subject: 'You\u2019re on the Quarterback beta list: your setup guide', html, text };
 }
 
 async function sendWelcome(env, to, idempotencyKey) {

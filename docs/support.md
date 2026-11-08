@@ -46,7 +46,7 @@ A change to this contract is a new interface version.
 
 ## Validated commits
 
-A commit is listed here only after the fresh-machine onboarding walkthrough ([onboarding](onboarding.md), `scripts/qb31-walkthrough.sh`) passes on it in a supported environment, with the evidence recorded. There is no published release: evaluators install the exact commit SHA they are given in a supervised evaluation. A listed commit is a historical record for that environment, not a recommendation to install it.
+A commit is listed here only after the fresh-machine onboarding walkthrough ([onboarding](onboarding.md), `scripts/qb31-walkthrough.sh`) passes on it in a supported environment, with the evidence recorded. There is no published release: evaluators install the latest `main` and record its commit ID for feedback ([onboarding](onboarding.md) step 2). A listed commit is a historical record for that environment, not a recommendation to install it.
 
 | Commit | Date | Environment | Evidence |
 |---|---|---|---|
@@ -56,7 +56,7 @@ A commit is listed here only after the fresh-machine onboarding walkthrough ([on
 
 ## Release, licence and support
 
-- **Release:** `0.1.0`, pre-release. Install the exact commit you were given from the repository (see [Validated commits](#validated-commits) and `docs/onboarding.md`); QB is not published to npm.
+- **Release:** `0.1.0`, pre-release. Install the latest `main` from the repository and note its commit ID (`docs/onboarding.md` step 2); QB is not published to npm. There are no version tags yet.
 - **Support:** supervised beta (Phase 5), best effort, no SLA. The supported surface is this page.
 - **Licence: MIT** ([LICENSE](../LICENSE)), copyright 2026 Arshad Ahmed Shaik. Owner decision recorded on 2026-10-12 (release gate from the QB-31 review). Anyone may use, copy, modify and redistribute QB, including commercially, provided the copyright and permission notice are kept. It comes with no warranty.
   - Every `package.json` declares `"license": "MIT"`. They also keep `"private": true`: QB is not published to npm, and the flag prevents an accidental publish. The licence is not a distribution channel.

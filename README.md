@@ -71,7 +71,7 @@ The full matrix is in [support.md](docs/support.md).
 
 ## Start here
 
-1. **[Request a supervised evaluation](https://quarterback.velorallc.workers.dev/#beta).** You'll get the exact commit to install, and help while you set it up.
+1. **[Sign up on the website](https://quarterback.velorallc.workers.dev/#beta).** The welcome email links to the setup guide, and you can reply to it for help at any step.
 2. **Follow the [setup guide](docs/onboarding.md)** from top to bottom. It covers requirements and cost, a dry run that needs no Docker or Claude access, a real Claude Code run, applying the patch, and removing the demo.
 3. **Send feedback** through your evaluation contact or a [GitHub issue](https://github.com/arshad8049/quarterback/issues). The guide has a [template](docs/onboarding.md#sending-feedback) that keeps private code and credentials out.
 
