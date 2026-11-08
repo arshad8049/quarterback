@@ -2,10 +2,10 @@
 
 This guide takes you from a fresh machine to a verified demo run and an applied patch, in order. Follow it top to bottom: every step says where it runs, what you should see, and what to do next.
 
-**Before you install: this is a supervised evaluation.** Quarterback (QB) is pre-release software. There is no published release, and no current commit has been qualified for installation without support. You install the exact commit you are given when you [request a supervised evaluation](https://quarterback.velorallc.workers.dev/#beta), and the maintainer is available while you go through this guide.
+**Before you install: this is pre-release software.** Quarterback (QB) has no published release yet: you install the latest `main` branch, which changes as fixes land. [Sign up on the website](https://quarterback.velorallc.workers.dev/#beta) and you can reply to the welcome email at any step for help.
 
 **Contents:**
-- [Before you start](#before-you-start): requirements, cost, which commit, what approving a contract means
+- [Before you start](#before-you-start): requirements, cost, which version, what approving a contract means
 - [1. Install the prerequisites](#1-install-the-prerequisites)
 - [2. Install Quarterback](#2-install-quarterback)
 - [3. Make the `qb` command available](#3-make-the-qb-command-available)
@@ -47,11 +47,11 @@ The full support matrix is in [support.md](support.md). No 16 GB machine? The do
 - **Downloads and disk.** `deepseek-r1:7b` is a download of several GB. The first Claude Code run builds Quarterback's sandbox images, which takes several minutes and needs network access.
 - **Time.** The local model is slow on a CPU-only machine; a step that uses it can take minutes. The recorded demo run took 226 seconds end to end in the validated Codespace.
 
-### Which commit to install
+### Which version to install
 
-Install the **exact commit SHA you were given** for your evaluation, and quote it in any feedback. Don't install the tip of `main` or a branch: they move, and they may contain unqualified changes.
+Install the latest **`main`** branch. There is no packaged release or version tag yet. `main` moves as fixes land, so step 2 has you record the exact commit you installed: quote it in any feedback, so we know exactly what you ran.
 
-Commits that passed this walkthrough are listed in [support.md](support.md#validated-commits). So far that is only `54c2f24`, on 2026-10-12, which predates later fixes. That record shows the walkthrough passed for that commit in that environment; it does not qualify a later commit, and it is not a reason to install the old one.
+Commits that passed this full walkthrough are listed in [support.md](support.md#validated-commits). So far that is only `54c2f24`, on 2026-10-12, which predates later fixes. That record shows the walkthrough passed for that commit in that environment; it doesn't qualify later commits.
 
 ### What approving a contract means
 
@@ -102,12 +102,11 @@ Run in: any folder. Everything from here on uses one work folder, `~/qb-beta`, h
 mkdir -p ~/qb-beta && cd ~/qb-beta
 git clone https://github.com/arshad8049/quarterback.git quarterback
 cd quarterback
-git checkout <commit-sha-you-were-given>
-git rev-parse HEAD                           # record this SHA for feedback
+git rev-parse --short HEAD                   # the version you installed: note it for feedback
 npm ci
 ```
 
-Expected: `git rev-parse HEAD` prints the SHA you were given, and `npm ci` finishes without an error. If `git checkout` says `pathspec … did not match`, the SHA is mistyped or not on GitHub. **Next:** step 3, in the same terminal.
+Expected: `git clone` puts you on `main`, `git rev-parse --short HEAD` prints a short commit ID such as `26b1d7f` (note it), and `npm ci` finishes without an error. **Next:** step 3, in the same terminal.
 
 ## 3. Make the `qb` command available
 
