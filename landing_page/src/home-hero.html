@@ -1,20 +1,45 @@
-<!-- HOMEPAGE HERO: plain language, scoped claims, dated status -->
-<div class="qb-sec qb-hero qb-hero-wrap" style="padding-top: 104px; padding-bottom: 96px;">
-  <div class="qb-grid" aria-hidden="true"></div>
-  <div class="qb-glow" aria-hidden="true"></div>
-  {{ORBIT}}
-  <div class="qb-wrap">
-    <div class="qb-backdrop" style="max-width: 820px;">
-      <div class="qb-eyebrow">Early testing · supervised evaluation · November 2026</div>
-      <h1 class="qb-h1">AI writes the code. Quarterback shows you the evidence.</h1>
-      <p class="qb-lead">You agree on a short list of requirements. Claude Code, an AI coding assistant, makes the change in a separate workspace. Quarterback runs your project’s tests and the agreed checks, then hands you the results and the change to review. Your project isn’t touched until you apply it.</p>
-      <div class="qb-status" role="note">
-        <strong>Where it stands, November 7, 2026:</strong> early, supervised testing with a small group. Writing the requirements list automatically isn’t reliable yet, and we haven’t yet shown that Quarterback saves review time.
-      </div>
-      <div class="qb-hero-cta" style="display: flex; align-items: center; gap: 14px 24px; margin-top: 32px; flex-wrap: wrap;">
-        <a href="#beta" class="qb-btn-primary" style="display: inline-flex; align-items: center; height: 52px; padding: 0 28px; background: #E08A4C; border-radius: 4px; font-size: 16px; font-weight: 600; color: #0D100F; text-decoration: none;">Request a supervised evaluation</a>
-        <a href="#what" class="qb-link">How it works →</a>
+<!-- HOMEPAGE HERO. The visual is a workflow illustration, not product output (labelled). -->
+<div class="qbx-hero" data-qbx-hero>
+  <div class="qbx-hero-fx" aria-hidden="true">
+    <div class="qb-grid"></div>
+    <div class="qbx-pointer-light"></div>
+  </div>
+  <div class="qbx-hero-inner">
+    <div class="qbx-hero-copy">
+      <p class="qbx-badge"><span class="qbx-dot" aria-hidden="true"></span>Early beta</p>
+      <h1 class="qbx-h1">Review AI-written code with evidence.</h1>
+      <p class="qbx-lead">Quarterback runs Claude Code against requirements you approve, checks the changes, and gives you a patch to review.</p>
+      <div class="qbx-actions">
+        <a href="#beta" class="qbx-btn qbx-btn-primary">Request a supervised trial</a>
+        <a href="#run" class="qbx-btn qbx-btn-ghost">See a real run</a>
       </div>
     </div>
+
+    <figure class="qbx-flow" aria-labelledby="flow-cap">
+      <div class="qbx-flow-orbit" aria-hidden="true">{{ORBIT}}</div>
+      <ol class="qbx-flow-steps" data-qbx-parallax>
+        <li class="qbx-flow-step" style="--i:0">
+          <span class="qbx-flow-num" aria-hidden="true">1</span>
+          <span class="qbx-flow-title">Request</span>
+          <span class="qbx-flow-desc">You describe the change in plain words.</span>
+        </li>
+        <li class="qbx-flow-step" style="--i:1">
+          <span class="qbx-flow-num" aria-hidden="true">2</span>
+          <span class="qbx-flow-title">Approved requirements</span>
+          <span class="qbx-flow-desc">You review and approve what “done” means.</span>
+        </li>
+        <li class="qbx-flow-step" style="--i:2">
+          <span class="qbx-flow-num" aria-hidden="true">3</span>
+          <span class="qbx-flow-title">Checks</span>
+          <span class="qbx-flow-desc">Claude Code works in a separate workspace; your tests and the agreed checks run on its change.</span>
+        </li>
+        <li class="qbx-flow-step" style="--i:3">
+          <span class="qbx-flow-num" aria-hidden="true">4</span>
+          <span class="qbx-flow-title">Patch</span>
+          <span class="qbx-flow-desc">You get the results and a patch. Nothing is applied until you choose to.</span>
+        </li>
+      </ol>
+      <figcaption id="flow-cap" class="qbx-caption">How a run works. An illustration, not a live dashboard.</figcaption>
+    </figure>
   </div>
 </div>

@@ -12,14 +12,14 @@ const PAGES = [
   {
     file: 'index.html',
     path: '/',
-    title: 'Quarterback — AI writes the code. Quarterback shows you the evidence.',
-    description: 'Quarterback runs Claude Code against a requirements list you approve, checks the change with your tests and the agreed checks, and gives you the evidence and the change to review. Early, supervised testing.',
-    sections: ['home-nav', 'home-hero', 'home-what', 'home-example', 'home-supported', 'beta-cta', 'home-progress', 'footer'],
+    title: 'Quarterback: review AI-written code with evidence',
+    description: 'Quarterback runs Claude Code against requirements you approve, checks the changes, and gives you a patch to review. Early beta.',
+    sections: ['home-nav', 'home-hero', 'home-run', 'home-result', 'home-progress', 'beta-cta', 'footer'],
   },
   {
     file: 'developers.html',
     path: '/developers',
-    title: 'Quarterback for developers — check AI-written code against requirements you approve',
+    title: 'Quarterback for developers: check AI-written code against requirements you approve',
     description: 'Claude Code in an isolated sandbox, your tests and executable contract checks on the captured change, evidence and a reviewable patch. Supported setup, a real run, dated progress and evidence with its limits.',
     sections: ['nav', 'hero', 'example', 'steps', 'supported', 'progress', 'evidence', 'beta-cta', 'footer'],
   },
@@ -61,7 +61,7 @@ function build(page) {
   <meta property="og:image"        content="${SITE}/og-image.png">
   <meta property="og:image:width"  content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt"    content="Quarterback: AI writes the code, Quarterback shows you the evidence. Early, supervised testing.">
+  <meta property="og:image:alt"    content="Quarterback: review AI-written code with evidence. Early beta.">
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:title"       content="${t}">
   <meta name="twitter:description" content="${d}">
@@ -81,6 +81,8 @@ function build(page) {
   }
   </script>
 
+  <link rel="preload" href="./src/fonts/font-25.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./src/fonts/font-21.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./src/styles/fonts.css">
   <link rel="stylesheet" href="./src/styles/main.css">
 </head>
