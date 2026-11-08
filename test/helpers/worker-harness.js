@@ -61,6 +61,20 @@ function fakeD1(sql) {
   return d1;
 }
 
+/** Decode a Gmail API raw message (base64url RFC 2822, multipart/alternative, base64 parts). */
+function decodeMime(raw) {
+  const mime = Buffer.from(raw.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+  const [head] = mime.split('\r\n\r\n');
+  const headers = {};
+  for (const line of head.split('\r\n')) { const i = line.indexOf(':'); headers[line.slice(0, i)] = line.slice(i + 1).trim(); }
+  const word = (v) => (v || '').replace(/=\?UTF-8\?B\?([^?]+)\?=/g, (_, b) => Buffer.from(b, 'base64').toString('utf8'));
+  const part = (type) => {
+    const m = mime.match(new RegExp(`Content-Type: ${type}; charset=UTF-8\\r\\nContent-Transfer-Encoding: base64\\r\\n\\r\\n([A-Za-z0-9+/=\\r\\n]+)`));
+    return m ? Buffer.from(m[1].replace(/\r\n/g, ''), 'base64').toString('utf8') : null;
+  };
+  return { to: headers.To, from: word(headers.From), subject: word(headers.Subject), html: part('text/html'), text: part('text/plain'), mimeHeaders: headers, mime };
+}
+
 async function loadWorker(file = path.join(__dirname, '../../landing_page/_worker.js')) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qb-worker-'));
   const copy = path.join(dir, 'worker.mjs');
@@ -73,14 +87,25 @@ async function workerEnv({ schema = fs.readFileSync(path.join(__dirname, '../../
   const worker = await loadWorker(file);
   const emails = [];
   // QB-35: tests can make the email provider fail (status per call) and run the cron handler
-  const control = { emailStatus: () => 200 };
+  // Gmail (EMAIL_PROVIDER=gmail): tokenStatus/tokenBody answer the OAuth token exchange; a Gmail
+  // send is decoded into { to, subject, html, text, headers } so assertions read like Resend's.
+  const control = { emailStatus: () => 200, tokenStatus: () => 200, tokenBody: null, tokenCalls: 0 };
   const env = { DB: fakeD1(schema), RESEND_API_KEY: 're_test_key', ADMIN_SECRET: 'admin-secret-for-tests',
     ASSETS: { fetch: async () => new Response('asset', { status: 200 }) }, ...extra };
   const realFetch = globalThis.fetch;
   const stubFetch = async (url, init) => {
+    if (String(url) === 'https://oauth2.googleapis.com/token') {
+      control.tokenCalls++;
+      const st = control.tokenStatus(control.tokenCalls);
+      const body = control.tokenBody || (st === 200 ? { access_token: 'ya29.test', expires_in: 3599 } : { error: 'invalid_grant' });
+      return new Response(JSON.stringify(body), { status: st });
+    }
     const status = control.emailStatus(emails.length);
-    emails.push({ url: String(url), body: JSON.parse(init.body), headers: { ...(init.headers || {}) }, status });
-    return new Response(status === 200 ? '{"id":"e"}' : '{"message":"provider error"}', { status });
+    let body = JSON.parse(init.body);
+    if (/gmail\.googleapis\.com/.test(String(url))) body = { ...decodeMime(body.raw), raw: body.raw };
+    emails.push({ url: String(url), body, headers: { ...(init.headers || {}) }, status });
+    const err = control.emailError || '{"message":"provider error"}';
+    return new Response(status === 200 ? '{"id":"e"}' : err, { status });
   };
   // The email stub stays installed while ANY call is in flight (concurrent calls must not
   // restore the real fetch under each other).
@@ -109,4 +134,4 @@ async function workerEnv({ schema = fs.readFileSync(path.join(__dirname, '../../
   return { env, emails, call, scheduled, control, db: env.DB._db, d1: env.DB._control, worker };
 }
 
-module.exports = { workerEnv, fakeD1, loadWorker, SKIP, AVAILABLE };
+module.exports = { workerEnv, fakeD1, loadWorker, decodeMime, SKIP, AVAILABLE };
