@@ -13,6 +13,11 @@ binding       = "DB"
 database_name = "qb-beta"
 database_id   = "6bb621d5-e492-4154-bb38-a7bd567e363f"
 
+# Email goes out from the owner's Gmail account through the Gmail API (no domain; owner decision
+# 2026-11-07). Secrets GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN are set by tools/gmail-oauth/setup.js.
+[vars]
+EMAIL_PROVIDER = "gmail"
+
 # QB-35: retry pending/failed email deliveries
 [triggers]
 crons = ["*/10 * * * *"]
@@ -26,6 +31,7 @@ name = "quarterback-staging"
 [env.staging.vars]
 SITE_URL        = "https://quarterback-staging.velorallc.workers.dev"
 EMAIL_MODE      = "test"
+EMAIL_PROVIDER  = "gmail"
 EMAIL_ALLOWLIST = ""
 ALLOWED_ORIGINS = "https://arshad8049.github.io"
 
