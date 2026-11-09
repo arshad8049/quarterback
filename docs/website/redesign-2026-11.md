@@ -98,3 +98,80 @@ The first "after" measurement had a layout shift of 0.035 and 168 ms of blocking
 - **`og-image.png` still shows the previous headline.** It should be regenerated before release.
 - **Unverified on real hardware:** the pointer light was checked in headless Chromium only, not on a real trackpad or in Safari.
 - **Hero claim:** the hero says "checks the changes". The run shows that for one small task; the progress section states that time saved isn't established.
+
+## 7. Revision 2 (2026-11-09): layout, type and hero (static preview for composition approval)
+
+The owner's revised brief replaced the editorial look with a clean technical one, and cut the planned twelve generated images to one hero still. The video and the mobile still are optional, and none of them is generated yet.
+
+**What changed:**
+- **Shell and type:**
+  - a warm-white shell (`#f5f5f2`) with a 72px sticky header;
+  - a dark inset hero with a 16px radius and 24px gutters (16px on mobile);
+  - Inter 5.3 variable, self-hosted (`src/fonts/inter/`, SIL OFL 1.1 in `OFL.txt`), replacing Instrument Serif and Plex Sans on the homepage; IBM Plex Mono stays for code only.
+  - type scale as specified: H1 `clamp(44px,5.6vw,80px)`/500/1.04/−0.035em, H2 `clamp(32px,3.7vw,52px)`/500/1.1, body 18px (16px on mobile).
+  - The homepage styles are in their own file, `src/styles/home.css`, loaded only on `index.html`. `/developers` is unchanged apart from the shared signup wording.
+- **Navigation and hero copy:**
+  - nav: Product, Progress, Developers, GitHub, and the button Try Quarterback;
+  - hero: label "Guided early beta"; body "Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review."; buttons Try Quarterback and See a real run.
+  - The four explanation cards were removed from the hero.
+- **Hero art and logo:**
+  - The hero art is a **stand-in**: the existing orbit SVG, until the generated still is approved.
+  - The logo is `logo-mark.svg`, made from the supplied `favicon_svg.svg` with its background square removed.
+- **Walkthrough:**
+  - four steps, each about 70svh, beside one sticky evidence panel, at 900px and up;
+  - the active step is the one at the viewport's centre, measured from real positions;
+  - the step controls scroll to their step;
+  - the stage is used only if it fits below the header; it is re-measured after fonts load and on resize.
+  - Below 900px, under reduced motion and without JavaScript, the panels stack under their steps.
+  - Every panel is labelled "Run excerpt" with a source link. The figures were re-checked against the evidence files on 2026-11-09.
+- **Result, progress and signup:**
+  - result: one compact annotated result on a solid dark surface; the outcome definitions moved to `/developers`;
+  - progress: a light section with three dated cards and small SVG marks;
+  - signup: a light section with a dark form card; the button now says what happens, "Send me the setup guide".
+- **Motion:**
+  - the hero art follows a fine pointer by at most 10px, 6px and 1°, with about 120ms of time-based damping;
+  - a light follows the pointer inside the art only;
+  - a visible **Pause animation** button;
+  - reveals move 16px over 450ms, triggered at 85% of the viewport, with a 60ms stagger;
+  - the story crossfade is 200ms; buttons respond in 140ms.
+- About 390 words of homepage prose, excluding the evidence panels, the compatibility list and the form.
+
+**Verification (local, Playwright 1.48.2 Chromium, 2026-11-09):**
+
+| Check | Result |
+|---|---|
+| axe-core 4.10.2, `/` and `/developers` at 1440, 1280, 768 and 375 px | 0 violations |
+| Layout at 1440, 1280, 768 and 375 px | No horizontal overflow; no console errors or failed requests |
+| 200% zoom (640px-wide viewport) | No overflow, no clipped cards, stage off |
+| Keyboard | 36 stops; every one has a visible focus outline; links in hidden story panels are unreachable |
+| Reduced motion at load | Motion-off; no stage; orbit paused; Pause button hidden; every reveal visible; `scroll-behavior: auto` |
+| Reduced motion toggled off, then on again | Stage, orbit and Pause button come back, then go again; panels return under their steps |
+| JavaScript disabled | Every panel under its step; stage hidden; all text visible |
+| Touch (iPhone 13 profile) | No pointer tracking; no stage; no overflow |
+| Pointer | Largest movement 9.65px × 5.81px, 0.97°; headline moved 0px; art ignores input; light only over the art |
+| Pause button | Movement and orbit stop; label changes to "Play animation" |
+| Story | Deep link `#run-3` and a reload mid-story both open on step 3; a fast reverse scroll gives step 1; the "4 Patch" control gives step 4 |
+| Short window (1280×480) | Stage not used, because it doesn't fit |
+| Em dashes in visible text and the title | 0 |
+| Unit tests on the form and privacy wording | 7 pass, 0 fail |
+
+**Performance** (1280×800, 4× CPU throttle, median of 3 cold loads, same local server):
+
+| | Before (`main` `784e721`) | Revision 1 | Revision 2 |
+|---|---|---|---|
+| Largest contentful paint | 227 ms | 226 ms | 138 ms |
+| Cumulative layout shift | 0.023 | 0 | 0 |
+| Total blocking time | 94 ms | 92 ms | 10 ms |
+| Transferred | 173 KB | 197 KB | 196 KB |
+| Requests | 9 | 9 | 9 |
+
+**Not done yet:**
+- **Waiting for approval:**
+  - the hero still (prompt A in `landing_page/assets/higgsfield-prompts.md`, in the main checkout);
+  - the optional video, which comes only after the still is approved.
+- **Not tested:**
+  - a slow network;
+  - a failed video load, since there is no video yet;
+  - Safari, and a real trackpad;
+  - frame stability on ordinary hardware.
+- **Still to do:** regenerate `og-image.png` from the approved still.

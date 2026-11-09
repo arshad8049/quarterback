@@ -13,8 +13,12 @@ const PAGES = [
     file: 'index.html',
     path: '/',
     title: 'Quarterback: review AI-written code with evidence',
-    description: 'Quarterback runs Claude Code against requirements you approve, checks the changes, and gives you a patch to review. Early beta.',
+    description: 'Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review. Guided early beta.',
     sections: ['home-nav', 'home-hero', 'home-run', 'home-result', 'home-progress', 'beta-cta', 'footer'],
+    // Homepage design (2026-11-09): warm-white shell, Inter, its own stylesheet
+    shell: 'class="qbh"',
+    preloads: ['src/fonts/inter/inter-latin-wght.woff2'],
+    styles: ['src/styles/fonts.css', 'src/styles/main.css', 'src/styles/home.css'],
   },
   {
     file: 'developers.html',
@@ -22,6 +26,9 @@ const PAGES = [
     title: 'Quarterback for developers: check AI-written code against requirements you approve',
     description: 'Claude Code in an isolated sandbox, your tests and executable contract checks on the captured change, evidence and a reviewable patch. Supported setup, a real run, dated progress and evidence with its limits.',
     sections: ['nav', 'hero', 'example', 'steps', 'supported', 'progress', 'evidence', 'beta-cta', 'footer'],
+    shell: `style="width: 100%; background: #0D100F; color: #F4F1EA; font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased;"`,
+    preloads: ['src/fonts/font-25.woff2', 'src/fonts/font-21.woff2'],
+    styles: ['src/styles/fonts.css', 'src/styles/main.css'],
   },
 ];
 
@@ -81,14 +88,12 @@ function build(page) {
   }
   </script>
 
-  <link rel="preload" href="./src/fonts/font-25.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="./src/fonts/font-21.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./src/styles/fonts.css">
-  <link rel="stylesheet" href="./src/styles/main.css">
+${page.preloads.map((f) => `  <link rel="preload" href="./${f}" as="font" type="font/woff2" crossorigin>`).join('\n')}
+${page.styles.map((f) => `  <link rel="stylesheet" href="./${f}">`).join('\n')}
 </head>
 <body>
 <a class="qb-skip" href="#main">Skip to content</a>
-<div style="width: 100%; background: #0D100F; color: #F4F1EA; font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased;">${body}
+<div ${page.shell}>${body}
 </div>
 
 <script src="./src/scripts/interactions.js" defer></script>
