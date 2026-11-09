@@ -1,48 +1,21 @@
-<!-- WHAT THE RESULT TELLS YOU. The result card is the same run as #run (e01b3273). -->
-<section id="result" class="qbx-sec qbx-sec-alt" aria-labelledby="result-h">
-  <div class="qbx-wrap">
-    <header class="qbx-sec-head qb-reveal">
-      <p class="qbx-eyebrow">Reading a result</p>
-      <h2 id="result-h" class="qbx-h2">What the result tells you, and what it doesn’t.</h2>
-      <p class="qbx-sub">The same run’s result, with the four things to look at.</p>
+<!-- WHAT THE RESULT TELLS YOU. The same run as #run (e01b3273). Outcome definitions live on /developers. -->
+<section id="result" class="qbh-sec qbh-sec-ink" aria-labelledby="result-h">
+  <div class="qbh-wrap qbh-result">
+    <header class="qbh-head qb-reveal">
+      <p class="qbh-eyebrow">Reading the result</p>
+      <h2 id="result-h" class="qbh-h2">What it tells you, and what it doesn’t.</h2>
+      <p class="qbh-sub">The same run’s result. A pass covers the checks that ran, nothing more.</p>
+      <p class="qbh-more"><a href="./developers#example">How checks and outcomes work</a></p>
     </header>
 
-    <div class="qbx-result qb-reveal">
-      <div class="qbx-result-card" role="img" aria-labelledby="result-card-label">
-        <span id="result-card-label" class="qbx-sr">Result of run e01b3273: verified. Project tests passed, both checks passed, the 0 ms edge case was not checked, and the patch changes one file.</span>
-        <div class="qbx-result-head" aria-hidden="true">
-          <span class="qbx-result-verdict">Verified</span>
-          <span class="qbx-dim">Run e01b3273 · October 15, 2026</span>
-        </div>
-        <div class="qbx-result-grid" aria-hidden="true">
-          <div class="qbx-result-row"><span class="qbx-mark">A</span><span>Checked</span><span>Project tests, CHK-1, CHK-2</span></div>
-          <div class="qbx-result-row"><span class="qbx-mark">B</span><span>Outcome</span><span><span class="qbx-ok">3 passed</span>, 0 failed</span></div>
-          <div class="qbx-result-row"><span class="qbx-mark">C</span><span>Not checked</span><span>Edge cases such as 0 ms</span></div>
-          <div class="qbx-result-row"><span class="qbx-mark">D</span><span>Patch</span><span><code>src/duration.js</code> +2 −1, not applied</span></div>
-        </div>
-      </div>
-
-      <ol class="qbx-annotations">
-        <li><span class="qbx-mark" aria-hidden="true">A</span><div><h3 class="qbx-h4">What was checked</h3><p>The project’s own tests, plus the two checks you approved. Nothing else was tested.</p></div></li>
-        <li><span class="qbx-mark" aria-hidden="true">B</span><div><h3 class="qbx-h4">What passed or failed</h3><p>All three passed. A failure would name the check and show what the code actually returned.</p></div></li>
-        <li><span class="qbx-mark" aria-hidden="true">C</span><div><h3 class="qbx-h4">What still needs your review</h3><p>Anything without a check, like the 0 ms edge case here. A pass is not proof the code has no bugs.</p></div></li>
-        <li><span class="qbx-mark" aria-hidden="true">D</span><div><h3 class="qbx-h4">What changed</h3><p>One file, inside the allowed scope. The patch waits for you; your project is untouched until you apply it.</p></div></li>
-      </ol>
+    <div class="qbh-result-card qb-reveal">
+      <p class="qbh-result-head"><span class="qbh-verdict">Verified</span><span class="qbh-dim">Run e01b3273 · October 15, 2026</span></p>
+      <dl class="qbh-result-list">
+        <div><dt>Checked</dt><dd>The project’s tests and the two approved checks. Nothing else was tested.</dd></div>
+        <div><dt>Outcome</dt><dd>3 passed, 0 failed. A failure would name the check and what the code returned.</dd></div>
+        <div class="qbh-flag"><dt>Not checked</dt><dd>The 0 ms edge case had no check. Review anything without one yourself.</dd></div>
+        <div><dt>Patch</dt><dd><code>src/duration.js</code>, +2 −1, inside the allowed scope. Not applied.</dd></div>
+      </dl>
     </div>
-
-    <details class="qbx-details qb-reveal">
-      <summary>Every result and outcome Quarterback can report</summary>
-      <div class="qbx-details-body">
-        <dl class="qbx-defs">
-          <div><dt>Pass</dt><dd>Every agreed check and the project’s tests passed.</dd></div>
-          <div><dt>Fail</dt><dd>A check or test failed, or a file outside the allowed scope changed.</dd></div>
-          <div><dt>Partial</dt><dd>Some checks couldn’t be decided.</dd></div>
-          <div><dt>Unresolved</dt><dd>The evidence couldn’t settle it, for example a requirement with no runnable check.</dd></div>
-          <div><dt>Blocked</dt><dd>The run stopped before anything was checked, for example because the requirements weren’t approved. It says nothing about whether a change would pass.</dd></div>
-          <div><dt>Error or cancelled</dt><dd>The run itself broke, such as a timeout, or was stopped.</dd></div>
-        </dl>
-        <p>More detail, including how checks run: <a href="./developers#example">for developers</a>.</p>
-      </div>
-    </details>
   </div>
 </section>

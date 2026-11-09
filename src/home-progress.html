@@ -1,39 +1,38 @@
 <!-- PROGRESS, dated. "Available now" = merged into main and verified there (CLI), or deployed with a recorded version (site).
      Sources: PRs #19-#21 (2026-11-04, d946ff3), #23 (2026-11-05, eea8a5c), #30 (2026-11-08, 784e721, Worker version 4b842e11);
-     run e01b3273 (2026-10-15, 3fc08fd); docs/support.md validated commits (54c2f24, 2026-10-12). -->
-<section id="progress" class="qbx-sec" aria-labelledby="progress-h">
-  <div class="qbx-wrap">
-    <header class="qbx-sec-head qb-reveal">
-      <p class="qbx-eyebrow">Progress · updated November 8, 2026</p>
-      <h2 id="progress-h" class="qbx-h2">Where Quarterback stands.</h2>
-      <p class="qbx-sub">What works today, what we’re fixing, and what we haven’t proven yet.</p>
+     run e01b3273 (2026-10-15, 3fc08fd); docs/support.md validated commits (54c2f24, 2026-10-12); research.html. -->
+<section id="progress" class="qbh-sec qbh-sec-light" aria-labelledby="progress-h">
+  <div class="qbh-wrap">
+    <header class="qbh-head qb-reveal">
+      <p class="qbh-eyebrow">Progress · November 8, 2026</p>
+      <h2 id="progress-h" class="qbh-h2">Where Quarterback stands.</h2>
     </header>
 
-    <div class="qbx-progress">
-      <article class="qbx-pcard qb-reveal" style="--d:0">
-        <p class="qbx-pcard-tag qbx-tag-now">Available now</p>
-        <h3 class="qbx-h3">Run, check and review a change</h3>
+    <div class="qbh-cards">
+      <article class="qbh-card qb-reveal" style="--d:0">
+        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#2f7d5c"/></svg>Available now</p>
+        <h3 class="qbh-h3">Run, check and review a change</h3>
         <ul>
-          <li>Claude Code works in an isolated workspace against requirements you approve; your tests and the agreed checks run on its change, and you get a patch to review. <a href="#run">The run above</a></li>
-          <li>Quarterback stops with a clear message when a drafted requirements list is invalid, or would only allow changes to off-limits files. <span class="qbx-dim">Merged November 4 and 5.</span> <a href="https://github.com/arshad8049/quarterback/pull/21">Evidence</a></li>
-          <li>Signing up emails you the setup guide right away. <span class="qbx-dim">Live since November 8.</span></li>
+          <li>The workflow in the run above. <a href="#run">See it</a></li>
+          <li>Clear stops when a requirements list is invalid or only allows off-limits files. <span class="qbh-dim">Merged November 4 and 5.</span> <a href="https://github.com/arshad8049/quarterback/pull/21">Evidence</a></li>
+          <li>Signing up emails you the setup guide. <span class="qbh-dim">Live since November 8.</span></li>
         </ul>
       </article>
 
-      <article class="qbx-pcard qb-reveal" style="--d:1">
-        <p class="qbx-pcard-tag qbx-tag-fix">Being improved</p>
-        <h3 class="qbx-h3">Writing the requirements automatically</h3>
+      <article class="qbh-card qb-reveal" style="--d:1">
+        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#a8501a" stroke-width="1.5"/><path d="M6 1.75a4.25 4.25 0 0 1 0 8.5z" fill="#a8501a"/></svg>Being improved</p>
+        <h3 class="qbh-h3">Writing requirements automatically</h3>
         <ul>
           <li>Most automatic drafts are still rejected, so trials start from a list a person writes or reviews. <a href="./developers#progress">Measurements</a></li>
-          <li>The full setup walkthrough last passed on October 12, on an earlier version. We’re confirming it on the current one. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#validated-commits">Record</a></li>
+          <li>The full setup walkthrough last passed on October 12. We’re confirming it on the current version. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#validated-commits">Record</a></li>
         </ul>
       </article>
 
-      <article class="qbx-pcard qb-reveal" style="--d:2">
-        <p class="qbx-pcard-tag qbx-tag-eval">Being evaluated</p>
-        <h3 class="qbx-h3">Does it save you review time?</h3>
+      <article class="qbh-card qb-reveal" style="--d:2">
+        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Being evaluated</p>
+        <h3 class="qbh-h3">Does it save review time?</h3>
         <ul>
-          <li>Not established. Two early, small comparisons with Claude Code alone showed no measured advantage. <a href="./research.html">Evaluation notes</a></li>
+          <li>Not established. Two small early comparisons with Claude Code alone showed no measured advantage. <a href="./research.html">Evaluation notes</a></li>
           <li>Next: compare the two on tasks whose results are checked independently.</li>
         </ul>
       </article>

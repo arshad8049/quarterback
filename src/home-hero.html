@@ -1,45 +1,18 @@
-<!-- HOMEPAGE HERO. The visual is a workflow illustration, not product output (labelled). -->
-<div class="qbx-hero" data-qbx-hero>
-  <div class="qbx-hero-fx" aria-hidden="true">
-    <div class="qb-grid"></div>
-    <div class="qbx-pointer-light"></div>
-  </div>
-  <div class="qbx-hero-inner">
-    <div class="qbx-hero-copy">
-      <p class="qbx-badge"><span class="qbx-dot" aria-hidden="true"></span>Early beta</p>
-      <h1 class="qbx-h1">Review AI-written code with evidence.</h1>
-      <p class="qbx-lead">Quarterback runs Claude Code against requirements you approve, checks the changes, and gives you a patch to review.</p>
-      <div class="qbx-actions">
-        <a href="#beta" class="qbx-btn qbx-btn-primary">Request a supervised trial</a>
-        <a href="#run" class="qbx-btn qbx-btn-ghost">See a real run</a>
-      </div>
+<!-- HOMEPAGE HERO: dark inset stage. Copy at left; decorative art at right.
+     The art is a stand-in (the existing orbit) until the hero still is approved; it carries no claims. -->
+<section class="qbh-hero" data-qbh-hero aria-labelledby="hero-h">
+  <div class="qbh-hero-copy">
+    <p class="qbh-label"><span class="qbh-dot" aria-hidden="true"></span>Guided early beta</p>
+    <h1 id="hero-h" class="qbh-h1">Review <span class="qbh-nowrap">AI-written</span> code with evidence.</h1>
+    <p class="qbh-lead">Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review.</p>
+    <div class="qbh-actions">
+      <a href="#beta" class="qbh-btn qbh-btn-light">Try Quarterback</a>
+      <a href="#run" class="qbh-btn qbh-btn-outline">See a real run</a>
     </div>
-
-    <figure class="qbx-flow" aria-labelledby="flow-cap">
-      <div class="qbx-flow-orbit" aria-hidden="true">{{ORBIT}}</div>
-      <ol class="qbx-flow-steps" data-qbx-parallax>
-        <li class="qbx-flow-step" style="--i:0">
-          <span class="qbx-flow-num" aria-hidden="true">1</span>
-          <span class="qbx-flow-title">Request</span>
-          <span class="qbx-flow-desc">You describe the change in plain words.</span>
-        </li>
-        <li class="qbx-flow-step" style="--i:1">
-          <span class="qbx-flow-num" aria-hidden="true">2</span>
-          <span class="qbx-flow-title">Approved requirements</span>
-          <span class="qbx-flow-desc">You review and approve what “done” means.</span>
-        </li>
-        <li class="qbx-flow-step" style="--i:2">
-          <span class="qbx-flow-num" aria-hidden="true">3</span>
-          <span class="qbx-flow-title">Checks</span>
-          <span class="qbx-flow-desc">Claude Code works in a separate workspace; your tests and the agreed checks run on its change.</span>
-        </li>
-        <li class="qbx-flow-step" style="--i:3">
-          <span class="qbx-flow-num" aria-hidden="true">4</span>
-          <span class="qbx-flow-title">Patch</span>
-          <span class="qbx-flow-desc">You get the results and a patch. Nothing is applied until you choose to.</span>
-        </li>
-      </ol>
-      <figcaption id="flow-cap" class="qbx-caption">How a run works. An illustration, not a live dashboard.</figcaption>
-    </figure>
   </div>
-</div>
+  <div class="qbh-art" data-qbh-art aria-hidden="true">
+    <div class="qbh-art-move" data-qbh-art-move>{{ORBIT}}</div>
+    <div class="qbh-art-light"></div>
+  </div>
+  <button class="qbh-pause" type="button" data-qbh-pause hidden aria-pressed="false">Pause animation</button>
+</section>

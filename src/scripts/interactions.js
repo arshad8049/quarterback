@@ -4,7 +4,7 @@
   /* ── Motion: honour prefers-reduced-motion at load AND when it changes mid-session ── */
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const reduced = () => motionQuery.matches;
-  const orbits = Array.from(document.querySelectorAll('.qb-orbit'));
+  const orbits = Array.from(document.querySelectorAll('.qb-orbit')).filter((o) => !o.closest('[data-qbh-hero]'));
   let driftOn = false;
   const drift = () => {
     // Slow vertical drift of the hero orbit while scrolling: transform only, one frame per event
@@ -36,92 +36,164 @@
   if ('IntersectionObserver' in window && !reduced()) {
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('qb-visible'); obs.unobserve(e.target); } });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0, rootMargin: '0px 0px -15% 0px' });
     reveals.forEach((el) => obs.observe(el));
   } else {
     reveals.forEach((el) => el.classList.add('qb-visible'));
   }
 
 
-  /* ── Homepage hero: pointer light and shallow parallax (2026-11-08) ──
-     Hero only, pointer position relative to the hero, one rAF loop that stops when settled,
-     when the hero is off screen or the tab is hidden. Off on touch devices and under reduced motion. */
-  const hero = document.querySelector('[data-qbx-hero]');
+  /* ── Homepage hero (2026-11-09): the art follows a fine pointer by at most 10px across, 6px down
+     and 1 degree, with ~120ms time-based damping; a soft light follows the pointer inside the art.
+     Decorative layers ignore input. One rAF loop, stopped when settled, off screen, on hidden tabs,
+     on touch devices, under reduced motion and when paused. ── */
+  const hero = document.querySelector('[data-qbh-hero]');
   if (hero) {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
-    const flow = hero.querySelector('.qbx-flow-steps');
-    const orbit = hero.querySelector('.qbx-flow-orbit');
+    const art = hero.querySelector('[data-qbh-art]');
+    const move = hero.querySelector('[data-qbh-art-move]');
     const svg = hero.querySelector('.qb-orbit');
-    let target = { x: 0.5, y: 0.4, on: false }, cur = { x: 0.5, y: 0.4 }, raf = 0, inView = true;
-    const allowed = () => fine.matches && !reduced() && inView && !document.hidden;
-    const frame = () => {
+    const pauseBtn = hero.querySelector('[data-qbh-pause]');
+    let paused = false, inView = true, raf = 0, last = 0;
+    let tgt = { x: 0, y: 0, lx: 50, ly: 50 };
+    const cur = { x: 0, y: 0, lx: 50, ly: 50 };
+    const animating = () => !reduced() && !paused && inView && !document.hidden;
+    const tracking = () => fine.matches && animating();
+    const frame = (t) => {
       raf = 0;
-      cur.x += (target.x - cur.x) * 0.12; cur.y += (target.y - cur.y) * 0.12;
-      const r = hero.getBoundingClientRect();
-      hero.style.setProperty('--qbx-mx', (cur.x * r.width).toFixed(1) + 'px');
-      hero.style.setProperty('--qbx-my', (cur.y * r.height).toFixed(1) + 'px');
-      const dx = cur.x - 0.5, dy = cur.y - 0.5; // -0.5..0.5
-      if (flow) { flow.style.setProperty('--qbx-px', (dx * -10).toFixed(2) + 'px'); flow.style.setProperty('--qbx-py', (dy * -8).toFixed(2) + 'px'); }
-      if (orbit) { orbit.style.setProperty('--qbx-ox', (dx * 18).toFixed(2) + 'px'); orbit.style.setProperty('--qbx-oy', (dy * 14).toFixed(2) + 'px'); }
-      if (Math.abs(target.x - cur.x) + Math.abs(target.y - cur.y) > 0.001 && allowed()) raf = requestAnimationFrame(frame);
+      const dt = last ? Math.min(t - last, 64) : 16; last = t;
+      const k = 1 - Math.exp(-dt / 120);
+      let delta = 0;
+      for (const key of ['x', 'y', 'lx', 'ly']) { const d = tgt[key] - cur[key]; cur[key] += d * k; delta += Math.abs(d); }
+      move.style.setProperty('--ax', (cur.x * 10).toFixed(2) + 'px');
+      move.style.setProperty('--ay', (cur.y * 6).toFixed(2) + 'px');
+      move.style.setProperty('--ar', (cur.x * 1).toFixed(3) + 'deg');
+      art.style.setProperty('--lx', cur.lx.toFixed(1) + '%');
+      art.style.setProperty('--ly', cur.ly.toFixed(1) + '%');
+      if (delta > 0.01 && tracking()) raf = requestAnimationFrame(frame); else last = 0;
     };
-    const kick = () => { if (!raf && allowed()) raf = requestAnimationFrame(frame); };
-    const reset = () => {
-      target = { x: 0.5, y: 0.4, on: false }; hero.classList.remove('is-pointer');
-      [flow, orbit].forEach((el) => el && el.removeAttribute('style'));
+    const kick = () => { if (!raf && tracking()) raf = requestAnimationFrame(frame); };
+    const clear = () => {
+      if (raf) cancelAnimationFrame(raf); raf = 0; last = 0;
+      tgt = { x: 0, y: 0, lx: 50, ly: 50 }; Object.assign(cur, tgt);
+      move.removeAttribute('style'); art.removeAttribute('style'); hero.classList.remove('is-pointer');
     };
+    const clamp = (v) => Math.max(-1, Math.min(1, v));
     hero.addEventListener('pointermove', (e) => {
-      if (e.pointerType !== 'mouse' || !allowed()) return;
-      const r = hero.getBoundingClientRect();
-      target = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, on: true };
-      hero.classList.add('is-pointer'); kick();
+      if (e.pointerType !== 'mouse' || !tracking()) return;
+      const h = hero.getBoundingClientRect(), a = art.getBoundingClientRect();
+      const inArt = e.clientX >= a.left && e.clientX <= a.right && e.clientY >= a.top && e.clientY <= a.bottom;
+      tgt = {
+        x: clamp(((e.clientX - h.left) / h.width - 0.5) * 2), y: clamp(((e.clientY - h.top) / h.height - 0.5) * 2),
+        lx: inArt ? ((e.clientX - a.left) / a.width) * 100 : tgt.lx, ly: inArt ? ((e.clientY - a.top) / a.height) * 100 : tgt.ly,
+      };
+      hero.classList.toggle('is-pointer', inArt); kick();
     }, { passive: true });
-    hero.addEventListener('pointerleave', () => { target.x = 0.5; target.y = 0.4; hero.classList.remove('is-pointer'); kick(); });
-    const setActive = () => {
-      hero.classList.toggle('qbx-paused', !inView || document.hidden);
-      if (svg && svg.pauseAnimations) ((!inView || document.hidden || reduced()) ? svg.pauseAnimations() : svg.unpauseAnimations());
-      if (!allowed()) { if (raf) cancelAnimationFrame(raf); raf = 0; if (!fine.matches || reduced()) reset(); }
+    hero.addEventListener('pointerleave', () => { tgt = { x: 0, y: 0, lx: tgt.lx, ly: tgt.ly }; hero.classList.remove('is-pointer'); kick(); });
+    const sync = () => {
+      hero.classList.toggle('is-paused', paused);
+      if (svg && svg.pauseAnimations) (animating() ? svg.unpauseAnimations() : svg.pauseAnimations());
+      if (pauseBtn) pauseBtn.hidden = reduced(); // nothing moves under reduced motion, so nothing to pause
+      if (!tracking()) clear();
     };
-    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { inView = es[0].isIntersecting; setActive(); }).observe(hero);
-    document.addEventListener('visibilitychange', setActive);
-    const onPref = () => setActive();
-    [motionQuery, fine].forEach((q) => (q.addEventListener ? q.addEventListener('change', onPref) : q.addListener && q.addListener(onPref)));
+    if (pauseBtn) pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+      pauseBtn.textContent = paused ? 'Play animation' : 'Pause animation';
+      sync();
+    });
+    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { inView = es[0].isIntersecting; sync(); }).observe(hero);
+    document.addEventListener('visibilitychange', sync);
+    [motionQuery, fine].forEach((q) => (q.addEventListener ? q.addEventListener('change', sync) : q.addListener && q.addListener(sync)));
+    sync();
   }
 
-  /* ── One real run: on desktop with motion, panels move into a sticky stage and change as
-     each step reaches the middle of the screen. Native scrolling; nothing is hijacked.
-     Otherwise (mobile, reduced motion, no JS) each panel stays under its own step. ── */
-  const run = document.querySelector('[data-qbx-run]');
-  if (run) {
-    const stage = run.querySelector('[data-qbx-stage]');
-    const steps = Array.from(run.querySelectorAll('.qbx-run-step'));
-    const panels = steps.map((st) => st.querySelector('.qbx-panel'));
-    const wide = window.matchMedia('(min-width: 1001px)');
-    let obs = null, staged = false;
-    const show = (i) => {
+  /* ── One real run: at 900px and up with motion allowed, the panels move into one sticky stage.
+     The active step is the one at the viewport's vertical centre, measured from real positions.
+     The stage is used only if it fits the viewport below the header; otherwise, on small screens,
+     under reduced motion and without JavaScript, each panel stays under its own step. ── */
+  const story = document.querySelector('[data-qbh-story]');
+  if (story) {
+    const stage = story.querySelector('[data-qbh-stage]');
+    const holder = stage.querySelector('[data-qbh-stage-panels]');
+    const steps = Array.from(story.querySelectorAll('.qbh-step'));
+    const panels = steps.map((st) => st.querySelector('[data-panel]'));
+    const buttons = Array.from(stage.querySelectorAll('[data-goto]'));
+    const wide = window.matchMedia('(min-width: 900px)');
+    const header = document.querySelector('.qbh-header');
+    const headerH = () => (header ? header.offsetHeight : 0);
+    let staged = false, active = -1, ticking = false;
+    const setActive = (i) => {
+      if (i === active) return; active = i;
       steps.forEach((st, k) => st.classList.toggle('is-active', k === i));
-      panels.forEach((p, k) => p.setAttribute('data-state', k === i ? 'active' : k < i ? 'past' : 'next'));
+      panels.forEach((p, k) => p.classList.toggle('is-active', k === i));
+      buttons.forEach((b, k) => (k === i ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')));
     };
+    const compute = () => {
+      ticking = false;
+      if (!staged) return;
+      const mid = window.innerHeight / 2;
+      let best = 0, bestD = Infinity;
+      steps.forEach((st, k) => {
+        const r = st.getBoundingClientRect();
+        const d = mid < r.top ? r.top - mid : mid > r.bottom ? mid - r.bottom : 0;
+        if (d < bestD) { bestD = d; best = k; }
+      });
+      setActive(best);
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(compute); } };
+    const fits = () => stage.offsetHeight <= window.innerHeight - headerH() - 48;
     const enter = () => {
-      staged = true; run.classList.add('is-staged');
-      panels.forEach((p) => stage.appendChild(p)); show(0);
-      obs = new IntersectionObserver((es) => {
-        es.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
-      }, { rootMargin: '-45% 0px -45% 0px' });
-      steps.forEach((st) => obs.observe(st));
+      staged = true; active = -1;
+      panels.forEach((p) => holder.appendChild(p));
+      stage.hidden = false; story.classList.add('is-staged');
+      window.addEventListener('scroll', onScroll, { passive: true });
+      compute();
     };
     const leave = () => {
-      staged = false; run.classList.remove('is-staged');
-      if (obs) { obs.disconnect(); obs = null; }
-      panels.forEach((p, k) => { p.removeAttribute('data-state'); steps[k].appendChild(p); });
+      staged = false; active = -1;
+      window.removeEventListener('scroll', onScroll);
+      story.classList.remove('is-staged'); stage.hidden = true;
+      panels.forEach((p, k) => { p.classList.remove('is-active'); steps[k].appendChild(p); });
       steps.forEach((st) => st.classList.remove('is-active'));
     };
     const decide = () => {
-      const want = wide.matches && !reduced() && 'IntersectionObserver' in window;
-      if (want && !staged) enter(); else if (!want && staged) leave();
+      const want = wide.matches && !reduced();
+      if (want && !staged) enter();
+      if (staged && (!want || !fits())) leave();
+      if (staged) compute();
     };
-    decide();
+    buttons.forEach((b, i) => b.addEventListener('click', () => {
+      const r = steps[i].getBoundingClientRect();
+      const y = window.scrollY + r.top + r.height / 2 - window.innerHeight / 2;
+      window.scrollTo({ top: Math.max(0, y), behavior: reduced() ? 'auto' : 'smooth' });
+      setActive(i);
+    }));
+    let resizeT = 0;
+    window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(decide, 120); }, { passive: true });
     [motionQuery, wide].forEach((q) => (q.addEventListener ? q.addEventListener('change', decide) : q.addListener && q.addListener(decide)));
+    decide();
+    // Recompute once fonts and images have settled, since both change step heights
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(decide);
+    window.addEventListener('load', decide);
+  }
+
+  /* ── Homepage header: border after scrolling; menu toggle below 900px ── */
+  const qhHeader = document.querySelector('.qbh-header');
+  if (qhHeader) {
+    const onScrollH = () => qhHeader.classList.toggle('is-scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScrollH, { passive: true }); onScrollH();
+    const qnav = qhHeader.querySelector('.qbh-nav');
+    const qtoggle = qhHeader.querySelector('.qbh-nav-toggle');
+    const setOpenH = (open) => {
+      qnav.classList.toggle('is-open', open);
+      qtoggle.setAttribute('aria-expanded', String(open));
+      qtoggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+    };
+    qtoggle.addEventListener('click', () => setOpenH(!qnav.classList.contains('is-open')));
+    qnav.querySelectorAll('.qbh-link').forEach((l) => l.addEventListener('click', () => setOpenH(false)));
+    qnav.addEventListener('keydown', (e) => { if (e.key === 'Escape' && qnav.classList.contains('is-open')) { setOpenH(false); qtoggle.focus(); } });
+    qnav.addEventListener('focusout', (e) => { if (qnav.classList.contains('is-open') && e.relatedTarget && !qnav.contains(e.relatedTarget)) setOpenH(false); });
   }
 
   /* ── Sticky nav background after scrolling ── */
