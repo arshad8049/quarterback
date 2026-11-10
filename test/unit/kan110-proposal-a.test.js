@@ -200,3 +200,27 @@ describe('KAN-110 review: Proposal A classification', () => {
     assert.ok(blockers(t).has('deps:workspaces'));
   });
 });
+
+describe('KAN-110 review 10541: bounded profile labels', () => {
+  test('only validated Jest versions count; others are unknown, never eligible', async () => {
+    const { auditNpm, proposalA } = await load('proposal-a.mjs');
+    const lock = { lockfileVersion: 2, packages: { '': {}, 'node_modules/jest': { version: '29.6.4', integrity: 'sha512-x', resolved: 'https://registry.npmjs.org/jest/-/jest-29.6.4.tgz' } } };
+    const deps = auditNpm({ pkg: pkg(), lock });
+    const ok = proposalA({ ...task(deps), jest_version: '29.6.4' }, { yarn: [], jestVersions: ['29.6.4'] });
+    assert.equal(ok.status, 'eligible_static');
+    const other = proposalA({ ...task(deps), jest_version: '28.1.0' }, { yarn: [], jestVersions: ['29.6.4'] });
+    assert.equal(other.status, 'unknown');
+    assert.ok(other.unknowns.includes('runner:jest-version-unvalidated:28.1.0'));
+  });
+
+  test('with Yarn deferred, a Yarn Classic project is blocked; conditionalOn lists the extra work instead of "eligible"', async () => {
+    const { auditYarn, proposalA, conditionalOn } = await load('proposal-a.mjs');
+    const deps = auditYarn({ pkg: pkg(), lockText: CLASSIC.replace(/\n  integrity sha512-[AB]+/g, '').replace('#abc', '#' + 'a'.repeat(40)).replace('#def', '#' + 'b'.repeat(40)), rootFiles: new Set(['yarn.lock']), installScripts: { required: [], optional: [] } });
+    const bounded = proposalA({ ...task(deps), jest_version: '18.0.0' }, { yarn: [], jestVersions: ['27.2.0', '29.6.4'] });
+    assert.equal(bounded.status, 'incompatible');
+    assert.ok(bounded.blockers.includes('yarn:deferred'));
+    const extended = proposalA({ ...task(deps), jest_version: '18.0.0' }, { yarn: ['classic'] });
+    assert.deepEqual(conditionalOn(extended, { jest_version: '18.0.0', validated: ['27.2.0', '29.6.4'] }).sort(),
+      ['integrity:sha1-only', 'jest:legacy-18.0.0', 'registry:yarnpkg-mapping', 'runtime:unverified', 'yarn:classic-support']);
+  });
+});
