@@ -1,5 +1,5 @@
 {
   "_comment": "KAN-111 phase approvals. Reviewed and committed; never repository variables. The reviewer or owner fills a phase's approval_comment_id (a KAN-111 Jira comment id) in a reviewed commit. The junior never fills these. null = not approved, and the workflow refuses to run that phase.",
-  "lock": { "approval_comment_id": null },
+  "lock": { "approval_comment_id": 10557 },
   "grade": { "approval_comment_id": null, "lock_sha256": null }
 }
