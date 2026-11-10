@@ -35,6 +35,40 @@ Then the pinned `jest --listTests` and Jest run on the same runner.
 
 **Separately, for review:** pin the base image digest in QB's image identity, and decide QB's policy on npm's new install-script default. Both are outside this card's scope.
 
+## Run 2 plan (review 10544): approved offline build
+
+**Source inspection at both exact bases (2026-11-10, read from raw.githubusercontent.com at the base commit):**
+- **Build chain:** `npm run build` = `run-s build:*`, which runs the `build:*` scripts in definition order. There are **no pre/post build hooks** at either base.
+  - 2006 (`493afba6`): `build:clean, build:dist, build:esm, build:copy, build:prepare, build:stats`.
+  - 2005 (`77434b3c`): `build:clean, build:dist, build:types, build:prepare, build:stats`.
+- **`build:stats` is last at both:** `node ./resources/dist-stats.mjs`.
+  - 2006: 1,766 bytes, sha256 `2d54aa8d58747e7c…`. 2005: 2,073 bytes, sha256 `09f568cfee313753…`.
+  - It only **reads** `dist/immutable.js` and `dist/immutable.min.js`, fetches bundlephobia.com, and prints size comparisons. It writes no file, and no later step or test reads anything from it.
+- **Tests use the build output:** `jest.config.js` uses `resources/jestResolver.js`. With `CI` set (our stage sets `CI=1`), it resolves `immutable` to `pkg.main` = `dist/immutable.js`, produced by `build:dist`. Without `CI`, it uses `src/Immutable.js`.
+- **Approved offline build:** every `build:*` step except `build:stats`, as exact `npm run <script>` commands in the same order, stopping at the first failure.
+  - 2006: `npm run build:clean && npm run build:dist && npm run build:esm && npm run build:copy && npm run build:prepare`.
+  - 2005: `npm run build:clean && npm run build:dist && npm run build:types && npm run build:prepare`.
+- **Guard:** before building, a check inside the sandbox refuses to run if package.json's `build:*` list, its `build` script or the absence of pre/post hooks differ from what was inspected. It was tested against both real package.json files (accepted) and tampered copies (refused, exit 9).
+- **What a pass proves:** base-project feasibility under this disclosed adjusted build. **Not** gold/empty grading, QB Jest support or Opus performance.
+
+**Environment freeze (in the workflow, before execution):**
+- `docker pull node:24-bookworm-slim` and record its digest;
+- build QB's images and prove the agent image's first layers equal that base's layers;
+- record Node, npm, `ignore-scripts` and npm's script settings from inside the image.
+
+This is a **new environment**: run 1's image was on an ephemeral runner and can't be reused.
+
+**Grader (KAN-111), unchanged for now:**
+- The independent grader's command for these tasks runs the full `npm run build` (including `build:stats`) and then `npx jest <files>`. If the grader runs without network, its build will fail the same way.
+- Any adaptation needs separate review before KAN-111, and must apply equally to the empty patch, the gold patch and both candidate arms. No silent benchmark edits.
+- The grader's `CI` setting decides whether tests exercise `dist/` or `src/`, so it must be recorded and matched.
+
+**Proposed product follow-ups (separate, not part of this card):**
+1. Pin the base image digest in QB's sandbox image identity. The tag `c-4b166ca34296ddda` stood for Node 24.21.0 on one machine and 24.22.2/npm 11.19.1 on another.
+2. Make QB's npm install-script policy explicit (e.g. a fixed `ignore-scripts`/allowlist setting), rather than inheriting whatever the bundled npm version defaults to.
+
+Neither ARM-vs-x86_64 causation nor platform reliability is established, because Node, npm and the script defaults also differed between the runs.
+
 **Native x86_64 run (prepared, same script, unchanged QB sandbox):**
 
 ```bash

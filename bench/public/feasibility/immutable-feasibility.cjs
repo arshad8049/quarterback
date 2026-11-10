@@ -28,13 +28,19 @@ const { prepareDeps } = require(path.join(ROOT, 'lib/sandbox/stages'));
 const { stageMemoryLimit } = require(path.join(ROOT, 'lib/sandbox/admission'));
 
 const TASKS = {
-  2006: { task_id: 'qbt_00b20b1b0285', instance: 'immutable-js__immutable-js-2006', base: '493afba6ec17d9c999dc5a15ac80c71c6bdba1c3' },
-  2005: { task_id: 'qbt_9b9a5da937c9', instance: 'immutable-js__immutable-js-2005', base: '77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6' },
+  2006: { task_id: 'qbt_00b20b1b0285', instance: 'immutable-js__immutable-js-2006', base: '493afba6ec17d9c999dc5a15ac80c71c6bdba1c3',
+    // review 10544: `npm run build` = run-s build:* in definition order, no pre/post hooks; build:stats is last and only
+    // reads dist/ and fetches bundlephobia.com. The approved offline build runs every other step, in order.
+    build_scripts: ['build:clean', 'build:dist', 'build:esm', 'build:copy', 'build:prepare'], omitted: ['build:stats'] },
+  2005: { task_id: 'qbt_9b9a5da937c9', instance: 'immutable-js__immutable-js-2005', base: '77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6',
+    build_scripts: ['build:clean', 'build:dist', 'build:types', 'build:prepare'], omitted: ['build:stats'] },
 };
 const REPO = 'https://github.com/immutable-js/immutable-js.git';
 // Results are kept per platform (e.g. results/darwin-arm64, results/linux-x64); a run never overwrites another platform's.
 const PLATFORM = `${os.platform()}-${os.arch()}`;
-const OUT = path.join(__dirname, 'results', PLATFORM);
+const LABEL = ((process.argv.find((a) => a.startsWith('--label=')) || '').slice(8)) || null;
+const BUILD_MODE = ((process.argv.find((a) => a.startsWith('--build=')) || '--build=npm-run-build').slice(8));
+const OUT = path.join(__dirname, 'results', PLATFORM, ...(LABEL ? [LABEL] : []));
 const tail = (s, n = 6000) => (s || '').slice(-n);
 const git = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const summary = (st) => st && { state: st.state, reason: st.reason, exit_code: st.exit_code, oom_killed: st.oom_killed, duration_ms: st.duration_ms };
@@ -58,7 +64,7 @@ const peak = (st) => { const m = /QB_FEAS_MEMORY_PEAK=(\d+)/.exec((st && st.stdo
 async function run(key) {
   const t = TASKS[key];
   const started = new Date().toISOString();
-  const r = { schema: 'qb-feasibility/1', task: key, ...t, started, host: { platform: `${os.platform()}/${os.arch()}`, docker: null },
+  const r = { schema: 'qb-feasibility/1', task: key, ...t, label: LABEL, build_mode: BUILD_MODE, started, host: { platform: `${os.platform()}/${os.arch()}`, docker: null },
     qb_source: git(ROOT, 'rev-parse', 'HEAD'), commands: [], stages: {}, findings: {} };
   const dv = await D.op(['info', '--format', '{{.ServerVersion}} {{.Architecture}} cgroup{{.CgroupVersion}} mem={{.MemTotal}}']);
   r.host.docker = dv.ok ? dv.stdout.trim() : null;
@@ -104,7 +110,9 @@ async function run(key) {
       'node -p "\'jest-cli-bin=\'+require(\'fs\').realpathSync(\'/scratch/node_modules/.bin/jest\')"',
       'node -e "try{const m=require(\'/scratch/node_modules/microtime\');console.log(\'microtime=loads now=\'+(typeof m.now()))}catch(e){console.log(\'microtime=FAILS \'+e.message.split(\'\\n\')[0])}"',
       'ls /scratch/node_modules/microtime/build/Release 2>/dev/null | head -3 | sed "s/^/microtime-build:/"; ls /scratch/node_modules/microtime/prebuilds 2>/dev/null | sed "s/^/microtime-prebuilds:/"',
-      '[ -e /scratch/node_modules/esbuild ] && (node /scratch/node_modules/esbuild/bin/esbuild --version 2>&1 | sed "s/^/esbuild=/") || echo esbuild=absent',
+      // review 10544: invoke esbuild's actual executable and its documented JS API (never node on a native binary)
+      'if [ -e /scratch/node_modules/esbuild ]; then echo "esbuild-bin-kind=$(head -c 4 /scratch/node_modules/esbuild/bin/esbuild | od -An -c | tr -d \" \" | head -c 12)"; echo "esbuild-exec=$(/scratch/node_modules/esbuild/bin/esbuild --version 2>&1 | head -1)"; node -e "console.log(\"esbuild-js-api=\"+require(\"/scratch/node_modules/esbuild\").version)" 2>&1 | head -1; else echo esbuild=absent; fi',
+      'echo "npm-ignore-scripts=$(npm config get ignore-scripts 2>/dev/null)"; npm config ls -l 2>/dev/null | grep -iE "script" | sed "s/^/npm-config:/" | head -12',
       'ls /scratch/node_modules/@esbuild 2>/dev/null | sed "s/^/esbuild-platform:/"',
       'command -v cc gcc g++ make python3 2>/dev/null | sed "s/^/toolchain:/"; echo toolchain-check-done',
     ].join('; ');
@@ -113,10 +121,19 @@ async function run(key) {
     r.commands.push(`probe: ${probeCmd}`);
     if (probe.state !== 'completed') { r.findings.result = 'probe_failed'; return r; }
 
-    const build = await stageIn(ws, 'build', r.limits.verify, 'npm run build');
+    let buildCmd = 'npm run build';
+    if (BUILD_MODE === 'approved-offline') {
+      // Bind the approval to the exact inspected sources: package.json build:* order and the omitted stats script must match.
+      const expect = JSON.stringify(t.build_scripts.concat(t.omitted));
+      const guard = `node -e 'const p=require("/scratch/package.json");const k=Object.keys(p.scripts).filter(x=>x.startsWith("build:"));const pre=Object.keys(p.scripts).filter(x=>/^(pre|post)build/.test(x));if(JSON.stringify(k)!==${JSON.stringify(expect)}||p.scripts.build!=="run-s build:*"||pre.length){console.error("approved build plan does not match package.json: "+JSON.stringify({k,build:p.scripts.build,pre}));process.exit(9)}'`;
+      buildCmd = [guard, ...t.build_scripts.map((x) => `npm run ${x}`)].join(' && ') + ' && echo "--- dist outputs" && find dist -type f | sort | while read f; do echo "$(sha256sum "$f" | cut -c1-16) $(wc -c < "$f") $f"; done';
+      r.build_plan = { mode: 'approved-offline (review 10544)', scripts: t.build_scripts, omitted: t.omitted, guard: 'package.json build:* order, build = run-s build:*, no pre/post build hooks' };
+    }
+    const build = await stageIn(ws, 'build', r.limits.verify, buildCmd);
     r.stages.build = { ...summary(build), memory_peak_bytes: peak(build) };
     fs.writeFileSync(path.join(OUT, `${key}-build.log`), `# exit ${build.exit_code} state ${build.state}\n# stdout (tail)\n${tail(build.stdout, 20000)}\n# stderr (tail)\n${tail(build.stderr, 20000)}\n`);
-    r.commands.push('build: npm run build   (explicit pre-test step; same as the grader runs before Jest)');
+    r.commands.push(BUILD_MODE === 'approved-offline' ? `build (approved offline, review 10544): ${t.build_scripts.map((x) => 'npm run ' + x).join(' && ')}  (omitted: ${t.omitted.join(', ')})` : 'build: npm run build   (explicit pre-test step; same as the grader runs before Jest)');
+    r.stages.build.dist_outputs = ((build.stdout || '').split('--- dist outputs')[1] || '').trim().split('\n').filter(Boolean).slice(0, 60);
     if (build.state !== 'completed') { r.findings.result = 'build_failed'; r.findings.build_error = tail(build.stderr || build.stdout, 3000); return r; } // stop at the first failure
 
     const list = await stageIn(ws, 'jest-list', r.limits.verify, 'node_modules/.bin/jest --ci --listTests');
