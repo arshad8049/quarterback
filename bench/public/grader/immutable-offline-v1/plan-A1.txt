@@ -1,14 +1,15 @@
 # KAN-111 immutable-offline-v1, variant A1: PLAN ONLY (nothing executed)
-# 320 commands, 20 runs
+# 340 commands, 20 runs
 docker pull swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549
 docker create --name kan111-2005-empty-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-empty-1-plan
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-empty-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-empty-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-empty-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-empty-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -19,12 +20,13 @@ docker create --name kan111-2005-gold-1-plan --network none --user root --workdi
 docker start kan111-2005-gold-1-plan
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-gold-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2005-gold-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-gold-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-gold-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-gold-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -35,10 +37,11 @@ docker create --name kan111-2005-empty-2-plan --network none --user root --workd
 docker start kan111-2005-empty-2-plan
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-empty-2-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-empty-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-2-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-empty-2-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-empty-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -49,12 +52,13 @@ docker create --name kan111-2005-gold-2-plan --network none --user root --workdi
 docker start kan111-2005-gold-2-plan
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-gold-2-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2005-gold-2-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-gold-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-2-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-gold-2-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-gold-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -65,10 +69,11 @@ docker create --name kan111-2005-empty-3-plan --network none --user root --workd
 docker start kan111-2005-empty-3-plan
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-empty-3-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-empty-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-3-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-empty-3-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-empty-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -79,12 +84,13 @@ docker create --name kan111-2005-gold-3-plan --network none --user root --workdi
 docker start kan111-2005-gold-3-plan
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-gold-3-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2005-gold-3-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-gold-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-3-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-gold-3-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-gold-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -95,6 +101,8 @@ docker create --name kan111-2005-iso-test-file-tamper-1-plan --network none --us
 docker start kan111-2005-iso-test-file-tamper-1-plan
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-iso-test-file-tamper-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/gold.diff kan111-2005-iso-test-file-tamper-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "printf '\\n%s\\n' '// KAN-111 tamper marker: a candidate edit to a hidden test file must be reverted by the grader' >> __tests__/OrderedMap.ts"
@@ -107,7 +115,6 @@ docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bas
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-test-file-tamper-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-test-file-tamper-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-iso-test-file-tamper-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-test-file-tamper-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -118,12 +125,13 @@ docker create --name kan111-2005-iso-patch-conflict-1-plan --network none --user
 docker start kan111-2005-iso-patch-conflict-1-plan
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-iso-patch-conflict-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2005-iso-patch-conflict-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-patch-conflict-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-patch-conflict-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-iso-patch-conflict-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-patch-conflict-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -134,12 +142,13 @@ docker create --name kan111-2005-iso-empty-patch-file-1-plan --network none --us
 docker start kan111-2005-iso-empty-patch-file-1-plan
 docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-iso-empty-patch-file-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2005-iso-empty-patch-file-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-empty-patch-file-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-empty-patch-file-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-iso-empty-patch-file-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-empty-patch-file-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -150,10 +159,11 @@ docker create --name kan111-2005-iso-timeout-fixture-1-plan --network none --use
 docker start kan111-2005-iso-timeout-fixture-1-plan
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2005-iso-timeout-fixture-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-timeout-fixture-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-timeout-fixture-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2005-iso-timeout-fixture-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-timeout-fixture-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -165,10 +175,11 @@ docker create --name kan111-2006-empty-1-plan --network none --user root --workd
 docker start kan111-2006-empty-1-plan
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-empty-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-empty-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-empty-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-empty-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -179,12 +190,13 @@ docker create --name kan111-2006-gold-1-plan --network none --user root --workdi
 docker start kan111-2006-gold-1-plan
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-gold-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2006-gold-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-gold-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-gold-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-gold-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -195,10 +207,11 @@ docker create --name kan111-2006-empty-2-plan --network none --user root --workd
 docker start kan111-2006-empty-2-plan
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-empty-2-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-empty-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-2-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-empty-2-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-empty-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -209,12 +222,13 @@ docker create --name kan111-2006-gold-2-plan --network none --user root --workdi
 docker start kan111-2006-gold-2-plan
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-gold-2-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2006-gold-2-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-gold-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-2-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-gold-2-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-gold-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -225,10 +239,11 @@ docker create --name kan111-2006-empty-3-plan --network none --user root --workd
 docker start kan111-2006-empty-3-plan
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-empty-3-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-empty-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-3-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-empty-3-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-empty-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -239,12 +254,13 @@ docker create --name kan111-2006-gold-3-plan --network none --user root --workdi
 docker start kan111-2006-gold-3-plan
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-gold-3-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2006-gold-3-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-gold-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-3-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-gold-3-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-gold-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -255,6 +271,8 @@ docker create --name kan111-2006-iso-test-file-tamper-1-plan --network none --us
 docker start kan111-2006-iso-test-file-tamper-1-plan
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-iso-test-file-tamper-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/gold.diff kan111-2006-iso-test-file-tamper-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "printf '\\n%s\\n' '// KAN-111 tamper marker: a candidate edit to a hidden test file must be reverted by the grader' >> __tests__/Range.ts"
@@ -267,7 +285,6 @@ docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bas
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-test-file-tamper-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-test-file-tamper-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-iso-test-file-tamper-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-test-file-tamper-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -278,12 +295,13 @@ docker create --name kan111-2006-iso-patch-conflict-1-plan --network none --user
 docker start kan111-2006-iso-patch-conflict-1-plan
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-iso-patch-conflict-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2006-iso-patch-conflict-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-patch-conflict-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-patch-conflict-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-iso-patch-conflict-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-patch-conflict-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -294,12 +312,13 @@ docker create --name kan111-2006-iso-empty-patch-file-1-plan --network none --us
 docker start kan111-2006-iso-empty-patch-file-1-plan
 docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-iso-empty-patch-file-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker cp <run-dir>/patch.diff kan111-2006-iso-empty-patch-file-1-plan:/tmp/patch.diff
 docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
 docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-empty-patch-file-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-empty-patch-file-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-iso-empty-patch-file-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-empty-patch-file-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
@@ -310,10 +329,11 @@ docker create --name kan111-2006-iso-timeout-fixture-1-plan --network none --use
 docker start kan111-2006-iso-timeout-fixture-1-plan
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "git rev-parse HEAD"
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
+docker cp <grader>/qbx-boundary.sh kan111-2006-iso-timeout-fixture-1-plan:/qbx-boundary.sh
+docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-timeout-fixture-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-timeout-fixture-1-plan:/grade-wrapper.sh
-docker cp <grader>/qbx-boundary.sh kan111-2006-iso-timeout-fixture-1-plan:/qbx-boundary.sh
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-timeout-fixture-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh final"

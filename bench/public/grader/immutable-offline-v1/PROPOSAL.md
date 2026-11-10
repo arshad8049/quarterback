@@ -1,21 +1,30 @@
-# KAN-111: exact offline grader `immutable-offline-v1`, revision 2 (for review, NOT executed)
+# KAN-111: exact offline grader `immutable-offline-v1`, revision 3 (for review, NOT executed)
 
-This answers KAN-111 review 10551, which builds on KAN-110 reviews 10545 and 10549. It covers immutable-js tasks **2005** and **2006** only.
+Revision 3 answers KAN-111 review 10554 and correction 10555. Revision 2 answered review 10551, which builds on KAN-110 reviews 10545 and 10549. It covers immutable-js tasks **2005** and **2006** only.
 
 This is a **separately versioned adaptation** of the official SWE-bench harness, never reported as an official benchmark score.
 
-**Nothing has been executed:** no Docker replay, no external harness install, no model call, no merge.
+**Nothing has been executed:** no Docker replay, no external harness install, no model call, no merge. Real execution is now refused outside the approved CI workflow (see revision 3).
+
+## Task exposure (review 10554)
+Tasks **2005** and **2006** are **EXPOSED development/calibration tasks**, not unexposed holdout:
+- this context has read their gold patches, test patches and required-test lists;
+- their grading material was briefly pushed in `9265147` (see the incident below).
+
+They may be used to validate the grader. They must never be reported as held-out evaluation results. Blinded contracts (KAN-112) must be written by a context that has not seen this material.
 
 ## Artifacts (all on branch `kan111-grader-validation`)
 
 | File | SHA-256 | Role |
 |---|---|---|
-| `grade.mjs` | `3b11d753f632049e260630cf1eda83eb6be88ee0bf56055255d82d371f4e9521` | Runner. Plan-only by default; `--execute` is refused without `--approved-by`. Every step is checked, every run has an expectation, and it exits 1 if any expectation fails |
+| `grade.mjs` | `5949380572b1458c687ff2bfc489e4557448711837288e8c6a8a439edfd8afeb` | Runner. Plan-only by default. Real `--execute` runs only in the approved CI workflow (`GITHUB_ACTIONS=true`, `KAN111_CI_RUN=1`), with variant A1 and at least 3 reps. Every step is checked and logged, every run has an expectation, and it exits 1 if any expectation fails |
 | `grade_report.py` | `f8f0fccd73efc9f420acfeadf7ce3f3e8389f0baff84e7d4ff5caaee450c1978` | Pinned-harness grading + strict view + mode-aware acceptance gate. Exit 0 = graded, 3 = infrastructure error |
 | `grade-wrapper.sh` | `9d50247191821a5eabdb52327de0c94ab04bd788b9786af1f3b2948b2d11d9aa` | Records `CI`, Node/npm and the resolver target; runs the eval script; **exits with its status** |
-| `qbx-boundary.sh` | `426183c54bfff5e5caba23d373cc0591407b007f1723c8bfb5af331dcc5fb5a8` | **Instrumentation** (separately versioned): a content manifest at the test boundary, and the final state |
-| `plan-A1.txt` | `abc02c2158c92a315de84c1de1d56e137d9e82fbdbf245c6b70b3b00b5c40def` | Every command: 320 commands, 20 runs |
-| `workflow.proposed.yml` | `3b201d758d5458042f3dda9c88aca2a71c0dc7d208abefbceb22aab5da9da439` | **Not active** (outside `.github/workflows`). The two-phase lock → grade workflow |
+| `qbx-boundary.sh` | `aa230ddd1068343f93e91194ef9c2cfc1c11ca40a0453cb7d6919da837fc94f0` | **Instrumentation** (separately versioned), **fails closed**: content manifests (files and symlinks) at start, at the test boundary and at the end, plus a `node_modules` digest |
+| `plan-A1.txt` | `7c5336572a63e8aeb88071a672a887e0b08228368b2cd545dcf3eae53d975e88` | Every command: 340 commands, 20 runs |
+| `workflow.proposed.yml` | `316cd5448e6b9fb8a2e7c9e4eec28270d36f5cd6b067537d266be7c6350ea9dd` | **Not active** (outside `.github/workflows`). **Lock phase only**; grades nothing |
+| `approvals.json` | `29703d95e2d42db5dd201c14b72e03a4e300f9b79bb0d57b1d965e4d008f9a00` | Committed, reviewed phase approvals (replaces repository variables). All `null`: nothing is approved |
+| `lock-sanitize.sh` | `bb25af264e415a1c3ba6cc3d86e6b034f18cbdd189f61c0422721137a1a0c838` | Lock-output sanitizer: exact allowlist, size and plain-text limits, secret and task-material scan |
 
 ## Pinned official inputs
 
@@ -43,7 +52,7 @@ Grading uses the harness's own `get_logs_eval`, `parse_log_immutable_js`, `get_e
   - 2005 steps: `build:clean, build:dist, build:types, build:prepare`.
   - The network-only `build:stats` is omitted. A failed required step stops the script **before** tests run, and the runner records `build_failed`, never a qualified replay.
   - Test selection, assertions, test patch and parser are unchanged. The same adaptation applies to empty, gold and future candidate arms.
-- **Instrumentation**, separately hashed and not called verbatim: one line, `bash /qbx-boundary.sh tested`, inserted immediately before the official `: '>>>>> Start Test Output'` line.
+- **Instrumentation**, separately hashed and not called verbatim: one line, `bash /qbx-boundary.sh tested || exit 98` (revision 3; was `bash /qbx-boundary.sh tested`), inserted immediately before the official `: '>>>>> Start Test Output'` line.
 - **SYS_ADMIN omitted.** No flag remains to add it.
 - **Stricter, additive grading:** adopted in principle and fixed as below.
 - **External harness install: not authorized yet.** See "Install proposal".
@@ -79,7 +88,7 @@ Grading uses the harness's own `get_logs_eval`, `parse_log_immutable_js`, `get_e
    - The wrapper saves `eval.sh`'s status, prints `QBX_EVAL_EXIT` and **exits with it**. A missing exit record is `infra_error`.
    - Non-zero Jest exits on empty runs are interpreted through the acceptance gate, not treated as infrastructure failure.
 
-## Tests
+## Tests (revision 2)
 
 All written failing first (`444f7ab`: 20 red), then fixed. The real harness is **stubbed** in these tests, as each file states.
 
@@ -103,21 +112,74 @@ All written failing first (`444f7ab`: 20 red), then fixed. The real harness is *
 
 While building the fake environment I hit three fixture bugs: argument order, defaults, and a lookup returning `undefined`. All were in the test fakes; the runner and grader code needed no change for them.
 
-## Install proposal (needs Arshad's explicit authorization, then reviewer approval)
+## Revision 3: review 10554 fixes
 
-**Two phases** (`workflow.proposed.yml`), each on its own approved push:
-1. **`lock`:** `pip download` the harness from the GitHub archive of commit `02e7a74`, and record the sha256 of **every** resolved distribution. The output is a `requirements.lock` for review (exact distributions + `--hash`).
-2. **`grade`:**
-   - `pip install --require-hashes --no-deps -r requirements.lock`, then `pip freeze` recorded;
-   - rebuild the vault from the hash-verified dataset;
-   - `grade.mjs --execute --approved-by=<comment id> --variant=A1 --reps=3`.
+All written failing first (`7feb837`: 15 red), then fixed.
 
-**Security properties:**
-- `permissions: contents: read`, no secrets referenced, checkout without persisted credentials;
-- task containers have **no host mounts** (only `docker cp`), `--network none`, and no added capabilities;
-- results are secret-scanned before upload (5-day retention).
+1. **The boundary helper fails closed.**
+   - `set -euo pipefail`. The manifest is written to a `.partial` file and moved into place only on success. Symlinks are recorded with their targets. The values are printed only at the end.
+   - The instrumentation line is `bash /qbx-boundary.sh tested || exit 98`. Exit 98 is an `infra_error` naming the boundary helper; it is never graded.
+2. **The runner validates every boundary value.**
+   - The tested hash must be 64 hex characters, the file count a positive integer, and the marker count an integer.
+   - The runner recomputes the sha256 of the copied `tested-tree.txt` and requires it to equal the printed hash. A mismatch is an `infra_error` ("manifest").
+3. **`node_modules` is checked.** A new `start` boundary runs before any patch. The `node_modules` digest at the test boundary must equal the start digest, else `infra_error` ("node_modules").
+4. **The exit record is checked.** `QBX_EVAL_EXIT` must be an integer equal to the observed exit status, else `infra_error` ("exit").
+5. **The tamper comparison requires real entries.** Every official test file must have a 64-hex entry in both the gold and the tamper manifests. A missing entry fails the gate. Before this fix, two missing entries compared equal (`undefined === undefined`).
+6. **A step log per run.** `run.json` `steps` holds `{step, status, signal, stdout_tail, stderr_tail}` for every docker step, including each of the four apply attempts and the reverse check.
+7. **Execution guards.**
+   - Real `--execute` (anything that is not a fixture) is refused, with exit 2 and nothing written, unless `GITHUB_ACTIONS=true` and `KAN111_CI_RUN=1`.
+   - An approved run also requires `--reps` ≥ 3 and `--variant=A1`.
+   - `--reps` must always be a positive integer.
 
-**Network use:** image pulls by digest, the locked pip install, and the dataset download. All happen before any offline task container starts.
+**Tests:** boundary helper 6/6 (the real script on temporary trees), grader 16/16, runner 19/19 (fake docker and grader, with a tripwire `docker` on PATH that is asserted never to be called). Full suite: 1036 tests, 1025 pass, 0 fail, 10 skipped.
+
+## Lock phase plan (LOCK ONLY; needs the reviewer's approval comment id in `approvals.json`)
+
+The owner authorized installing the pinned harness **on the CI runner only** (comment 10553). This plan covers **the lock phase only**. It grades nothing: no task image is pulled, no container is created, no dataset is downloaded, and `grade.mjs` is never invoked.
+
+**To activate (after review):**
+1. The reviewer records the lock approval comment id in `approvals.json` in a reviewed commit.
+2. `workflow.proposed.yml` is copied to `.github/workflows/kan111-lock.yml` on `kan111-grader-validation` only.
+
+**The job** (one `ubuntu-24.04` standard runner, 20 min limit):
+1. **Checkout** at a pinned SHA, without persisted credentials. Permissions are `contents: read`, and no secrets are referenced.
+2. **Approval gate:** refuse unless `approvals.json` `.lock.approval_comment_id` is numeric.
+3. **Python 3.11.9** via `setup-python` at a pinned SHA.
+4. **Harness source:**
+   - download the GitHub archive of `02e7a74` and record its sha256;
+   - extract it and require the three reviewed source hashes to match exactly:
+     - `log_parsers/javascript.py` `87e907b2…eb1a`;
+     - `grading.py` `a0952730…9483`;
+     - `run_evaluation.py` `04b5dab5…7d84`.
+5. **Distributions:** `pip wheel` the extracted source into `dists/` (the harness wheel and every dependency), plus the pinned build backend (`setuptools==75.6.0`, `wheel==0.45.1`, binary only).
+6. **`requirements.lock`:** one `name==version --hash=sha256:…` line per distribution, each with its source: PyPI wheel, built from sdist, or built from the archive. `build-notes.txt` lists every locally built distribution, because their hashes are not reproducible across builds. `env.txt` records the Python, pip, OS and runner versions, the harness ref and the commit.
+7. **Sanitize** with `lock-sanitize.sh`: exactly the allowlisted files, each ≤ 256 KiB and plain text, with no secret-like strings and no task material. Self-tested on five cases (clean, extra file, secret, task string, missing file).
+8. **Upload** only if the sanitizer passed (no `if: always()`). It uploads the six named files, with `if-no-files-found: error` and 5-day retention.
+
+**Network use:** GitHub (the checkout and the archive) and PyPI (the dependencies) only.
+
+### Lock artifact list (explicit; nothing else is uploaded)
+
+| File | Contents |
+|---|---|
+| `requirements.lock` | `name==version --hash=sha256:…` per distribution, each with a `# source:` line |
+| `dists.sha256` | `sha256sum` of every file in `dists/` |
+| `archive.sha256` | sha256 of the `02e7a74` source archive |
+| `harness-files.sha256` | sha256 of the three reviewed harness files (already checked against the reviewed values) |
+| `env.txt` | Python and pip versions, OS, runner OS and arch, harness ref, commit SHA |
+| `build-notes.txt` | Distributions built locally (hash not reproducible) and how the grade phase handles them |
+
+**Never uploaded:** the wheels themselves, the archive, any dataset, gold patch, `eval.sh`, test patch or required-test list.
+
+### Grade phase (outline only; a separate proposal after the lock is reviewed)
+- **Approval:** `approvals.json` `.grade` must hold an approval comment id and the sha256 of the reviewed `requirements.lock`.
+- **Install:**
+  - PyPI distributions with `pip install --no-index --require-hashes --no-deps` from a directory fetched against the reviewed lock;
+  - swebench rebuilt from the hash-verified archive with `--no-build-isolation --no-deps`, using the locked build backend;
+  - `pip freeze` recorded.
+- **Paths:** absolute `$GITHUB_WORKSPACE` paths throughout.
+- **Grading:** `KAN111_CI_RUN=1 grade.mjs --execute --approved-by=<grade comment id> --variant=A1 --reps=3`.
+- **Uploads:** an explicit allowlist (run summaries, step logs, manifests, `grade.json`), and never `eval.sh`, `patch.diff`, gold or required-test material.
 
 ## Incident: an unintended local execution attempt (disclosed, 2026-11-10)
 

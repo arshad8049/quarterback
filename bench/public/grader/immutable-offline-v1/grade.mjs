@@ -37,6 +37,7 @@ export const H = { user: 'root', workdir: '/testbed', patchFile: '/tmp/patch.dif
   reset: 'git checkout -- . ; git clean -fd', APPLY_PATCH_FAIL: '>>>>> Patch Apply Failed' };
 export const TAMPER_MARKER = '// KAN-111 tamper marker: a candidate edit to a hidden test file must be reverted by the grader';
 export const BUILD_GATE_EXIT = 97;
+export const BOUNDARY_EXIT = 98;
 
 /** Eval script per variant. A0 = official verbatim. A1 = only the `npm run build` line replaced by the gated
  *  offline steps. `instrument` separately inserts one test-boundary line before the official Start marker. */
@@ -50,7 +51,7 @@ export function evalScript(official, t, variant, { instrument = false } = {}) {
   if (instrument) {
     const at = lines.findIndex((l) => l.includes('>>>>> Start Test Output'));
     if (at < 0) throw new Error('instrumentation needs the official Start Test Output marker');
-    lines = [...lines.slice(0, at), 'bash /qbx-boundary.sh tested', ...lines.slice(at)];
+    lines = [...lines.slice(0, at), `bash /qbx-boundary.sh tested || exit ${BOUNDARY_EXIT}`, ...lines.slice(at)];
   }
   return lines.join('\n');
 }
@@ -58,7 +59,17 @@ export function evalScript(official, t, variant, { instrument = false } = {}) {
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 const jl = (f) => new Map(fs.readFileSync(f, 'utf8').trim().split('\n').map((l) => { const x = JSON.parse(l); return [x.task_id, x]; }));
 const kv = (text, k) => { const m = new RegExp(`^${k}=(.*)$`, 'm').exec(text || ''); return m ? m[1].trim() : null; };
-const manifest = (f) => (fs.existsSync(f) ? Object.fromEntries(fs.readFileSync(f, 'utf8').trim().split('\n').filter(Boolean).map((l) => { const [h, ...p] = l.split(/\s+/); return [p.join(' ').replace(/^\.\//, ''), h]; })) : null);
+const manifest = (f) => {
+  if (!fs.existsSync(f)) return null;
+  const out = {};
+  for (const l of fs.readFileSync(f, 'utf8').split('\n').filter(Boolean)) {
+    const sl = /^symlink \.\/(.+) -> (.*)$/.exec(l); if (sl) { out[sl[1]] = `symlink:${sl[2]}`; continue; }
+    const fl = /^([0-9a-f]{64})  \.\/(.+)$/.exec(l); if (fl) out[fl[2]] = fl[1]; else out[`?malformed:${l.slice(0, 60)}`] = null;
+  }
+  return out;
+};
+const HEX64 = /^[0-9a-f]{64}$/;
+const tail = (x) => String(x || '').slice(-400);
 
 class Infra extends Error { constructor(step, r) { super(`${step} failed`); this.step = step; this.detail = `${(r && (r.stderr || r.error)) || ''}`.slice(-1200); } }
 
@@ -71,6 +82,13 @@ export function main() {
   if (EXECUTE && !APPROVAL) { console.error('refusing to execute: --approved-by=<KAN-111 review comment id> is required (no grader run before review)'); return 2; }
   if (FIXTURE && APPROVAL !== 'FIXTURE') { console.error('refusing: QB_KAN111_FIXTURE is test-only and requires --approved-by=FIXTURE'); return 2; }
   if (!FIXTURE && APPROVAL === 'FIXTURE') { console.error('refusing: --approved-by=FIXTURE is only valid with QB_KAN111_FIXTURE'); return 2; }
+  if (!/^[1-9]\d*$/.test(String(arg('reps', 3)))) { console.error('refusing: --reps must be a positive integer'); return 2; }
+  if (EXECUTE && !FIXTURE) {
+    // Real grading only on the reviewed CI route (review 10554): never from a laptop or a test run.
+    if (process.env.GITHUB_ACTIONS !== 'true' || process.env.KAN111_CI_RUN !== '1') { console.error('refusing: real execution only runs in the approved CI workflow (GITHUB_ACTIONS=true, KAN111_CI_RUN=1)'); return 2; }
+    if (REPS < 3) { console.error('refusing: approved validation needs --reps >= 3'); return 2; }
+    if (VARIANT !== 'A1') { console.error('refusing: approved validation runs variant A1 only'); return 2; }
+  }
   const tasks = FIXTURE ? FIXTURE.tasks : TASKS; const store = FIXTURE ? FIXTURE.store : path.join(PUB, 'out');
   const outDir = typeof arg('out') === 'string' ? arg('out') : path.join(HERE, 'results', `${os.platform()}-${os.arch()}`, `${VARIANT}-${new Date().toISOString().slice(0, 10)}`);
   const plan = [];
@@ -82,12 +100,22 @@ export function main() {
     const r = spawnSync(bin, argv.slice(1), { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...opts });
     return { status: r.status, signal: r.signal, stdout: r.stdout || '', stderr: r.stderr || '', error: r.error && r.error.message };
   };
-  const must = (step, argv, opts) => { const r = run(argv, opts); if (r.status !== 0) throw new Infra(step, r); return r; };
+  let steps = null; // per-run step log (status + redacted tails)
+  const rec_ = (step, r) => { if (steps && EXECUTE) steps.push({ step, status: r.status, signal: r.signal || null, stdout_tail: tail(r.stdout), stderr_tail: tail(r.stderr || r.error) }); return r; };
+  const must = (step, argv, opts) => { const r = rec_(step, run(argv, opts)); if (r.status !== 0) throw new Infra(step, r); return r; };
 
+  // Parse and validate a boundary helper's printed values; anything malformed is an infrastructure error.
+  function boundaryValues(out, M, step) {
+    if (!EXECUTE) return null;
+    const v = { sha256: kv(out, `QBX_${M}_SHA256`), files: kv(out, `QBX_${M}_FILES`), marker_count: kv(out, `QBX_${M}_MARKER_COUNT`), node_modules: kv(out, `QBX_${M}_NODE_MODULES_SHA256`) };
+    if (!HEX64.test(v.sha256 || '') || !/^[1-9]\d*$/.test(v.files || '') || !/^\d+$/.test(v.marker_count || '') || !(HEX64.test(v.node_modules || '') || v.node_modules === 'absent')) throw new Infra(`${step}: invalid or missing values`, { stderr: JSON.stringify(v) });
+    return { ...v, files: Number(v.files), marker_count: Number(v.marker_count) };
+  }
   function gradeOne({ key, t, official, required, mode, label = mode, rep, patchText = null, tamper = false, fixtureEval = null, timeoutS = TIMEOUT_S }) {
     const name = `kan111-${key}-${label}-${rep}-${EXECUTE ? crypto.randomBytes(3).toString('hex') : 'plan'}`;
     const dir = path.join(outDir, `${key}-${label}-${rep}`); if (EXECUTE) fs.mkdirSync(dir, { recursive: true });
     const rec = { task: key, instance_id: t.instance_id, mode, label, rep, variant: VARIANT, container: name, image: t.image, network: 'none', sys_admin: false, timeout_s: timeoutS };
+    steps = rec.steps = [];
     const evalText = fixtureEval || evalScript(official, t, VARIANT, { instrument: true });
     rec.eval_sha256 = sha(evalText); rec.official_eval_sha256 = sha(official); rec.eval_kind = fixtureEval ? 'timeout-fixture (not the task eval)' : `${VARIANT} + test-boundary instrumentation`;
     const ex = (cmd, o) => run(['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', cmd], o);
@@ -96,9 +124,9 @@ export function main() {
       must('copy patch', ['docker', 'cp', file, `${name}:${H.patchFile}`]);
       for (let i = 0; i < H.applyCmds.length; i++) {
         if (i) must('reset between apply attempts', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', H.reset]);
-        if (ex(`${H.applyCmds[i]} ${H.patchFile}`).status === 0) return { ok: true, via: H.applyCmds[i] };
+        if (rec_(`apply attempt ${i + 1}: ${H.applyCmds[i]}`, ex(`${H.applyCmds[i]} ${H.patchFile}`)).status === 0) return { ok: true, via: H.applyCmds[i] };
       }
-      if (ex(`git apply --check --reverse ${H.patchFile}`).status === 0) return { ok: true, via: 'verified already applied' };
+      if (rec_('reverse check: git apply --check --reverse', ex(`git apply --check --reverse ${H.patchFile}`)).status === 0) return { ok: true, via: 'verified already applied' };
       return { ok: false, marker: H.APPLY_PATCH_FAIL };
     };
     try {
@@ -106,6 +134,9 @@ export function main() {
       must('start container', ['docker', 'start', name]);
       rec.head = must('read HEAD', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'git rev-parse HEAD']).stdout.trim() || null;
       must('base check', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', `test "$(git rev-parse HEAD)" = ${t.base} || git diff --quiet ${t.base} HEAD`]);
+      must('copy boundary helper', ['docker', 'cp', path.join(HERE, 'qbx-boundary.sh'), `${name}:/qbx-boundary.sh`]);
+      const st = must('boundary helper (start)', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'bash /qbx-boundary.sh start']);
+      rec.start_tree = boundaryValues(st.stdout, 'START', 'boundary helper (start)');
       if (tamper) {
         // A VALID tamper built against the exact base inside this container: gold + one appended line in the first
         // official test file, captured with git diff, then the tree reset and the candidate applied the normal way.
@@ -127,7 +158,6 @@ export function main() {
       const ef = path.join(EXECUTE ? dir : os.tmpdir(), 'eval.sh'); if (EXECUTE) fs.writeFileSync(ef, evalText);
       must('copy eval script', ['docker', 'cp', ef, `${name}:/eval.sh`]);
       must('copy wrapper', ['docker', 'cp', path.join(HERE, 'grade-wrapper.sh'), `${name}:/grade-wrapper.sh`]);
-      must('copy boundary helper', ['docker', 'cp', path.join(HERE, 'qbx-boundary.sh'), `${name}:/qbx-boundary.sh`]);
       const t0 = Date.now();
       const r = run(['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '/grade-wrapper.sh', '/eval.sh'], { timeout: timeoutS * 1000, killSignal: 'SIGKILL' });
       rec.wall_s = (Date.now() - t0) / 1000; rec.eval_exit = r.status; rec.timed_out = r.signal === 'SIGKILL' || /ETIMEDOUT/.test(r.error || '');
@@ -135,11 +165,19 @@ export function main() {
       const env = /QBX_ENV_BEGIN([\s\S]*?)QBX_ENV_END/.exec(r.stdout || ''); rec.wrapper_env = env ? env[1].trim().split('\n') : null;
       if (rec.timed_out) { rec.outcome = 'timeout'; return rec; }
       if (r.status === BUILD_GATE_EXIT || /^>>>>> QBX Build Failed$/m.test(r.stdout)) { rec.outcome = 'build_failed'; return rec; }   // never a qualified replay
-      if (EXECUTE && kv(r.stdout, 'QBX_EVAL_EXIT') === null) throw new Infra('eval wrapper (no exit status recorded)', r);
-      rec.tested_tree = { sha256: kv(r.stdout, 'QBX_TESTED_SHA256'), files: kv(r.stdout, 'QBX_TESTED_FILES'), marker_count: Number(kv(r.stdout, 'QBX_TESTED_MARKER_COUNT') ?? NaN) };
+      if (EXECUTE) {
+        if (r.status === BOUNDARY_EXIT) throw new Infra('boundary helper (tested) failed', r);
+        const printed = kv(r.stdout, 'QBX_EVAL_EXIT');
+        if (printed === null || !/^\d+$/.test(printed) || Number(printed) !== r.status) throw new Infra(`eval exit record mismatch (printed ${printed}, observed ${r.status})`, r);
+        rec.tested_tree = boundaryValues(r.stdout, 'TESTED', 'boundary helper (tested)');
+      }
       must('copy tested-tree manifest', ['docker', 'cp', `${name}:/tmp/qbx-tested.txt`, path.join(EXECUTE ? dir : os.tmpdir(), 'tested-tree.txt')]);
-      const fin = must('final-state manifest', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'bash /qbx-boundary.sh final']);
-      rec.final_tree_sha256 = kv(fin.stdout, 'QBX_FINAL_SHA256');
+      if (EXECUTE) {
+        if (sha(fs.readFileSync(path.join(dir, 'tested-tree.txt'))) !== rec.tested_tree.sha256) throw new Infra('tested manifest hash mismatch (copied manifest differs from the emitted hash)', { stderr: '' });
+        if (rec.tested_tree.node_modules !== rec.start_tree.node_modules) throw new Infra('node_modules changed between start and the test boundary', { stderr: `${rec.start_tree.node_modules} -> ${rec.tested_tree.node_modules}` });
+      }
+      const fin = must('boundary helper (final)', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'bash /qbx-boundary.sh final']);
+      if (EXECUTE) rec.final_tree = boundaryValues(fin.stdout, 'FINAL', 'boundary helper (final)');
       must('copy final manifest', ['docker', 'cp', `${name}:/tmp/qbx-final.txt`, path.join(EXECUTE ? dir : os.tmpdir(), 'final-tree.txt')]);
       if (EXECUTE) fs.writeFileSync(path.join(dir, 'required.json'), JSON.stringify(required));
       const gmode = mode === 'empty' ? 'empty' : 'gold';
@@ -199,7 +237,10 @@ export function main() {
           if (x.tested_tree.marker_count !== 0) why.push('tamper marker still present at the test boundary');
           const tr = EXECUTE ? manifest(path.join(outDir, `${key}-iso-test-file-tamper-1`, 'tested-tree.txt')) : null;
           if (!refTree || !tr) why.push('no reference tested tree to compare');
-          else for (const f of t.test_files) if (refTree[f] !== tr[f]) why.push(`tested ${f} differs from the gold run's`);
+          else for (const f of t.test_files) {
+            if (!HEX64.test(refTree[f] || '') || !HEX64.test(tr[f] || '')) why.push(`missing or invalid manifest entry for ${f} (gold ${refTree[f] ?? 'missing'}, tamper ${tr[f] ?? 'missing'})`);
+            else if (refTree[f] !== tr[f]) why.push(`tested ${f} differs from the gold run's`);
+          }
         }
       } else if (x.label === 'iso-patch-conflict' || x.label === 'iso-empty-patch-file') {
         if (x.outcome !== 'patch_apply_failed') why.push(`outcome ${x.outcome}, expected patch_apply_failed`);
