@@ -19,8 +19,8 @@ tasks 1938, unique repo@commit 1733, token yes
 swe-bench-pro-v2: total 149 | compatible 0 | incompatible 149 | unknown 0 | duplicates 0 | {"js":{"compatible":0,"incompatible":145,"unknown":0},"ts":{"compatible":0,"incompatible":4,"unknown":0}}
    107  QB sandbox refuses dependencies: setup_missing_lockfile
    93  QB refuses: no package.json "test" script
+   77  actual test runner jest (from grading command); QB would not parse it
    52  QB refuses: detected runner jest (QB executes node:test only)
-   50  actual test runner jest (from grading command); QB would not parse it
    38  no package.json at the repository root
    38  actual test runner mocha (from grading command); QB would not parse it
    38  needs services not available in the QB sandbox: redis
@@ -34,7 +34,7 @@ swe-bench-multilingual: total 43 | compatible 0 | incompatible 43 | unknown 0 | 
    7  actual test runner jest (from grading command); QB would not parse it
    5  QB refuses: detected runner vitest (QB executes node:test only)
    5  actual test runner vitest (from package.json scripts); QB would not parse it
-swe-polybench: total 1746 | compatible 0 | incompatible 1738 | unknown 8 | duplicates 0 | {"TypeScript":{"compatible":0,"incompatible":729,"unknown":0},"JavaScript":{"compatible":0,"incompatible":1009,"unknown":8}}
+swe-polybench: total 1746 | compatible 0 | incompatible 1738 | unknown 8 | duplicates 0 | {"ts":{"compatible":0,"incompatible":729,"unknown":0},"js":{"compatible":0,"incompatible":1009,"unknown":8}}
    1496  QB refuses: detected runner mocha (QB executes node:test only)
    1286  QB sandbox refuses dependencies: setup_missing_lockfile
    795  actual test runner mocha (from grading command); QB would not parse it
@@ -43,4 +43,3 @@ swe-polybench: total 1746 | compatible 0 | incompatible 1738 | unknown 8 | dupli
    216  QB refuses: detected runner jest (QB executes node:test only)
    196  actual test runner jest (from package.json scripts); QB would not parse it
    182  needs services not available in the QB sandbox: xvfb
-exit 0
