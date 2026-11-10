@@ -1,4 +1,4 @@
-# KAN-111: exact offline grader `immutable-offline-v1`, revision 3 (for review, NOT executed)
+# KAN-111: exact offline grader `immutable-offline-v1`, revision 4 (for review; only the approved lock phase has run)
 
 Revision 3 answers KAN-111 review 10554 and correction 10555. Revision 2 answered review 10551, which builds on KAN-110 reviews 10545 and 10549. It covers immutable-js tasks **2005** and **2006** only.
 
@@ -180,6 +180,54 @@ The owner authorized installing the pinned harness **on the CI runner only** (co
 - **Paths:** absolute `$GITHUB_WORKSPACE` paths throughout.
 - **Grading:** `KAN111_CI_RUN=1 grade.mjs --execute --approved-by=<grade comment id> --variant=A1 --reps=3`.
 - **Uploads:** an explicit allowlist (run summaries, step logs, manifests, `grade.json`), and never `eval.sh`, `patch.diff`, gold or required-test material.
+
+## Lock phase result (approval 10557; reviewed PASS in 10559)
+- Commit `e52e88a`, run https://github.com/arshad8049/quarterback/actions/runs/42906422892 (one attempt, success).
+- Artifact zip sha256 `7e49b518…3a20` (matches GitHub's digest, per the reviewer). 82 locked distributions; `build-notes.txt` lists only swebench as locally built.
+- **Evidence to persist** in `lock-evidence/run-42906422892/`, exactly these bytes (the grade workflow checks them):
+
+| File | sha256 |
+|---|---|
+| `requirements.lock` | `3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba` |
+| `dists.sha256` | `0123302e17e1933d5c7e321734c47b25e0764ab4bb91b5fa1a941c74d98b2b32` |
+| `archive.sha256` | `a60f0de346e0783dc6645edeb537b24b0f5d35c9d01be7a19f6b129bf5f79bff` |
+| `harness-files.sha256` | `1a454284cf5fd8afef66e40a0e0d3581548c2504a938fbdfdea35c20f177705c` |
+| `env.txt` | `7195c125aa09cc048505378fbede55c127dc65b7797ab8b75d7ca5cc843cfcf7` |
+| `build-notes.txt` | `24b24a510d29fdac8c7215faf93238ac41453332d472e91fdec85545af6a3f5e` |
+
+  Source archive digest: `d06181d5365b51fc7ff490171581b9ee87d77e19b3a739a8d574bf25d9ef9479`.
+
+## Revision 4: review 10557/10559 fixes
+
+**`qbx-boundary.sh` (red first in `35283ee`):**
+- No process substitution. Every enumeration (`find` for files, symlinks and `node_modules`) is an ordinary checked command writing a NUL list to a work file; hashing loops read those files, and every hash or `readlink` is checked.
+- Marker count: `grep` exit 1 = no match (0); exit ≥ 2 = read error = failure. No `|| true`.
+- Paths (or link targets) containing a newline are refused.
+- The written entry count must equal the enumerated count (files, and `node_modules` separately), and the manifest must be non-empty.
+- Nothing is printed and no finished manifest is left behind on any failure.
+
+**`grade.mjs`:** the copied tested manifest must be well formed (`<64 hex>  ./path` or `symlink ./path -> target`), have unique paths, and have exactly the printed number of entries; otherwise `infra_error` (malformed / duplicate / count).
+
+**New tests:** 7 boundary regressions (a part-way `find` failure via a PATH shim, an unreadable directory, a `grep` read error via a shim, "no marker" vs a marker, a `node_modules` enumeration failure, a newline path, count/format/uniqueness), 3 runner regressions (count mismatch, malformed line, duplicate path).
+
+## Grade-phase proposal (NOT active; `approvals.json` `.grade` stays null)
+
+`workflow.grade.proposed.yml`, one job on the standard `ubuntu-24.04` runner (180 min limit), pinned actions, `contents: read`, no secrets:
+1. **Gate:** `.grade.approval_comment_id` numeric AND `.grade.lock_sha256` = `3ff9e5ec…e1ba`.
+2. **Evidence:** the six persisted files must match the hashes above; the archive digest must be the recorded one.
+3. **Split:** 82 entries = 81 PyPI wheels + swebench. `setuptools` must be among the 81 (swebench's only build requirement is `setuptools>=42`; version comes from `swebench.__version__`; no other build dependency).
+4. **Download:** `pip download --no-deps --only-binary=:all: --require-hashes` for the 81; the downloaded files must equal `dists.sha256` (same names, same bytes). The archive is downloaded and checked against `d06181d5…9479`.
+5. **Install offline:** `pip install --no-index --require-hashes --no-deps` for the 81.
+6. **Source-build exception (disclosed, not bypassed):** the lock's swebench line is the lock run's own build and is not reproducible. swebench is rebuilt with `pip wheel --no-index --no-deps --no-build-isolation` from the verified source, using only the locked setuptools; the **new** wheel hash is recorded and never claimed equal to the lock line.
+7. **Verify:** `pip check`; `pip freeze` equals the lock's 82 name/version pairs exactly (pip itself excluded); the installed `javascript.py`, `grading.py`, `run_evaluation.py` hashes equal the reviewed ones; `harness-smoke.py` (synthetic logs only: both immutable parsers, the `parse_log_immutable_js` registry key, unknown-instance refusal, `RESOLVED_FULL`/`RESOLVED_NO`).
+8. **Vault:** `npm ci && node public/import.mjs --download` (the hash-verified dataset; the only network use after install).
+9. **Grade:** `KAN111_CI_RUN=1 SWEBENCH_PYTHON=/tmp/kan111/swe/bin/python node public/grader/immutable-offline-v1/grade.mjs --execute --approved-by=<grade comment id> --variant=A1 --reps=3`. The exact docker commands are `plan-A1.txt` (sha256 `7c533657…5e88`, 340 commands, unchanged by revision 4). Runs, per task (2005, 2006): `empty-1..3`, `gold-1..3`, `iso-test-file-tamper-1`, `iso-patch-conflict-1`, `iso-empty-patch-file-1`, `iso-timeout-fixture-1` = 20 runs.
+10. **Sanitize, then upload** (upload runs only if the sanitizer passed): `grade-sanitize.mjs` builds one new `results.json` from an explicit field allowlist (no output tails, no failure details, no `eval.sh`, patch, test output, required list, `grade.json` or manifests; grader reasons only in the `KIND[index]: expected X, got Y` shape), then refuses if it contains ANY required test name of the two tasks (read from the vault; reported by index only), diff text or a secret-like string. The install record (rebuilt-wheel hash, `pip check`, `pip freeze`, installed source hashes, smoke output) gets an exact file-list and secret/diff check.
+11. The job fails at the end if grading did not meet every expectation; the sanitized results are still published.
+
+**Grade artifact allowlist:** `results.json`, `sanitize-report.txt`, `swebench-rebuilt-wheel.sha256`, `pip-check.txt`, `pip-freeze.txt`, `installed-harness-files.sha256`, `harness-smoke.txt`. 5-day retention.
+
+**Not yet run anywhere:** `harness-smoke.py` against the real harness (local install is not authorized; it first runs inside the grade job), and the grade workflow itself. Its embedded scripts were syntax-checked and the lock-split / installed-set checks were dry-run on synthetic data.
 
 ## Incident: an unintended local execution attempt (disclosed, 2026-11-10)
 

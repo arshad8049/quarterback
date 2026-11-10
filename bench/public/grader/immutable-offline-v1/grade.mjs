@@ -69,6 +69,19 @@ const manifest = (f) => {
   return out;
 };
 const HEX64 = /^[0-9a-f]{64}$/;
+// Review 10557: the copied manifest must be exactly well-formed lines, one per unique path, as many as printed.
+export function manifestProblem(text, files) {
+  if (!text.endsWith('\n')) return 'malformed (no final newline)';
+  const lines = text.slice(0, -1).split('\n'); const seen = new Set();
+  for (const l of lines) {
+    const m = /^(?:[0-9a-f]{64}  |symlink )\.\/(.+?)(?: -> .*)?$/.exec(l);
+    if (!m || (l.startsWith('symlink ') && !l.includes(' -> '))) return `malformed line: ${JSON.stringify(l.slice(0, 80))}`;
+    if (seen.has(m[1])) return `duplicate path: ${m[1]}`;
+    seen.add(m[1]);
+  }
+  if (lines.length !== files) return `entry count mismatch (parsed ${lines.length}, printed ${files})`;
+  return null;
+}
 const tail = (x) => String(x || '').slice(-400);
 
 class Infra extends Error { constructor(step, r) { super(`${step} failed`); this.step = step; this.detail = `${(r && (r.stderr || r.error)) || ''}`.slice(-1200); } }
@@ -174,6 +187,8 @@ export function main() {
       must('copy tested-tree manifest', ['docker', 'cp', `${name}:/tmp/qbx-tested.txt`, path.join(EXECUTE ? dir : os.tmpdir(), 'tested-tree.txt')]);
       if (EXECUTE) {
         if (sha(fs.readFileSync(path.join(dir, 'tested-tree.txt'))) !== rec.tested_tree.sha256) throw new Infra('tested manifest hash mismatch (copied manifest differs from the emitted hash)', { stderr: '' });
+        const bad = manifestProblem(fs.readFileSync(path.join(dir, 'tested-tree.txt'), 'utf8'), rec.tested_tree.files);
+        if (bad) throw new Infra(`tested manifest ${bad}`, { stderr: '' });
         if (rec.tested_tree.node_modules !== rec.start_tree.node_modules) throw new Infra('node_modules changed between start and the test boundary', { stderr: `${rec.start_tree.node_modules} -> ${rec.tested_tree.node_modules}` });
       }
       const fin = must('boundary helper (final)', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'bash /qbx-boundary.sh final']);
