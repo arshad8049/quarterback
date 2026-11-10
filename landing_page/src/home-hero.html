@@ -1,5 +1,7 @@
-<!-- HOMEPAGE HERO: dark inset stage. Copy at left; decorative art behind it (desktop) or below it (under 900px).
-     The art is an owner-supplied AI-generated still (see docs/website/redesign-2026-11.md, revision 3).
+<!-- HOMEPAGE HERO: dark inset stage. Copy at left; the owner-chosen Pinterest pin (artwork by Die Doing Prints)
+     at right (desktop) or below the copy (under 900px). Owner decision 2026-11-10: it replaces the bronze still
+     and comes toward the viewer as the page scrolls (interactions.js sets --pop; off under reduced motion).
+     Pinterest's official embed, in a sandboxed iframe allowed by frame-src in _headers; disclosed in privacy.html.
      It is decoration only and carries no product claims. -->
 <section class="qbh-hero" data-qbh-hero aria-labelledby="hero-h">
   <div class="qbh-hero-copy">
@@ -11,12 +13,11 @@
       <a href="#run" class="qbh-btn qbh-btn-outline">See a real run</a>
     </div>
   </div>
-  <div class="qbh-art" data-qbh-art aria-hidden="true">
-    <div class="qbh-art-move" data-qbh-art-move>
-      <picture>
-        <source media="(max-width: 899px)" srcset="./media/hero-mobile.webp" type="image/webp" width="900" height="576">
-        <img class="qbh-art-img" src="./media/hero-desktop.webp" width="1600" height="896" alt="" fetchpriority="high" decoding="async">
-      </picture>
+  <div class="qbh-pin">
+    <div class="qbh-pin-move" data-qbh-art-move>
+      <div class="qbh-pin-pop" data-qbh-pin-pop>
+        <iframe class="qbh-pin-frame" src="https://assets.pinterest.com/ext/embed.html?id=1067845761673356440" width="345" height="532" scrolling="no" title="Artwork by Die Doing Prints, on Pinterest" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+      </div>
     </div>
   </div>
 </section>

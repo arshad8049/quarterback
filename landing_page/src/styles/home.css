@@ -87,6 +87,17 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 /* Keeps the copy on near-black when a narrow desktop window pulls the frame toward the text */
 .qbh-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(3, 3, 3, 0.7) 0%, rgba(3, 3, 3, 0.45) 38%, rgba(3, 3, 3, 0) 58%); }
 
+/* ── Hero pin (owner decision 2026-11-10): Pinterest's embed replaces the bronze still. The hero lets it
+   overflow so it can come toward the viewer: interactions.js sets --pop from 0 (page top) to 1 (hero scrolled
+   past) and the perspective turns translateZ into growth (about 1.3x at --pop 1). A violet halo sits behind it.
+   The pointer drift reuses --ax/--ay. Under reduced motion it stays still. */
+.qbh-hero { overflow: visible; z-index: 2; }
+.qbh-pin { position: relative; z-index: 3; display: flex; justify-content: center; align-items: center; padding: 48px clamp(24px, 4vw, 64px); perspective: 1000px; }
+.qbh-pin::before { content: ""; position: absolute; left: 50%; top: 50%; width: 520px; height: 620px; max-width: 120%; transform: translate(-50%, -50%) scale(calc(1 + var(--pop, 0) * 0.25)); border-radius: 50%; background: radial-gradient(closest-side, rgba(92, 72, 255, 0.45), rgba(92, 72, 255, 0.16) 55%, rgba(92, 72, 255, 0) 100%); pointer-events: none; z-index: -1; }
+.qbh-pin-move { transform: translate3d(var(--ax, 0px), var(--ay, 0px), 0); transform-style: preserve-3d; will-change: transform; }
+.qbh-pin-pop { transform: translate3d(0, calc(var(--pop, 0) * 120px), calc(var(--pop, 0) * 230px)); transform-origin: 50% 40%; border-radius: 16px; box-shadow: 0 calc(18px + var(--pop, 0) * 40px) calc(48px + var(--pop, 0) * 80px) rgba(60, 40, 220, calc(0.35 + var(--pop, 0) * 0.3)); will-change: transform; }
+.qbh-pin-frame { display: block; width: 345px; height: 532px; border: 0; border-radius: 16px; background: #fff; }
+
 /* ── Page-wide pointer light (revision 4, owner decision 2026-11-10). interactions.js adds 640px discs on
    the homepage only and moves them with transform. They sit UNDER text, never over it, so only backgrounds
    change: one fixed disc lights the warm-white page (6% copper, barely visible), and each dark surface gets
@@ -239,9 +250,14 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
   .qbh-art { position: relative; inset: auto; width: auto; aspect-ratio: auto; height: clamp(260px, 70vw, 420px); }
   .qbh-art::after { background: linear-gradient(180deg, #030303 0%, rgba(3, 3, 3, 0) 30%); }
   .qbh-art-img { object-position: 100% 56%; }
+  .qbh-pin { padding: 24px 16px 48px; }
   .qbh-result, .qbh-cards { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .qbh-cards { gap: 16px; }
   .qbh .qbx-try-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+}
+@media (max-width: 400px) {
+  /* 345px no longer fits beside the gutters: shrink the whole embed */
+  .qbh-pin-frame { zoom: 0.86; }
 }
 @media (max-width: 640px) {
   .qbh-logos { padding-top: 28px; gap: 10px; }
@@ -266,11 +282,13 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qb-motion-off .qbh-hero-copy > * { animation: none; }
 .qb-motion-off .qbh-glow, .qb-motion-off .qbh-glow-clip { display: none; }
 .qb-motion-off .qbh-marquee-track { animation: none; }
-.qb-motion-off .qbh-art-move { transform: none; }
+.qb-motion-off .qbh-art-move, .qb-motion-off .qbh-pin-move, .qb-motion-off .qbh-pin-pop { transform: none; }
+.qb-motion-off .qbh-pin::before { transform: translate(-50%, -50%); }
 .qb-motion-off .qbh-btn:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .qbh-hero-copy > * { animation: none; }
-  .qbh-art-move { transform: none; }
+  .qbh-art-move, .qbh-pin-move, .qbh-pin-pop { transform: none; }
+  .qbh-pin::before { transform: translate(-50%, -50%); }
   .qbh-glow, .qbh-glow-clip { display: none; }
   .qbh-logos .qbh-marquee-track { animation: none; transform: none; flex-wrap: wrap; justify-content: center; width: auto; gap: 20px 56px; }
   .qbh-logos .qbh-marquee-set[aria-hidden="true"], .qbh-marquee-btn { display: none; }
