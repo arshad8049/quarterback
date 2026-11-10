@@ -1,4 +1,4 @@
-# KAN-111: exact offline grader `immutable-offline-v1`, revision 4 (for review; only the approved lock phase has run)
+# KAN-111: exact offline grader `immutable-offline-v1`, revision 5 (for review; only the approved lock phase has run)
 
 Revision 3 answers KAN-111 review 10554 and correction 10555. Revision 2 answered review 10551, which builds on KAN-110 reviews 10545 and 10549. It covers immutable-js tasks **2005** and **2006** only.
 
@@ -228,6 +228,22 @@ The owner authorized installing the pinned harness **on the CI runner only** (co
 **Grade artifact allowlist:** `results.json`, `sanitize-report.txt`, `swebench-rebuilt-wheel.sha256`, `pip-check.txt`, `pip-freeze.txt`, `installed-harness-files.sha256`, `harness-smoke.txt`. 5-day retention.
 
 **Not yet run anywhere:** `harness-smoke.py` against the real harness (local install is not authorized; it first runs inside the grade job), and the grade workflow itself. Its embedded scripts were syntax-checked and the lock-split / installed-set checks were dry-run on synthetic data.
+
+## Revision 5: review 10561 corrections (red first in `4cc2075`)
+1. **Installed set from metadata, not `pip freeze`.** `installed-set-check.py` reads the installed distributions with `importlib.metadata`, because swebench is installed from the local rebuilt wheel and `pip freeze` prints it as `swebench @ file:///…whl`. It requires:
+   - (normalised name, version) of everything installed equals the lock, with `pip` excluded and no distribution installed twice;
+   - swebench has `direct_url.json` pointing to the rebuilt `file://` wheel, and any hash pip recorded equals the rebuilt wheel's sha256;
+   - no other distribution was installed by direct reference.
+
+   Its JSON report is saved as `install-provenance.json`; `pip freeze` is kept as supporting evidence only. Regressions use fake `.dist-info` folders, including a local-wheel direct reference: 10 tests.
+2. **Sanitized results keep the real fingerprints and identify the experiment.**
+   - `grade-sanitize.mjs` now uses the runner's actual keys: `eval_sha256`, `official_eval_sha256`, `patch_sha256`, `diff_before_sha256`.
+   - It refuses any fingerprint (including the tree hashes) that is not a 64-hex SHA-256.
+   - `results.json.experiment` records the executed QB commit (`$GITHUB_SHA`), the dataset revision (from `sources.json`), the reviewed lock hash, and the sha256 of each of the six install-record files. Malformed or missing values, and an install record that isn't exactly those six files, are refused.
+   - A new test sanitizes the output of a real fixture run of `grade.mjs`: fingerprints survive as 64-hex, while patch, eval and log text don't.
+3. **Lock evidence persisted** in `lock-evidence/run-42906422892/` (commit `87f8e6f`): the zip and all six hashes equal 10559.
+
+The grade artifact allowlist gains `install-provenance.json`.
 
 ## Incident: an unintended local execution attempt (disclosed, 2026-11-10)
 

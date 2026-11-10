@@ -7,7 +7,8 @@
 # (disclosed): the lock's swebench line is the lock run's own local build and cannot be reproduced, so swebench is
 # rebuilt OFFLINE from the hash-verified source archive with --no-build-isolation, using only the locked setuptools
 # (its only declared build requirement: setuptools>=42); the new wheel's hash is recorded, never claimed equal.
-# Then: pip check, version and source-hash checks, a synthetic parser smoke, and only then the Docker replays.
+# Then: pip check, installed-metadata == lock (installed-set-check.py; review 10561), source-hash checks, a
+# synthetic parser smoke, and only then the Docker replays.
 # Results leave the runner only through grade-sanitize.mjs (allowlist + required-test-name scan).
 name: kan111-grade
 
@@ -113,16 +114,10 @@ jobs:
           set -euo pipefail
           P=/tmp/kan111/swe/bin
           $P/pip check | tee "$INST/pip-check.txt"
-          $P/pip freeze --all | LC_ALL=C sort > "$INST/pip-freeze.txt"
-          $P/python -I - "$EV/requirements.lock" "$INST/pip-freeze.txt" "$WORK/swebench.version" <<'PY'
-          import re, sys
-          norm = lambda n: re.sub(r"[-_.]+", "-", n).lower()
-          want = {norm(n): v for n, v in re.findall(r"^([A-Za-z0-9_.\-]+)==(\S+) --hash", open(sys.argv[1]).read(), re.M)}
-          have = {norm(n): v for n, v in re.findall(r"^([A-Za-z0-9_.\-]+)==(\S+)$", open(sys.argv[2]).read(), re.M)}
-          have.pop("pip", None)
-          assert want == have, {"missing_or_different": {k: (v, have.get(k)) for k, v in want.items() if have.get(k) != v}, "extra": sorted(set(have) - set(want))}
-          print(f"installed set equals the lock: {len(want)} distributions")
-          PY
+          $P/pip freeze --all | LC_ALL=C sort > "$INST/pip-freeze.txt"      # supporting evidence only (shows swebench @ file://)
+          # The decision (review 10561): installed distribution metadata == the lock, swebench from the rebuilt local wheel
+          $P/python -I "$GRADER/installed-set-check.py" "$EV/requirements.lock" "$INST/swebench-rebuilt-wheel.sha256" > "$INST/install-provenance.json"
+          cat "$INST/install-provenance.json"
           d=$($P/python -I -c 'import os, swebench; print(os.path.dirname(swebench.__file__))')
           ( cd "$d/.." && sha256sum swebench/harness/log_parsers/javascript.py swebench/harness/grading.py swebench/harness/run_evaluation.py ) | tee "$INST/installed-harness-files.sha256"
           diff "$EV/harness-files.sha256" "$INST/installed-harness-files.sha256"
@@ -144,14 +139,16 @@ jobs:
         if: ${{ !cancelled() && (steps.grade.outcome == 'success' || steps.grade.outcome == 'failure') }}
         run: |
           set -euo pipefail
-          node "$GRADER/grade-sanitize.mjs" "$WORK/A1" "$PUB" bench/public/out
+          rev=$(jq -r '.sources[] | select(.source=="swe-bench-multilingual") | .revision' bench/public/sources.json)
+          node "$GRADER/grade-sanitize.mjs" "$WORK/A1" "$PUB" bench/public/out \
+            --qb-commit="$GITHUB_SHA" --dataset-revision="$rev" --lock-sha256="$LOCK_SHA256" --install-dir="$INST"
           # The install record is plain text from this job's own commands; it gets the lock sanitizer's checks
           mkdir -p "$WORK/inst-check" && cp "$INST"/* "$WORK/inst-check/"
           for f in "$WORK"/inst-check/*; do
             [ "$(wc -c < "$f")" -le 262144 ] || { echo "::error::$f too large"; exit 1; }
             if grep -IEn '(ghp_|gho_|ghs_|ghu_|github_pat_|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY|sk-ant-|diff --git)' "$f"; then echo "::error::refused $f"; exit 1; fi
           done
-          ls "$INST" | LC_ALL=C sort | diff - <(printf '%s\n' harness-smoke.txt installed-harness-files.sha256 pip-check.txt pip-freeze.txt swebench-rebuilt-wheel.sha256)
+          ls "$INST" | LC_ALL=C sort | diff - <(printf '%s\n' harness-smoke.txt install-provenance.json installed-harness-files.sha256 pip-check.txt pip-freeze.txt swebench-rebuilt-wheel.sha256)
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4; only after the sanitizer passed
         if: ${{ !cancelled() && steps.sanitize.outcome == 'success' }}
@@ -163,6 +160,7 @@ jobs:
             ${{ env.INST }}/swebench-rebuilt-wheel.sha256
             ${{ env.INST }}/pip-check.txt
             ${{ env.INST }}/pip-freeze.txt
+            ${{ env.INST }}/install-provenance.json
             ${{ env.INST }}/installed-harness-files.sha256
             ${{ env.INST }}/harness-smoke.txt
           if-no-files-found: error

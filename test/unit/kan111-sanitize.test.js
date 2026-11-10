@@ -34,7 +34,7 @@ function installDir(d) {
   for (const f of ['swebench-rebuilt-wheel.sha256', 'pip-check.txt', 'pip-freeze.txt', 'installed-harness-files.sha256', 'harness-smoke.txt', 'install-provenance.json']) fs.writeFileSync(path.join(i, f), `fixture ${f}\n`);
   return i;
 }
-const idArgs = (d, over = {}) => Object.entries({ ...ID, 'install-dir': installDir(d), ...over }).filter(([, v]) => v !== null).map(([k, v]) => `--${k}=${v}`);
+const idArgs = (d, over = {}) => Object.entries({ ...ID, 'install-dir': 'install-dir' in over ? over['install-dir'] : installDir(d), ...over }).filter(([, v]) => v !== null).map(([k, v]) => `--${k}=${v}`);
 const go = (d, over) => spawnSync(process.execPath, [S, path.join(d, 'raw'), path.join(d, 'pub'), path.join(d, 'store'), ...idArgs(d, over)], { encoding: 'utf8' });
 
 describe('KAN-111 grade-sanitize.mjs', () => {

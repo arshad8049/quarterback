@@ -56,6 +56,6 @@ describe('KAN-111 installed-set-check.py (installed metadata, not pip freeze)', 
     ['a locked PyPI distribution was installed by direct reference', { direct: { swebench: { url: `file:///w/built/${WHEEL}` }, setuptools: { url: 'file:///tmp/setuptools.whl' } } }],
     ['the same distribution is installed twice', { extra: [['PyYAML', '5.0.0']] }],
   ]) {
-    test(`fails closed when ${why}`, () => { const d = site(opts); const r = check(d); assert.notEqual(r.status, 0, r.stdout); done(d); });
+    test(`fails closed when ${why}`, () => { const d = site(opts); const r = check(d); assert.equal(r.status, 1, r.stdout + r.stderr); assert.match(r.stderr, /installed-set check FAILED/); done(d); });
   }
 });
