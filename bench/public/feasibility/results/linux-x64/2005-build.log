@@ -1,0 +1,55 @@
+# exit 1 state execution_error
+# stdout (tail)
+
+> immutable@5.0.0-beta.5 build
+> run-s build:*
+
+
+> immutable@5.0.0-beta.5 build:clean
+> rimraf dist
+
+
+> immutable@5.0.0-beta.5 build:dist
+> rollup -c ./resources/rollup-config.mjs
+
+
+> immutable@5.0.0-beta.5 build:types
+> cpy ./type-definitions/immutable.* dist
+
+
+> immutable@5.0.0-beta.5 build:prepare
+> ./resources/prepare-dist.sh
+
+
+> immutable@5.0.0-beta.5 build:stats
+> node ./resources/dist-stats.mjs
+
+QB_FEAS_MEMORY_PEAK=272703488
+
+# stderr (tail)
+[36m
+[1m/scratch/src/Immutable.js[22m → [1mdist/immutable.js, dist/immutable.min.js, dist/es[22m...[39m
+[1m[33m(!) Circular dependencies[39m[22m
+src/Seq.js -> src/Collection.js -> src/Seq.js
+src/Map.js -> src/Operations.js -> src/Map.js
+src/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js
+...and 6 more
+[32mcreated [1mdist/immutable.js, dist/immutable.min.js, dist/es[22m in [1m1.3s[22m[39m
+fetch failed
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN bundlephobia.com
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:123:26) {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'bundlephobia.com'
+  }
+}
+
+Node.js v24.22.2
+ERROR: "build:stats" exited with 1.
+

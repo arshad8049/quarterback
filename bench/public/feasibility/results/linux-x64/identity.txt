@@ -1,0 +1,8 @@
+qb_commit=8cf32bbd6e4a2a8d1fdf33a53d847e37eae797df
+main_784e721=784e721bfe18f593bbb1aee27846b647a6e49843
+qb_sandbox_matches_main_784e721=yes
+runner_image=ubuntu24 20261101.360.1
+runner_arch=X64
+host_node=v22.23.4
+uname=Linux 7.0.0-1017-azure x86_64
+docker_client=28.0.4 docker_server=28.0.4 server_arch=amd64

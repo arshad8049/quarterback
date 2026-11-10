@@ -2,7 +2,38 @@
 
 **Results by platform:**
 - `results/darwin-arm64/`: run of 2026-11-10 on Apple Silicon (below). Preserved unchanged.
-- `results/linux-x64/`: the native Linux x86_64 run, prepared and **not yet run**: no authorized x86_64 host is reachable yet.
+- `results/linux-x64/`: native Linux x86_64 run of 2026-11-10 on a standard GitHub-hosted `ubuntu-24.04` runner. Workflow `.github/workflows/kan110-feasibility.yml` at `8cf32bb` on this branch only; run https://github.com/arshad8049/quarterback/actions/runs/42869533603. Results below.
+
+## Native Linux x86_64 result: install succeeds, build fails on network access. Path stopped at the build.
+
+| | Task 2006 (`qbt_00b20b1b0285`) | Task 2005 (`qbt_9b9a5da937c9`) |
+|---|---|---|
+| Install (`npm ci`, QB DEPS proxy) | **succeeded**: exit 0, 15.6 s; 1,063 packages; node_modules 677 MiB; deps-check ok | **succeeded**: exit 0, 15.5 s; 979 packages; 686 MiB; deps-check ok |
+| Native modules | `microtime` loads (linux-x64 N-API prebuild) | `microtime` loads; `@esbuild/linux-x64` present |
+| **Build (`npm run build`)** | **failed, exit 1, after 3.6 s.** Rollup produced `dist/immutable.js` and `dist/immutable.es.js`, then `build:stats` (`node ./resources/dist-stats.mjs`) failed: `fetch failed … getaddrinfo EAI_AGAIN bundlephobia.com` (no network in the sandbox) | **failed, exit 1, after 2.7 s.** Same: dist bundles created, then `build:stats` failed on `bundlephobia.com` |
+| Build peak memory (cgroup) | 277 MiB (limit 4 GiB) | 260 MiB |
+| Jest list / run | not run (stopped at first failure) | not run |
+| Jest version (installed) | 27.2.0 | 29.6.4 |
+
+**Host and identity:**
+- **Runner:** GitHub-hosted `ubuntu24` image `20261101.360.1`, `Linux 7.0.0-1017-azure x86_64`, 4 vCPU, 16.8 GB RAM (15.8 GB available), 92 GB free disk, Docker 28.0.4 (amd64), cgroup v2.
+- **QB:** commit `8cf32bb`; sandbox code identical to `main` `784e721bfe18`; QB admission **ok** (peak 9.81 GB vs 15.3 GB available).
+- **Images:** agent/install image `qb-sandbox-agent:c-4b166ca34296ddda` = `sha256:0070713b058152b9b4c36263fbd8ec9aac39c173a58293905777bbffd6a89894` (amd64); tools image `sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db`. The Node base image digest wasn't captured: `docker image inspect node:24-bookworm-slim` found no local tag after QB's build.
+- **In the sandbox:** Node v24.22.2, npm 11.19.1.
+
+**Findings:**
+1. **The cause is network access in the build, not the platform.** `build:stats` reports bundle sizes from bundlephobia.com. Everything Jest needs (`dist/`) was built before it. QB's sandbox correctly has no network.
+2. **The same QB image tag is not the same environment.** Both platforms used `qb-sandbox-agent:c-4b166ca34296ddda`, but the arm64 copy (built about five weeks ago) has Node v24.21.0, and the x86_64 copy (built fresh on the runner) has Node v24.22.2 and npm 11.19.1. QB's content tag doesn't pin the `node:24-bookworm-slim` base digest.
+3. **npm 11.19.1 didn't run dependency install scripts.** It warned: "install scripts not yet covered by allowScripts": `microtime` (both tasks) and `esbuild` (2005). So the x86_64 install success isn't only because the linux-x64 prebuild exists: the scripts were skipped. The arm64 failure came from an older npm that did run them. The ARM and x86_64 install results are therefore not a clean architecture comparison.
+4. **A probe mistake of mine:** it ran the native esbuild binary through `node`. That output was removed from `2005.json`; `@esbuild/linux-x64` is installed.
+
+**Smallest next step (needs approval; nothing changed):** use an **approved pre-test command that omits `build:stats`**, instead of `npm run build`. No network change. The pre-test command would be part of the approved contract, as PROPOSAL-A requires.
+- 2006: `npm run build:clean && npm run build:dist && npm run build:esm && npm run build:copy && npm run build:prepare`.
+- 2005: `npm run build:clean && npm run build:dist && npm run build:types && npm run build:prepare`.
+
+Then the pinned `jest --listTests` and Jest run on the same runner.
+
+**Separately, for review:** pin the base image digest in QB's image identity, and decide QB's policy on npm's new install-script default. Both are outside this card's scope.
 
 **Native x86_64 run (prepared, same script, unchanged QB sandbox):**
 
