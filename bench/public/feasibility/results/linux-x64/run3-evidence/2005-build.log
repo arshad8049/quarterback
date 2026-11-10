@@ -1,0 +1,111 @@
+# exit 0 state completed
+# stdout (tail)
+
+> immutable@5.0.0-beta.5 build:clean
+> rimraf dist
+
+
+> immutable@5.0.0-beta.5 build:dist
+> rollup -c ./resources/rollup-config.mjs
+
+
+> immutable@5.0.0-beta.5 build:types
+> cpy ./type-definitions/immutable.* dist
+
+
+> immutable@5.0.0-beta.5 build:prepare
+> ./resources/prepare-dist.sh
+
+--- dist outputs
+9be4edd1160376fe 3205 dist/es/Collection.js
+81cab18b2c3867a2 21835 dist/es/CollectionImpl.js
+740a0392b04487f0 7218 dist/es/Hash.js
+7b89c5df7431f5fd 3364 dist/es/Immutable.js
+8e286202e12be78e 3382 dist/es/Iterator.js
+cf18ac2076a3954e 19172 dist/es/List.js
+09fa48664a28a6db 21585 dist/es/Map.js
+30c84f4934873478 1887 dist/es/Math.js
+f7bbc88ac6da3a43 29822 dist/es/Operations.js
+6f118d12c2e530b4 5881 dist/es/OrderedMap.js
+0f30491d47d3d42e 3316 dist/es/OrderedSet.js
+e6628441425a4393 1272 dist/es/PairSorting.js
+8c29c0ba92289730 5478 dist/es/Range.js
+3e942f36dd1e5caa 9318 dist/es/Record.js
+e7089d575a0d2216 4170 dist/es/Repeat.js
+f22c2f4133b9bf5b 11527 dist/es/Seq.js
+c8854169de723e81 8154 dist/es/Set.js
+9fe8dcbe79049702 7450 dist/es/Stack.js
+3b3571f81ea6f42d 3882 dist/es/TrieUtils.js
+d26319ffdab8466a 2622 dist/es/fromJS.js
+79dfddc0ad41677c 1549 dist/es/functional/get.js
+964237d95be676e0 1631 dist/es/functional/getIn.js
+863748f30f3392f0 1544 dist/es/functional/has.js
+34f635e64dade43c 1379 dist/es/functional/hasIn.js
+8b45032db4b6a887 5004 dist/es/functional/merge.js
+5cbeffe62a9e3891 2095 dist/es/functional/remove.js
+4eb522e9d9ee3601 1406 dist/es/functional/removeIn.js
+dab77cbb71b4fe70 2032 dist/es/functional/set.js
+7598743c70e595a4 1414 dist/es/functional/setIn.js
+5729f5accbf5ce0d 1364 dist/es/functional/update.js
+d6793f6b7351fe23 3049 dist/es/functional/updateIn.js
+29cd7d82641cfb3d 4356 dist/es/is.js
+b85a4349ec08d013 1265 dist/es/methods/asImmutable.js
+2475ca20f5d894e4 1342 dist/es/methods/asMutable.js
+3d5beedf5a5755f8 1324 dist/es/methods/deleteIn.js
+6cc8c4ff9a12f746 1360 dist/es/methods/getIn.js
+1fd1d2f224f50f58 1334 dist/es/methods/hasIn.js
+933ebf7489edff87 2750 dist/es/methods/merge.js
+0b5f47b81b1e9cf4 1641 dist/es/methods/mergeDeep.js
+bd78bbb6b75853c2 1609 dist/es/methods/mergeDeepIn.js
+f0b39c1240b2b7e8 1590 dist/es/methods/mergeIn.js
+f19cc22cac1be227 1328 dist/es/methods/setIn.js
+90ebeb54651a2fef 1420 dist/es/methods/toObject.js
+5bd751e505b91877 1409 dist/es/methods/update.js
+05d1eca3b1cc1b75 1384 dist/es/methods/updateIn.js
+d9ffc55fd9172509 1257 dist/es/methods/wasAltered.js
+60ca9727fe2e18e7 1367 dist/es/methods/withMutations.js
+084c41992273e5ef 1233 dist/es/package.json.js
+a932cf3052033d9f 1406 dist/es/predicates/isAssociative.js
+8b69081fc28a49b4 1468 dist/es/predicates/isCollection.js
+964fb3514f811e8b 1408 dist/es/predicates/isImmutable.js
+e4c3c09dcb2efde0 1382 dist/es/predicates/isIndexed.js
+e2ca060bff300a91 1364 dist/es/predicates/isKeyed.js
+05f010f21ee33af1 1355 dist/es/predicates/isList.js
+7840981aef77a839 1346 dist/es/predicates/isMap.js
+b6a71029f35f4998 1382 dist/es/predicates/isOrdered.js
+b361aa0e78830938 1395 dist/es/predicates/isOrderedMap.js
+8130861742b218a2 1395 dist/es/predicates/isOrderedSet.js
+34e8f46a52198ae8 1373 dist/es/predicates/isRecord.js
+f63bf4347e0f46f8 1346 dist/es/predicates/isSeq.js
+996cd69c1f117f9e 1346 dist/es/predicates/isSet.js
+d78782e3bf272fb0 1364 dist/es/predicates/isStack.js
+17406525e70cc1a5 1386 dist/es/predicates/isValueObject.js
+e4f7e6730b557623 1862 dist/es/toJS.js
+d74e0289eaa07cf5 1481 dist/es/utils/arrCopy.js
+43d539a8a25b2952 1399 dist/es/utils/assertNotInfinite.js
+6dcf56cb66cc3dbf 1604 dist/es/utils/coerceKeyPath.js
+6398226093f5824b 2918 dist/es/utils/deepEqual.js
+1a137835fe337044 1275 dist/es/utils/hasOwnProperty.js
+1b02ff4cca2c7244 1303 dist/es/utils/invariant.js
+05248b8111e1317b 1774 dist/es/utils/isArrayLike.js
+c063afa106ae7380 1630 dist/es/utils/isDataStructure.js
+2a251c89c244c831 1955 dist/es/utils/isPlainObj.js
+8d740c35108b41ec 1539 dist/es/utils/mixin.js
+42cf249482588d45 1482 dist/es/utils/quoteString.js
+5efd6be158f88755 1528 dist/es/utils/shallowCopy.js
+b2c67f1af73641f7 191709 dist/immutable.d.ts
+fe4b6be922b72a3c 171669 dist/immutable.js
+7516c8d2268a0511 62806 dist/immutable.js.flow
+ac98e0a2ee787f64 65771 dist/immutable.min.js
+QB_FEAS_MEMORY_PEAK=236027904
+
+# stderr (tail)
+[36m
+[1m/scratch/src/Immutable.js[22m → [1mdist/immutable.js, dist/immutable.min.js, dist/es[22m...[39m
+[1m[33m(!) Circular dependencies[39m[22m
+src/Seq.js -> src/Collection.js -> src/Seq.js
+src/Map.js -> src/Operations.js -> src/Map.js
+src/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js
+...and 6 more
+[32mcreated [1mdist/immutable.js, dist/immutable.min.js, dist/es[22m in [1m1.3s[22m[39m
+

@@ -1,0 +1,339 @@
+{
+  "schema": "qb-feasibility/1",
+  "task": "2006",
+  "task_id": "qbt_00b20b1b0285",
+  "instance": "immutable-js__immutable-js-2006",
+  "base": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+  "build_scripts": [
+    "build:clean",
+    "build:dist",
+    "build:esm",
+    "build:copy",
+    "build:prepare"
+  ],
+  "omitted": [
+    "build:stats"
+  ],
+  "label": "run3-evidence",
+  "build_mode": "approved-offline",
+  "started": "2026-11-10T19:18:51.367Z",
+  "host": {
+    "platform": "linux/x64",
+    "docker": "28.0.4 x86_64 cgroup2 mem=16760344576"
+  },
+  "qb_source": "6672e35388293e1748811863f571feba627c0a96",
+  "commands": [
+    "git fetch --depth 1 https://github.com/immutable-js/immutable-js.git 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 && git checkout --detach FETCH_HEAD",
+    "QB prepareDeps: deps-plan.sh → npm ci --no-audit --no-fund --registry=https://registry.npmjs.org/ (DEPS proxy, registry.npmjs.org only) → deps-check.sh",
+    "probe: node -e \"$QB_PROBE\" (script text recorded in the runner source; exits 3 on a required failure)",
+    "build (approved offline, review 10544): npm run build:clean && npm run build:dist && npm run build:esm && npm run build:copy && npm run build:prepare  (omitted: build:stats)",
+    "enumerate: node_modules/.bin/jest --ci --listTests",
+    "jest: node_modules/.bin/jest --ci --runInBand --json --testLocationInResults --outputFile=/out/jest.json   (pinned local binary; no npx, no download fallback; repository tests at base only)"
+  ],
+  "stages": {
+    "seed": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 321
+    },
+    "deps": {
+      "status": "ready",
+      "reason": null,
+      "detail": null,
+      "wall_ms": 19552,
+      "plan": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 224
+      },
+      "install": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 16288
+      },
+      "check": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 149
+      },
+      "node_modules_kib": 693416
+    },
+    "base_prep": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 169
+    },
+    "probe": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 492,
+      "result": {
+        "required_failed": [],
+        "arch": "x64",
+        "node": "v24.22.2",
+        "npm": "11.19.1",
+        "jest": "27.2.0",
+        "jest_bin": "/scratch/node_modules/jest/bin/jest.js",
+        "microtime": "number",
+        "microtime_prebuilds": [
+          "darwin-x64",
+          "linux-arm",
+          "linux-x64",
+          "win32-x64"
+        ],
+        "esbuild": "absent",
+        "npm_ignore_scripts": "false",
+        "npm_script_config": [
+          "allow-scripts = [\"\"]",
+          "allow-scripts-pending = false",
+          "allow-scripts-pin = true",
+          "dangerously-allow-all-scripts = false",
+          "description = true",
+          "foreground-scripts = false",
+          "ignore-scripts = false",
+          "script-shell = null",
+          "strict-allow-scripts = false",
+          "token-description = null"
+        ],
+        "toolchain": []
+      },
+      "stderr_tail": ""
+    },
+    "build": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 3297,
+      "memory_peak_bytes": 253034496,
+      "dist_outputs": [
+        "4ace083580c1b77e 188839 dist/immutable.d.ts",
+        "d5bb7c6de913fa48 161281 dist/immutable.es.js",
+        "00c48f36b9f760d8 172881 dist/immutable.js",
+        "997046b23404e9fd 62767 dist/immutable.js.flow",
+        "87325af960ae4958 65337 dist/immutable.min.js",
+        "QB_FEAS_MEMORY_PEAK=253034496"
+      ]
+    },
+    "jest_list": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 671,
+      "test_files": 44,
+      "sample": [
+        "__tests__/List.ts",
+        "__tests__/Map.ts",
+        "__tests__/updateIn.ts",
+        "__tests__/Set.ts",
+        "__tests__/merge.ts"
+      ]
+    },
+    "jest": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 15453,
+      "memory_peak_bytes": 819044352
+    }
+  },
+  "findings": {
+    "duplicate_identities": [
+      {
+        "identity": "__tests__/List.ts :: List :: remove removes any index",
+        "first": {
+          "location": "472:32",
+          "status": "passed"
+        },
+        "again": {
+          "location": "472:32",
+          "status": "passed"
+        }
+      }
+    ],
+    "non_passed_suites": [],
+    "jest_report": {
+      "success": true,
+      "numTotalTestSuites": 44,
+      "numFailedTestSuites": 0,
+      "numRuntimeErrorTestSuites": 0,
+      "numTotalTests": 684,
+      "numPassedTests": 683,
+      "numFailedTests": 0,
+      "numPendingTests": 1,
+      "numTodoTests": 0,
+      "assertion_statuses": {
+        "passed": 683,
+        "pending": 1
+      },
+      "duplicate_identities": 1,
+      "snapshot": {
+        "unchecked": 0,
+        "filesRemoved": 0,
+        "failure": false
+      },
+      "exit_consistent": true,
+      "failed_suites": []
+    },
+    "result": "install+build+jest succeeded"
+  },
+  "checkout": {
+    "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+    "tree": "9b55941fe4c925e04ddac89277b98192d7609bcb"
+  },
+  "run_id": "qb-feas2006-mwb2pq2i-1cb4",
+  "images": {
+    "tools": {
+      "ref": "sha256:268f4b24ec54a8bb3b9a2ac6467848a68e0abc10cb26cd85606be0431b1ac608",
+      "id": "sha256:268f4b24ec54a8bb3b9a2ac6467848a68e0abc10cb26cd85606be0431b1ac608 amd64"
+    },
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:85f80f18248987058007351ff91926a2939800d0f68da29225db2162aede774a amd64"
+    }
+  },
+  "limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "build_plan": {
+    "mode": "approved-offline (review 10544)",
+    "scripts": [
+      "build:clean",
+      "build:dist",
+      "build:esm",
+      "build:copy",
+      "build:prepare"
+    ],
+    "omitted": [
+      "build:stats"
+    ],
+    "guard": "package.json build:* order, build = run-s build:*, no pre/post build hooks"
+  },
+  "enumeration": {
+    "listed": [
+      "__tests__/ArraySeq.ts",
+      "__tests__/Comparator.ts",
+      "__tests__/Conversion.ts",
+      "__tests__/Equality.ts",
+      "__tests__/IndexedSeq.ts",
+      "__tests__/KeyedSeq.ts",
+      "__tests__/List.ts",
+      "__tests__/ListJS.js",
+      "__tests__/Map.ts",
+      "__tests__/MultiRequire.js",
+      "__tests__/ObjectSeq.ts",
+      "__tests__/OrderedMap.ts",
+      "__tests__/OrderedSet.ts",
+      "__tests__/Predicates.ts",
+      "__tests__/Range.ts",
+      "__tests__/Record.ts",
+      "__tests__/RecordJS.js",
+      "__tests__/Repeat.ts",
+      "__tests__/Seq.ts",
+      "__tests__/Set.ts",
+      "__tests__/Stack.ts",
+      "__tests__/concat.ts",
+      "__tests__/count.ts",
+      "__tests__/find.ts",
+      "__tests__/flatten.ts",
+      "__tests__/fromJS.ts",
+      "__tests__/get.ts",
+      "__tests__/getIn.ts",
+      "__tests__/groupBy.ts",
+      "__tests__/hasIn.ts",
+      "__tests__/hash.ts",
+      "__tests__/interpose.ts",
+      "__tests__/issues.ts",
+      "__tests__/join.ts",
+      "__tests__/merge.ts",
+      "__tests__/minmax.ts",
+      "__tests__/partition.ts",
+      "__tests__/slice.ts",
+      "__tests__/sort.ts",
+      "__tests__/splice.ts",
+      "__tests__/transformerProtocol.ts",
+      "__tests__/updateIn.ts",
+      "__tests__/utils.js",
+      "__tests__/zip.ts"
+    ],
+    "tests_dir": [
+      "__tests__/.eslintrc.json",
+      "__tests__/ArraySeq.ts",
+      "__tests__/Comparator.ts",
+      "__tests__/Conversion.ts",
+      "__tests__/Equality.ts",
+      "__tests__/IndexedSeq.ts",
+      "__tests__/KeyedSeq.ts",
+      "__tests__/List.ts",
+      "__tests__/ListJS.js",
+      "__tests__/Map.ts",
+      "__tests__/MultiRequire.js",
+      "__tests__/ObjectSeq.ts",
+      "__tests__/OrderedMap.ts",
+      "__tests__/OrderedSet.ts",
+      "__tests__/Predicates.ts",
+      "__tests__/Range.ts",
+      "__tests__/Record.ts",
+      "__tests__/RecordJS.js",
+      "__tests__/Repeat.ts",
+      "__tests__/Seq.ts",
+      "__tests__/Set.ts",
+      "__tests__/Stack.ts",
+      "__tests__/__snapshots__/Record.ts.snap",
+      "__tests__/concat.ts",
+      "__tests__/count.ts",
+      "__tests__/find.ts",
+      "__tests__/flatten.ts",
+      "__tests__/fromJS.ts",
+      "__tests__/get.ts",
+      "__tests__/getIn.ts",
+      "__tests__/groupBy.ts",
+      "__tests__/hasIn.ts",
+      "__tests__/hash.ts",
+      "__tests__/interpose.ts",
+      "__tests__/issues.ts",
+      "__tests__/join.ts",
+      "__tests__/merge.ts",
+      "__tests__/minmax.ts",
+      "__tests__/partition.ts",
+      "__tests__/slice.ts",
+      "__tests__/sort.ts",
+      "__tests__/splice.ts",
+      "__tests__/transformerProtocol.ts",
+      "__tests__/tsconfig.json",
+      "__tests__/updateIn.ts",
+      "__tests__/utils.js",
+      "__tests__/zip.ts"
+    ],
+    "in_dir_not_listed": [
+      "__tests__/.eslintrc.json",
+      "__tests__/__snapshots__/Record.ts.snap",
+      "__tests__/tsconfig.json"
+    ],
+    "executed": 44,
+    "listed_not_executed": [],
+    "executed_not_listed": []
+  },
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "finished": "2026-11-10T19:19:38.335Z"
+}

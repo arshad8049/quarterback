@@ -35,6 +35,31 @@ Then the pinned `jest --listTests` and Jest run on the same runner.
 
 **Separately, for review:** pin the base image digest in QB's image identity, and decide QB's policy on npm's new install-script default. Both are outside this card's scope.
 
+## Run 3 (review 10545): evidence capture, same environment and build plan as run 2
+
+**Run:** https://github.com/arshad8049/quarterback/actions/runs/42883845882. Workflow at `6672e35`, removed afterwards. Artifact zip sha256 `adbd4686…f4c5ce`, preserved in `results/linux-x64/artifacts/` with runs 1 and 2 (each local hash equals GitHub's digest).
+
+**Results:** same as run 2 for both tasks. Install ok; offline build ok; 44 listed / 44 executed; 684 tests: 683 passed, 0 failed, 1 skipped; exit 0, consistent with the report.
+
+**Evidence added** (`results/linux-x64/run3-evidence/`):
+- **Full Jest reports:** `2006-jest-report.json` and `2005-jest-report.json`. The only change from Jest's output is that the sandbox path prefix `/scratch/` is removed. Locations are included (`--testLocationInResults`).
+- **Discovery vs execution:** 44 listed = 44 executed, with 0 listed-not-executed and 0 executed-not-listed. `__tests__/` also holds `.eslintrc.json`, `tsconfig.json` and `__snapshots__/Record.ts.snap`, which are not test files (`testRegex` `/__tests__/.*\.(ts|js)$`).
+- **Probe:** now a small script with no nested shell strings. It exits 3 on a required failure; this was verified on a fake tree. All required checks passed.
+  - 2005: esbuild bin magic `.ELF`, `esbuild --version` 0.18.20, JS API 0.18.20, `@esbuild/linux-x64`.
+  - Both: `microtime` loads; npm `ignore-scripts=false`; no compiler in the image.
+
+**The duplicate identity, explained** (both tasks): `__tests__/List.ts :: List :: remove removes any index`, at location `472:32` (2006) and `485:32` (2005), each reported twice.
+- **Source:** `it.each(['remove', 'delete'])('remove removes any index', fn => …)`. These are **two different tests** (`fn = 'remove'` and `fn = 'delete'`). The title has no `%s` placeholder, so both share the title **and** the location.
+- **Disambiguation:** location can't separate them. Only the invocation order within `it.each` can, and Jest's JSON doesn't label it.
+- **Proposed status:** "duplicate identity, unsupported for per-test mapping". The group can be reported (both passed), but never silently deduplicated.
+
+**The `focused` status, explained from Jest's source.** In `@jest/test-result` 29.6.4, `build/formatTestResults.js` sets a file's status as follows: `allTestsPassed ? (allTestsExecuted ? 'passed' : 'focused') : 'failed'`, where `allTestsExecuted = numPendingTests === 0`.
+- So in Jest 29, **`focused` means "no failures, at least one pending/skipped test"**. It doesn't mean `.only` or a focus filter.
+- `@jest/test-result` 27.2.0 reports the same case as `passed`, which is why only task 2005 (Jest 29) shows it.
+- **In this case:** `__tests__/MultiRequire.js` has 7 tests: 6 passed, plus 1 pending, the `it.skip` at line 10. All 7 appear in the report.
+- **No focus markers anywhere:** a search of all 46 `__tests__` files at both bases found no `fit`, `fdescribe`, `.only` or `xit`. The only framework marker is that `it.skip`.
+- **Proposed rule** (until the reviewer accepts it, verification stays **unknown**): never map the file-level `focused` to pass. Derive results from assertion statuses, where `pending`/`skipped`/`todo` are never a pass, and treat any file with fewer reported assertions than expected as unresolved.
+
 ## Run 2 result (review 10544): install, approved offline build and pinned Jest all succeed on Linux x86_64
 
 **Run:** https://github.com/arshad8049/quarterback/actions/runs/42880347063. Workflow at `baf8064` on this branch only, removed afterwards. Artifact `kan110-feasibility-linux-x64-run2`, 14.7 KB, 5 days. Evidence: `results/linux-x64/run2-approved-offline/`.

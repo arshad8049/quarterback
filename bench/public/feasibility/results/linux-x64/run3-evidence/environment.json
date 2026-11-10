@@ -1,0 +1,33 @@
+{
+  "note": "NEW environment: the run-1 image was built on an ephemeral runner and not retained, so it cannot be reused; this run freezes its own identity before executing.",
+  "base_image": {
+    "ref": "node:24-bookworm-slim",
+    "repo_digests": [
+      "node@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9"
+    ],
+    "id": "sha256:280af3207172947339cc2e8c9d2efac585716fd906af49f57d6fdf0dbb829a73",
+    "layers": 5
+  },
+  "agent_image": {
+    "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+    "id": "sha256:85f80f18248987058007351ff91926a2939800d0f68da29225db2162aede774a",
+    "architecture": "amd64",
+    "layers": 12,
+    "built_on_recorded_base_layers": true
+  },
+  "in_image": [
+    "node=v24.22.2",
+    "npm=11.19.1",
+    "ignore_scripts=false",
+    "npm_config: allow-scripts = [\"\"]",
+    "npm_config: allow-scripts-pending = false",
+    "npm_config: allow-scripts-pin = true",
+    "npm_config: dangerously-allow-all-scripts = false",
+    "npm_config: description = true",
+    "npm_config: foreground-scripts = false",
+    "npm_config: ignore-scripts = false",
+    "npm_config: script-shell = null",
+    "npm_config: strict-allow-scripts = false",
+    "npm_config: token-description = null"
+  ]
+}
