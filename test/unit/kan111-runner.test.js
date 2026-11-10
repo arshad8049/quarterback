@@ -132,6 +132,18 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
     const r = run({ manifestCorrupt: { gold: true } });
     assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /manifest/);
   });
+  test('review 10557: a manifest whose entry count differs from the printed FILES is an infrastructure error', () => {
+    const r = run({ manifestFilesOff: { gold: 1 } });
+    assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /count/);
+  });
+  test('review 10557: a malformed manifest line is an infrastructure error', () => {
+    const r = run({ manifestMalformed: { gold: true } });
+    assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /malformed/);
+  });
+  test('review 10557: a duplicate manifest path is an infrastructure error', () => {
+    const r = run({ manifestDuplicate: { gold: true } });
+    assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /duplicate/);
+  });
   test('review 10554: missing test-file entries never compare equal (tamper proof fails)', () => {
     const r = run({ manifestMissing: { gold: true, 'iso-test-file-tamper': true } });
     assert.equal(r.status, 1);
