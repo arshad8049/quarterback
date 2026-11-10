@@ -136,6 +136,25 @@
     const fadeOut = () => { tgt.op = 0; tgt.ax = 0; tgt.ay = 0; kick(); };
     document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) fadeOut(); }, { passive: true });
     window.addEventListener('blur', fadeOut);
+    // Hero pin (2026-11-10): comes toward the viewer as the hero scrolls away. Scroll-linked, so it also runs on
+    // touch; off under reduced motion (at load or toggled). One rAF per scroll burst; reads layout, then writes.
+    const pop = hero && hero.querySelector('[data-qbh-pin-pop]');
+    if (pop) {
+      let popRaf = 0;
+      const halo = hero.querySelector('.qbh-pin');
+      const popUpdate = () => {
+        popRaf = 0;
+        if (reduced()) { pop.style.removeProperty('--pop'); if (halo) halo.style.removeProperty('--pop'); return; }
+        const r = hero.getBoundingClientRect();
+        const p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height * 0.8)));
+        pop.style.setProperty('--pop', p.toFixed(3)); if (halo) halo.style.setProperty('--pop', p.toFixed(3));
+      };
+      const popKick = () => { if (!popRaf) popRaf = requestAnimationFrame(popUpdate); };
+      window.addEventListener('scroll', popKick, { passive: true });
+      window.addEventListener('resize', popKick, { passive: true });
+      if (motionQuery.addEventListener) motionQuery.addEventListener('change', popKick);
+      popKick();
+    }
     const sync = () => { if (!active()) clear(); };
     if (hero && 'IntersectionObserver' in window) new IntersectionObserver((es) => {
       heroInView = es[0].isIntersecting;
