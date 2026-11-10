@@ -1,0 +1,37 @@
+{
+  "platform": "darwin-arm64",
+  "host": {
+    "uname": "Darwin 25.6.0 arm64",
+    "hostname": "Arshads-MacBook-Pro-4.local",
+    "cpus": 11,
+    "memory_bytes": {
+      "total": 19327352832,
+      "available": null,
+      "note": "no /proc/meminfo (not Linux)"
+    }
+  },
+  "docker": "28.1.1 aarch64 Docker Desktop cgroup2 mem=8217890816 cpus=11",
+  "qb_source": "edf2a23737b00eefe98235aba40acfbd05ca6644",
+  "qb_sandbox_matches_main_784e721": true,
+  "images": {
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:f385bf4637f75ff2c31f031b557f4ccca70358ed8acc58228d0d3d44b694827e arm64"
+    },
+    "tools": {
+      "ref": "sha256:a7379242949e75db0712a40e33c7b57072e90caeff69cefd408f8a8dad720b6d",
+      "id": "sha256:a7379242949e75db0712a40e33c7b57072e90caeff69cefd408f8a8dad720b6d arm64"
+    },
+    "node_base_repo_digests": "[\"node@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6\"]"
+  },
+  "stage_memory_limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "admission": {
+    "ok": true,
+    "reason": null,
+    "peak": 9808065332
+  }
+}

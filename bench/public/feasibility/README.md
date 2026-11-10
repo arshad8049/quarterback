@@ -1,5 +1,19 @@
 # KAN-110: immutable-js no-agent feasibility (review 10541)
 
+**Results by platform:**
+- `results/darwin-arm64/`: run of 2026-11-10 on Apple Silicon (below). Preserved unchanged.
+- `results/linux-x64/`: the native Linux x86_64 run, prepared and **not yet run**: no authorized x86_64 host is reachable yet.
+
+**Native x86_64 run (prepared, same script, unchanged QB sandbox):**
+
+```bash
+node bench/public/feasibility/immutable-feasibility.cjs --preflight   # host, memory, Docker, image digests, QB admission; runs no stage
+node bench/public/feasibility/immutable-feasibility.cjs 2006 2005     # stops at the first failure: install → build → jest list → jest
+```
+
+The script writes to `results/<os>-<arch>/`, so it never overwrites another platform's results. After a failed install it doesn't build. After a failed build, or zero listed tests, it doesn't run Jest.
+
+
 Preparation evidence only. This is not a scored pilot and not KAN-111 reference validation. No agent or model ran. No hidden benchmark tests or gold patches were used. No `npx` download fallback, no new egress, no image change, no host execution of repository scripts.
 
 ## Result: both tasks fail at dependency install in the current QB sandbox image. Path stopped.

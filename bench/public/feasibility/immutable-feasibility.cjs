@@ -32,7 +32,9 @@ const TASKS = {
   2005: { task_id: 'qbt_9b9a5da937c9', instance: 'immutable-js__immutable-js-2005', base: '77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6' },
 };
 const REPO = 'https://github.com/immutable-js/immutable-js.git';
-const OUT = path.join(__dirname, 'results');
+// Results are kept per platform (e.g. results/darwin-arm64, results/linux-x64); a run never overwrites another platform's.
+const PLATFORM = `${os.platform()}-${os.arch()}`;
+const OUT = path.join(__dirname, 'results', PLATFORM);
 const tail = (s, n = 6000) => (s || '').slice(-n);
 const git = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const summary = (st) => st && { state: st.state, reason: st.reason, exit_code: st.exit_code, oom_killed: st.oom_killed, duration_ms: st.duration_ms };
@@ -109,16 +111,19 @@ async function run(key) {
     const probe = await stageIn(ws, 'probe-versions', r.limits.verify, probeCmd, { timeoutMs: 2 * 60_000 });
     r.stages.probe = { ...summary(probe), output: tail(probe.stdout, 3000) };
     r.commands.push(`probe: ${probeCmd}`);
+    if (probe.state !== 'completed') { r.findings.result = 'probe_failed'; return r; }
 
     const build = await stageIn(ws, 'build', r.limits.verify, 'npm run build');
     r.stages.build = { ...summary(build), memory_peak_bytes: peak(build) };
     fs.writeFileSync(path.join(OUT, `${key}-build.log`), `# exit ${build.exit_code} state ${build.state}\n# stdout (tail)\n${tail(build.stdout, 20000)}\n# stderr (tail)\n${tail(build.stderr, 20000)}\n`);
     r.commands.push('build: npm run build   (explicit pre-test step; same as the grader runs before Jest)');
+    if (build.state !== 'completed') { r.findings.result = 'build_failed'; r.findings.build_error = tail(build.stderr || build.stdout, 3000); return r; } // stop at the first failure
 
     const list = await stageIn(ws, 'jest-list', r.limits.verify, 'node_modules/.bin/jest --ci --listTests');
     const files = (list.stdout || '').split('\n').filter((l) => /^\/scratch\//.test(l));
     r.stages.jest_list = { ...summary(list), test_files: files.length, sample: files.slice(0, 5).map((f) => f.replace('/scratch/', '')) };
     r.commands.push('enumerate: node_modules/.bin/jest --ci --listTests');
+    if (list.state !== 'completed' || !files.length) { r.findings.result = list.state !== 'completed' ? 'jest_list_failed' : 'jest_found_no_tests'; r.findings.list_error = tail(list.stderr || list.stdout, 3000); return r; }
 
     const jcmd = 'node_modules/.bin/jest --ci --runInBand --json --outputFile=/out/jest.json';
     const jest = await stageIn(ws, 'jest', r.limits.verify, jcmd, { mountOut: true, timeoutMs: 30 * 60_000 });
@@ -143,7 +148,7 @@ async function run(key) {
         failed_suites: (report.testResults || []).filter((f) => f.status !== 'passed').map((f) => ({ file: f.name.replace('/scratch/', ''), status: f.status, message: (f.message || '').slice(0, 300) })).slice(0, 10),
       };
     } else r.findings.jest_report = null;
-    r.findings.result = deps.status === 'ready' && build.state === 'completed' && jest.state === 'completed' ? 'install+build+jest succeeded' : 'see stages';
+    r.findings.result = jest.state === 'completed' && r.findings.jest_report && r.findings.jest_report.success && r.findings.jest_report.exit_consistent ? 'install+build+jest succeeded' : `jest_${jest.state}`;
     return r;
   } finally {
     r.cleanup = await D.removeRun(runId);
@@ -154,8 +159,29 @@ async function run(key) {
   }
 }
 
+async function preflight() {
+  const sh = (c, a) => { try { return execFileSync(c, a, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); } catch (e) { return `unavailable (${e.message.split('\n')[0]})`; } };
+  const mem = (() => { try { const m = fs.readFileSync('/proc/meminfo', 'utf8'); const g = (k) => Number((new RegExp(`^${k}:\\s+(\\d+)`, 'm').exec(m) || [])[1]) * 1024; return { total: g('MemTotal'), available: g('MemAvailable') }; } catch { return { total: os.totalmem(), available: null, note: 'no /proc/meminfo (not Linux)' }; } })();
+  const dv = await D.op(['info', '--format', '{{.ServerVersion}} {{.Architecture}} {{.OperatingSystem}} cgroup{{.CgroupVersion}} mem={{.MemTotal}} cpus={{.NCPU}}']);
+  await ensureAgentImage();
+  const { ensureToolsImage } = require(path.join(ROOT, 'lib/sandbox/workspace'));
+  const tools = await ensureToolsImage();
+  const base = await D.op(['image', 'inspect', '--format', '{{json .RepoDigests}}', 'node:24-bookworm-slim']);
+  const { admit } = require(path.join(ROOT, 'lib/sandbox/admission'));
+  let admission; try { admission = admit(fs.mkdtempSync(path.join(os.tmpdir(), 'qb-feas-adm-')), { runId: 'preflight' }); } catch (e) { admission = { error: e.message }; }
+  const out = { platform: PLATFORM, host: { uname: sh('uname', ['-srm']), hostname: os.hostname(), cpus: os.cpus().length, memory_bytes: mem }, docker: dv.ok ? dv.stdout.trim() : dv.stderr.trim(),
+    qb_source: git(ROOT, 'rev-parse', 'HEAD'), qb_sandbox_matches_main_784e721: git(ROOT, 'diff', '--stat', '784e721', 'HEAD', '--', 'lib', 'sandbox', 'agent', 'verify', 'context') === '',
+    images: { agent: { ref: AGENT_IMAGE, id: await imageId(AGENT_IMAGE) }, tools: { ref: tools, id: await imageId(tools) }, node_base_repo_digests: base.ok ? base.stdout.trim() : null },
+    stage_memory_limits: { seed: stageMemoryLimit('seed'), deps: stageMemoryLimit('deps'), verify: stageMemoryLimit('verify') },
+    admission: admission && (admission.ok !== undefined ? { ok: admission.ok, reason: admission.reason || null, peak: admission.peak, mem_available: admission.mem_available } : admission) };
+  fs.mkdirSync(OUT, { recursive: true });
+  fs.writeFileSync(path.join(OUT, 'preflight.json'), JSON.stringify(out, null, 2) + '\n');
+  console.log(JSON.stringify(out, null, 2));
+}
+
 (async () => {
-  const keys = process.argv.slice(2).length ? process.argv.slice(2) : ['2006', '2005'];
+  if (process.argv.includes('--preflight')) return preflight();
+  const keys = process.argv.slice(2).filter((a) => !a.startsWith('--')).length ? process.argv.slice(2).filter((a) => !a.startsWith('--')) : ['2006', '2005'];
   for (const k of keys) {
     const r = await run(k).catch((e) => ({ task: k, error: e.message }));
     console.log(JSON.stringify({ task: k, result: r.findings && r.findings.result, error: r.error, deps: r.stages && r.stages.deps && { status: r.stages.deps.status, reason: r.stages.deps.reason }, build: r.stages && r.stages.build && r.stages.build.state, jest: r.stages && r.stages.jest && r.stages.jest.state }));
