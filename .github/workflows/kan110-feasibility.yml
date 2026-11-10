@@ -1,0 +1,93 @@
+# KAN-110 (review 10541): temporary, branch-only workflow. Runs the UNCHANGED two-task immutable-js
+# feasibility script inside QB's existing sandbox on a standard GitHub-hosted ubuntu-24.04 (x86_64)
+# runner. Never on main. No model calls, no secrets, no project dependencies installed on the runner
+# (npm ci runs only inside QB's sandbox container), no retries, no larger-runner fallback.
+# Triggered only by a push of this file on the KAN-110 branch.
+name: kan110-feasibility
+
+on:
+  push:
+    branches: [kan110-public-task-import]
+    paths: ['.github/workflows/kan110-feasibility.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kan110-feasibility
+  cancel-in-progress: false
+
+jobs:
+  feasibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      OUT: bench/public/feasibility/results/linux-x64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0   # full history, so the sandbox code can be compared with main 784e721
+
+      - name: Identity (commit, runner image, tools)
+        run: |
+          mkdir -p "$OUT"
+          {
+            echo "qb_commit=$(git rev-parse HEAD)"
+            echo "main_784e721=$(git rev-parse 784e721)"
+            echo "qb_sandbox_matches_main_784e721=$(git diff --quiet 784e721 HEAD -- lib sandbox agent verify context && echo yes || echo no)"
+            echo "runner_image=${ImageOS:-unknown} ${ImageVersion:-unknown}"
+            echo "runner_arch=${RUNNER_ARCH}"
+            echo "host_node=$(node -v)"
+            echo "uname=$(uname -srm)"
+            docker version --format 'docker_client={{.Client.Version}} docker_server={{.Server.Version}} server_arch={{.Server.Arch}}'
+          } | tee "$OUT/identity.txt"
+
+      - name: Preflight (stop if not native x86_64 or resources are insufficient)
+        run: |
+          set -eu
+          [ "$(uname -m)" = "x86_64" ] || { echo "::error::not x86_64: $(uname -m)"; exit 1; }
+          [ "$(docker info --format '{{.Architecture}}')" = "x86_64" ] || { echo "::error::docker is not x86_64"; exit 1; }
+          free -b | tee "$OUT/free.txt"
+          df -B1 / /tmp | tee "$OUT/df.txt"
+          avail_disk=$(df -B1 --output=avail / | tail -1)
+          [ "$avail_disk" -ge $((10*1024*1024*1024)) ] || { echo "::error::less than 10 GiB free disk ($avail_disk)"; exit 1; }
+          # QB's own preflight: host, memory, Docker, image digests (builds QB's content-addressed images), QB admission
+          node bench/public/feasibility/immutable-feasibility.cjs --preflight > "$OUT/preflight.stdout" 2>&1 || { tail -40 "$OUT/preflight.stdout"; exit 1; }
+          node -e '
+            const p = require("./" + process.env.OUT + "/preflight.json");
+            console.log(JSON.stringify({ arch: p.host.uname, mem: p.host.memory_bytes, docker: p.docker, admission: p.admission, images: p.images }, null, 1));
+            if (!p.admission || p.admission.ok !== true) { console.error("::error::QB admission refused: " + JSON.stringify(p.admission)); process.exit(1); }
+            if (!p.qb_sandbox_matches_main_784e721) { console.error("::error::sandbox code differs from main 784e721"); process.exit(1); }'
+
+      - name: Run the unchanged two-task feasibility (stops each task at its first failure)
+        run: node bench/public/feasibility/immutable-feasibility.cjs 2006 2005 2>&1 | tee "$OUT/run.log"
+
+      - name: Results table
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs"); const o = process.env.OUT; const rows = [];
+            for (const k of ["2006", "2005"]) {
+              const f = o + "/" + k + ".json"; if (!fs.existsSync(f)) { rows.push("| " + k + " | (no result file) | | | |"); continue; }
+              const r = JSON.parse(fs.readFileSync(f, "utf8")); const s = r.stages || {}; const j = (r.findings || {}).jest_report;
+              const st = (x) => x ? (x.state || x.status) + (x.exit_code != null ? " (exit " + x.exit_code + ")" : "") : "not run";
+              rows.push(["", k, r.findings && r.findings.result, s.deps ? s.deps.status + " (" + Math.round((s.deps.wall_ms || 0) / 1000) + " s)" : "not run", st(s.build), s.jest_list ? st(s.jest_list) + ", " + s.jest_list.test_files + " files" : "not run",
+                s.jest ? st(s.jest) + (j ? ", " + j.numPassedTests + "/" + j.numTotalTests + " passed, " + j.numFailedTests + " failed" : "") : "not run", ""].join(" | "));
+            }
+            const md = "| Task | Result | Install | Build | Jest list | Jest run |\n|---|---|---|---|---|---|\n" + rows.join("\n") + "\n";
+            fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, md, { flag: "a" }); console.log(md);'
+
+      - name: Check artifacts are small and secret-free
+        if: always()
+        run: |
+          du -sh "$OUT"; ls -la "$OUT"
+          if grep -rIEl '(ghp_|gho_|ghs_|github_pat_|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY|sk-ant-)' "$OUT"; then echo "::error::secret-like string in artifacts; not uploading"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kan110-feasibility-linux-x64
+          path: ${{ env.OUT }}
+          retention-days: 5
+          if-no-files-found: warn
