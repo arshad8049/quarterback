@@ -21,7 +21,7 @@
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --header: 72px; --gutter: 24px; --radius: 16px;
   --ease: cubic-bezier(.22, 1, .36, 1);
-  width: 100%; background: var(--paper); color: var(--text);
+  width: 100%; background: var(--paper); color: var(--text); isolation: isolate;
   font-family: var(--sans); font-size: 18px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
@@ -86,8 +86,18 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qbh-art-img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: right center; }
 /* Keeps the copy on near-black when a narrow desktop window pulls the frame toward the text */
 .qbh-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(3, 3, 3, 0.7) 0%, rgba(3, 3, 3, 0.45) 38%, rgba(3, 3, 3, 0) 58%); }
-.qbh-art-light { position: absolute; inset: 0; opacity: 0; transition: opacity 300ms ease; background: radial-gradient(280px circle at var(--lx, 75%) var(--ly, 50%), rgba(224, 133, 71, 0.14), transparent 70%); }
-.qbh-hero.is-pointer .qbh-art-light { opacity: 1; }
+
+/* ── Page-wide pointer light (revision 4, owner decision 2026-11-10). interactions.js adds 640px discs on
+   the homepage only and moves them with transform. They sit UNDER text, never over it, so only backgrounds
+   change: one fixed disc lights the warm-white page (6% copper, barely visible), and each dark surface gets
+   its own clipped disc (14% copper). Decorative: aria-hidden, ignores input, hidden until a fine pointer
+   moves, hidden under reduced motion. Worst-case text contrast with the light: 4.77:1 (see the design notes). */
+.qbh-glow { position: absolute; top: 0; left: 0; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%; pointer-events: none; opacity: 0; will-change: transform, opacity; }
+.qbh-glow-light { position: fixed; z-index: -1; background: radial-gradient(circle closest-side, rgba(224, 133, 71, 0.06), rgba(224, 133, 71, 0.052) 20%, rgba(224, 133, 71, 0.036) 40%, rgba(224, 133, 71, 0.018) 60%, rgba(224, 133, 71, 0.006) 80%, rgba(224, 133, 71, 0) 100%); }
+.qbh-glow-clip { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.qbh-hero > .qbh-glow-clip { z-index: 1; }
+.qbh-glow-dark { background: radial-gradient(circle closest-side, rgba(224, 133, 71, 0.14), rgba(224, 133, 71, 0.115) 20%, rgba(224, 133, 71, 0.07) 40%, rgba(224, 133, 71, 0.032) 60%, rgba(224, 133, 71, 0.01) 80%, rgba(224, 133, 71, 0) 100%); }
+.qbh-sec-ink, .qbh-panel, .qbh-result-card, .qbh .qbx-form-card { position: relative; isolation: isolate; }
 
 /* ── Sections ── */
 .qbh-sec { padding: 112px var(--gutter); }
@@ -98,7 +108,7 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qbh-sec-ink .qbh-sub { color: var(--on-ink-2); }
 .qbh-sec-ink a:not(.qbh-btn) { color: var(--mint-text) !important; }
 .qbh-sec-ink :not(pre) > code { background: #1d2321; color: #e2e7e4; }
-.qbh-sec-light { background: var(--paper); }
+.qbh-sec-light { background: transparent; } /* the page's own paper shows, so the light can reach it */
 
 /* ── Reveal: 16px, 450ms, once; content is visible without JavaScript ── */
 .qbh .qb-js .qb-reveal, .qb-js .qbh .qb-reveal { opacity: 0; transform: translateY(16px); transition: opacity 450ms var(--ease), transform 450ms var(--ease); transition-delay: calc(min(var(--d, 0), 3) * 60ms); }
@@ -172,7 +182,7 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qbh-card li { padding: 12px 0; border-top: 1px solid #ecece6; font-size: 16px; color: var(--text-2); }
 
 /* ── Signup (shared beta-cta.html, restyled here for the homepage) ── */
-.qbh .qbx-sec.qbx-try { padding: 112px var(--gutter); border-top: 0; background: var(--paper); }
+.qbh .qbx-sec.qbx-try { padding: 112px var(--gutter); border-top: 0; background: transparent; }
 .qbh .qbx-wrap { max-width: 1280px; }
 .qbh .qbx-eyebrow { margin: 0 0 16px; font: 500 14px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .qbh .qbx-h2 { font-family: var(--sans); font-size: clamp(32px, 3.7vw, 52px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; color: var(--text); }
@@ -229,13 +239,13 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 
 /* ── Motion off: the OS setting at load or mid-session ── */
 .qb-motion-off .qbh-hero-copy > * { animation: none; }
-.qb-motion-off .qbh-art-light { display: none; }
+.qb-motion-off .qbh-glow, .qb-motion-off .qbh-glow-clip { display: none; }
 .qb-motion-off .qbh-art-move { transform: none; }
 .qb-motion-off .qbh-btn:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .qbh-hero-copy > * { animation: none; }
   .qbh-art-move { transform: none; }
-  .qbh-art-light { display: none; }
+  .qbh-glow, .qbh-glow-clip { display: none; }
   .qbh-btn, .qbh-btn:hover { transition: none; transform: none; }
   html:has(.qbh) { scroll-behavior: auto; }
 }
