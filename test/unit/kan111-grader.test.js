@@ -43,7 +43,7 @@ describe('KAN-111 eval-script variants', () => {
     const x = a1.split('\n'); const y = a1i.split('\n');
     assert.equal(y.length, x.length + 1);
     const at = x.findIndex((l) => l.includes('>>>>> Start Test Output'));
-    assert.equal(y[at], 'bash /qbx-boundary.sh tested');
+    assert.equal(y[at], 'bash /qbx-boundary.sh tested || exit 98', 'a helper failure stops the script before any test runs');
     assert.deepEqual([...y.slice(0, at), ...y.slice(at + 1)], x);
     assert.throws(() => evalScript(OFFICIAL.replace(": '>>>>> Start Test Output'\n", ''), TASKS[2006], 'A1', { instrument: true }), /Start Test Output/);
   });

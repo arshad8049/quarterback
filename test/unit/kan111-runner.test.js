@@ -29,22 +29,32 @@ function setup(scenario) {
   fs.writeFileSync(path.join(d, 'scenario.json'), JSON.stringify(scenario));
   return d;
 }
-function run(scenario, extra = []) {
+// A tripwire `docker` placed FIRST on PATH: if anything ever reaches a real-looking docker, the test fails.
+function tripwire(d) {
+  const bin = path.join(d, 'tripwire-bin'); fs.mkdirSync(bin, { recursive: true });
+  fs.writeFileSync(path.join(bin, 'docker'), `#!/bin/sh\necho "$@" >> ${JSON.stringify(path.join(d, 'LIVE-DOCKER-CALLED'))}\nexit 1\n`); fs.chmodSync(path.join(bin, 'docker'), 0o755);
+  return { PATH: `${bin}${path.delimiter}${process.env.PATH}`, FAKE_DOCKER_CALLS: path.join(d, 'fake-calls.txt') };
+}
+function run(scenario, extra = [], { reps = '1' } = {}) {
   const d = setup(scenario);
-  const r = spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=FIXTURE', '--reps=1', '--fixture-timeout=1', `--out=${path.join(d, 'out')}`, ...extra], {
+  const r = spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=FIXTURE', `--reps=${reps}`, '--fixture-timeout=1', `--out=${path.join(d, 'out')}`, ...extra], {
     encoding: 'utf8', timeout: 60_000,
-    env: { ...process.env, QB_KAN111_FIXTURE: path.join(d, 'fixture.json'), QB_KAN111_DOCKER: path.join(FX, 'fake-docker.js'), SWEBENCH_PYTHON: process.execPath,
+    env: { ...process.env, ...tripwire(d), QB_KAN111_FIXTURE: path.join(d, 'fixture.json'), QB_KAN111_DOCKER: path.join(FX, 'fake-docker.js'), SWEBENCH_PYTHON: process.execPath,
       QB_KAN111_GRADER: path.join(FX, 'fake-grader.js'), FAKE_DOCKER_SCENARIO: path.join(d, 'scenario.json'), FAKE_BASE: 'base' } });
   const summaryPath = path.join(d, 'out', 'summary.json');
   const summary = fs.existsSync(summaryPath) ? JSON.parse(fs.readFileSync(summaryPath, 'utf8')) : null;
+  const live = fs.existsSync(path.join(d, 'LIVE-DOCKER-CALLED'));
+  const fakeCalls = fs.existsSync(path.join(d, 'fake-calls.txt')) ? fs.readFileSync(path.join(d, 'fake-calls.txt'), 'utf8').trim().split('\n').length : 0;
   fs.rmSync(d, { recursive: true, force: true });
-  return { status: r.status, stdout: r.stdout, stderr: r.stderr, summary };
+  assert.equal(live, false, 'a real docker was invoked');
+  return { status: r.status, stdout: r.stdout, stderr: r.stderr, summary, fakeCalls };
 }
 const byLabel = (s, l) => s.runs.find((x) => x.label === l);
 
 describe('KAN-111 runner gates (fake docker and grader; no real execution)', () => {
-  test('all gates met: exit 0, fixture mode recorded, every expectation satisfied', () => {
+  test('all gates met: exit 0, fixture mode recorded, every expectation satisfied; only the fake docker was called', () => {
     const r = run({});
+    assert.ok(r.fakeCalls > 20, 'the fake docker recorded the calls');
     assert.equal(r.status, 0, r.stderr + r.stdout);
     assert.equal(r.summary.fixture_mode, true);
     assert.equal(r.summary.gates_passed, true);
@@ -112,5 +122,55 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
     assert.equal(spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=FIXTURE', ...out], { env: safe, encoding: 'utf8' }).status, 2, 'FIXTURE approval without a fixture is refused');
     assert.ok(!fs.existsSync(path.join(d, 'guard-out')), 'a refused run writes nothing');
     fs.rmSync(d, { recursive: true, force: true });
+  });
+  test('review 10554: a boundary helper failure (eval exit 98) is an infrastructure error, never graded', () => {
+    const r = run({ evalExit: { gold: 98 } });
+    assert.equal(r.status, 1); const g = byLabel(r.summary, 'gold');
+    assert.equal(g.outcome, 'infra_error'); assert.match(g.infra_step, /boundary/); assert.equal(g.grade, undefined);
+  });
+  test('review 10554: a copied manifest that does not match the emitted hash is an infrastructure error', () => {
+    const r = run({ manifestCorrupt: { gold: true } });
+    assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /manifest/);
+  });
+  test('review 10554: missing test-file entries never compare equal (tamper proof fails)', () => {
+    const r = run({ manifestMissing: { gold: true, 'iso-test-file-tamper': true } });
+    assert.equal(r.status, 1);
+    assert.ok(byLabel(r.summary, 'iso-test-file-tamper').expectation_failures.some((x) => /missing/.test(x)), JSON.stringify(byLabel(r.summary, 'iso-test-file-tamper').expectation_failures));
+  });
+  test('review 10554: QBX_EVAL_EXIT must equal the observed wrapper exit', () => {
+    const r = run({ evalExitPrinted: { gold: 1 } });
+    assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /exit/);
+  });
+  test('review 10554: node_modules changing between start and the test boundary is an infrastructure error', () => {
+    const r = run({ nodeModulesChanged: { gold: true } });
+    assert.equal(r.status, 1); assert.match(byLabel(r.summary, 'gold').infra_step, /node_modules/);
+  });
+  test('review 10554: every step records its status and a redacted output tail, including rejected patch attempts', () => {
+    const r = run({});
+    const c = byLabel(r.summary, 'iso-patch-conflict');
+    const attempts = c.steps.filter((x) => /^apply attempt/.test(x.step));
+    assert.equal(attempts.length, 4); assert.ok(attempts.every((x) => x.status === 1 && typeof x.stderr_tail === 'string'));
+    assert.ok(c.steps.some((x) => /reverse check/.test(x.step)));
+  });
+});
+
+describe('KAN-111 review 10554: execution guards (no live calls)', () => {
+  const guard = (args, env = {}) => {
+    const d = setup({}); const t = tripwire(d);
+    const r = spawnSync(process.execPath, [GRADE, ...args, `--out=${path.join(d, 'out')}`], { encoding: 'utf8', env: { ...process.env, ...t, ...env, GITHUB_ACTIONS: env.GITHUB_ACTIONS || '', KAN111_CI_RUN: env.KAN111_CI_RUN || '' } });
+    const live = fs.existsSync(path.join(d, 'LIVE-DOCKER-CALLED')); const wrote = fs.existsSync(path.join(d, 'out'));
+    fs.rmSync(d, { recursive: true, force: true }); return { status: r.status, live, wrote, stderr: r.stderr };
+  };
+  test('real (non-fixture) execution is refused outside the approved CI route', () => {
+    const r = guard(['--execute', '--approved-by=NOT-A-REAL-APPROVAL']);
+    assert.equal(r.status, 2, r.stderr); assert.equal(r.live, false); assert.equal(r.wrote, false);
+    assert.match(r.stderr, /CI/);
+  });
+  test('approved execution requires reps >= 3 and variant A1', () => {
+    const env = { GITHUB_ACTIONS: 'true', KAN111_CI_RUN: '1' };
+    for (const a of [['--reps=2'], ['--reps=0'], ['--reps=x'], ['--variant=A0']]) {
+      const r = guard(['--execute', '--approved-by=NOT-A-REAL-APPROVAL', ...a], env);
+      assert.equal(r.status, 2, `${a}: ${r.stderr}`); assert.equal(r.live, false); assert.equal(r.wrote, false);
+    }
   });
 });
