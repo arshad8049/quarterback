@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quarterback for developers — check AI-written code against requirements you approve</title>
+  <title>Quarterback for developers: check AI-written code against requirements you approve</title>
   <meta name="description" content="Claude Code in an isolated sandbox, your tests and executable contract checks on the captured change, evidence and a reviewable patch. Supported setup, a real run, dated progress and evidence with its limits.">
   <link rel="canonical" href="https://quarterback.velorallc.workers.dev/developers">
 
@@ -13,14 +13,14 @@
   <meta property="og:type"         content="website">
   <meta property="og:site_name"    content="Quarterback">
   <meta property="og:url"          content="https://quarterback.velorallc.workers.dev/developers">
-  <meta property="og:title"        content="Quarterback for developers — check AI-written code against requirements you approve">
+  <meta property="og:title"        content="Quarterback for developers: check AI-written code against requirements you approve">
   <meta property="og:description"  content="Claude Code in an isolated sandbox, your tests and executable contract checks on the captured change, evidence and a reviewable patch. Supported setup, a real run, dated progress and evidence with its limits.">
   <meta property="og:image"        content="https://quarterback.velorallc.workers.dev/og-image.png">
   <meta property="og:image:width"  content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt"    content="Quarterback: AI writes the code, Quarterback shows you the evidence. Early, supervised testing.">
+  <meta property="og:image:alt"    content="Quarterback: review AI-written code with evidence. Early beta.">
   <meta name="twitter:card"        content="summary_large_image">
-  <meta name="twitter:title"       content="Quarterback for developers — check AI-written code against requirements you approve">
+  <meta name="twitter:title"       content="Quarterback for developers: check AI-written code against requirements you approve">
   <meta name="twitter:description" content="Claude Code in an isolated sandbox, your tests and executable contract checks on the captured change, evidence and a reviewable patch. Supported setup, a real run, dated progress and evidence with its limits.">
   <meta name="twitter:image"       content="https://quarterback.velorallc.workers.dev/og-image.png">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -38,6 +38,8 @@
   }
   </script>
 
+  <link rel="preload" href="./src/fonts/font-25.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./src/fonts/font-21.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./src/styles/fonts.css">
   <link rel="stylesheet" href="./src/styles/main.css">
 </head>
@@ -432,29 +434,29 @@
   <!-- ============================================================ -->
   <!-- SECTION: BETA-CTA → edit: src/beta-cta.html -->
   <!-- ============================================================ -->
-  <!-- BETA CTA -->
-  <section id="beta" class="qb-sec" aria-labelledby="beta-h" style="padding-left: 80px; padding-right: 80px;">
-    <div class="qb-beta-grid" style="max-width: 1180px; margin: 0 auto; display: flex; gap: 72px; align-items: flex-start;">
-      <div style="flex-grow: 1; flex-basis: 0;">
-        <div class="qb-eyebrow">Supervised evaluation</div>
-        <h2 id="beta-h" class="qb-h2">Request a supervised evaluation.</h2>
-        <p class="qb-body">We are looking for developers who use Claude Code on JavaScript or Node.js projects and regularly need to check whether a generated change does what was asked. Sign up and we email you the setup guide right away; reply to that email at any step and we’ll help you set it up and try it.</p>
-        <p class="qb-body">If you opt in, we measure how much correction and review your own tasks need with and without Quarterback, and share the results with you. Metrics are opt-in, tied to your account (not anonymous), deletable by you, and we publish nothing without your say-so.</p>
-        <p class="qb-body" style="margin-top: 22px;"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener" class="qb-link">Read the setup guide →</a>&nbsp;&nbsp; <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-link">View on GitHub →</a></p>
+  <!-- TRY QUARTERBACK: the one CTA and the working signup form (ids used by interactions.js) -->
+  <section id="beta" class="qbx-sec qbx-try" aria-labelledby="beta-h">
+    <div class="qbx-wrap qbx-try-grid">
+      <div class="qb-reveal">
+        <p class="qbx-eyebrow">Guided early beta</p>
+        <h2 id="beta-h" class="qbx-h2">Try Quarterback.</h2>
+        <p class="qbx-sub">Sign up and we email you the setup guide. Reply at any step and we’ll help you try it on a real task.</p>
+        <ul class="qbx-compat">
+          <li><span>Assistant</span>Claude Code, with your own Claude subscription or API key</li>
+          <li><span>Projects</span>JavaScript or Node.js, tested with node:test</li>
+          <li><span>Computer</span>Ubuntu 24.04 with Docker and 16 GB of memory is validated. macOS: limited successful runs; not a validated supported environment. No Windows.</li>
+        </ul>
+        <p class="qbx-links"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener">Read the setup guide</a> <a href="./developers">For developers</a></p>
       </div>
   
-      <div class="qb-glass" style="flex-grow: 1; flex-basis: 0; padding: 40px 42px; border-radius: 12px;">
+      <div class="qbx-form-card qb-reveal">
         <form id="beta-form" name="beta-access" method="POST">
-          <div style="margin-bottom: 24px;">
-            <label for="email" style="display: block; font-size: 15px; font-weight: 500; color: #C6CFCB; margin-bottom: 10px;">Work email</label>
-            <input id="email" name="email" type="email" required placeholder="you@company.com" style="width: 100%; box-sizing: border-box; height: 52px; padding: 0 16px; background: #0D100F; border: 1px solid #3A4441; border-radius: 4px; color: #F4F1EA; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px;">
-          </div>
-          <div style="margin-bottom: 28px;">
-            <label for="stack" style="display: block; font-size: 15px; font-weight: 500; color: #C6CFCB; margin-bottom: 10px;">Which agent do you run most?</label>
-            <input id="stack" name="agent" type="text" placeholder="Claude Code" style="width: 100%; box-sizing: border-box; height: 52px; padding: 0 16px; background: #0D100F; border: 1px solid #3A4441; border-radius: 4px; color: #F4F1EA; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px;">
-          </div>
-          <button type="submit" style="width: 100%; height: 54px; background: #E08A4C; border: none; border-radius: 4px; color: #0D100F; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer;">Request a supervised evaluation</button>
-          <p id="form-feedback" role="status" style="margin: 20px 0 0 0; font-size: 15px; line-height: 1.6; color: #A7B0AB;">Quarterback runs on your machine; the Claude Code agent sends your task and the code it reads to Anthropic under your account. <a href="/privacy.html" style="color:#6FBF9F;">Data flows</a>.</p>
+          <label for="email" class="qbx-label">Work email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" class="qbx-input">
+          <label for="stack" class="qbx-label">Which coding assistant do you use most?</label>
+          <input id="stack" name="agent" type="text" placeholder="Claude Code" class="qbx-input">
+          <button type="submit" class="qbx-btn qbx-btn-primary qbx-btn-block">Send me the setup guide</button>
+          <p id="form-feedback" role="status" class="qbx-form-note">Quarterback runs on your machine. During a run, Claude Code sends your task and the code it reads to Anthropic under your account. <a href="./privacy.html">Data and privacy</a></p>
         </form>
         <p id="form-status" role="status" style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;"></p>
       </div>

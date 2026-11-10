@@ -1,0 +1,101 @@
+<!-- ONE REAL RUN. Every panel is an excerpt from run e01b3273 (2026-10-15, QB 3fc08fd), re-checked 2026-11-09 against
+     landing_page/evidence/2026-10-15-hero-run/: hero-run.log, contract.json (constraint_policy[2].advisory), run/manifest.json
+     (outcome VERIFIED, attempt 1 of 3, npm test 136 ms), run/artifacts/0213…87ea.diff.
+     Desktop with motion (900px and up): interactions.js moves the panels into the sticky stage. Otherwise each panel stays under its step. -->
+<section id="run" class="qbh-sec" aria-labelledby="run-h">
+  <div class="qbh-wrap">
+    <header class="qbh-head qb-reveal">
+      <p class="qbh-eyebrow">A real run</p>
+      <h2 id="run-h" class="qbh-h2">One task, start to finish.</h2>
+      <p class="qbh-sub">A small change to a sample project on October 15, 2026. Each panel is an excerpt from that run’s record.</p>
+    </header>
+
+    <div class="qbh-story" data-qbh-story>
+      <ol class="qbh-steps">
+        <li class="qbh-step" id="run-1">
+          <div class="qbh-step-text">
+            <p class="qbh-step-num">Step 1</p>
+            <h3 class="qbh-h3">Describe the change</h3>
+            <p>A plain-language request. The project showed 30 seconds as <code>0m 30s</code>.</p>
+          </div>
+          <figure class="qbh-panel" data-panel>
+            <figcaption class="qbh-panel-bar"><span class="qbh-tag">Run excerpt</span><span>Request and command</span></figcaption>
+            <div class="qbh-panel-body">
+              <p class="qbh-quote">“formatDuration should show durations under one minute as seconds only, for example 30000 ms as "30s" instead of "0m 30s". Durations of one minute or more keep the current format.”</p>
+              <pre class="qbh-code" tabindex="0" aria-label="The command"><span class="qbh-dim">$</span> qb "&lt;request&gt;" --repo ~/demo/hero-demo \&#10;     --agent claude-code --contract-file contract.json</pre>
+            </div>
+            <p class="qbh-panel-src">Source: <a href="https://github.com/arshad8049/quarterback/blob/main/landing_page/evidence/2026-10-15-hero-run/hero-run.log">run log</a>, run e01b3273, Quarterback <code>3fc08fd</code></p>
+          </figure>
+        </li>
+
+        <li class="qbh-step" id="run-2">
+          <div class="qbh-step-text">
+            <p class="qbh-step-num">Step 2</p>
+            <h3 class="qbh-h3">Approve the requirements</h3>
+            <p>Two checks that must pass and the one file that may change. A local model drafted the list; a person edited and approved it.</p>
+          </div>
+          <figure class="qbh-panel" data-panel>
+            <figcaption class="qbh-panel-bar"><span class="qbh-tag">Run excerpt</span><span>Approved requirements</span></figcaption>
+            <div class="qbh-panel-body">
+              <ul class="qbh-rows">
+                <li><span class="qbh-key">CHK-1</span><span><code>formatDuration(30000)</code> returns <code>"30s"</code></span></li>
+                <li><span class="qbh-key">CHK-2</span><span><code>formatDuration(90000)</code> returns <code>"1m 30s"</code></span></li>
+                <li><span class="qbh-key">Scope</span><span>Only <code>src/duration.js</code> may change</span></li>
+                <li class="qbh-row-muted"><span class="qbh-key">Advisory</span><span>“Handle edge cases such as 0 ms.” Recorded, but no check enforces it.</span></li>
+              </ul>
+            </div>
+            <p class="qbh-panel-src">Source: <a href="https://github.com/arshad8049/quarterback/blob/main/landing_page/evidence/2026-10-15-hero-run/contract.json">contract.json</a>, the approved file the run used</p>
+          </figure>
+        </li>
+
+        <li class="qbh-step" id="run-3">
+          <div class="qbh-step-text">
+            <p class="qbh-step-num">Step 3</p>
+            <h3 class="qbh-h3">Quarterback checks the change</h3>
+            <p>Claude Code made the change in an isolated workspace. Quarterback then ran the project’s tests and both checks on it.</p>
+          </div>
+          <figure class="qbh-panel" data-panel>
+            <figcaption class="qbh-panel-bar"><span class="qbh-tag">Run excerpt</span><span>Verification</span></figcaption>
+            <div class="qbh-panel-body">
+              <ul class="qbh-rows">
+                <li><span class="qbh-pass">Pass</span><span>Project tests (<code>npm test</code>), 136 ms</span></li>
+                <li><span class="qbh-pass">Pass</span><span>CHK-1: returned <code>"30s"</code></span></li>
+                <li><span class="qbh-pass">Pass</span><span>CHK-2: returned <code>"1m 30s"</code></span></li>
+                <li><span class="qbh-key">Changed</span><span><code>src/duration.js</code>, 2 lines added, 1 removed</span></li>
+              </ul>
+              <p class="qbh-outcome"><strong>Verified</strong> on the first of 3 allowed attempts, 111 seconds in total.</p>
+            </div>
+            <p class="qbh-panel-src">Source: <a href="https://github.com/arshad8049/quarterback/blob/main/landing_page/evidence/2026-10-15-hero-run/run/manifest.json">run manifest</a> and run log. Replaying the record reproduces this outcome.</p>
+          </figure>
+        </li>
+
+        <li class="qbh-step" id="run-4">
+          <div class="qbh-step-text">
+            <p class="qbh-step-num">Step 4</p>
+            <h3 class="qbh-h3">Review the patch</h3>
+            <p>The change comes back as a proposed patch. Nothing touches your project until you apply it.</p>
+          </div>
+          <figure class="qbh-panel" data-panel>
+            <figcaption class="qbh-panel-bar"><span class="qbh-tag">Run excerpt</span><span>src/duration.js</span></figcaption>
+            <div class="qbh-panel-body">
+              <pre class="qbh-code qbh-diff" tabindex="0" aria-label="The proposed patch"><span class="qbh-dim">@@ -1,9 +1,10 @@</span>&#10;<span class="qbh-del">-/** Formats a duration … e.g. 90000 -&gt; "1m 30s". */</span>&#10;<span class="qbh-add">+/** Formats a duration … e.g. 90000 -&gt; "1m 30s", 30000 -&gt; "30s". */</span>&#10; function formatDuration(ms) {&#10;   const minutes = Math.floor(ms / 60000);&#10;   const seconds = Math.floor((ms % 60000) / 1000);&#10;<span class="qbh-add">+  if (minutes === 0) return `${seconds}s`;</span>&#10;   return `${minutes}m ${seconds}s`;&#10; }</pre>
+            </div>
+            <p class="qbh-panel-src">Source: the run’s <a href="https://github.com/arshad8049/quarterback/blob/main/landing_page/evidence/2026-10-15-hero-run/run/artifacts/021328960d9d5b7c6fca0377ebbdeba04fbf1e14ee1bb98011ee05a78acf87ea.diff">stored patch</a>. The comment line is shortened here.</p>
+          </figure>
+        </li>
+      </ol>
+
+      <div class="qbh-stage" data-qbh-stage hidden>
+        <div class="qbh-stage-panels" data-qbh-stage-panels></div>
+        <div class="qbh-stage-nav" role="group" aria-label="Run steps">
+          <button type="button" data-goto="0">1 Request</button>
+          <button type="button" data-goto="1">2 Requirements</button>
+          <button type="button" data-goto="2">3 Checks</button>
+          <button type="button" data-goto="3">4 Patch</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="qbh-note qb-reveal">One small, successful run on a sample project. An earlier attempt that day stopped as <strong>blocked</strong> because another run held the lock, so nothing was checked. <a href="https://github.com/arshad8049/quarterback/tree/main/landing_page/evidence/2026-10-15-hero-run">Full run record and how to check it</a></p>
+  </div>
+</section>
