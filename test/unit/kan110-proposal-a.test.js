@@ -106,6 +106,18 @@ describe('KAN-110 review: Yarn audit checks every restriction, not just the firs
     assert.ok(c.blockers.includes('yarn:repo-supplied-binary-or-plugins'));
   });
 
+  test('GitHub tarballs are git dependencies; a sha1 URL fragment is a weaker hash, not a missing one', async () => {
+    const { auditYarn } = await load('proposal-a.mjs');
+    const gh = CLASSIC + '\nfoo@https://codeload.github.com/a/foo/tar.gz/0123456:\n  version "1.0.0"\n  resolved "https://codeload.github.com/a/foo/tar.gz/0123456"\n';
+    const a = auditYarn({ pkg: pkg(), lockText: gh, rootFiles: new Set(['yarn.lock']) });
+    assert.ok(a.blockers.includes('deps:git-or-file-deps'));
+    assert.ok(!a.blockers.includes('deps:non-npm-registry'));
+    const sha1 = CLASSIC.replace(/\n  integrity sha512-[AB]+/g, '').replace('#abc', '#' + 'a'.repeat(40)).replace('#def', '#' + 'b'.repeat(40));
+    const b = auditYarn({ pkg: pkg(), lockText: sha1, rootFiles: new Set(['yarn.lock']) });
+    assert.ok(!b.blockers.includes('yarn:missing-integrity'), JSON.stringify(b.blockers));
+    assert.ok(b.requirements.includes('yarn:sha1-only-integrity'));
+  });
+
   test('a registry other than npm (or its yarnpkg mirror) is blocked', async () => {
     const { auditYarn } = await load('proposal-a.mjs');
     const priv = CLASSIC.replace('https://registry.npmjs.org/left-pad', 'https://npm.example.com/left-pad');
@@ -136,7 +148,14 @@ describe('KAN-110 review: Proposal A classification', () => {
     const { auditYarn, proposalA } = await load('proposal-a.mjs');
     const deps = auditYarn({ pkg: pkg(), lockText: CLASSIC, rootFiles: new Set(['yarn.lock']) });
     assert.ok(proposalA(task(deps, { node: {} }), { yarn: ['classic'] }).unknowns.includes('runtime:undeclared'));
-    assert.equal(proposalA(task(deps, { node: { nvmrc: '16.3.0' } }), { yarn: ['classic'] }).status, 'incompatible');
+    // A pinned old Node (.nvmrc / setup image) is a hint, not proof: unknown on Node 24, not incompatible
+    const pinned = proposalA(task(deps, { node: { nvmrc: '16.3.0' } }), { yarn: ['classic'] });
+    assert.ok(pinned.unknowns.includes('runtime:pinned-node16'), JSON.stringify(pinned));
+    assert.ok(!pinned.blockers.some((b) => b.startsWith('runtime')));
+    // A declared engines range that excludes Node 24 blocks; a minimum such as >=14 admits it
+    assert.ok(proposalA(task(deps, { node: { engines: '>=10.9.0 <13.0.0' } }), { yarn: ['classic'] }).blockers.includes('runtime:engines-exclude-node24'));
+    assert.ok(proposalA(task(deps, { node: { engines: '16' } }), { yarn: ['classic'] }).blockers.includes('runtime:engines-exclude-node24'));
+    assert.ok(!proposalA(task(deps, { node: { engines: '>=14' } }), { yarn: ['classic'] }).blockers.some((b) => b.startsWith('runtime')));
     // yarn.lock does not record install scripts: without them from another source, the task stays unknown
     assert.ok(proposalA(task(deps), { yarn: ['classic'] }).unknowns.includes('install:dependency-scripts-unrecorded'));
     const known = auditYarn({ pkg: pkg(), lockText: CLASSIC, rootFiles: new Set(['yarn.lock']), installScripts: { required: [], optional: [] } });
