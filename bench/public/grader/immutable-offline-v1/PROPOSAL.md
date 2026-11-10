@@ -118,3 +118,23 @@ While building the fake environment I hit three fixture bugs: argument order, de
 - results are secret-scanned before upload (5-day retention).
 
 **Network use:** image pulls by digest, the locked pip install, and the dataset download. All happen before any offline task container starts.
+
+## Incident: an unintended local execution attempt (disclosed, 2026-11-10)
+
+**What happened:**
+- While writing the red-phase tests, I ran the new runner tests against the **old** `grade.mjs`. The old runner didn't know about test fixtures.
+- One guard test passed `--execute --approved-by=10551` (a real-looking review comment id). The old runner treated that as real approval and attempted a real run on this Mac (darwin/arm64) with the real `docker` CLI.
+
+**What ran:**
+- No SWE-bench image was present afterwards, and no `kan111` container existed. Every `docker exec` returned "No such container", so **no task code ran**.
+- The pinned harness was not installed, so the grade step failed.
+- The only external effect was the attempted image pulls.
+
+**What leaked:**
+- The run's output folder was committed and pushed in `9265147`: per-run `run.json`, `test_output.txt`, the official `eval.sh` copies (which contain the hidden test patches) and `patch.diff` copies of the gold patches.
+- They were removed in `8a018d1`, and `bench/public/grader/*/results/` is now gitignored.
+- **They remain in the public branch history at `9265147`.** Rewriting that history (a force push) is the owner's decision. The dataset itself is public on Hugging Face, but this repository's rule is that grading material stays out of it.
+
+**Prevention:**
+- The guard test now runs with the fake docker CLI and fake grader, a temporary output folder and an obviously fake approval string, and asserts that a refused run writes nothing.
+- Test fixtures are only honoured with `--approved-by=FIXTURE`, and that string is refused without a fixture.
