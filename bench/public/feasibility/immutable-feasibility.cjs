@@ -47,14 +47,14 @@ const summary = (st) => st && { state: st.state, reason: st.reason, exit_code: s
 
 async function imageId(ref) { const r = await D.op(['image', 'inspect', '--format', '{{.Id}} {{.Architecture}}', ref]); return r.ok ? r.stdout.trim() : null; }
 
-async function stageIn(ws, role, mem, shellCmd, { mountOut = false, timeoutMs = 20 * 60_000 } = {}) {
+async function stageIn(ws, role, mem, shellCmd, { mountOut = false, timeoutMs = 20 * 60_000, env = {} } = {}) {
   // Same shape as QB's verification stage (lib/sandbox/stages.js runVerification): hardened, no network,
   // memory limit, private HOME tmpfs, read-only deps at /scratch/node_modules. Reports cgroup peak memory.
   const cmd = `${shellCmd}; ec=$?; echo "QB_FEAS_MEMORY_PEAK=$(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo unknown)"; exit $ec`;
   return D.runStage(`${ws.runId}-${role}`, [
     ...hardened(ws.runId, 'workload'), '--network', 'none', '--memory', String(mem), '--memory-swap', String(mem),
     '-e', 'HOME=/tmp/home', '-e', 'CI=1', '-e', 'npm_config_update_notifier=false', '-e', 'npm_config_offline=true',
-    '--tmpfs', '/tmp/home:rw,size=256m,uid=10001,gid=10001,mode=0700',
+    '--tmpfs', '/tmp/home:rw,size=256m,uid=10001,gid=10001,mode=0700', ...Object.entries(env).flatMap(([k, v]) => ['-e', `${k}=${v}`]),
     ...ws.mount('scratch'), '-v', `${ws.runId}-deps:/scratch/node_modules:ro`, ...(mountOut ? ws.mount('out') : []),
     '-w', '/scratch', '--entrypoint', 'sh', AGENT_IMAGE, '-c', cmd,
   ], { waitTimeoutMs: timeoutMs, maxBytes: 512 * 1024 });
@@ -104,21 +104,33 @@ async function run(key) {
     if (prep.state !== 'completed') { r.findings.result = 'base_prep_failed'; return r; }
 
     // Probe: versions and native modules (no network)
-    const probeCmd = [
-      'echo "arch=$(uname -m) node=$(node -v) npm=$(npm -v)"',
-      'node -p "\'jest=\'+require(\'/scratch/node_modules/jest/package.json\').version"',
-      'node -p "\'jest-cli-bin=\'+require(\'fs\').realpathSync(\'/scratch/node_modules/.bin/jest\')"',
-      'node -e "try{const m=require(\'/scratch/node_modules/microtime\');console.log(\'microtime=loads now=\'+(typeof m.now()))}catch(e){console.log(\'microtime=FAILS \'+e.message.split(\'\\n\')[0])}"',
-      'ls /scratch/node_modules/microtime/build/Release 2>/dev/null | head -3 | sed "s/^/microtime-build:/"; ls /scratch/node_modules/microtime/prebuilds 2>/dev/null | sed "s/^/microtime-prebuilds:/"',
-      // review 10544: invoke esbuild's actual executable and its documented JS API (never node on a native binary)
-      'if [ -e /scratch/node_modules/esbuild ]; then echo "esbuild-bin-kind=$(head -c 4 /scratch/node_modules/esbuild/bin/esbuild | od -An -c | tr -d \" \" | head -c 12)"; echo "esbuild-exec=$(/scratch/node_modules/esbuild/bin/esbuild --version 2>&1 | head -1)"; node -e "console.log(\"esbuild-js-api=\"+require(\"/scratch/node_modules/esbuild\").version)" 2>&1 | head -1; else echo esbuild=absent; fi',
-      'echo "npm-ignore-scripts=$(npm config get ignore-scripts 2>/dev/null)"; npm config ls -l 2>/dev/null | grep -iE "script" | sed "s/^/npm-config:/" | head -12',
-      'ls /scratch/node_modules/@esbuild 2>/dev/null | sed "s/^/esbuild-platform:/"',
-      'command -v cc gcc g++ make python3 2>/dev/null | sed "s/^/toolchain:/"; echo toolchain-check-done',
-    ].join('; ');
-    const probe = await stageIn(ws, 'probe-versions', r.limits.verify, probeCmd, { timeoutMs: 2 * 60_000 });
-    r.stages.probe = { ...summary(probe), output: tail(probe.stdout, 3000) };
-    r.commands.push(`probe: ${probeCmd}`);
+    // Probe as a small script passed through an environment variable (review 10545: no nested shell quoting).
+    // It prints one JSON object and exits 3 if a REQUIRED check fails; a later echo can't hide that.
+    const PROBE = `
+      const fs = require('fs'); const cp = require('child_process'); const r = { required_failed: [] };
+      const req = (k, f) => { try { r[k] = f(); } catch (e) { r[k] = 'ERROR ' + String(e.message).split('\\n')[0]; r.required_failed.push(k); } };
+      const opt = (k, f) => { try { r[k] = f(); } catch (e) { r[k] = 'ERROR ' + String(e.message).split('\\n')[0]; } };
+      r.arch = process.arch; r.node = process.version;
+      req('npm', () => cp.execFileSync('npm', ['-v'], { encoding: 'utf8' }).trim());
+      req('jest', () => require('/scratch/node_modules/jest/package.json').version);
+      req('jest_bin', () => fs.realpathSync('/scratch/node_modules/.bin/jest'));
+      req('microtime', () => typeof require('/scratch/node_modules/microtime').now());
+      opt('microtime_prebuilds', () => fs.readdirSync('/scratch/node_modules/microtime/prebuilds'));
+      if (fs.existsSync('/scratch/node_modules/esbuild')) {
+        req('esbuild_bin_magic', () => fs.readFileSync('/scratch/node_modules/esbuild/bin/esbuild').subarray(0, 4).toString('latin1').replace(/[^ -~]/g, '.'));
+        req('esbuild_exec_version', () => cp.execFileSync('/scratch/node_modules/esbuild/bin/esbuild', ['--version'], { encoding: 'utf8' }).trim());
+        req('esbuild_js_api_version', () => require('/scratch/node_modules/esbuild').version);
+        opt('esbuild_platform_pkgs', () => fs.readdirSync('/scratch/node_modules/@esbuild'));
+      } else r.esbuild = 'absent';
+      req('npm_ignore_scripts', () => cp.execFileSync('npm', ['config', 'get', 'ignore-scripts'], { encoding: 'utf8' }).trim());
+      opt('npm_script_config', () => cp.execFileSync('npm', ['config', 'ls', '-l'], { encoding: 'utf8' }).split('\\n').filter((l) => /script/i.test(l)));
+      opt('toolchain', () => ['cc', 'gcc', 'g++', 'make', 'python3'].filter((t) => { try { cp.execFileSync('sh', ['-c', 'command -v ' + t]); return true; } catch { return false; } }));
+      console.log('QB_PROBE_JSON=' + JSON.stringify(r)); process.exit(r.required_failed.length ? 3 : 0);`;
+    const probeCmd = 'node -e "$QB_PROBE"';
+    const probe = await stageIn(ws, 'probe-versions', r.limits.verify, probeCmd, { timeoutMs: 2 * 60_000, env: { QB_PROBE: PROBE } });
+    const pj = /QB_PROBE_JSON=(\{.*\})/.exec(probe.stdout || '');
+    r.stages.probe = { ...summary(probe), result: pj ? JSON.parse(pj[1]) : null, stderr_tail: tail(probe.stderr, 1500) };
+    r.commands.push('probe: node -e "$QB_PROBE" (script text recorded in the runner source; exits 3 on a required failure)');
     if (probe.state !== 'completed') { r.findings.result = 'probe_failed'; return r; }
 
     let buildCmd = 'npm run build';
@@ -136,13 +148,15 @@ async function run(key) {
     r.stages.build.dist_outputs = ((build.stdout || '').split('--- dist outputs')[1] || '').trim().split('\n').filter(Boolean).slice(0, 60);
     if (build.state !== 'completed') { r.findings.result = 'build_failed'; r.findings.build_error = tail(build.stderr || build.stdout, 3000); return r; } // stop at the first failure
 
-    const list = await stageIn(ws, 'jest-list', r.limits.verify, 'node_modules/.bin/jest --ci --listTests');
-    const files = (list.stdout || '').split('\n').filter((l) => /^\/scratch\//.test(l));
+    const list = await stageIn(ws, 'jest-list', r.limits.verify, 'node_modules/.bin/jest --ci --listTests; echo "--- __tests__ tree"; find __tests__ -type f | sort');
+    const files = (list.stdout || '').split('--- __tests__ tree')[0].split('\n').filter((l) => /^\/scratch\//.test(l));
+    r.enumeration = { listed: files.map((f) => f.replace('/scratch/', '')).sort(), tests_dir: ((list.stdout || '').split('--- __tests__ tree')[1] || '').split('\n').filter((l) => /^__tests__\//.test(l)) };
+    r.enumeration.in_dir_not_listed = r.enumeration.tests_dir.filter((f) => !r.enumeration.listed.includes(f));
     r.stages.jest_list = { ...summary(list), test_files: files.length, sample: files.slice(0, 5).map((f) => f.replace('/scratch/', '')) };
     r.commands.push('enumerate: node_modules/.bin/jest --ci --listTests');
     if (list.state !== 'completed' || !files.length) { r.findings.result = list.state !== 'completed' ? 'jest_list_failed' : 'jest_found_no_tests'; r.findings.list_error = tail(list.stderr || list.stdout, 3000); return r; }
 
-    const jcmd = 'node_modules/.bin/jest --ci --runInBand --json --outputFile=/out/jest.json';
+    const jcmd = 'node_modules/.bin/jest --ci --runInBand --json --testLocationInResults --outputFile=/out/jest.json';
     const jest = await stageIn(ws, 'jest', r.limits.verify, jcmd, { mountOut: true, timeoutMs: 30 * 60_000 });
     r.stages.jest = { ...summary(jest), memory_peak_bytes: peak(jest) };
     r.commands.push(`jest: ${jcmd}   (pinned local binary; no npx, no download fallback; repository tests at base only)`);
@@ -156,6 +170,21 @@ async function run(key) {
         statuses[a.status] = (statuses[a.status] || 0) + 1;
         const id = `${f.name}::${(a.ancestorTitles || []).join(' > ')}::${a.title}`; if (ids.has(id)) dupIds++; ids.add(id);
       }
+      const san = JSON.parse(JSON.stringify(report).split('/scratch/').join(''));
+      fs.writeFileSync(path.join(OUT, `${key}-jest-report.json`), JSON.stringify(san, null, 1) + '\n');
+      const executed = (report.testResults || []).map((f) => f.name.replace('/scratch/', '')).sort();
+      r.enumeration.executed = executed.length;
+      r.enumeration.listed_not_executed = r.enumeration.listed.filter((f) => !executed.includes(f));
+      r.enumeration.executed_not_listed = executed.filter((f) => !r.enumeration.listed.includes(f));
+      const seen = new Map(); const dups = [];
+      for (const f of report.testResults || []) for (const a of f.assertionResults || []) {
+        const id = `${f.name.replace('/scratch/', '')} :: ${(a.ancestorTitles || []).join(' > ')} :: ${a.title}`;
+        const loc = a.location ? `${a.location.line}:${a.location.column}` : 'no-location';
+        if (seen.has(id)) dups.push({ identity: id, first: seen.get(id), again: { location: loc, status: a.status } }); else seen.set(id, { location: loc, status: a.status });
+      }
+      r.findings.duplicate_identities = dups;
+      r.findings.non_passed_suites = (report.testResults || []).filter((f) => f.status !== 'passed').map((f) => ({ file: f.name.replace('/scratch/', ''), status: f.status, message: f.message,
+        assertions: (f.assertionResults || []).map((a) => ({ title: [...(a.ancestorTitles || []), a.title].join(' > '), status: a.status, location: a.location || null })) }));
       r.findings.jest_report = {
         success: report.success, numTotalTestSuites: report.numTotalTestSuites, numFailedTestSuites: report.numFailedTestSuites,
         numRuntimeErrorTestSuites: report.numRuntimeErrorTestSuites, numTotalTests: report.numTotalTests, numPassedTests: report.numPassedTests,
