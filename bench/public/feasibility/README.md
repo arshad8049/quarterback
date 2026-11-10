@@ -35,6 +35,33 @@ Then the pinned `jest --listTests` and Jest run on the same runner.
 
 **Separately, for review:** pin the base image digest in QB's image identity, and decide QB's policy on npm's new install-script default. Both are outside this card's scope.
 
+## Run 2 result (review 10544): install, approved offline build and pinned Jest all succeed on Linux x86_64
+
+**Run:** https://github.com/arshad8049/quarterback/actions/runs/42880347063. Workflow at `baf8064` on this branch only, removed afterwards. Artifact `kan110-feasibility-linux-x64-run2`, 14.7 KB, 5 days. Evidence: `results/linux-x64/run2-approved-offline/`.
+
+**Frozen before execution:**
+- **Base image:** `node:24-bookworm-slim` = `node@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (id `sha256:280af320…`).
+- **QB agent image:** `qb-sandbox-agent:c-4b166ca34296ddda` = `sha256:d60753a9b3ac40c51a97995146d8a32ca670a12144d6cc02501ea67d99ae0c8c` (amd64). Its first 5 layers equal that base's layers, so it is built on the recorded digest.
+- **In the image:** Node v24.22.2, npm 11.19.1.
+- **npm script policy:** `ignore-scripts=false`, `allow-scripts=[""]`, `strict-allow-scripts=false`, `dangerously-allow-all-scripts=false`. Install scripts run; unlisted packages only produce a warning.
+- **Runner:** `ubuntu24 20261101.360.1`, x86_64, Docker 28.0.4. QB `baf8064`, sandbox code identical to `main` `784e721`. QB admission ok.
+
+| | Task 2006 (`qbt_00b20b1b0285`, base `493afba6`, immutable 4.3.6) | Task 2005 (`qbt_9b9a5da937c9`, base `77434b3c`, immutable 5.0.0-beta.5) |
+|---|---|---|
+| Install (`npm ci`, DEPS proxy) | ok, exit 0, 15.8 s, 677 MiB | ok, exit 0, 15.4 s, 686 MiB |
+| Approved offline build | ok, exit 0, 3.2 s, peak 243 MiB; `dist/`: `immutable.js` (172,881 B), `immutable.es.js`, `immutable.min.js`, `immutable.d.ts`, `immutable.js.flow` (hashes in `2006.json`) | ok, exit 0, 2.5 s, peak 223 MiB; `dist/immutable.js` plus the `dist/es/` module tree (hashes in `2005.json`) |
+| Jest version (pinned local binary) | 27.2.0 | 29.6.4 (testRunner `jest-jasmine2`) |
+| `jest --listTests` | exit 0, **44 test files** | exit 0, **44 test files** |
+| Jest run (`--ci --runInBand --json`) | exit 0, 14.1 s, peak 604 MiB: **44/44 suites; 684 tests: 683 passed, 0 failed, 1 skipped, 0 todo**; snapshots 3 passed; report `success=true`, consistent with the exit code | exit 0, 15.0 s, peak 624 MiB: **44/44 suites; 684 tests: 683 passed, 0 failed, 1 skipped, 0 todo**; snapshots 3 passed; `success=true`, consistent |
+
+**Notes:**
+- **The runs are separate.** The counts are identical at the two bases, but run IDs, base commits, build plans, package versions, Jest versions, `dist/` outputs and timings all differ (`run.log`, `2006.json`, `2005.json`).
+- **A "focused" suite in 2005:** Jest's JSON gives `__tests__/MultiRequire.js` suite status **`focused`**, although its summary counts 44 suites passed. The planned fail-closed rules must treat `focused` as unresolved.
+- **One duplicate test identity in each task** (same file + ancestorTitles + title). The names weren't kept in the artifact; a later run should record them.
+- **esbuild (2005):** `bin/esbuild` is a native ELF binary and `esbuild --version` = 0.18.20. The published `bin/esbuild` is a Node script, so **esbuild's postinstall ran**. This confirms the correction to comment 10543 (npm did run install scripts).
+- **My mistake:** my esbuild JS-API probe broke on shell quoting again (`[eval]:1`). The executable check stands.
+- **What this proves:** that the base projects install, build (approved offline) and pass their own tests inside the unchanged QB sandbox on Linux x86_64. **Not** gold/empty grading, QB Jest support or Opus performance.
+
 ## Run 2 plan (review 10544): approved offline build
 
 **Source inspection at both exact bases (2026-11-10, read from raw.githubusercontent.com at the base commit):**
