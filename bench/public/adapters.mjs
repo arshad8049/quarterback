@@ -32,7 +32,7 @@ export function blockers(t) {
   const locks = f.package_manager?.lockfiles || [];
   if (dp.reason === 'setup_missing_lockfile') b.add(locks.includes('yarn') ? 'deps:yarn' : locks.includes('pnpm') ? 'deps:pnpm' : 'deps:no-lockfile');
   if (/lockfileVersion/.test(dp.detail || '')) b.add('deps:npm-lockfile-v1');
-  if (/workspaces/.test(dp.detail || '')) b.add('deps:workspaces');
+  if (/workspaces/.test(dp.detail || '') || f.workspaces) b.add('deps:workspaces'); // deps-plan stops at a missing lockfile: use the recorded flag too
   if (/lifecycle/.test(dp.detail || '')) b.add('deps:lifecycle-scripts');
   if (/file:\/link:\/git/.test(dp.detail || '')) b.add('deps:git-or-file-deps');
   if (f.qb_test_plan?.reason === 'no_test_command') b.add('layout:no-root-test-script');

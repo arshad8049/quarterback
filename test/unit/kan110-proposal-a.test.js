@@ -137,7 +137,10 @@ describe('KAN-110 review: Proposal A classification', () => {
     const deps = auditYarn({ pkg: pkg(), lockText: CLASSIC, rootFiles: new Set(['yarn.lock']) });
     assert.ok(proposalA(task(deps, { node: {} }), { yarn: ['classic'] }).unknowns.includes('runtime:undeclared'));
     assert.equal(proposalA(task(deps, { node: { nvmrc: '16.3.0' } }), { yarn: ['classic'] }).status, 'incompatible');
-    const ok = proposalA(task(deps), { yarn: ['classic'] });
+    // yarn.lock does not record install scripts: without them from another source, the task stays unknown
+    assert.ok(proposalA(task(deps), { yarn: ['classic'] }).unknowns.includes('install:dependency-scripts-unrecorded'));
+    const known = auditYarn({ pkg: pkg(), lockText: CLASSIC, rootFiles: new Set(['yarn.lock']), installScripts: { required: [], optional: [] } });
+    const ok = proposalA(task(known), { yarn: ['classic'] });
     assert.equal(ok.status, 'eligible_static');
     assert.ok(ok.conditions.includes('runtime:unverified'), 'eligible is static: runtime is still unverified');
   });
