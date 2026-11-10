@@ -48,57 +48,101 @@
   }
 
 
-  /* ── Homepage hero (revision 3, 2026-11-10): the image wrapper follows a fine pointer by at most
-     10px across and 6px down, with ~120ms time-based damping and no rotation; the headline does not move.
-     A soft copper light follows the pointer over the object side of the art only. Decorative layers
-     ignore input. One rAF loop, stopped when settled, off screen, on hidden tabs, on touch devices
-     and under reduced motion (at load or toggled mid-session). Nothing animates on its own. ── */
+  /* ── Homepage pointer (revision 4, 2026-11-10). One rAF loop drives two things:
+     1. a soft copper light that follows a fine pointer anywhere on the page (owner decision 2026-11-10;
+        it replaces the hero-only light). It is drawn under text, never over it: one fixed disc for the
+        warm-white page, and one clipped disc inside each dark surface. It fades out when the pointer
+        leaves the window.
+     2. the hero image wrapper, which follows the pointer over the hero by at most 10px across and 6px
+        down, with no rotation; the headline does not move.
+     Time-based damping of ~120ms; only transform and opacity are written; passive listeners; layout is
+     read before anything is written in a frame. The loop stops when settled. Everything is off on touch
+     and coarse pointers, under reduced motion (at load or toggled mid-session) and on hidden tabs. ── */
+  const qbhRoot = document.querySelector('.qbh');
   const hero = document.querySelector('[data-qbh-hero]');
-  if (hero) {
+  if (qbhRoot) {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
-    const stacked = window.matchMedia('(max-width: 899px)');
-    const art = hero.querySelector('[data-qbh-art]');
-    const move = hero.querySelector('[data-qbh-art-move]');
-    let inView = true, raf = 0, last = 0;
-    let tgt = { x: 0, y: 0, lx: 75, ly: 50 };
-    const cur = { x: 0, y: 0, lx: 75, ly: 50 };
-    const tracking = () => fine.matches && !reduced() && inView && !document.hidden;
+    const move = hero && hero.querySelector('[data-qbh-art-move]');
+    const disc = (cls) => { const d = document.createElement('div'); d.className = 'qbh-glow ' + cls; d.setAttribute('aria-hidden', 'true'); return d; };
+    const pageDisc = disc('qbh-glow-light');
+    qbhRoot.appendChild(pageDisc);
+    // Dark surfaces each get a clipped disc of their own, so the light reads on them without covering text
+    const surfaces = Array.from(document.querySelectorAll('.qbh-hero, .qbh-sec-ink, .qbh-panel, .qbh-result-card, .qbh .qbx-form-card')).map((el) => {
+      const clip = document.createElement('div');
+      clip.className = 'qbh-glow-clip'; clip.setAttribute('aria-hidden', 'true');
+      const d = disc('qbh-glow-dark'); clip.appendChild(d); el.appendChild(clip);
+      return { el, d, x: 0, y: 0, on: false };
+    });
+    let heroInView = true, raf = 0, last = 0, placed = false, measure = true;
+    const tgt = { gx: 0, gy: 0, op: 0, ax: 0, ay: 0 };
+    const cur = { gx: 0, gy: 0, op: 0, ax: 0, ay: 0 };
+    const active = () => fine.matches && !reduced() && !document.hidden;
     const frame = (t) => {
       raf = 0;
       const dt = last ? Math.min(t - last, 64) : 16; last = t;
       const k = 1 - Math.exp(-dt / 120);
-      let delta = 0;
-      for (const key of ['x', 'y', 'lx', 'ly']) { const d = tgt[key] - cur[key]; cur[key] += d * k; delta += Math.abs(d); }
-      move.style.setProperty('--ax', (cur.x * 10).toFixed(2) + 'px');
-      move.style.setProperty('--ay', (cur.y * 6).toFixed(2) + 'px');
-      art.style.setProperty('--lx', cur.lx.toFixed(1) + '%');
-      art.style.setProperty('--ly', cur.ly.toFixed(1) + '%');
-      if (delta > 0.01 && tracking()) raf = requestAnimationFrame(frame); else last = 0;
+      let moving = false;
+      for (const key in tgt) {
+        const d = tgt[key] - cur[key];
+        const eps = key === 'gx' || key === 'gy' ? 0.2 : 0.002;
+        if (Math.abs(d) > eps) { cur[key] += d * k; moving = true; } else cur[key] = tgt[key];
+      }
+      // Read: surface positions (only after a scroll, resize or pointer move), then write transforms
+      if (measure) {
+        measure = false;
+        const vh = window.innerHeight;
+        surfaces.forEach((s) => { const r = s.el.getBoundingClientRect(); s.on = r.bottom > -320 && r.top < vh + 320 && r.width > 0; s.x = r.left; s.y = r.top; });
+      }
+      const o = cur.op.toFixed(3);
+      pageDisc.style.transform = 'translate3d(' + cur.gx.toFixed(1) + 'px,' + cur.gy.toFixed(1) + 'px,0)';
+      pageDisc.style.opacity = o;
+      surfaces.forEach((s) => {
+        if (!s.on) { if (s.d.style.opacity !== '0') s.d.style.opacity = '0'; return; }
+        s.d.style.transform = 'translate3d(' + (cur.gx - s.x).toFixed(1) + 'px,' + (cur.gy - s.y).toFixed(1) + 'px,0)';
+        s.d.style.opacity = o;
+      });
+      if (move) {
+        move.style.setProperty('--ax', (cur.ax * 10).toFixed(2) + 'px');
+        move.style.setProperty('--ay', (cur.ay * 6).toFixed(2) + 'px');
+      }
+      if (moving && active()) raf = requestAnimationFrame(frame); else last = 0;
     };
-    const kick = () => { if (!raf && tracking()) raf = requestAnimationFrame(frame); };
+    const kick = () => { if (!raf && active()) raf = requestAnimationFrame(frame); };
     const clear = () => {
-      if (raf) cancelAnimationFrame(raf); raf = 0; last = 0;
-      tgt = { x: 0, y: 0, lx: 75, ly: 50 }; Object.assign(cur, tgt);
-      move.removeAttribute('style'); art.removeAttribute('style'); hero.classList.remove('is-pointer');
+      if (raf) cancelAnimationFrame(raf); raf = 0; last = 0; placed = false;
+      Object.assign(tgt, { op: 0, ax: 0, ay: 0 }); Object.assign(cur, { op: 0, ax: 0, ay: 0 });
+      pageDisc.removeAttribute('style'); surfaces.forEach((s) => s.d.removeAttribute('style'));
+      if (move) move.removeAttribute('style');
     };
     const clamp = (v) => Math.max(-1, Math.min(1, v));
-    hero.addEventListener('pointermove', (e) => {
-      if (e.pointerType !== 'mouse' || !tracking()) return;
-      const h = hero.getBoundingClientRect(), a = art.getBoundingClientRect();
-      // The light belongs to the object: the right half of the hero on desktop, the whole panel when stacked
-      const left = stacked.matches ? a.left : h.left + h.width / 2;
-      const onObject = e.clientX >= left && e.clientX <= a.right && e.clientY >= a.top && e.clientY <= a.bottom;
-      tgt = {
-        x: clamp(((e.clientX - h.left) / h.width - 0.5) * 2), y: clamp(((e.clientY - h.top) / h.height - 0.5) * 2),
-        lx: onObject ? ((e.clientX - a.left) / a.width) * 100 : tgt.lx, ly: onObject ? ((e.clientY - a.top) / a.height) * 100 : tgt.ly,
-      };
-      hero.classList.toggle('is-pointer', onObject); kick();
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !active()) return;
+      tgt.gx = e.clientX; tgt.gy = e.clientY; tgt.op = 1; measure = true;
+      // First move after a reset: start the light under the pointer instead of sliding in from a corner
+      if (!placed) { cur.gx = tgt.gx; cur.gy = tgt.gy; placed = true; }
+      if (move && heroInView) {
+        const h = hero.getBoundingClientRect();
+        const inHero = e.clientX >= h.left && e.clientX <= h.right && e.clientY >= h.top && e.clientY <= h.bottom;
+        tgt.ax = inHero ? clamp(((e.clientX - h.left) / h.width - 0.5) * 2) : 0;
+        tgt.ay = inHero ? clamp(((e.clientY - h.top) / h.height - 0.5) * 2) : 0;
+      }
+      kick();
     }, { passive: true });
-    hero.addEventListener('pointerleave', () => { tgt = { x: 0, y: 0, lx: tgt.lx, ly: tgt.ly }; hero.classList.remove('is-pointer'); kick(); });
-    const sync = () => { if (!tracking()) clear(); };
-    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { inView = es[0].isIntersecting; sync(); }).observe(hero);
+    // Content moves under a still pointer while scrolling: re-measure the surfaces in the next frame
+    const remeasure = () => { if (cur.op > 0 || tgt.op > 0) { measure = true; kick(); } };
+    window.addEventListener('scroll', remeasure, { passive: true });
+    window.addEventListener('resize', remeasure, { passive: true });
+    // Fade out when the pointer leaves the window or the window loses focus
+    const fadeOut = () => { tgt.op = 0; tgt.ax = 0; tgt.ay = 0; kick(); };
+    document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) fadeOut(); }, { passive: true });
+    window.addEventListener('blur', fadeOut);
+    const sync = () => { if (!active()) clear(); };
+    if (hero && 'IntersectionObserver' in window) new IntersectionObserver((es) => {
+      heroInView = es[0].isIntersecting;
+      if (!heroInView) { tgt.ax = 0; tgt.ay = 0; cur.ax = 0; cur.ay = 0; if (move) move.removeAttribute('style'); }
+    }).observe(hero);
     document.addEventListener('visibilitychange', sync);
-    [motionQuery, fine, stacked].forEach((q) => (q.addEventListener ? q.addEventListener('change', sync) : q.addListener && q.addListener(sync)));
+    [motionQuery, fine].forEach((q) => (q.addEventListener ? q.addEventListener('change', sync) : q.addListener && q.addListener(sync)));
     sync();
   }
 

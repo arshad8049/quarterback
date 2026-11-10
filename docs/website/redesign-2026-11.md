@@ -248,3 +248,68 @@ A separate single cold load recorded the hero image as the desktop LCP element a
 - The source has faint 8px blocking in its near-black areas (one 8-bit step). It is in the master, not added by WebP, and shows only on bright, high-gamma screens.
 - At 1600px the desktop file is below 2× density on screens wider than about 900 CSS px of art. The owner has said 1600×896 is final.
 - Not tested: a slow network, Safari, a real trackpad, and frame stability on ordinary hardware.
+
+## 9. Revision 4 (2026-11-10): page-wide pointer light
+
+**Owner decision, 2026-11-10:** the pointer light now works across the whole homepage, not only the hero. This deliberately changes the Nov 9 brief's "pointer effect in the hero only".
+
+**What changed:**
+- **One page-wide light** replaces the hero-only light: a soft copper disc 640px across (320px radius) that follows a fine pointer anywhere on the page.
+- **Drawn under text, never over it.** A blend layer over the page was tried first and rejected: at full strength it brought `--orange-text` on paper down to 4.01:1. Instead, `interactions.js` adds:
+  - one fixed disc behind the page's content (6% copper at the centre, eased to 0), which shows on the warm-white areas and is barely visible there;
+  - one clipped disc inside each dark surface (14% copper at the centre): the hero (above the image, below the copy), the result section, the result card, every run panel and the signup form card.
+  - The discs are `aria-hidden`, ignore input, and are created only on the homepage. `/developers` has none.
+  - The homepage root is `isolation: isolate`, and the light sections and the signup section use the page's own paper instead of painting it again, so the fixed disc can show through.
+- **Worst-case text contrast at the disc centre** (computed from the colour tokens):
+  - light surfaces: text 16.6, text-2 8.4, muted 5.9, orange links 4.77:1;
+  - dark surfaces: on-ink 14.8, on-ink-2 9.7, on-ink-muted 6.1 (on ink-2), mint links 9.1:1.
+  - The lowest is 4.77:1, which still passes AA. Script: `glow-contrast2.js` in the session scratchpad.
+- **Hero parallax unchanged:** at most 10px and 6px, no rotation, headline 0px.
+- **One rAF loop** for the light and the parallax:
+  - about 120ms of time-based damping;
+  - writes only `transform`, `opacity` and the two parallax variables;
+  - surface positions are read before any write in a frame, and only after a pointer move, scroll or resize;
+  - passive listeners; stops when settled.
+- **When it's off or fades:**
+  - off on touch and coarse pointers, under reduced motion (at load and when toggled; the state is still read only at load and in the change event), and on hidden tabs;
+  - fades out when the pointer leaves the window or the window loses focus.
+
+**Verification (local, Playwright 1.48.2 Chromium in Docker, 2026-11-10; script `verify5.js`):**
+
+| Check | Result |
+|---|---|
+| axe-core 4.10.2, `/` and `/developers` at 1440, 1280, 768 and 375 px | 0 violations |
+| axe with the pointer resting on text, light lit at full strength: hero headline, run heading, step text, progress card (light); result heading, result card, form card (dark) | 0 violations at all 7 spots; light centred within 1px of the pointer; the text was the hit target at every spot |
+| Light z-order | Page disc `z-index: -1` in the isolated homepage root; dark-surface discs `z-index: -1` inside their surface (hero: between the image and the copy) |
+| Layout at 1440, 1280, 768 and 375 px | No horizontal overflow; no console errors or failed requests |
+| Keyboard | 35 stops, all with a visible focus outline |
+| Reduced motion at load | Light `display: none`; art transform `none`; motion-off; no stage |
+| Reduced motion toggled off, then on again while the pointer moves | Light comes back (opacity 0.99 under the pointer), then is hidden again; parallax off; panels return under their steps |
+| JavaScript disabled | No light elements; all content visible; hero image loads |
+| Touch (iPhone 13) | Light stays at opacity 0; no parallax; no overflow |
+| Hidden tab | Light opacity 0; parallax reset |
+| Pointer leaves the window (`mouseout` with no related target) | Light fades to 0 |
+| `/developers` | 0 light elements |
+| Hero parallax | 9.72px × 5.81px at most, no rotation, image always covers, headline 0px; damping 4.2, 6.6, 8.7 and 9.7px at about 60, 120, 240 and 600ms |
+| 200% zoom, short window, story deep links and controls | Unchanged: pass |
+| Em dashes | 0 |
+| Unit tests on the form and privacy wording | 7 pass, 0 fail |
+
+**Performance** (1280×800, 4× CPU throttle, median of 3 cold loads, same local server; revision 3 served from `e6016c3` at the same time):
+
+| | Revision 3 | Revision 4 |
+|---|---|---|
+| Largest contentful paint | 114 ms | 121 ms |
+| Cumulative layout shift | 0 | 0 |
+| Total blocking time | 1 ms | 5 ms |
+| Transferred | 207 KB | 211 KB |
+| Requests | 10 | 10 |
+| Scroll frame p95, no pointer | 16.7 ms | 16.8 ms |
+| Scroll frame p95, pointer moving while wheel-scrolling (`perfp.js`) | 16.8 ms | 16.7 ms |
+| Frames over 50 ms during either scroll | 0 | 0 |
+| CLS during the pointer scroll | 0 | 0 |
+
+**Remaining gaps:**
+- On warm-white surfaces the 6% gradient has faint 8-bit banding rings, which the eased stops reduce but don't remove.
+- White cards (`.qbh-card`) and code blocks are not lit; the light passes under them.
+- Not tested: Safari, Firefox, a real trackpad, a high-refresh display, and ordinary hardware. The pointer-leave check used a synthetic `mouseout`, not a real pointer leaving the window.
