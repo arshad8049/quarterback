@@ -86,7 +86,7 @@ export function analyse() {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const a = analyse();
-  fs.writeFileSync(path.join(HERE, 'manifest', 'adapter-analysis.json'), JSON.stringify({ schema: 'qb-public-adapter-analysis/1', note: 'Static estimate for a scope decision. Not a selection. A task counts as unlocked only if every blocker is covered.', ...a }, null, 2) + '\n');
+  fs.writeFileSync(path.join(HERE, 'manifest', 'adapter-analysis.json'), JSON.stringify({ schema: 'qb-public-adapter-analysis/1', note: 'SUPERSEDED by manifest/proposal-a.json (review 10539): this first-pass estimate relied on deps-plan.sh, which stops at the first problem, so it overstates what a Yarn adapter unlocks. Kept for the record. Not a selection.', ...a }, null, 2) + '\n');
   console.log('blockers:', JSON.stringify(a.blocker_frequency));
   console.log('tasks with exactly one blocker:', a.single_blocker_tasks);
   a.combos.slice(0, 12).forEach((r) => console.log(`${r.adapters.join(' + ')} -> ${r.unlocked} (${r.unlocked_without_gold_overlap} w/o overlap) sources ${r.sources} ${JSON.stringify(r.by_repo)}`));

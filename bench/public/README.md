@@ -103,47 +103,25 @@ Tests: `node --test test/unit/kan110-public-import.test.js` from the repository 
 
 Only 5 tasks have a single blocker.
 
-## Smallest explicit adapter proposal (for Arshad's decision)
+## Adapter proposal (revised after review 10539)
 
-From `manifest/adapter-analysis.json`, a task counts only if **all** its blockers are covered; services and old Node runtimes are excluded as "not small". This is a static estimate, not a qualification.
+The first estimate here (Jest + Yarn "unlocks 216 tasks") was **wrong**. `deps-plan.sh` stops at a missing `package-lock.json`, so Yarn-only projects were never checked for workspaces, lifecycle scripts or git/file/link dependencies.
 
-**Proposal A (two adapters, three sources):**
-1. **A Jest runner:** run Jest with its JSON reporter, and map the results into QB's per-test results as a second validated runner beside node:test.
-2. **Install from `yarn.lock`:** behind the same registry-only proxy, with the same no-scripts and no-git rules.
+The revised static audit reads each `yarn.lock` and the Yarn configuration, and checks every restriction independently (`proposal-a.mjs`, `proposal-a-audit.mjs`, `manifest/proposal-a.json`).
 
-This statically unlocks **216 tasks** (181 whose agent text quotes none of the gold fix):
+**Result under a bounded Proposal A (Jest runner + Yarn Classic):**
 
-| Source | Repository | Tasks |
-|---|---|---|
-| Pro V2 | element-web | 14 |
-| Multilingual | babel | 5 |
-| Multilingual | immutable-js | 2 |
-| PolyBench | prettier | 195 |
+| Source | Eligible (static) | Unknown | Incompatible |
+|---|---|---|---|
+| Pro | 0 | 0 | 149 |
+| Multilingual | 0 | 2 | 41 |
+| PolyBench | 21 | 38 | 1,687 |
 
-Each source then has two or more repositories or tasks to sample from.
+- **Multilingual unknowns:** the 2 immutable-js tasks.
+- **PolyBench eligible:** 21 prettier tasks from 2017 (Jest 18/19). They need SHA-1-only integrity accepted and the yarnpkg mirror mapped.
+- **Runtime:** unverified for every task.
 
-**What it changes, explicitly:**
-- QB would verify with a runner other than node:test, a change to QB-20's "only validated runner" rule;
-- QB would trust a yarn lockfile.
-
-**What it does not change:** no network-policy weakening, no Mocha-to-node:test conversion, no services.
-
-**Smaller but narrower:** Jest only unlocks the 2 immutable-js tasks (one source).
-
-**Not proposed:**
-- Mocha, despite 1,557 tasks: it mostly comes with Node < 20 and npm v1 or no lockfiles;
-- xvfb, browser and Redis services;
-- installs without a lockfile;
-- git/file dependencies.
-
-Each needs a sandbox-image or network-policy change, outside "small".
-
-**Before any selection under Proposal A:**
-1. Implement and accept the adapter in QB.
-2. Re-run `qualify.mjs` on that QB commit.
-3. Apply `shortlist.mjs` unchanged.
-
-Runnable checks (empty and reference patch on the independent grader) are KAN-111.
+**Proposal A is a possible product extension, not a proven fix.** It gives no cross-source coverage. Full per-repository detail, the immutable-js feasibility check and the bounded adapter specification are in [PROPOSAL-A.md](PROPOSAL-A.md).
 
 ## Normalized boundary (agent / controller / vault / quarantine)
 
@@ -171,7 +149,7 @@ Defined per column in `field-policy.mjs`; rendered in [FIELDS.md](FIELDS.md).
   - Pro: 0 redactions;
   - Multilingual: 6 tasks, 7 links;
   - PolyBench: 109 tasks, 146 links.
-- **Report only:** in 77 tasks (Pro 12, PolyBench 65), the agent text already quotes at least one added line of the reference fix. Such tasks are ineligible under the frozen rule.
+- **Screening flag:** in 77 tasks (Pro 12, PolyBench 65), the agent text already quotes at least one added line of the reference fix. This is a flag, not proof of leakage: an issue can quote code. Under the frozen rule a flagged task is excluded unless a reviewer who will not author contracts records it as a false positive. The reasons are preserved, and the gold lines are never shown to contract authors.
 
 **Contamination rule:** this import was done in a context that processed vault material programmatically. Only counts and runner names were printed, but under KAN-110's separation rule this context must not author blinded contracts (KAN-112).
 
@@ -194,7 +172,7 @@ Defined per column in `field-policy.mjs`; rendered in [FIELDS.md](FIELDS.md).
 
 No commits, issues or PRs by `arshad8049` in any of the 20 repositories. `facebook/docusaurus` was checked at its new name, `meta/docusaurus`.
 
-That's evidence of no contribution, not of no exposure. `prior_exposure_arshad` stays `null` until Arshad records it on KAN-110.
+Absence of public commits is not evidence about exposure. `prior_exposure_arshad` is **unknown** (`null`) until Arshad records it on KAN-110, and the frozen rule treats unknown as ineligible.
 
 ## Not claimed
 

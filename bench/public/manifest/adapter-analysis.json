@@ -1,10 +1,11 @@
 {
   "schema": "qb-public-adapter-analysis/1",
-  "note": "Static estimate for a scope decision. Not a selection. A task counts as unlocked only if every blocker is covered.",
+  "note": "SUPERSEDED by manifest/proposal-a.json (review 10539): this first-pass estimate relied on deps-plan.sh, which stops at the first problem, so it overstates what a Yarn adapter unlocks. Kept for the record. Not a selection.",
   "blocker_frequency": {
     "runner:mocha": 1557,
     "runtime:node<20": 1290,
     "deps:yarn": 1193,
+    "deps:workspaces": 550,
     "deps:npm-lockfile-v1": 420,
     "runner:jest": 307,
     "service:xvfb": 208,
@@ -20,7 +21,6 @@
     "runner:qunit": 9,
     "runner:tap": 6,
     "runner:vitest": 5,
-    "deps:workspaces": 4,
     "runner:jasmine": 2
   },
   "adapters": {
@@ -49,125 +49,17 @@
         "deps:yarn",
         "runner:jest"
       ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
       "sources": 3,
       "by_source": {
         "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
+        "swe-bench-multilingual": 2,
         "swe-polybench": 195
       },
       "by_repo": {
         "element-hq/element-web": 14,
         "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
-        "prettier/prettier": 195
-      }
-    },
-    {
-      "adapters": [
-        "deps:yarn",
-        "layout:no-root-test-script",
-        "runner:jest"
-      ],
-      "unlocked": 243,
-      "unlocked_without_gold_overlap": 206,
-      "sources": 3,
-      "by_source": {
-        "swe-bench-pro-v2": 41,
-        "swe-bench-multilingual": 7,
-        "swe-polybench": 195
-      },
-      "by_repo": {
-        "protonmail/webclients": 27,
-        "element-hq/element-web": 14,
-        "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
-        "prettier/prettier": 195
-      }
-    },
-    {
-      "adapters": [
-        "deps:yarn",
-        "runner:jest",
-        "runner:qunit"
-      ],
-      "unlocked": 219,
-      "unlocked_without_gold_overlap": 184,
-      "sources": 3,
-      "by_source": {
-        "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 10,
-        "swe-polybench": 195
-      },
-      "by_repo": {
-        "element-hq/element-web": 14,
-        "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
-        "mrdoob/three.js": 3,
-        "prettier/prettier": 195
-      }
-    },
-    {
-      "adapters": [
-        "deps:lifecycle-scripts",
-        "deps:yarn",
-        "runner:jest"
-      ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
-      "sources": 3,
-      "by_source": {
-        "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
-        "swe-polybench": 195
-      },
-      "by_repo": {
-        "element-hq/element-web": 14,
-        "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
-        "prettier/prettier": 195
-      }
-    },
-    {
-      "adapters": [
-        "deps:npm-lockfile-v1",
-        "deps:yarn",
-        "runner:jest"
-      ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
-      "sources": 3,
-      "by_source": {
-        "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
-        "swe-polybench": 195
-      },
-      "by_repo": {
-        "element-hq/element-web": 14,
-        "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
-        "prettier/prettier": 195
-      }
-    },
-    {
-      "adapters": [
-        "deps:pnpm",
-        "deps:yarn",
-        "runner:jest"
-      ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
-      "sources": 3,
-      "by_source": {
-        "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
-        "swe-polybench": 195
-      },
-      "by_repo": {
-        "element-hq/element-web": 14,
-        "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
         "prettier/prettier": 195
       }
     },
@@ -195,21 +87,121 @@
     {
       "adapters": [
         "deps:yarn",
-        "runner:jasmine",
-        "runner:jest"
+        "runner:jest",
+        "runner:qunit"
       ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
+      "unlocked": 214,
+      "unlocked_without_gold_overlap": 179,
       "sources": 3,
       "by_source": {
         "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
+        "swe-bench-multilingual": 5,
         "swe-polybench": 195
       },
       "by_repo": {
         "element-hq/element-web": 14,
         "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
+        "mrdoob/three.js": 3,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:lifecycle-scripts",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:pnpm",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "layout:no-root-test-script",
+        "runner:jest"
+      ],
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jasmine",
+        "runner:jest"
+      ],
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
         "prettier/prettier": 195
       }
     },
@@ -219,18 +211,17 @@
         "runner:jest",
         "runner:mocha"
       ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
       "sources": 3,
       "by_source": {
         "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
+        "swe-bench-multilingual": 2,
         "swe-polybench": 195
       },
       "by_repo": {
         "element-hq/element-web": 14,
         "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
         "prettier/prettier": 195
       }
     },
@@ -240,18 +231,17 @@
         "runner:jest",
         "runner:tap"
       ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
       "sources": 3,
       "by_source": {
         "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
+        "swe-bench-multilingual": 2,
         "swe-polybench": 195
       },
       "by_repo": {
         "element-hq/element-web": 14,
         "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
         "prettier/prettier": 195
       }
     },
@@ -261,18 +251,17 @@
         "runner:jest",
         "runner:vitest"
       ],
-      "unlocked": 216,
-      "unlocked_without_gold_overlap": 181,
+      "unlocked": 211,
+      "unlocked_without_gold_overlap": 176,
       "sources": 3,
       "by_source": {
         "swe-bench-pro-v2": 14,
-        "swe-bench-multilingual": 7,
+        "swe-bench-multilingual": 2,
         "swe-polybench": 195
       },
       "by_repo": {
         "element-hq/element-web": 14,
         "immutable-js/immutable-js": 2,
-        "babel/babel": 5,
         "prettier/prettier": 195
       }
     },

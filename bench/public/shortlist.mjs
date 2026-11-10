@@ -15,7 +15,7 @@ export function eligible(t) {
   const reasons = [];
   if (t.classification.status !== 'compatible') reasons.push(`not compatible (${t.classification.status})`);
   if (t.duplicate_of) reasons.push('duplicate');
-  if (t.leak.gold_overlap_lines > 0) reasons.push('agent text quotes the reference fix');
+  if (t.leak.gold_overlap_lines > 0 && !t.gold_overlap_cleared) reasons.push('gold-overlap screening flag not cleared');
   if ((t.facts?.services || []).length) reasons.push('needs services');
   if (t.prior_exposure_arshad == null) reasons.push('prior exposure not yet recorded');
   else if (/contributed|inspected/.test(t.prior_exposure_arshad)) reasons.push('prior exposure');

@@ -32,7 +32,7 @@ const readJsonl = (f) => fs.readFileSync(f, 'utf8').trim().split('\n').filter(Bo
 const key = (s) => crypto.createHash('sha256').update(s).digest('hex');
 
 /** Cached GET/HEAD. Returns { status, body, headers }. GitHub token only for GitHub hosts. */
-async function get(url, { method = 'GET', headers = {}, json = false } = {}) {
+export async function get(url, { method = 'GET', headers = {}, json = false } = {}) {
   const cf = path.join(CACHE, key(method + ' ' + url + JSON.stringify(headers)) + '.json');
   if (fs.existsSync(cf)) return JSON.parse(fs.readFileSync(cf, 'utf8'));
   const host = new URL(url).hostname;
@@ -53,7 +53,7 @@ async function get(url, { method = 'GET', headers = {}, json = false } = {}) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function pool(items, n, fn) { const out = new Array(items.length); let i = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } })); return out; }
-const raw = (repo, ref, p) => `https://raw.githubusercontent.com/${repo}/${ref}/${p}`;
+export const raw = (repo, ref, p) => `https://raw.githubusercontent.com/${repo}/${ref}/${p}`;
 const parse = (s) => { try { return JSON.parse(s); } catch { return undefined; } };
 
 /** Repository facts at one commit (shared by every task on that commit). */
