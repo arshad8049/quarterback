@@ -1,0 +1,498 @@
+{
+  "schema": "qb-public-adapter-analysis/1",
+  "note": "Static estimate for a scope decision. Not a selection. A task counts as unlocked only if every blocker is covered.",
+  "blocker_frequency": {
+    "runner:mocha": 1557,
+    "runtime:node<20": 1290,
+    "deps:yarn": 1193,
+    "deps:npm-lockfile-v1": 420,
+    "runner:jest": 307,
+    "service:xvfb": 208,
+    "deps:no-lockfile": 205,
+    "layout:no-root-test-script": 93,
+    "runner:unidentified": 58,
+    "service:browser": 55,
+    "service:redis": 38,
+    "deps:git-or-file-deps": 37,
+    "runner:karma": 21,
+    "deps:lifecycle-scripts": 15,
+    "deps:pnpm": 10,
+    "runner:qunit": 9,
+    "runner:tap": 6,
+    "runner:vitest": 5,
+    "deps:workspaces": 4,
+    "runner:jasmine": 2
+  },
+  "adapters": {
+    "runner:jest": "Run Jest and parse its JSON reporter into QB per-test results (new validated runner).",
+    "runner:mocha": "Run Mocha and parse its JSON reporter (new validated runner).",
+    "runner:vitest": "Run Vitest and parse its JSON reporter (new validated runner).",
+    "runner:qunit": "Run QUnit (three.js, browser-less) and parse results.",
+    "runner:karma": "Karma needs a browser: large (service + runner).",
+    "runner:tap": "Run tap and parse TAP output.",
+    "runner:unidentified": "Custom or undiscovered test entry point: needs per-repository work.",
+    "deps:yarn": "Install from yarn.lock (classic/berry) behind the same registry-only proxy.",
+    "deps:pnpm": "Install from pnpm-lock.yaml behind the same registry-only proxy.",
+    "deps:no-lockfile": "No lockfile: install would be unpinned. Not recommended.",
+    "deps:npm-lockfile-v1": "Accept npm lockfile v1 (npm ci upgrades it in place).",
+    "deps:workspaces": "Allow npm workspaces in the sandbox install.",
+    "deps:lifecycle-scripts": "Allow root lifecycle scripts (e.g. prepare), which run repository code at install time.",
+    "deps:git-or-file-deps": "Allow git/file dependencies (needs network beyond the npm registry).",
+    "layout:no-root-test-script": "Monorepo without a root test script: per-package test commands.",
+    "runtime:node<20": "Sandbox image with an older pinned Node (QB image is Node 24).",
+    "unverifiable": "Repository could not be read."
+  },
+  "single_blocker_tasks": 5,
+  "combos": [
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "layout:no-root-test-script",
+        "runner:jest"
+      ],
+      "unlocked": 243,
+      "unlocked_without_gold_overlap": 206,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 41,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "protonmail/webclients": 27,
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jest",
+        "runner:qunit"
+      ],
+      "unlocked": 219,
+      "unlocked_without_gold_overlap": 184,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 10,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "mrdoob/three.js": 3,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:lifecycle-scripts",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:pnpm",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:workspaces",
+        "deps:yarn",
+        "runner:jest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jasmine",
+        "runner:jest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jest",
+        "runner:mocha"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jest",
+        "runner:tap"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:jest",
+        "runner:vitest"
+      ],
+      "unlocked": 216,
+      "unlocked_without_gold_overlap": 181,
+      "sources": 3,
+      "by_source": {
+        "swe-bench-pro-v2": 14,
+        "swe-bench-multilingual": 7,
+        "swe-polybench": 195
+      },
+      "by_repo": {
+        "element-hq/element-web": 14,
+        "immutable-js/immutable-js": 2,
+        "babel/babel": 5,
+        "prettier/prettier": 195
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "runner:mocha",
+        "runner:qunit"
+      ],
+      "unlocked": 132,
+      "unlocked_without_gold_overlap": 130,
+      "sources": 2,
+      "by_source": {
+        "swe-bench-multilingual": 3,
+        "swe-polybench": 129
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3,
+        "serverless/serverless": 129
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "runner:jest",
+        "runner:mocha"
+      ],
+      "unlocked": 131,
+      "unlocked_without_gold_overlap": 129,
+      "sources": 2,
+      "by_source": {
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 129
+      },
+      "by_repo": {
+        "immutable-js/immutable-js": 2,
+        "serverless/serverless": 129
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "runner:mocha",
+        "runner:tap"
+      ],
+      "unlocked": 131,
+      "unlocked_without_gold_overlap": 129,
+      "sources": 2,
+      "by_source": {
+        "swe-bench-multilingual": 2,
+        "swe-polybench": 129
+      },
+      "by_repo": {
+        "axios/axios": 2,
+        "serverless/serverless": 129
+      }
+    },
+    {
+      "adapters": [
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "runner:jest"
+      ],
+      "unlocked": 2,
+      "unlocked_without_gold_overlap": 2,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 2
+      },
+      "by_repo": {
+        "immutable-js/immutable-js": 2
+      }
+    },
+    {
+      "adapters": [
+        "runner:jest",
+        "runner:qunit"
+      ],
+      "unlocked": 5,
+      "unlocked_without_gold_overlap": 5,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 5
+      },
+      "by_repo": {
+        "immutable-js/immutable-js": 2,
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "runner:mocha"
+      ],
+      "unlocked": 129,
+      "unlocked_without_gold_overlap": 127,
+      "sources": 1,
+      "by_source": {
+        "swe-polybench": 129
+      },
+      "by_repo": {
+        "serverless/serverless": 129
+      }
+    },
+    {
+      "adapters": [
+        "deps:pnpm",
+        "runner:vitest"
+      ],
+      "unlocked": 5,
+      "unlocked_without_gold_overlap": 5,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 5
+      },
+      "by_repo": {
+        "vuejs/core": 5
+      }
+    },
+    {
+      "adapters": [
+        "deps:lifecycle-scripts",
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "deps:npm-lockfile-v1",
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "deps:pnpm",
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "deps:workspaces",
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "deps:yarn",
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    },
+    {
+      "adapters": [
+        "layout:no-root-test-script",
+        "runner:qunit"
+      ],
+      "unlocked": 3,
+      "unlocked_without_gold_overlap": 3,
+      "sources": 1,
+      "by_source": {
+        "swe-bench-multilingual": 3
+      },
+      "by_repo": {
+        "mrdoob/three.js": 3
+      }
+    }
+  ]
+}

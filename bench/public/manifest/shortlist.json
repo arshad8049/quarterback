@@ -1,0 +1,25 @@
+{
+  "schema": "qb-public-shortlist/1",
+  "rule": "shortlist-rule.json",
+  "seed_sha256": "d45275d48ab25b872c2026110a9c61af4be4ddab138ea4ae280723682f9efc22",
+  "selected": [],
+  "shortfall": {
+    "swe-bench-pro-v2": 2,
+    "swe-bench-multilingual": 2,
+    "swe-polybench": 2
+  },
+  "exclusion_counts": {
+    "swe-bench-pro-v2: not compatible (incompatible)": 149,
+    "swe-bench-pro-v2: prior exposure not yet recorded": 149,
+    "swe-bench-pro-v2: needs services": 68,
+    "swe-bench-pro-v2: agent text quotes the reference fix": 12,
+    "swe-bench-multilingual: not compatible (incompatible)": 43,
+    "swe-bench-multilingual: prior exposure not yet recorded": 43,
+    "swe-polybench: not compatible (incompatible)": 1738,
+    "swe-polybench: prior exposure not yet recorded": 1746,
+    "swe-polybench: agent text quotes the reference fix": 65,
+    "swe-polybench: needs services": 209,
+    "swe-polybench: not compatible (unknown)": 8
+  },
+  "result": "Return the compatibility report and the adapter proposal (manifest/adapter-analysis.json). Select nothing."
+}

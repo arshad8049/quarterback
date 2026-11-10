@@ -5,14 +5,15 @@
   "private": true,
   "description": "Quarterback benchmark harness — QB pipeline vs raw agent",
   "scripts": {
-    "bench":       "node run.js",
+    "bench": "node run.js",
     "bench:quick": "node run.js --no-llm-context",
-    "bench:one":   "node run.js --task",
-    "report":        "node report.js",
+    "bench:one": "node run.js --task",
+    "report": "node report.js",
     "report:legacy": "node report.js --legacy results"
   },
   "dependencies": {
     "commander": "^13.1.0",
-    "dotenv": "^18.0.1"
+    "dotenv": "^18.0.1",
+    "hyparquet": "1.17.1"
   }
 }

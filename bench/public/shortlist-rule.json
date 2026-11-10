@@ -1,0 +1,22 @@
+{
+  "schema": "qb-public-shortlist-rule/1",
+  "frozen_at": "2026-11-10",
+  "frozen_before": "any model run, any QB run and any grader run on these tasks",
+  "seed_input": "kan110-shortlist-v1|2d52cb3df914a3fcf80c7f66738b3a88ae37fc50|846e647b9f33c0b51b739d005d13d85493c9af09|d56445f9940eae4e9d2974ec66820c2f1d7754e6",
+  "seed_sha256": "d45275d48ab25b872c2026110a9c61af4be4ddab138ea4ae280723682f9efc22",
+  "target": { "tasks": 6, "per_source": 2, "sources": ["swe-bench-pro-v2", "swe-bench-multilingual", "swe-polybench"] },
+  "eligibility": [
+    "classification.status == 'compatible' against the QB commit actually used for the pilot (re-run qualify.mjs on that commit; today's QB is 784e721)",
+    "not duplicate_of another task",
+    "leak.gold_overlap_lines == 0 (the agent text quotes none of the reference fix's added lines)",
+    "no services and no runtime:node<20 blocker",
+    "prior_exposure_arshad is recorded and is not 'contributed' or 'inspected this task' for the repository"
+  ],
+  "sampling": [
+    "Within each source, order eligible tasks by sha256(seed_sha256 + '|' + task_id), ascending.",
+    "Take tasks in that order, skipping a task whose repository is already chosen for that source until every eligible repository in the source has one task (diversity), then continue in order.",
+    "Take per_source tasks per source. If a source has fewer, the shortfall is filled round-robin from the other sources in the same hash order, and the shortfall is reported, never hidden.",
+    "Never use hard labels, model results, QB results, task size or difficulty in eligibility or order."
+  ],
+  "if_none_eligible": "Return the compatibility report and the adapter proposal (manifest/adapter-analysis.json). Select nothing."
+}

@@ -1,0 +1,122 @@
+{
+  "schema": "qb-public-candidates/1",
+  "qb_source": {
+    "repo": "arshad8049/quarterback",
+    "commit": "784e721",
+    "runtime": "node:24-bookworm-slim",
+    "validated_runners": [
+      "node-test"
+    ]
+  },
+  "pro_harness": {
+    "repo": "scaleapi/SWE-bench_Pro-os",
+    "commit": "66f92766bba642462d4bbe5479e83f91f9211862",
+    "license": "MIT"
+  },
+  "note": "Static qualification against QB rules. compatible != runnable; KAN-111 validates runs. prior_exposure_arshad is null until Arshad answers.",
+  "counts": {
+    "swe-bench-pro-v2": {
+      "total": 149,
+      "compatible": 0,
+      "incompatible": 149,
+      "unknown": 0,
+      "duplicates": 0,
+      "by_language": {
+        "js": {
+          "compatible": 0,
+          "incompatible": 145,
+          "unknown": 0
+        },
+        "ts": {
+          "compatible": 0,
+          "incompatible": 4,
+          "unknown": 0
+        }
+      },
+      "top_reasons": {
+        "QB refuses: detected runner jest (QB executes node:test only)": 52,
+        "actual test runner jest (from grading command); QB would not parse it": 77,
+        "QB sandbox refuses dependencies: setup_missing_lockfile": 107,
+        "QB refuses: no package.json \"test\" script": 93,
+        "no package.json at the repository root": 38,
+        "actual test runner mocha (from grading command); QB would not parse it": 38,
+        "needs services not available in the QB sandbox: redis": 38,
+        "actual test runner jest (from package.json scripts); QB would not parse it": 2,
+        "needs services not available in the QB sandbox: browser": 28,
+        "QB sandbox refuses dependencies: setup_unsupported_project (npm workspaces)": 4,
+        "needs services not available in the QB sandbox: xvfb": 2
+      }
+    },
+    "swe-bench-multilingual": {
+      "total": 43,
+      "compatible": 0,
+      "incompatible": 43,
+      "unknown": 0,
+      "duplicates": 0,
+      "by_language": {
+        "ts": {
+          "compatible": 0,
+          "incompatible": 17,
+          "unknown": 0
+        },
+        "js": {
+          "compatible": 0,
+          "incompatible": 26,
+          "unknown": 0
+        }
+      },
+      "top_reasons": {
+        "QB refuses: detected runner jest (QB executes node:test only)": 12,
+        "actual test runner jest (from grading command); QB would not parse it": 7,
+        "QB refuses: detected runner vitest (QB executes node:test only)": 5,
+        "actual test runner vitest (from package.json scripts); QB would not parse it": 5,
+        "QB sandbox refuses dependencies: setup_missing_lockfile": 15,
+        "QB refuses: detected runner mocha (QB executes node:test only)": 23,
+        "actual test runner mocha+karma (from grading command); QB would not parse it": 17,
+        "QB sandbox refuses dependencies: setup_unsupported_project (root lifecycle script(s): prepare)": 15,
+        "actual test runner mocha+karma+tap (from grading command); QB would not parse it": 4,
+        "actual test runner jest (from package.json scripts); QB would not parse it": 5,
+        "actual test runner mocha+tap (from grading command); QB would not parse it": 2,
+        "QB sandbox refuses dependencies: setup_unsupported_project (lockfileVersion N (need 2 or 3))": 5,
+        "actual test runner qunit (from grading command); QB would not parse it": 3
+      }
+    },
+    "swe-polybench": {
+      "total": 1746,
+      "compatible": 0,
+      "incompatible": 1738,
+      "unknown": 8,
+      "duplicates": 0,
+      "by_language": {
+        "ts": {
+          "compatible": 0,
+          "incompatible": 729,
+          "unknown": 0
+        },
+        "js": {
+          "compatible": 0,
+          "incompatible": 1009,
+          "unknown": 8
+        }
+      },
+      "top_reasons": {
+        "QB refuses: detected runner mocha (QB executes node:test only)": 1496,
+        "actual test runner mocha (from grading command); QB would not parse it": 795,
+        "QB sandbox refuses dependencies: setup_missing_lockfile": 1286,
+        "actual test runner mocha (from package.json scripts); QB would not parse it": 553,
+        "QB sandbox refuses dependencies: setup_unsupported_project (lockfileVersion N (need 2 or 3))": 415,
+        "QB refuses: detected runner jest (QB executes node:test only)": 216,
+        "actual test runner jest (from package.json scripts); QB would not parse it": 196,
+        "needs services not available in the QB sandbox: xvfb": 182,
+        "actual test runner jest (from grading command); QB would not parse it": 20,
+        "needs services not available in the QB sandbox: xvfb, browser": 9,
+        "needs services not available in the QB sandbox: browser, xvfb": 15,
+        "QB sandbox refuses dependencies: setup_unsupported_project (n file:/link:/git deps)": 37,
+        "actual test runner qunit (from package.json scripts); QB would not parse it": 6,
+        "no test framework identified; QB would run `npm test` without a validated reporter": 8,
+        "needs services not available in the QB sandbox: browser": 3,
+        "QB refuses: detected runner jasmine (QB executes node:test only)": 2
+      }
+    }
+  }
+}

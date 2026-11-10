@@ -1,0 +1,213 @@
+{
+  "schema": "qb-public-import-summary/1",
+  "generated_by": "bench/public/import.mjs",
+  "sources": {
+    "swe-bench-pro-v2": {
+      "hf_dataset": "ScaleAI/SWE-bench_Pro",
+      "revision": "2d52cb3df914a3fcf80c7f66738b3a88ae37fc50",
+      "files_verified": [
+        {
+          "path": "README.md",
+          "sha256": "243f51de326a4502f0e353eb3e25cb712c465e78d80e15cdaac4db70e5a9b83f",
+          "use": false
+        },
+        {
+          "path": "eval.yaml",
+          "sha256": "ee254a61dc1778313087d49c2d74c0b4260443015fab8f9072d01d9ab2f2167c",
+          "use": false
+        },
+        {
+          "path": "data/default/test-00000-of-00001.parquet",
+          "sha256": "1067f72c1f43bbc578276888625db3b836cebb535546c9eaf824c5d5dd104a7f",
+          "use": true
+        },
+        {
+          "path": "data/hard/test-00000-of-00001.parquet",
+          "sha256": "abe9b2280ae470ae5742698979855e40ecc5c83c7aa6c679afb4ee964e951d3c",
+          "use": false
+        },
+        {
+          "path": "data/v1/test-00000-of-00001.parquet",
+          "sha256": "c8cd7115496ad4e9a8b21d088cef576a65bf821bb542b24336f13f714cef13f8",
+          "use": false
+        }
+      ],
+      "rows_total": 642,
+      "rows_by_language": {
+        "js": 145,
+        "other": 493,
+        "ts": 4
+      },
+      "js_ts_candidates": 149,
+      "columns_seen": [
+        "repo",
+        "instance_id",
+        "base_commit",
+        "patch",
+        "test_patch",
+        "problem_statement",
+        "requirements",
+        "interface",
+        "repo_language",
+        "fail_to_pass",
+        "pass_to_pass",
+        "issue_specificity",
+        "issue_categories",
+        "before_repo_set_cmd",
+        "selected_test_files_to_run",
+        "dockerhub_tag",
+        "docker_image",
+        "hard",
+        "version"
+      ],
+      "columns_missing_from_policy": [],
+      "policy_columns_absent_in_data": [],
+      "unknown_columns_quarantined": [],
+      "agent_fields": [
+        "task_id",
+        "problem_statement",
+        "requirements",
+        "interface"
+      ],
+      "redactions": {
+        "tasks_with_redactions": 0,
+        "by_kind": {}
+      },
+      "gold_overlap_report": {
+        "tasks_with_any": 12,
+        "tasks": 149
+      }
+    },
+    "swe-bench-multilingual": {
+      "hf_dataset": "SWE-bench/SWE-bench_Multilingual",
+      "revision": "846e647b9f33c0b51b739d005d13d85493c9af09",
+      "files_verified": [
+        {
+          "path": "README.md",
+          "sha256": "c8b96ca94b43344556c610bcc4e836ef6b5472e2e1f9ca561aebd5cc011e3a14",
+          "use": false
+        },
+        {
+          "path": "eval.yaml",
+          "sha256": "4c7e76ef3d281eb01e006c5d01a6db049e82fdd60776f935e14f353288d657fc",
+          "use": false
+        },
+        {
+          "path": "data/test-00000-of-00001.parquet",
+          "sha256": "92abca7cb527b41a9f66d03a26ce441ff7319e3a49f985998fd56be4bb9b08b2",
+          "use": true
+        }
+      ],
+      "rows_total": 300,
+      "rows_by_language": {
+        "other": 257,
+        "js": 26,
+        "ts": 17
+      },
+      "js_ts_candidates": 43,
+      "columns_seen": [
+        "base_commit",
+        "created_at",
+        "eval_type",
+        "image",
+        "instance_id",
+        "log_parser",
+        "repo",
+        "version",
+        "patch",
+        "test_patch",
+        "eval_script",
+        "problem_statement",
+        "hints_text",
+        "FAIL_TO_PASS",
+        "PASS_TO_PASS"
+      ],
+      "columns_missing_from_policy": [],
+      "policy_columns_absent_in_data": [],
+      "unknown_columns_quarantined": [],
+      "agent_fields": [
+        "task_id",
+        "problem_statement"
+      ],
+      "redactions": {
+        "tasks_with_redactions": 6,
+        "by_kind": {
+          "repo_history_link": 7
+        }
+      },
+      "gold_overlap_report": {
+        "tasks_with_any": 0,
+        "tasks": 43
+      }
+    },
+    "swe-polybench": {
+      "hf_dataset": "AmazonScience/SWE-PolyBench",
+      "revision": "d56445f9940eae4e9d2974ec66820c2f1d7754e6",
+      "files_verified": [
+        {
+          "path": "README.md",
+          "sha256": "3a9ffcfc3328b5d0c433a64747354734c680aabc6e6348476f58e733368e83e2",
+          "use": false
+        },
+        {
+          "path": "test.csv",
+          "sha256": "17ad661b20e9af1e2067fbbc2e2658a21137d56693570d1d07f966d8bc0408b7",
+          "use": true
+        }
+      ],
+      "rows_total": 2110,
+      "rows_by_language": {
+        "other": 364,
+        "js": 1017,
+        "ts": 729
+      },
+      "js_ts_candidates": 1746,
+      "columns_seen": [
+        "repo",
+        "pull_number",
+        "instance_id",
+        "issue_numbers",
+        "base_commit",
+        "patch",
+        "test_patch",
+        "problem_statement",
+        "hints_text",
+        "created_at",
+        "language",
+        "Dockerfile",
+        "P2P",
+        "F2P",
+        "F2F",
+        "test_command",
+        "task_category",
+        "is_no_nodes",
+        "is_func_only",
+        "is_class_only",
+        "is_mixed",
+        "num_func_changes",
+        "num_class_changes",
+        "num_nodes",
+        "is_single_func",
+        "is_single_class",
+        "modified_nodes"
+      ],
+      "columns_missing_from_policy": [],
+      "policy_columns_absent_in_data": [],
+      "unknown_columns_quarantined": [],
+      "agent_fields": [
+        "task_id",
+        "problem_statement"
+      ],
+      "redactions": {
+        "tasks_with_redactions": 109,
+        "by_kind": {
+          "repo_history_link": 146
+        }
+      },
+      "gold_overlap_report": {
+        "tasks_with_any": 65,
+        "tasks": 1746
+      }
+    }
+  }
+}
