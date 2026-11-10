@@ -96,6 +96,40 @@
 
 
   <!-- ============================================================ -->
+  <!-- SECTION: HOME-LOGOS → edit: src/home-logos.html -->
+  <!-- ============================================================ -->
+  <!-- LOGO STRIP (revision 5, owner decision 2026-11-10). Exactly these items; see media/logos/SOURCES.md.
+       "Works with" shows compatibility, not endorsement. The group labels stay visible.
+       Without JavaScript or under reduced motion it is a static, wrapped row. interactions.js adds the moving
+       copy (aria-hidden, inert) and the Pause button. -->
+  <section class="qbh-logos" data-qbh-marquee aria-label="Works with, and research collaborations">
+    <div class="qbh-marquee">
+      <div class="qbh-marquee-track">
+        <div class="qbh-marquee-set">
+          <div class="qbh-logo-group">
+            <p class="qbh-logo-label" id="logos-works">Works with</p>
+            <ul class="qbh-logo-list" aria-labelledby="logos-works">
+              <li class="qbh-logo"><img src="./media/logos/claude-code.svg" alt="Claude Code" width="160" height="22" style="--h: 22px" decoding="async"></li>
+              <li class="qbh-logo"><img src="./media/logos/nodejs.svg" alt="Node.js" width="107" height="32" style="--h: 32px" decoding="async"></li>
+              <li class="qbh-logo"><img src="./media/logos/docker.svg" alt="Docker" width="131" height="28" style="--h: 28px" decoding="async"></li>
+              <li class="qbh-logo"><img src="./media/logos/github.svg" alt="GitHub" width="123" height="28" style="--h: 28px" decoding="async"></li>
+            </ul>
+          </div>
+          <div class="qbh-logo-group">
+            <p class="qbh-logo-label" id="logos-research">Research collaborations</p>
+            <ul class="qbh-logo-list" aria-labelledby="logos-research">
+              <li class="qbh-logo qbh-logo-text">George Mason University</li>
+              <li class="qbh-logo qbh-logo-text">Harvard University</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="qbh-marquee-btn" type="button" data-qbh-marquee-btn hidden aria-label="Pause the logo strip">Pause</button>
+  </section>
+
+
+  <!-- ============================================================ -->
   <!-- SECTION: HOME-RUN → edit: src/home-run.html -->
   <!-- ============================================================ -->
   <!-- ONE REAL RUN. Every panel is an excerpt from run e01b3273 (2026-10-15, QB 3fc08fd), re-checked 2026-11-09 against

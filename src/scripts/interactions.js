@@ -146,6 +146,39 @@
     sync();
   }
 
+  /* ── Logo strip (revision 5): a slow right-to-left loop over two identical sets. The second set is
+     aria-hidden and inert. A visible Pause button, hover and keyboard focus pause it; it also pauses off
+     screen. Under reduced motion (at load or toggled) it stays a static, wrapped row. ── */
+  const strip = document.querySelector('[data-qbh-marquee]');
+  if (strip) {
+    const track = strip.querySelector('.qbh-marquee-track');
+    const set = track.querySelector('.qbh-marquee-set');
+    const btn = strip.querySelector('[data-qbh-marquee-btn]');
+    const copy = set.cloneNode(true);
+    copy.setAttribute('aria-hidden', 'true');
+    copy.setAttribute('inert', '');
+    copy.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    copy.querySelectorAll('[aria-labelledby]').forEach((el) => el.removeAttribute('aria-labelledby'));
+    copy.querySelectorAll('img').forEach((img) => { img.alt = ''; });
+    track.appendChild(copy);
+    let paused = false;
+    const syncStrip = () => {
+      const on = !reduced();
+      strip.classList.toggle('is-animated', on);
+      btn.hidden = !on;
+    };
+    btn.addEventListener('click', () => {
+      paused = !paused;
+      strip.classList.toggle('is-paused', paused);
+      btn.textContent = paused ? 'Play' : 'Pause';
+      btn.setAttribute('aria-label', paused ? 'Play the logo strip' : 'Pause the logo strip');
+    });
+    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { strip.classList.toggle('is-offscreen', !es[0].isIntersecting); }).observe(strip);
+    if (motionQuery.addEventListener) motionQuery.addEventListener('change', syncStrip);
+    else if (motionQuery.addListener) motionQuery.addListener(syncStrip);
+    syncStrip();
+  }
+
   /* ── One real run: at 900px and up with motion allowed, the panels move into one sticky stage.
      The active step is the one at the viewport's vertical centre, measured from real positions.
      The stage is used only if it fits the viewport below the header; otherwise, on small screens,
