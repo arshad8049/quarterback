@@ -99,6 +99,28 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qbh-glow-dark { background: radial-gradient(circle closest-side, rgba(224, 133, 71, 0.14), rgba(224, 133, 71, 0.115) 20%, rgba(224, 133, 71, 0.07) 40%, rgba(224, 133, 71, 0.032) 60%, rgba(224, 133, 71, 0.01) 80%, rgba(224, 133, 71, 0) 100%); }
 .qbh-sec-ink, .qbh-panel, .qbh-result-card, .qbh .qbx-form-card { position: relative; isolation: isolate; }
 
+/* ── Logo strip (revision 5). Static and wrapped by default (no JavaScript, reduced motion); interactions.js
+   adds .is-animated, a hidden duplicate set and the Pause button. Logos are shown unaltered. ── */
+.qbh-logos { display: flex; align-items: center; gap: 16px; margin: 0 var(--gutter); padding: 36px 0 8px; }
+.qbh-marquee { flex: 1; min-width: 0; overflow: hidden; }
+.qbh-marquee-track, .qbh-marquee-set { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 20px 56px; }
+.qbh-marquee-track { justify-content: center; }
+.qbh-marquee-set[aria-hidden="true"] { display: none; }
+.qbh-logo-group { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; }
+.qbh-logo-label { margin: 0; font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.qbh-logo-list { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px 40px; margin: 0; padding: 0; list-style: none; }
+.qbh-logo { display: flex; align-items: center; min-height: 40px; }
+.qbh-logo img { display: block; height: var(--h); width: auto; max-width: none; }
+.qbh-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-2); white-space: nowrap; }
+.qbh-marquee-btn { flex: none; min-height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--text-2); font: 500 14px var(--sans); cursor: pointer; }
+.qbh-marquee-btn:hover { color: var(--text); border-color: #b9b9b1; }
+.qbh-logos.is-animated .qbh-marquee { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
+.qbh-logos.is-animated .qbh-marquee-track { flex-wrap: nowrap; justify-content: flex-start; width: max-content; gap: 0; animation: qbh-marquee 36s linear infinite; }
+.qbh-logos.is-animated .qbh-marquee-set { display: flex; flex-wrap: nowrap; padding-right: 56px; }
+.qbh-logos.is-animated .qbh-logo-group, .qbh-logos.is-animated .qbh-logo-list { flex-wrap: nowrap; }
+.qbh-logos.is-paused .qbh-marquee-track, .qbh-logos.is-offscreen .qbh-marquee-track, .qbh-logos:hover .qbh-marquee-track, .qbh-logos:focus-within .qbh-marquee-track { animation-play-state: paused; }
+@keyframes qbh-marquee { to { transform: translate3d(-50%, 0, 0); } }
+
 /* ── Sections ── */
 .qbh-sec { padding: 112px var(--gutter); }
 .qbh-wrap { max-width: 1280px; margin: 0 auto; }
@@ -222,6 +244,9 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
   .qbh .qbx-try-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
 }
 @media (max-width: 640px) {
+  .qbh-logos { padding-top: 28px; gap: 10px; }
+  .qbh-logo img { height: calc(var(--h) * 0.82); }
+  .qbh-logo-text { font-size: 15px; }
   .qbh { --gutter: 16px; font-size: 16px; }
   .qbh-sec, .qbh .qbx-sec.qbx-try { padding-top: 64px; padding-bottom: 64px; }
   .qbh-sec-ink { padding-left: 20px; padding-right: 20px; }
@@ -240,12 +265,17 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 /* ── Motion off: the OS setting at load or mid-session ── */
 .qb-motion-off .qbh-hero-copy > * { animation: none; }
 .qb-motion-off .qbh-glow, .qb-motion-off .qbh-glow-clip { display: none; }
+.qb-motion-off .qbh-marquee-track { animation: none; }
 .qb-motion-off .qbh-art-move { transform: none; }
 .qb-motion-off .qbh-btn:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .qbh-hero-copy > * { animation: none; }
   .qbh-art-move { transform: none; }
   .qbh-glow, .qbh-glow-clip { display: none; }
+  .qbh-logos .qbh-marquee-track { animation: none; transform: none; flex-wrap: wrap; justify-content: center; width: auto; gap: 20px 56px; }
+  .qbh-logos .qbh-marquee-set[aria-hidden="true"], .qbh-marquee-btn { display: none; }
+  .qbh-logos .qbh-logo-group, .qbh-logos .qbh-logo-list, .qbh-logos .qbh-marquee-set { flex-wrap: wrap; }
+  .qbh-logos .qbh-marquee { -webkit-mask-image: none; mask-image: none; }
   .qbh-btn, .qbh-btn:hover { transition: none; transform: none; }
   html:has(.qbh) { scroll-behavior: auto; }
 }

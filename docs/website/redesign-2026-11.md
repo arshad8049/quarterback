@@ -313,3 +313,73 @@ A separate single cold load recorded the hero image as the desktop LCP element a
 - On warm-white surfaces the 6% gradient has faint 8-bit banding rings, which the eased stops reduce but don't remove.
 - White cards (`.qbh-card`) and code blocks are not lit; the light passes under them.
 - Not tested: Safari, Firefox, a real trackpad, a high-refresh display, and ordinary hardware. The pointer-leave check used a synthetic `mouseout`, not a real pointer leaving the window.
+
+## 10. Revision 5 (2026-11-10): logo strip
+
+**Owner decisions, 2026-11-10:**
+- An auto-scrolling logo strip sits directly after the hero, before "A real run", with exactly these items:
+  - **Works with:** Claude Code, Node.js, Docker, GitHub. These are the tools Quarterback integrates with; the label shows compatibility, not endorsement.
+  - **Research collaborations:** George Mason University, Harvard University.
+- **The owner stated on 2026-11-10 that both universities have authorized use of their logos.** We hold no written approval in the repo.
+- No other organization, customer or prospect appears.
+
+**Logo inventory** (full detail, hashes and rules in `landing_page/media/logos/SOURCES.md`; all fetched 2026-11-10; committed files are byte-identical to the official downloads):
+
+| Item | Shown as | Official source | Size | SHA-256 (first 12) |
+|---|---|---|---|---|
+| Claude Code | `claude-code.svg`, "Claude Code logo - Slate" | Anthropic press kit, anthropic.com/press-kit | 7,000 B | `d8a00c51cd1a` |
+| Node.js | `nodejs.svg`, `nodejsDark.svg` (horizontal, for light backgrounds) | nodejs.org/en/about/branding; trademark-policy.openjsf.org | 5,844 B | `69fe820a6dfd` |
+| Docker | `docker.svg`, `docker-logo-ocean-blue.svg` | docker.com media resources, `Docker-Logos-1.zip`; docker.com/legal/trademark-guidelines | 2,473 B | `db969db2ea1e` |
+| GitHub | `github.svg`, `GitHub_Lockup_Black.svg` | github.com/logos (brand.github.com), `GitHub_Logos.zip` | 3,946 B | `802172fd58f2` |
+| George Mason University | **Text wordmark** | Official files need a login (brand.gmu.edu links to gmu.bynder.com, "login required") | n/a | n/a |
+| Harvard University | **Text wordmark** | trademark.harvard.edu returned 403; no public download found | n/a | n/a |
+
+The originals and full kits are in the owner's `landing_page/assets/logos/` (ignored by git). The two universities stay as plain-text names until the owner supplies their official files.
+
+**Behaviour:**
+- **Layout:** two groups, each a list with its visible label ("Works with", "Research collaborations"); the label sits inside the track before its logos.
+- **Motion:** a seamless right-to-left loop, a CSS transform on two identical sets over 36 s, about 40 px/s.
+- **The moving copy** is added by JavaScript with `aria-hidden="true"` and `inert`. Its images have empty alt text, and it has no focusable elements.
+- **Pausing:** a visible Pause/Play button (accessible names "Pause the logo strip" and "Play the logo strip"). Hovering or focusing inside the strip pauses it, and it pauses while off screen.
+- **Reduced motion** (at load and when toggled) and **no JavaScript**: no animation, no copy and no button; the logos show as a static, centred, wrapped row.
+- **Images:** each has alt text equal to the organization's name, with width and height set; logo heights 22 to 32 px (82% on phones), at least 40 px between items.
+
+**Verification (local, Playwright 1.48.2 Chromium in Docker, 2026-11-10; script `verify6.js`):**
+
+| Check | Result |
+|---|---|
+| axe-core 4.10.2, `/` and `/developers` at 1440, 1280, 768 and 375 px | 0 violations |
+| axe with the pointer resting on text (7 spots, revision 4 check) | 0 violations |
+| Placement | Directly after the hero, directly before `#run` |
+| Lists and labels | "Works with" list of 4, "Research collaborations" list of 2; both labels visible while animating, at every width |
+| Alt text | Claude Code, Node.js, Docker, GitHub; the copy's images have empty alt text |
+| Copy | `aria-hidden`, `inert`, 0 focusable elements |
+| Motion | Moving left at 40 px/s; 36 s loop |
+| Pause button | Pause sets "Play" and stops movement (0 px moved in 0.8 s); Play resumes |
+| Hover, and keyboard focus on the button | Animation paused |
+| Keyboard | 36 stops (the Pause button added), all with a visible focus outline |
+| Reduced motion at load | Static wrapped row; no copy; no button |
+| Reduced motion toggled off, then on again | Animation and button come back, then go again |
+| JavaScript disabled | One static set; labels and all logos visible; no button |
+| Touch (iPhone 13) and 375 px | No horizontal overflow; button available; off-screen pausing works |
+| Overflow at 1440, 1280, 768 and 375 px, and at 200% zoom | 0 |
+| Story checks, hero checks and em dashes | Unchanged: pass; 0 em dashes; 403 words of homepage prose |
+| Unit tests on the form and privacy wording | 7 pass, 0 fail |
+
+**Performance** (1280×800, 4× CPU throttle, median of 3 cold loads, same local server; revision 4 served from `c647e2f` at the same time):
+
+| | Revision 4 | Revision 5 |
+|---|---|---|
+| Largest contentful paint | 117 ms | 135 ms |
+| Cumulative layout shift | 0 | 0 |
+| Total blocking time | 6 ms | 6 ms |
+| Transferred | 211 KB | 237 KB |
+| Requests | 10 | 14 (the four logo files) |
+| Scroll frame p95, no pointer and with a moving pointer | 16.8 / 16.7 ms | 16.8 / 16.7 ms |
+| Frames over 50 ms | 0 | 0 |
+
+**Remaining gaps:**
+- George Mason University and Harvard University are text names, not logos. Their official files are not publicly downloadable; the owner can supply them, and they can then be swapped in with the same markup.
+- The Claude Code kit has no usage-guideline document; only the press-kit page applies.
+- On phones the Pause button takes space beside the strip, so about one and a half logos show at a time.
+- Not tested: Safari, Firefox, a real screen reader.
