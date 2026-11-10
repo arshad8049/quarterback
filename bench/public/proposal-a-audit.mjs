@@ -9,10 +9,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { get, raw } from './qualify.mjs';
-import { auditYarn, auditNpm, proposalA, yarnEntries } from './proposal-a.mjs';
+import { auditYarn, auditNpm, proposalA, yarnEntries, conditionalOn } from './proposal-a.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const yarnArg = (process.argv.find((a) => a.startsWith('--yarn=')) || '--yarn=classic').slice(7).split(',');
+// Jest versions actually exercised by the no-agent feasibility run (feasibility/results/*.json). Bounded profile only.
+const jestArg = ((process.argv.find((a) => a.startsWith('--jest=')) || '--jest=').slice(7) || '').split(',').filter(Boolean);
 const { tasks } = JSON.parse(fs.readFileSync(path.join(HERE, 'manifest', 'candidates.json'), 'utf8'));
 const parse = (s) => { try { return JSON.parse(s); } catch { return undefined; } };
 const text = async (repo, c, p) => { const r = await get(raw(repo, c, p)); return r.status === 200 ? r.body : null; };
@@ -80,25 +82,37 @@ for (const t of tasks) {
   let jest_version = null;
   if (!runnerBlocked && deps.kind === 'npm') { const l = parse(await text(t.repo, t.base_commit, 'package-lock.json')); jest_version = l?.packages?.['node_modules/jest']?.version || null; }
   if (!runnerBlocked && deps.kind === 'yarn' && deps.generation === 'classic') { const lt = await text(t.repo, t.base_commit, 'yarn.lock'); const e = lt && yarnEntries(lt, 'classic').find((x) => /^"?jest@/.test(x.key)); jest_version = e ? e.version : null; }
-  const r = proposalA({ runner_frameworks: runners, grader_evidence: f.grader_evidence, services: f.services || [], node: f.node || {}, deps }, { yarn: yarnArg });
-  out.push({ task_id: t.task_id, source: t.source, repo: t.repo, base_commit: t.base_commit, status: r.status, jest_version, blockers: r.blockers, unknowns: r.unknowns, requirements: r.requirements, conditions: r.conditions,
+  const input = { runner_frameworks: runners, grader_evidence: f.grader_evidence, services: f.services || [], node: f.node || {}, deps, jest_version };
+  const r = proposalA(input, { yarn: yarnArg });
+  const bounded = proposalA(input, { yarn: [], jestVersions: jestArg });
+  out.push({ task_id: t.task_id, source: t.source, repo: t.repo, base_commit: t.base_commit, status: bounded.status, bounded_blockers: bounded.blockers, bounded_unknowns: bounded.unknowns, extended_status: r.status === 'eligible_static' ? 'conditional' : r.status, conditional_on: r.status === 'eligible_static' && bounded.status !== 'eligible_static' ? conditionalOn(r, { jest_version, validated: jestArg }) : null, jest_version, blockers: r.blockers, unknowns: r.unknowns, requirements: r.requirements, conditions: r.conditions,
     gold_overlap_flag: t.leak.gold_overlap_lines > 0, deps: deps.kind === 'not-audited' ? { kind: deps.kind } : { kind: deps.kind, generation: deps.generation ?? null, lock_sha256: deps.lock_sha256 ?? null, lockfile_version: deps.lockfile_version ?? null, config: deps.config ?? null, registries: deps.registries, integrity: deps.integrity, install_scripts: deps.install_scripts, protocols: deps.protocols ?? null, resolutions: deps.resolutions ?? null } });
 }
 
-const tally = (rows, key) => { const o = {}; for (const r of rows) { const k = key(r); const s = (o[k] ||= { eligible_static: 0, unknown: 0, incompatible: 0, gold_overlap_flagged: 0 }); s[r.status]++; if (r.gold_overlap_flag) s.gold_overlap_flagged++; } return o; };
+const tally = (rows, key) => { const o = {}; for (const r of rows) { const k = key(r); const s = (o[k] ||= { conditional: 0, unknown: 0, incompatible: 0, gold_overlap_flagged: 0 }); s[r.extended_status]++; if (r.gold_overlap_flag) s.gold_overlap_flagged++; } return o; };
 const freq = (xs) => Object.fromEntries(Object.entries(xs.reduce((a, x) => ((a[x] = (a[x] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1]));
+const tallyB = (rows, key) => { const o = {}; for (const r of rows) { const k = key(r); const s = (o[k] ||= { eligible_static: 0, unknown: 0, incompatible: 0 }); s[r.status]++; } return o; };
 const result = {
-  schema: 'qb-public-proposal-a/1', yarn_generations_supported: yarnArg,
-  note: 'Static. eligible_static = no blocker and nothing unresolved that a static read can settle; runtime is still unverified for every task (KAN-111). Gold-line overlap is a screening flag (counted, not excluded here).',
-  jest_versions_eligible_or_unknown: freq(out.filter((r) => r.status !== 'incompatible' && r.jest_version).map((r) => r.jest_version)),
-  by_source: tally(out, (r) => r.source), by_repo: tally(out, (r) => `${r.source} ${r.repo}`),
+  original_result: 'KAN-110 inventory against QB 784e721 as it is: 0 compatible of 1,938 (manifest/counts.json). Unchanged by this file.',
+  bounded_profile: { definition: 'Jest runner + npm package-lock v2/v3 only; Yarn deferred; only Jest versions exercised in the feasibility run count', jest_versions_validated: jestArg,
+    by_source: tallyB(out, (r) => r.source), by_repo: Object.fromEntries(Object.entries(tallyB(out, (r) => `${r.source} ${r.repo}`)).filter(([, v]) => v.eligible_static || v.unknown)) },
+  extended_conditional: { definition: 'Passes the static audit only with additional work beyond the bounded profile (Yarn Classic, SHA-1-only integrity, yarnpkg mapping, legacy Jest, runtime). NOT eligible for the bounded implementation.',
+    tasks: out.filter((r) => r.conditional_on).length, by_repo: freq(out.filter((r) => r.conditional_on).map((r) => r.repo)), conditional_on: freq(out.filter((r) => r.conditional_on).flatMap((r) => r.conditional_on.map((c) => c.replace(/legacy-[\d.]+/, 'legacy-<version>')))) },
+  schema: 'qb-public-proposal-a/1', extended_yarn_generations: yarnArg,
+  note: 'Static. Per task: status = bounded profile (Jest + npm, Yarn deferred, validated Jest versions only); extended_status = with Yarn Classic etc., where "conditional" means it passes only with the extra work in conditional_on and is NOT eligible for the bounded implementation. Runtime is unverified for every task. Gold-line overlap is a screening flag.',
+  jest_versions_not_incompatible_extended: freq(out.filter((r) => r.extended_status !== 'incompatible' && r.jest_version).map((r) => r.jest_version)),
+  extended_by_source: tally(out, (r) => r.source), extended_by_repo: tally(out, (r) => `${r.source} ${r.repo}`),
   blocker_frequency: freq(out.flatMap((r) => r.blockers)),
   unknown_frequency: freq(out.flatMap((r) => r.unknowns.map((u) => (u.startsWith('install:native-or-script-deps:') ? 'install:native-or-script-deps:<names>' : u)))),
   tasks: out,
 };
 fs.writeFileSync(path.join(HERE, 'manifest', 'proposal-a.json'), JSON.stringify({ ...result, tasks: undefined }, null, 2).replace(/\n}$/, ',\n  "tasks": [\n') + out.map((t) => '    ' + JSON.stringify(t)).join(',\n') + '\n  ]\n}\n');
-console.log('yarn supported:', yarnArg.join(','));
-for (const [k, v] of Object.entries(result.by_source)) console.log(k, JSON.stringify(v));
-console.log('jest-relevant repos:'); for (const [k, v] of Object.entries(result.by_repo)) if (v.eligible_static || v.unknown || /prettier|babel|element|immutable|docusaurus|webclients|code-server|tailwind/.test(k)) console.log('  ', k, JSON.stringify(v));
+console.log('bounded profile (Jest + npm; validated jest:', jestArg.join(',') || 'none', ')');
+for (const [k, v] of Object.entries(result.bounded_profile.by_source)) console.log('  bounded', k, JSON.stringify(v));
+console.log('  bounded repos with eligible/unknown', JSON.stringify(result.bounded_profile.by_repo));
+console.log('extended conditional', JSON.stringify({ tasks: result.extended_conditional.tasks, by_repo: result.extended_conditional.by_repo, on: result.extended_conditional.conditional_on }));
+console.log('extended (yarn supported:', yarnArg.join(','), ')');
+for (const [k, v] of Object.entries(result.extended_by_source)) console.log('  extended', k, JSON.stringify(v));
+
 console.log('blockers', JSON.stringify(result.blocker_frequency));
 console.log('unknowns', JSON.stringify(result.unknown_frequency));

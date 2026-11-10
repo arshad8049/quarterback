@@ -1,0 +1,76 @@
+{
+  "schema": "qb-feasibility/1",
+  "task": "2005",
+  "task_id": "qbt_9b9a5da937c9",
+  "instance": "immutable-js__immutable-js-2005",
+  "base": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+  "started": "2026-11-10T17:09:17.821Z",
+  "host": {
+    "platform": "darwin/arm64",
+    "docker": "28.1.1 aarch64 cgroup2 mem=8217890816"
+  },
+  "qb_source": "01da18fc543f1dcc0ec8580d0767113c01d7bb92",
+  "commands": [
+    "git fetch --depth 1 https://github.com/immutable-js/immutable-js.git 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 && git checkout --detach FETCH_HEAD",
+    "QB prepareDeps: deps-plan.sh → npm ci --no-audit --no-fund --registry=https://registry.npmjs.org/ (DEPS proxy, registry.npmjs.org only) → deps-check.sh"
+  ],
+  "stages": {
+    "seed": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 233
+    },
+    "deps": {
+      "status": "setup_failed",
+      "reason": "npm ci execution_error: exit 1",
+      "detail": null,
+      "wall_ms": 88404,
+      "plan": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 148
+      },
+      "install": {
+        "state": "execution_error",
+        "reason": "exit 1",
+        "exit_code": 1,
+        "oom_killed": false,
+        "duration_ms": 85581
+      }
+    }
+  },
+  "findings": {
+    "result": "install_failed",
+    "install_error": "ed resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated\nnpm error code 1\nnpm error path /scratch/node_modules/microtime\nnpm error command failed\nnpm error command sh -c node-gyp-build\nnpm error gyp info it worked if it ends with ok\nnpm error gyp info using node-gyp@12.4.0\nnpm error gyp info using node@24.21.0 | linux | arm64\nnpm error gyp ERR! find Python \nnpm error gyp ERR! find Python --python was not set on the command line\nnpm error gyp ERR! find Python Python is not set from environment variable PYTHON\nnpm error gyp ERR! find Python checking if \"python3\" can be used\nnpm error gyp ERR! find Python - executable path is \"\"\nnpm error gyp ERR! find Python - \"\" could not be run\nnpm error gyp ERR! find Python checking if \"python\" can be used\nnpm error gyp ERR! find Python - executable path is \"\"\nnpm error gyp ERR! find Python - \"\" could not be run\nnpm error gyp ERR! find Python \nnpm error gyp ERR! find Python **********************************************************\nnpm error gyp ERR! find Python You need to install the latest version of Python.\nnpm error gyp ERR! find Python Node-gyp should be able to find and use Python. If not,\nnpm error gyp ERR! find Python you can try one of the following options:\nnpm error gyp ERR! find Python - Use the switch --python=\"/path/to/pythonexecutable\"\nnpm error gyp ERR! find Python (accepted by both node-gyp and npm)\nnpm error gyp ERR! find Python - Set the environment variable PYTHON\nnpm error gyp ERR! find Python For more information consult the documentation at:\nnpm error gyp ERR! find Python https://github.com/nodejs/node-gyp#installation\nnpm error gyp ERR! find Python **********************************************************\nnpm error gyp ERR! find Python \nnpm error gyp ERR! configure error \nnpm error gyp ERR! stack Error: Could not find any Python installation to use\nnpm error gyp ERR! stack at PythonFinder.fail (/usr/local/lib/node_modules/npm/node_modules/node-gyp/lib/find-python.js:300:11)\nnpm error gyp ERR! stack at PythonFinder.findPython (/usr/local/lib/node_modules/npm/node_modules/node-gyp/lib/find-python.js:160:17)\nnpm error gyp ERR! stack at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\nnpm error gyp ERR! stack at async configure (/usr/local/lib/node_modules/npm/node_modules/node-gyp/lib/configure.js:27:18)\nnpm error gyp ERR! stack at async run (/usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js:81:18)\nnpm error gyp ERR! System Linux 6.10.14-linuxkit\nnpm error gyp ERR! command \"/usr/local/bin/node\" \"/usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js\" \"rebuild\"\nnpm error gyp ERR! cwd /scratch/node_modules/microtime\nnpm error gyp ERR! node -v v24.21.0\nnpm error gyp ERR! node-gyp -v v12.4.0\nnpm error gyp ERR! $npm_package_name microtime\nnpm error gyp ERR! $npm_package_version 3.0.0\nnpm error gyp ERR! not ok\nnpm error A complete log of this run can be found in: /tmp/home/.npm/_logs/2026-11-10T17_09_39_527Z-debug-0.log\n"
+  },
+  "checkout": {
+    "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+    "tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb"
+  },
+  "run_id": "qb-feas2005-mway3geb-72de",
+  "images": {
+    "tools": {
+      "ref": "sha256:a7379242949e75db0712a40e33c7b57072e90caeff69cefd408f8a8dad720b6d",
+      "id": "sha256:a7379242949e75db0712a40e33c7b57072e90caeff69cefd408f8a8dad720b6d arm64"
+    },
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:f385bf4637f75ff2c31f031b557f4ccca70358ed8acc58228d0d3d44b694827e arm64"
+    }
+  },
+  "limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "finished": "2026-11-10T17:11:06.482Z"
+}

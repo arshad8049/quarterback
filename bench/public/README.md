@@ -109,17 +109,19 @@ The first estimate here (Jest + Yarn "unlocks 216 tasks") was **wrong**. `deps-p
 
 The revised static audit reads each `yarn.lock` and the Yarn configuration, and checks every restriction independently (`proposal-a.mjs`, `proposal-a-audit.mjs`, `manifest/proposal-a.json`).
 
-**Result under a bounded Proposal A (Jest runner + Yarn Classic):**
+**The original result stands:** 0 of 1,938 compatible with QB as it is.
 
-| Source | Eligible (static) | Unknown | Incompatible |
+**Bounded profile** (Jest + npm only; Yarn deferred; validated Jest versions only):
+
+| Source | Eligible | Unknown | Incompatible |
 |---|---|---|---|
 | Pro | 0 | 0 | 149 |
-| Multilingual | 0 | 2 | 41 |
-| PolyBench | 21 | 38 | 1,687 |
+| Multilingual | 0 | 2 (immutable-js) | 41 |
+| PolyBench | 0 | 8 | 1,738 |
 
-- **Multilingual unknowns:** the 2 immutable-js tasks.
-- **PolyBench eligible:** 21 prettier tasks from 2017 (Jest 18/19). They need SHA-1-only integrity accepted and the yarnpkg mirror mapped.
-- **Runtime:** unverified for every task.
+The 21 prettier tasks (2017, Jest 18/19) are **conditional only**: they need legacy Jest, SHA-1 integrity, the yarnpkg mapping, Yarn Classic and runtime work. They are not eligible for the bounded implementation.
+
+**Feasibility (review 10541):** both immutable-js tasks **fail at `npm ci` in the current QB sandbox image** on this arm64 host. `microtime@3.0.0` has no linux-arm64 prebuild, and node-gyp finds no Python. That path is stopped. See [feasibility/README.md](feasibility/README.md).
 
 **Proposal A is a possible product extension, not a proven fix.** It gives no cross-source coverage. Full per-repository detail, the immutable-js feasibility check and the bounded adapter specification are in [PROPOSAL-A.md](PROPOSAL-A.md).
 

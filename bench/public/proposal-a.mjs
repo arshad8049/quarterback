@@ -175,11 +175,13 @@ export function rangeAdmits(range, major) {
  * opts.yarn = Yarn generations the adapter would support (e.g. ['classic']).
  */
 export function proposalA(t, opts = { yarn: ['classic'] }) {
+  opts = { yarn: [], ...opts };
   const b = new Set(t.deps.blockers); const u = new Set(t.deps.unknowns); const req = new Set(t.deps.requirements);
   const runners = new Set(t.runner_frameworks || []);
   if (!runners.size) u.add('runner:unidentified');
   for (const r of runners) if (r !== 'jest') b.add(`runner:${r}`);
-  if (t.deps.kind === 'yarn' && t.deps.generation && !opts.yarn.includes(t.deps.generation)) b.add(`yarn:unsupported-generation:${t.deps.generation}`);
+  if (t.deps.kind === 'yarn' && t.deps.generation && !opts.yarn.includes(t.deps.generation)) b.add(opts.yarn.length ? `yarn:unsupported-generation:${t.deps.generation}` : 'yarn:deferred');
+  if (opts.jestVersions && runners.has('jest') && t.jest_version && !opts.jestVersions.includes(t.jest_version)) u.add(`runner:jest-version-unvalidated:${t.jest_version}`);
   (t.services || []).forEach((s) => b.add(`service:${s}`));
   const n = t.node || {};
   const pin = pinnedMajor(n);
@@ -192,4 +194,17 @@ export function proposalA(t, opts = { yarn: ['classic'] }) {
   else if (is.required.length) u.add(`install:native-or-script-deps:${is.required.join(',')}`);
   const blockers = [...b].sort(); const unknowns = [...u].sort();
   return { status: blockers.length ? 'incompatible' : unknowns.length ? 'unknown' : 'eligible_static', blockers, unknowns, requirements: [...req].sort(), conditions: ['runtime:unverified'] };
+}
+
+/**
+ * For a task that passes only under the EXTENDED profile (Yarn Classic etc.), list the extra work it is
+ * conditional on, instead of calling it eligible for the bounded Jest + npm implementation (review 10541).
+ */
+export function conditionalOn(result, { jest_version, validated = [] } = {}) {
+  const c = new Set(['runtime:unverified']);
+  if (jest_version && !validated.includes(jest_version)) c.add(`jest:legacy-${jest_version}`);
+  if ((result.requirements || []).includes('yarn:sha1-only-integrity')) c.add('integrity:sha1-only');
+  if ((result.requirements || []).includes('yarn:registry-mapping')) c.add('registry:yarnpkg-mapping');
+  c.add('yarn:classic-support');
+  return [...c];
 }
