@@ -1,0 +1,23 @@
+{
+  "task": "2005",
+  "instance_id": "immutable-js__immutable-js-2005",
+  "mode": "gold",
+  "label": "gold",
+  "rep": 3,
+  "variant": "A0",
+  "container": "kan111-2005-gold-3-9cb82c",
+  "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+  "network": "none",
+  "sys_admin": false,
+  "timeout_s": 1800,
+  "eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+  "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+  "base_head": null,
+  "patch_sha256": "ee2a6dd8664143cf3294ae60364d1ec790671c99414defef9e03548bf30b493f",
+  "patch_bytes": 1555,
+  "patch_apply": {
+    "ok": false,
+    "marker": ">>>>> Patch Apply Failed"
+  },
+  "outcome": "patch_apply_failed"
+}

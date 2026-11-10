@@ -113,7 +113,7 @@ describe('KAN-111 strict grading checks (QB additions; harness stubbed)', { skip
     assert.deepEqual(out.strict.required.FAIL_TO_PASS.counts, { passed: 1 });
     assert.deepEqual(out.strict.required.PASS_TO_PASS.rows.map((r) => r.strict), ['ambiguous', 'skipped', 'missing']);
     assert.equal(out.strict.required.PASS_TO_PASS.rows[0].occurrences, 2, 'the duplicate is counted from raw lines, not the collapsed map');
-    assert.equal(out.strict.all_required_unambiguous_and_present, false);
+    assert.equal(out.strict.structural_present_and_unique, false);
     assert.ok(!JSON.stringify(out.strict).includes('beta'), 'strict rows carry indexes, not test names');
   });
   test('JSON (2005): a required test seen only as PENDING is reported skipped (the official parser ignores it), never a pass', () => {
@@ -130,7 +130,7 @@ describe('KAN-111 strict grading checks (QB additions; harness stubbed)', { skip
   });
   test('all present and unique: strict agrees', () => {
     const out = grade('immutable-js__immutable-js-2006', wrap('  ✓ alpha (3 ms)\n  ✓ beta (1 ms)'), { FAIL_TO_PASS: ['alpha'], PASS_TO_PASS: ['beta'] });
-    assert.equal(out.strict.all_required_unambiguous_and_present, true);
+    assert.equal(out.strict.structural_present_and_unique, true);
   });
 });
 

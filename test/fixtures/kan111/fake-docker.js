@@ -3,10 +3,13 @@
 // Behaviour per run label comes from the JSON scenario in FAKE_DOCKER_SCENARIO. Never used for real grading.
 const fs = require('fs');
 const sc = JSON.parse(fs.readFileSync(process.env.FAKE_DOCKER_SCENARIO, 'utf8'));
+// Defaults model a correct grader: conflicting and 0-byte patches are rejected; the timeout fixture runs long.
+if (!sc.apply) sc.apply = { 'iso-patch-conflict': 1, 'iso-empty-patch-file': 1, default: 0 };
+if (!sc.evalSleep) sc.evalSleep = { 'iso-timeout-fixture': 5, default: 0 };
 const [cmd, ...rest] = process.argv.slice(2);
 const nameArg = (rest.find((a) => /^kan111-/.test(a)) || rest.find((a) => /^kan111-.*:/.test(a)) || '');
 const m = /^kan111-(\d+)-(.+)-(\d+)-[a-z0-9]+(?::|$)/.exec(nameArg); const label = m ? m[2] : '';
-const pick = (o, d) => (o && (o[label] !== undefined ? o[label] : o.default !== undefined ? o.default : d));
+const pick = (o, d) => (!o ? d : o[label] !== undefined ? o[label] : o.default !== undefined ? o.default : d);
 if (sc.fail && sc.fail[cmd] && (sc.fail[cmd] === '*' || sc.fail[cmd] === label)) { process.stderr.write(`fake docker ${cmd} failure`); process.exit(1); }
 if (cmd === 'cp') {
   const [src, dst] = rest;

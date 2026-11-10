@@ -1,0 +1,28 @@
+{
+  "task": "2005",
+  "instance_id": "immutable-js__immutable-js-2005",
+  "mode": "empty",
+  "label": "empty",
+  "rep": 1,
+  "variant": "A0",
+  "container": "kan111-2005-empty-1-14a0f2",
+  "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+  "network": "none",
+  "sys_admin": false,
+  "timeout_s": 1800,
+  "eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+  "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+  "base_head": null,
+  "patch_apply": {
+    "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+  },
+  "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "wall_s": 0.022,
+  "exec_exit": 1,
+  "timed_out": false,
+  "diff_after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "wrapper_env": null,
+  "grade_summary": null,
+  "grade_exit": 2,
+  "outcome": "graded"
+}

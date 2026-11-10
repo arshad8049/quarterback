@@ -1,0 +1,76 @@
+# KAN-111 PROPOSED workflow (review 10551). NOT ACTIVE: this file is deliberately outside .github/workflows.
+# It is copied there only after (1) the reviewer approves the adaptation and (2) Arshad explicitly authorizes
+# installing the external SWE-bench harness on the runner. Two jobs, each run on a separate, approved push:
+#   lock  : resolve the pinned harness ONCE and record every resolved distribution with its sha256 (reviewed)
+#   grade : install ONLY from the reviewed lock (--require-hashes, --no-deps), then run grade.mjs --execute
+# Security: read-only token, no secrets referenced, checkout without persisted credentials; task containers get
+# no host mounts (files move in and out by `docker cp` only), --network none, no added capabilities.
+name: kan111-grade
+
+on:
+  push:
+    branches: [kan111-grader-validation]
+    paths: ['.github/workflows/kan111-grade.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kan111-grade
+  cancel-in-progress: false
+
+env:
+  SWEBENCH_REF: 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e
+  OUT: bench/public/grader/immutable-offline-v1/results/linux-x64
+
+jobs:
+  lock:                        # job 1, its own approval: produces requirements.lock for review; grades nothing
+    if: ${{ vars.KAN111_PHASE == 'lock' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11.9' }
+      - name: Resolve the pinned harness and record hashes
+        run: |
+          set -eu
+          python -m venv /tmp/lockenv
+          /tmp/lockenv/bin/pip download --dest /tmp/dists "swebench @ https://github.com/SWE-bench/SWE-bench/archive/${SWEBENCH_REF}.tar.gz"
+          ( cd /tmp/dists && sha256sum * ) | tee /tmp/dists.sha256
+          mkdir -p "$OUT/lock"; cp /tmp/dists.sha256 "$OUT/lock/"
+          ls /tmp/dists | tee "$OUT/lock/dists.txt"
+      - uses: actions/upload-artifact@v4
+        with: { name: kan111-lock, path: '${{ env.OUT }}/lock', retention-days: 5 }
+
+  grade:                       # job 2, its own approval: installs only from the reviewed lock
+    if: ${{ vars.KAN111_PHASE == 'grade' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11.9' }
+      - name: Install the harness from the reviewed lock only
+        run: |
+          set -eu
+          python -m venv /tmp/swe
+          /tmp/swe/bin/pip install --require-hashes --no-deps -r bench/public/grader/immutable-offline-v1/requirements.lock
+          /tmp/swe/bin/python -c "import swebench.harness.grading, swebench.harness.log_parsers.javascript as j; assert hasattr(j, 'parse_log_immutable_js')"
+          /tmp/swe/bin/pip freeze | tee "$OUT/pip-freeze.txt"
+      - name: Rebuild the grader vault from the hash-verified dataset (network used here only)
+        run: cd bench && npm ci && node public/import.mjs --download
+      - name: Grade (offline containers; exits 1 if ANY expectation fails)
+        env:
+          SWEBENCH_PYTHON: /tmp/swe/bin/python
+          APPROVAL: ${{ vars.KAN111_APPROVAL_COMMENT }}
+        run: cd bench && node public/grader/immutable-offline-v1/grade.mjs --execute --approved-by="$APPROVAL" --variant=A1 --reps=3 --out="../$OUT/A1"
+      - name: Secret scan, then upload results
+        if: always()
+        run: |
+          if grep -rIEl '(ghp_|gho_|ghs_|github_pat_|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY|sk-ant-)' "$OUT"; then echo "::error::secret-like string"; exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: kan111-grade, path: '${{ env.OUT }}', retention-days: 5 }

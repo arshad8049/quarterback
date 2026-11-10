@@ -97,7 +97,7 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
     const ok = run({ evalSleep: { 'iso-timeout-fixture': 5 } });
     assert.equal(byLabel(ok.summary, 'iso-timeout-fixture').outcome, 'timeout');
     assert.equal(byLabel(ok.summary, 'iso-timeout-fixture').expectation_met, true);
-    const fast = run({});
+    const fast = run({ evalSleep: { 'iso-timeout-fixture': 0 } });
     assert.equal(byLabel(fast.summary, 'iso-timeout-fixture').expectation_met, false);
   });
   test('fixtures require --approved-by=FIXTURE, and --execute requires an approval', () => {
