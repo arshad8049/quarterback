@@ -175,3 +175,76 @@ The owner's revised brief replaced the editorial look with a clean technical one
   - Safari, and a real trackpad;
   - frame stability on ordinary hardware.
 - **Still to do:** regenerate `og-image.png` from the approved still.
+
+## 8. Revision 3 (2026-11-10): hero image
+
+The stand-in orbit is replaced by the owner's hero still. The pause button is gone, because nothing in the hero moves on its own any more.
+
+**Asset inventory:**
+
+| File | Use | Dimensions | Size | Made from |
+|---|---|---|---|---|
+| Source PNG (not committed; `landing_page/assets/` in the main checkout, file name beginning "Look_ a dark, quiet, premium product-photography still.") | Master | 1600×896, RGBA, fully opaque | 364 KB | Owner-supplied, AI-generated. Licensing waived by the owner on 2026-11-10. 1600×896 is final. |
+| `landing_page/media/hero-desktop.webp` | Hero at 900px and up | 1600×896 | 17 KB | Whole image, `cwebp -q 82 -m 6` |
+| `landing_page/media/hero-mobile.webp` | Hero panel under 900px | 900×576 | 8 KB | Crop x 200 to 1600 (frame, ribbon, wall panel), resized to 900 wide, `cwebp -q 82 -m 6` |
+| `landing_page/og-image.png` | Social card | 1200×630 | 212 KB | The source image behind the real logo (`logo-mark.svg`) and the headline in self-hosted Inter, rendered by Playwright |
+
+The image is decoration. It carries no product claim and is never shown as evidence.
+
+**What changed:**
+- **Desktop and tablet (900px and up):**
+  - the still fills the whole dark hero behind the copy as an `<img>` with width and height, `alt=""`, `fetchpriority="high"` and `decoding="async"`, under the copy and ignoring input;
+  - the art box keeps the still's 1600:896 ratio at the hero's full height, anchored right. On wide screens the whole still shows and the hero's own near-black fills the left; on narrower ones the hero clips the left side, like `object-fit: cover; object-position: right center`;
+  - the hero background is `#030303`, the still's own black, so there is no seam;
+  - a left-to-right scrim keeps the copy on near-black; it is darker from 900 to 1199px, where the frame comes closer to the text;
+  - the hero's minimum height is also capped at 66vw, so a tall, narrow desktop window doesn't push the frame behind the headline.
+- **Under 900px:** copy first, then the still as a panel `clamp(260px, 70vw, 420px)` high, cropped toward the frame and ribbon (`object-position: 100% 56%`), with a short fade at its top edge. A `<picture>` `media` source means phones and tablets download only the 8 KB mobile file.
+- **Removed:** the orbit (`{{ORBIT}}`) from the homepage hero, its `.qbh-art-move .qb-orbit` styles and JavaScript, and the Pause animation button with its styles and JavaScript. `/developers` keeps its orbit.
+- **Pointer effect** (fine pointer, motion allowed):
+  - the image wrapper moves at most 10px across and 6px down, with about 120ms of time-based damping and no rotation;
+  - the wrapper overhangs by 12px and 8px and is scaled 1.03, so no edge ever shows;
+  - the copper light follows the pointer only over the right half of the hero (the whole panel when stacked);
+  - the headline does not move;
+  - it is off on touch devices, under reduced motion (at load and when toggled), off screen and on hidden tabs.
+- **Reduced-motion fix:** Chromium updates a media query's cached state whenever `.matches` is read. The old pointer loop read it on every frame, so turning reduced motion on while the pointer was moving could swallow the change event and leave motion on. The state is now read only at load and inside the change event.
+- **Social card:** `og-image.png` is regenerated from the still. The meta tags are unchanged.
+
+**Verification (local, Playwright 1.48.2 Chromium in Docker, 2026-11-10; script `verify4.js`):**
+
+| Check | Result |
+|---|---|
+| axe-core 4.10.2, `/` and `/developers` at 1440, 1280, 768 and 375 px | 0 violations |
+| Layout at 1440, 1280, 768 and 375 px (also looked at 1920×1080, 1024×768 and 900×1000) | No horizontal overflow; no console errors or failed requests |
+| Image per width | 900px and up loads only `hero-desktop.webp`; 899px and below (and iPhone 13) loads only `hero-mobile.webp`; `fetchpriority="high"`; hero background `rgb(3, 3, 3)` |
+| 200% zoom (640px-wide viewport) | No overflow, no clipped cards, stage off |
+| Keyboard | 35 stops (the Pause button is gone); every one has a visible focus outline; links in hidden story panels are unreachable |
+| Reduced motion at load | Motion-off; no stage; art transform `none`; light hidden; no tracking after the pointer moves; every reveal visible; `scroll-behavior: auto` |
+| Reduced motion toggled off, then on again while the pointer moves | Tracking and stage come back, then stop; art transform back to `none`; panels return under their steps |
+| JavaScript disabled | Every panel under its step; stage hidden; all text visible; hero image loaded |
+| Touch (iPhone 13 profile) | No pointer tracking; no stage; no overflow; image panel below the copy (358×273) |
+| Pointer at 1440 | Largest movement 9.72px × 5.81px; no rotation; image covered the hero in every sample; headline moved 0px; the primary button still receives clicks; art ignores input |
+| Light | On over the object (right half); off over the copy and just left of centre |
+| Damping (jump to the right edge) | 4.9, 7.0, 8.7 and 9.7px at about 60, 120, 240 and 600ms |
+| Hidden tab, and scrolled off screen | Tracking stops and resets |
+| Pause button | Not present |
+| Story | Deep link `#run-3` and a reload mid-story both open on step 3; a fast reverse scroll gives step 1; the "4 Patch" control gives step 4 |
+| Short window (1280×480) | Stage not used |
+| Em dashes in visible text and the title | 0 (384 words of homepage prose) |
+| Unit tests on the form and privacy wording | 7 pass, 0 fail |
+
+**Performance** (1280×800, 4× CPU throttle, median of 3 cold loads, same local server):
+
+| | Before (`main` `784e721`) | Revision 2 | Revision 3 |
+|---|---|---|---|
+| Largest contentful paint | 227 ms | 138 ms | 124 ms |
+| Cumulative layout shift | 0.023 | 0 | 0 |
+| Total blocking time | 94 ms | 10 ms | 11 ms |
+| Transferred | 173 KB | 196 KB | 207 KB |
+| Requests | 9 | 9 | 10 |
+
+A separate single cold load recorded the hero image as the desktop LCP element at 231 ms; on the iPhone 13 profile the LCP element was the headline at 116 ms. These are local lab numbers, not field data.
+
+**Remaining gaps:**
+- The source has faint 8px blocking in its near-black areas (one 8-bit step). It is in the master, not added by WebP, and shows only on bright, high-gamma screens.
+- At 1600px the desktop file is below 2× density on screens wider than about 900 CSS px of art. The owner has said 1600×896 is final.
+- Not tested: a slow network, Safari, a real trackpad, and frame stability on ordinary hardware.

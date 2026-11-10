@@ -1,5 +1,6 @@
-<!-- HOMEPAGE HERO: dark inset stage. Copy at left; decorative art at right.
-     The art is a stand-in (the existing orbit) until the hero still is approved; it carries no claims. -->
+<!-- HOMEPAGE HERO: dark inset stage. Copy at left; decorative art behind it (desktop) or below it (under 900px).
+     The art is an owner-supplied AI-generated still (see docs/website/redesign-2026-11.md, revision 3).
+     It is decoration only and carries no product claims. -->
 <section class="qbh-hero" data-qbh-hero aria-labelledby="hero-h">
   <div class="qbh-hero-copy">
     <p class="qbh-label"><span class="qbh-dot" aria-hidden="true"></span>Guided early beta</p>
@@ -11,8 +12,12 @@
     </div>
   </div>
   <div class="qbh-art" data-qbh-art aria-hidden="true">
-    <div class="qbh-art-move" data-qbh-art-move>{{ORBIT}}</div>
+    <div class="qbh-art-move" data-qbh-art-move>
+      <picture>
+        <source media="(max-width: 899px)" srcset="./media/hero-mobile.webp" type="image/webp" width="900" height="576">
+        <img class="qbh-art-img" src="./media/hero-desktop.webp" width="1600" height="896" alt="" fetchpriority="high" decoding="async">
+      </picture>
+    </div>
     <div class="qbh-art-light"></div>
   </div>
-  <button class="qbh-pause" type="button" data-qbh-pause hidden aria-pressed="false">Pause animation</button>
 </section>

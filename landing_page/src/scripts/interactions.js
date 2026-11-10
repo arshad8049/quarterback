@@ -3,7 +3,11 @@
 
   /* ── Motion: honour prefers-reduced-motion at load AND when it changes mid-session ── */
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const reduced = () => motionQuery.matches;
+  // Read .matches only at load and inside its change event. Chromium updates a MediaQueryList's cached
+  // state whenever .matches is read, so polling it from a pointer or rAF loop can swallow the change
+  // event and leave motion on after the user turns it off.
+  let motionReduced = motionQuery.matches;
+  const reduced = () => motionReduced;
   const orbits = Array.from(document.querySelectorAll('.qb-orbit')).filter((o) => !o.closest('[data-qbh-hero]'));
   let driftOn = false;
   const drift = () => {
@@ -17,8 +21,9 @@
     ticking = true;
     requestAnimationFrame(() => { ticking = false; drift(); });
   };
-  function applyMotion() {
-    const off = reduced();
+  function applyMotion(e) {
+    motionReduced = e && typeof e.matches === 'boolean' ? e.matches : motionQuery.matches;
+    const off = motionReduced;
     document.documentElement.classList.toggle('qb-motion-off', off);
     // SVG SMIL animations ignore CSS: pause and resume them explicitly
     orbits.forEach((o) => { if (o.pauseAnimations) (off ? o.pauseAnimations() : o.unpauseAnimations()); });
@@ -43,22 +48,21 @@
   }
 
 
-  /* ── Homepage hero (2026-11-09): the art follows a fine pointer by at most 10px across, 6px down
-     and 1 degree, with ~120ms time-based damping; a soft light follows the pointer inside the art.
-     Decorative layers ignore input. One rAF loop, stopped when settled, off screen, on hidden tabs,
-     on touch devices, under reduced motion and when paused. ── */
+  /* ── Homepage hero (revision 3, 2026-11-10): the image wrapper follows a fine pointer by at most
+     10px across and 6px down, with ~120ms time-based damping and no rotation; the headline does not move.
+     A soft copper light follows the pointer over the object side of the art only. Decorative layers
+     ignore input. One rAF loop, stopped when settled, off screen, on hidden tabs, on touch devices
+     and under reduced motion (at load or toggled mid-session). Nothing animates on its own. ── */
   const hero = document.querySelector('[data-qbh-hero]');
   if (hero) {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const stacked = window.matchMedia('(max-width: 899px)');
     const art = hero.querySelector('[data-qbh-art]');
     const move = hero.querySelector('[data-qbh-art-move]');
-    const svg = hero.querySelector('.qb-orbit');
-    const pauseBtn = hero.querySelector('[data-qbh-pause]');
-    let paused = false, inView = true, raf = 0, last = 0;
-    let tgt = { x: 0, y: 0, lx: 50, ly: 50 };
-    const cur = { x: 0, y: 0, lx: 50, ly: 50 };
-    const animating = () => !reduced() && !paused && inView && !document.hidden;
-    const tracking = () => fine.matches && animating();
+    let inView = true, raf = 0, last = 0;
+    let tgt = { x: 0, y: 0, lx: 75, ly: 50 };
+    const cur = { x: 0, y: 0, lx: 75, ly: 50 };
+    const tracking = () => fine.matches && !reduced() && inView && !document.hidden;
     const frame = (t) => {
       raf = 0;
       const dt = last ? Math.min(t - last, 64) : 16; last = t;
@@ -67,7 +71,6 @@
       for (const key of ['x', 'y', 'lx', 'ly']) { const d = tgt[key] - cur[key]; cur[key] += d * k; delta += Math.abs(d); }
       move.style.setProperty('--ax', (cur.x * 10).toFixed(2) + 'px');
       move.style.setProperty('--ay', (cur.y * 6).toFixed(2) + 'px');
-      move.style.setProperty('--ar', (cur.x * 1).toFixed(3) + 'deg');
       art.style.setProperty('--lx', cur.lx.toFixed(1) + '%');
       art.style.setProperty('--ly', cur.ly.toFixed(1) + '%');
       if (delta > 0.01 && tracking()) raf = requestAnimationFrame(frame); else last = 0;
@@ -75,36 +78,27 @@
     const kick = () => { if (!raf && tracking()) raf = requestAnimationFrame(frame); };
     const clear = () => {
       if (raf) cancelAnimationFrame(raf); raf = 0; last = 0;
-      tgt = { x: 0, y: 0, lx: 50, ly: 50 }; Object.assign(cur, tgt);
+      tgt = { x: 0, y: 0, lx: 75, ly: 50 }; Object.assign(cur, tgt);
       move.removeAttribute('style'); art.removeAttribute('style'); hero.classList.remove('is-pointer');
     };
     const clamp = (v) => Math.max(-1, Math.min(1, v));
     hero.addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse' || !tracking()) return;
       const h = hero.getBoundingClientRect(), a = art.getBoundingClientRect();
-      const inArt = e.clientX >= a.left && e.clientX <= a.right && e.clientY >= a.top && e.clientY <= a.bottom;
+      // The light belongs to the object: the right half of the hero on desktop, the whole panel when stacked
+      const left = stacked.matches ? a.left : h.left + h.width / 2;
+      const onObject = e.clientX >= left && e.clientX <= a.right && e.clientY >= a.top && e.clientY <= a.bottom;
       tgt = {
         x: clamp(((e.clientX - h.left) / h.width - 0.5) * 2), y: clamp(((e.clientY - h.top) / h.height - 0.5) * 2),
-        lx: inArt ? ((e.clientX - a.left) / a.width) * 100 : tgt.lx, ly: inArt ? ((e.clientY - a.top) / a.height) * 100 : tgt.ly,
+        lx: onObject ? ((e.clientX - a.left) / a.width) * 100 : tgt.lx, ly: onObject ? ((e.clientY - a.top) / a.height) * 100 : tgt.ly,
       };
-      hero.classList.toggle('is-pointer', inArt); kick();
+      hero.classList.toggle('is-pointer', onObject); kick();
     }, { passive: true });
     hero.addEventListener('pointerleave', () => { tgt = { x: 0, y: 0, lx: tgt.lx, ly: tgt.ly }; hero.classList.remove('is-pointer'); kick(); });
-    const sync = () => {
-      hero.classList.toggle('is-paused', paused);
-      if (svg && svg.pauseAnimations) (animating() ? svg.unpauseAnimations() : svg.pauseAnimations());
-      if (pauseBtn) pauseBtn.hidden = reduced(); // nothing moves under reduced motion, so nothing to pause
-      if (!tracking()) clear();
-    };
-    if (pauseBtn) pauseBtn.addEventListener('click', () => {
-      paused = !paused;
-      pauseBtn.setAttribute('aria-pressed', String(paused));
-      pauseBtn.textContent = paused ? 'Play animation' : 'Pause animation';
-      sync();
-    });
+    const sync = () => { if (!tracking()) clear(); };
     if ('IntersectionObserver' in window) new IntersectionObserver((es) => { inView = es[0].isIntersecting; sync(); }).observe(hero);
     document.addEventListener('visibilitychange', sync);
-    [motionQuery, fine].forEach((q) => (q.addEventListener ? q.addEventListener('change', sync) : q.addListener && q.addListener(sync)));
+    [motionQuery, fine, stacked].forEach((q) => (q.addEventListener ? q.addEventListener('change', sync) : q.addListener && q.addListener(sync)));
     sync();
   }
 
