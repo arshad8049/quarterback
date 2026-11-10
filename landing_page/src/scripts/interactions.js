@@ -136,18 +136,17 @@
     const fadeOut = () => { tgt.op = 0; tgt.ax = 0; tgt.ay = 0; kick(); };
     document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) fadeOut(); }, { passive: true });
     window.addEventListener('blur', fadeOut);
-    // Hero pin (2026-11-10): comes toward the viewer as the hero scrolls away. Scroll-linked, so it also runs on
+    // Hero coil (2026-11-10): magnifies toward the viewer as the hero scrolls away. Scroll-linked, so it also runs on
     // touch; off under reduced motion (at load or toggled). One rAF per scroll burst; reads layout, then writes.
     const pop = hero && hero.querySelector('[data-qbh-pin-pop]');
     if (pop) {
       let popRaf = 0;
-      const halo = hero.querySelector('.qbh-pin');
       const popUpdate = () => {
         popRaf = 0;
-        if (reduced()) { pop.style.removeProperty('--pop'); if (halo) halo.style.removeProperty('--pop'); return; }
+        if (reduced()) { pop.style.removeProperty('--pop'); return; }
         const r = hero.getBoundingClientRect();
         const p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height * 0.8)));
-        pop.style.setProperty('--pop', p.toFixed(3)); if (halo) halo.style.setProperty('--pop', p.toFixed(3));
+        pop.style.setProperty('--pop', p.toFixed(3));
       };
       const popKick = () => { if (!popRaf) popRaf = requestAnimationFrame(popUpdate); };
       window.addEventListener('scroll', popKick, { passive: true });
@@ -400,4 +399,77 @@
     });
   }
 
+
+  /* ── Hero coil (owner decision 2026-11-10): an original generative drawing, no background. A stack of
+     halftone-dotted discs (mint rim, blue body, violet base) rides a slow travelling wave, so the discs bunch
+     and spread like a coil. Each disc is pre-rendered once; a frame is only drawImage calls. Runs only while
+     the hero is on screen and the tab is visible; under reduced motion one still frame is drawn. ── */
+  const coil = document.querySelector('[data-qbh-coil]');
+  if (coil && coil.getContext) {
+    const ctx = coil.getContext('2d');
+    const N = 14;
+    let sprites = [], dpr = 1, cw = 0, ch = 0, sw = 0, sh = 0, raf2 = 0, onScreen = true, t0 = 0;
+    const lerp = (a, b, k) => a + (b - a) * k;
+    const rgb = (a, b, k) => 'rgb(' + a.map((v, i) => Math.round(lerp(v, b[i], k))).join(',') + ')';
+    const MINT = [226, 250, 236], SKY = [70, 170, 255], BLUE = [64, 72, 255], VIOLET = [72, 18, 230], DEEP = [40, 12, 150];
+    const build = () => {
+      const r = coil.getBoundingClientRect();
+      if (!r.width) return false;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      cw = Math.round(r.width * dpr); ch = Math.round(r.height * dpr);
+      coil.width = cw; coil.height = ch;
+      sw = Math.round(cw * 0.92); sh = Math.round(sw * 0.6);
+      const cell = Math.max(3, Math.round(3.4 * dpr));
+      const pc = document.createElement('canvas'); pc.width = pc.height = cell;
+      const pg = pc.getContext('2d'); pg.fillStyle = '#000'; pg.beginPath(); pg.arc(cell / 2, cell / 2, cell * 0.34, 0, Math.PI * 2); pg.fill();
+      sprites = [];
+      for (let i = 0; i < N; i++) {
+        const k = i / (N - 1); // 0 = back layer, 1 = front layer
+        const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+        const g = c.getContext('2d');
+        const lg = g.createLinearGradient(0, 0, 0, sh);
+        lg.addColorStop(0, rgb(SKY, MINT, 0.5 + k * 0.5));
+        lg.addColorStop(0.16, rgb(BLUE, SKY, 0.3 + k * 0.7));
+        lg.addColorStop(0.55, rgb(DEEP, BLUE, 0.2 + k * 0.6));
+        lg.addColorStop(1, rgb(DEEP, VIOLET, k));
+        g.fillStyle = lg; g.beginPath(); g.ellipse(sw / 2, sh / 2, sw / 2 - 2, sh / 2 - 2, 0, 0, Math.PI * 2); g.fill();
+        const hl = g.createRadialGradient(sw / 2, sh * 0.16, 0, sw / 2, sh * 0.16, sw * 0.5);
+        hl.addColorStop(0, 'rgba(236,255,240,' + (0.25 + k * 0.5).toFixed(2) + ')'); hl.addColorStop(1, 'rgba(236,255,240,0)');
+        g.fillStyle = hl; g.fill();
+        g.globalCompositeOperation = 'destination-in'; g.fillStyle = g.createPattern(pc, 'repeat'); g.fillRect(0, 0, sw, sh);
+        // Solid rim on top of the dots: bright along the upper edge, violet along the lower, so every disc reads
+        g.globalCompositeOperation = 'source-over';
+        const rim = g.createLinearGradient(0, 0, 0, sh);
+        rim.addColorStop(0, rgb(SKY, MINT, 0.4 + k * 0.6)); rim.addColorStop(0.5, rgb(BLUE, SKY, k)); rim.addColorStop(1, rgb(DEEP, VIOLET, 0.5 + k * 0.5));
+        g.strokeStyle = rim; g.lineWidth = Math.max(1.5, 1.6 * dpr);
+        g.beginPath(); g.ellipse(sw / 2, sh / 2, sw / 2 - 2, sh / 2 - 2, 0, 0, Math.PI * 2); g.stroke();
+        sprites.push(c);
+      }
+      return true;
+    };
+    const draw = (t) => {
+      ctx.clearRect(0, 0, cw, ch);
+      const travel = ch - sh;
+      for (let i = 0; i < N; i++) {
+        const ph = t * 0.00055 - i * 0.2;
+        const y = travel * (0.5 - 0.5 * Math.cos(ph));      // eases at both ends, so the discs bunch there
+        const s = 0.9 + 0.1 * Math.sin(ph);
+        const w = sw * s, h = sh * s;
+        ctx.drawImage(sprites[i], (cw - w) / 2, y + (sh - h) / 2, w, h);
+      }
+    };
+    const loop = (t) => { raf2 = 0; if (!t0) t0 = t; draw(t - t0 + 2600); if (running()) raf2 = requestAnimationFrame(loop); };
+    const running = () => onScreen && !document.hidden && !reduced();
+    const start = () => {
+      if (!sprites.length && !build()) return;
+      if (running()) { if (!raf2) raf2 = requestAnimationFrame(loop); }
+      else { if (raf2) cancelAnimationFrame(raf2); raf2 = 0; draw(2600); }
+    };
+    let rs = 0;
+    window.addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => { sprites = []; start(); }, 150); }, { passive: true });
+    document.addEventListener('visibilitychange', start);
+    if (motionQuery.addEventListener) motionQuery.addEventListener('change', start);
+    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; start(); }).observe(coil);
+    start();
+  }
 })();
