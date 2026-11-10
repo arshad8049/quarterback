@@ -156,6 +156,9 @@ describe('KAN-110 review: Proposal A classification', () => {
     assert.ok(proposalA(task(deps, { node: { engines: '>=10.9.0 <13.0.0' } }), { yarn: ['classic'] }).blockers.includes('runtime:engines-exclude-node24'));
     assert.ok(proposalA(task(deps, { node: { engines: '16' } }), { yarn: ['classic'] }).blockers.includes('runtime:engines-exclude-node24'));
     assert.ok(!proposalA(task(deps, { node: { engines: '>=14' } }), { yarn: ['classic'] }).blockers.some((b) => b.startsWith('runtime')));
+    const { rangeAdmits } = await load('proposal-a.mjs');
+    for (const r of ['>=8.0.0', '>= 8', '>= v18.16.0', '>=20.0.0', '>=4', '^14 || >=20', '*']) assert.equal(rangeAdmits(r, 24), true, r);
+    for (const r of ['16', '>= 12 <= 14', '>=10.9.0 <13.0.0', '^14 || ^16', '14.x', '<20']) assert.equal(rangeAdmits(r, 24), false, r);
     // yarn.lock does not record install scripts: without them from another source, the task stays unknown
     assert.ok(proposalA(task(deps), { yarn: ['classic'] }).unknowns.includes('install:dependency-scripts-unrecorded'));
     const known = auditYarn({ pkg: pkg(), lockText: CLASSIC, rootFiles: new Set(['yarn.lock']), installScripts: { required: [], optional: [] } });

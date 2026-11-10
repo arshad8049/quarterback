@@ -82,14 +82,15 @@ export function auditYarn({ pkg, lockText, yarnrc = null, yarnrcYml = null, root
   const entries = yarnEntries(lockText, g.generation);
   const hosts = new Set();
   if (a.config.registry) hosts.add(hostOf(a.config.registry.replace(/\/?$/, '/')) || a.config.registry);
-  let missing = 0; let counted = 0;
+  let missing = 0; let counted = 0; let sha1Only = 0;
   for (const e of entries) {
     if (g.generation === 'classic') {
       const r = e.resolved || '';
-      const proto = /^https?:/.test(r) ? (/\.git(#|$)/.test(r) ? 'git' : 'registry') : (r.split(':')[0] || 'none');
+      const proto = /^https?:/.test(r) ? (/\.git(#|$)/.test(r) || /^https?:\/\/(codeload\.github\.com|github\.com|gitlab\.com|bitbucket\.org)\//.test(r) ? 'git' : 'registry') : (r.split(':')[0] || 'none');
       a.protocols[proto] = (a.protocols[proto] || 0) + 1;
       if (proto !== 'registry') { if (proto !== 'none') b.add('deps:git-or-file-deps'); continue; }
-      hosts.add(hostOf(r)); counted++; if (!e.integrity) missing++;
+      hosts.add(hostOf(r)); counted++;
+      if (!e.integrity) { if (/#[0-9a-f]{40}$/.test(r)) sha1Only++; else missing++; }
     } else {
       const res = e.resolution || ''; const proto = (/@([a-z+]+):/.exec(res) || [])[1] || 'unknown';
       a.protocols[proto] = (a.protocols[proto] || 0) + 1;
@@ -103,8 +104,9 @@ export function auditYarn({ pkg, lockText, yarnrc = null, yarnrcYml = null, root
     if (!a.config.registry) hosts.add(YARN_MIRROR); // Berry's default registry
     if (a.config.node_linker !== 'node-modules') b.add('yarn:pnp-linker'); // default is Plug'n'Play: no node_modules
   }
-  a.integrity = { entries: counted, missing };
+  a.integrity = { entries: counted, missing, sha1_only: sha1Only };
   if (missing) b.add('yarn:missing-integrity');
+  if (sha1Only) req.add('yarn:sha1-only-integrity'); // yarn classic verifies the sha1 fragment; weaker than sha512
   a.registries = [...hosts].filter(Boolean);
   registryVerdict(a.registries, b, req);
   return finish(a, b, u, req);
@@ -136,10 +138,35 @@ export function auditNpm({ pkg, lock }) {
 
 function finish(a, b, u, req) { a.blockers = [...b].sort(); a.unknowns = [...u].sort(); a.requirements = [...req].sort(); return a; }
 
-/** Node major from the strongest hint (setup image / nvm, then .nvmrc, then engines lower bound). */
-export function nodeMajorHint(n = {}) {
+/** Node major pinned by the environment (setup image / nvm, .nvmrc, .node-version). Engines is a range, not a pin. */
+export function pinnedMajor(n = {}) {
   for (const v of [n.image_or_setup, n.nvmrc, n.node_version_file]) { const m = /(\d+)/.exec(v || ''); if (m) return Number(m[1]); }
-  const e = /(\d+)/.exec(n.engines || ''); return e ? Number(e[1]) : null;
+  return null;
+}
+
+/** Does a package.json engines.node range admit Node <major>.x? Major-level semver, '||' alternatives. Unparseable → true (not a blocker). */
+export function rangeAdmits(range, major) {
+  const v = [major, 0, 0];
+  const cmp = (a, b) => { for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; };
+  const ver = (s) => { const p = s.replace(/^v/, '').split('.'); return [0, 1, 2].map((i) => (p[i] === undefined || /x|\*/i.test(p[i]) ? null : Number(p[i]))); };
+  const ok = (part) => {
+    const toks = part.trim().replace(/(>=|<=|>|<|=|\^|~)\s+/g, '$1').replace(/\s*-\s*/, ' - ').split(/\s+/).filter(Boolean);
+    if (!toks.length || toks.includes('*')) return true;
+    if (toks.length === 3 && toks[1] === '-') return ok(`>=${toks[0]} <=${toks[2]}`);
+    return toks.every((t) => {
+      const m = /^(>=|<=|>|<|=|\^|~)?\s*(v?[\dx*]+(?:\.[\dx*]+){0,2})/.exec(t); if (!m) return true;
+      const op = m[1] || ''; const raw = ver(m[2]); const lo = raw.map((x) => (x == null ? 0 : x));
+      if (op === '' || op === '=' ) { if (raw[1] == null) return v[0] === lo[0]; if (raw[2] == null) return v[0] === lo[0] && v[1] === lo[1]; return cmp(v, lo) === 0; }
+      if (op === '^') return v[0] === lo[0] && cmp(v, lo) >= 0;
+      if (op === '~') return v[0] === lo[0] && (raw[1] == null || v[1] === lo[1]) && cmp(v, lo) >= 0;
+      if (op === '>=') return cmp(v, lo) >= 0;
+      if (op === '>') return raw[1] == null ? v[0] > lo[0] : cmp(v, lo) > 0;
+      if (op === '<') return cmp(v, lo) < 0;
+      if (op === '<=') return raw[1] == null ? v[0] <= lo[0] : cmp(v, lo) <= 0;
+      return true;
+    });
+  };
+  return String(range).split('||').some(ok);
 }
 
 /**
@@ -154,8 +181,11 @@ export function proposalA(t, opts = { yarn: ['classic'] }) {
   for (const r of runners) if (r !== 'jest') b.add(`runner:${r}`);
   if (t.deps.kind === 'yarn' && t.deps.generation && !opts.yarn.includes(t.deps.generation)) b.add(`yarn:unsupported-generation:${t.deps.generation}`);
   (t.services || []).forEach((s) => b.add(`service:${s}`));
-  const nm = nodeMajorHint(t.node);
-  if (nm == null) u.add('runtime:undeclared'); else if (nm < 20) b.add('runtime:node<20');
+  const n = t.node || {};
+  const pin = pinnedMajor(n);
+  if (n.engines && !rangeAdmits(n.engines, 24)) b.add('runtime:engines-exclude-node24');
+  if (pin != null && pin < 20) u.add(`runtime:pinned-node${pin}`); // a hint, not execution proof
+  if (pin == null && !n.engines) u.add('runtime:undeclared');
   if (t.grader_evidence !== 'present') u.add('grader:evidence-missing');
   const is = t.deps.install_scripts;
   if (is == null) u.add('install:dependency-scripts-unrecorded');
