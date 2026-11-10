@@ -102,9 +102,15 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
   });
   test('fixtures require --approved-by=FIXTURE, and --execute requires an approval', () => {
     const d = setup({});
-    const env = { ...process.env, QB_KAN111_FIXTURE: path.join(d, 'fixture.json') };
-    assert.notEqual(spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=10551'], { env, encoding: 'utf8' }).status, 0);
-    assert.notEqual(spawnSync(process.execPath, [GRADE, '--execute'], { encoding: 'utf8' }).status, 0);
+    // Even if a guard regresses, this test can never reach real Docker or the real grader: fake binaries,
+    // a temporary output folder, and an obviously fake approval string (never a real review comment id).
+    const safe = { ...process.env, QB_KAN111_DOCKER: path.join(FX, 'fake-docker.js'), SWEBENCH_PYTHON: process.execPath,
+      QB_KAN111_GRADER: path.join(FX, 'fake-grader.js'), FAKE_DOCKER_SCENARIO: path.join(d, 'scenario.json') };
+    const out = ['--out=' + path.join(d, 'guard-out')];
+    assert.equal(spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=NOT-A-REAL-APPROVAL', ...out], { env: { ...safe, QB_KAN111_FIXTURE: path.join(d, 'fixture.json') }, encoding: 'utf8' }).status, 2, 'a fixture needs --approved-by=FIXTURE');
+    assert.equal(spawnSync(process.execPath, [GRADE, '--execute', ...out], { env: safe, encoding: 'utf8' }).status, 2, '--execute needs an approval');
+    assert.equal(spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=FIXTURE', ...out], { env: safe, encoding: 'utf8' }).status, 2, 'FIXTURE approval without a fixture is refused');
+    assert.ok(!fs.existsSync(path.join(d, 'guard-out')), 'a refused run writes nothing');
     fs.rmSync(d, { recursive: true, force: true });
   });
 });

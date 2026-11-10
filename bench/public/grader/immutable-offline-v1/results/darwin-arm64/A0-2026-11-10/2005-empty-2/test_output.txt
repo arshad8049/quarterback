@@ -1,2 +1,0 @@
-
-Error response from daemon: No such container: kan111-2005-empty-2-cd2567

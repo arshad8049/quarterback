@@ -57,3 +57,5 @@ bench/public/raw/
 bench/public/out/
 bench/public/cache/
 __pycache__/
+# KAN-111: grader run outputs contain grading material (eval scripts with hidden test patches); commit evidence selectively
+bench/public/grader/*/results/

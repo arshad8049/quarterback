@@ -1,6 +1,0 @@
-diff --git a/src/Immutable.js b/src/Immutable.js
---- a/src/Immutable.js
-+++ b/src/Immutable.js
-@@ -1,1 +1,1 @@
--THIS LINE DOES NOT EXIST IN THE BASE
-+conflict
