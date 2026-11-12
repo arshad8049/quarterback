@@ -87,6 +87,20 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 /* Keeps the copy on near-black when a narrow desktop window pulls the frame toward the text */
 .qbh-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(3, 3, 3, 0.7) 0%, rgba(3, 3, 3, 0.45) 38%, rgba(3, 3, 3, 0) 58%); }
 
+/* ── Hero coil (owner decision 2026-11-10): an original generative canvas, transparent, no frame. The hero
+   lets it overflow so it can magnify toward the viewer: interactions.js sets --pop from 0 (page top) to 1
+   (hero scrolled past). The pointer drift reuses --ax/--ay. Under reduced motion it stays still. */
+/* 2026-11-12 owner fix: the magnified coil spilled over the logo strip. The hero now CLIPS it to its own rounded
+   panel (overflow: clip; hidden as a fallback), so it grows inside the dark stage and passes behind the strip, never
+   over it. It also fades as it grows, so the clipped edge never reads as a hard cut. */
+.qbh-hero { overflow: hidden; overflow: clip; z-index: 2; }
+/* A short fade at the hero's bottom edge: the clipped coil dissolves into the dark stage instead of ending on a hard line */
+.qbh-hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 72px; z-index: 4; pointer-events: none; border-radius: 0 0 var(--radius) var(--radius); background: linear-gradient(180deg, rgba(3, 3, 3, 0) 0%, #030303 100%); }
+.qbh-coil-wrap { position: relative; z-index: 3; display: flex; justify-content: center; align-items: center; padding: 40px clamp(24px, 4vw, 64px); pointer-events: none; }
+.qbh-coil-move { transform: translate3d(var(--ax, 0px), var(--ay, 0px), 0); will-change: transform; }
+.qbh-coil-pop { transform: translate3d(0, calc(var(--pop, 0) * 90px), 0) scale(calc(1 + var(--pop, 0) * 0.7)); transform-origin: 50% 45%; opacity: calc(1 - var(--pop, 0) * 0.55); will-change: transform, opacity; }
+.qbh-coil { display: block; width: min(380px, 34vw); height: auto; aspect-ratio: 380 / 600; }
+
 /* ── Page-wide pointer light (revision 4, owner decision 2026-11-10). interactions.js adds 640px discs on
    the homepage only and moves them with transform. They sit UNDER text, never over it, so only backgrounds
    change: one fixed disc lights the warm-white page (6% copper, barely visible), and each dark surface gets
@@ -239,6 +253,8 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
   .qbh-art { position: relative; inset: auto; width: auto; aspect-ratio: auto; height: clamp(260px, 70vw, 420px); }
   .qbh-art::after { background: linear-gradient(180deg, #030303 0%, rgba(3, 3, 3, 0) 30%); }
   .qbh-art-img { object-position: 100% 56%; }
+  .qbh-coil-wrap { padding: 16px 16px 48px; }
+  .qbh-coil { width: min(300px, 70vw); }
   .qbh-result, .qbh-cards { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .qbh-cards { gap: 16px; }
   .qbh .qbx-try-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
@@ -266,11 +282,11 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qb-motion-off .qbh-hero-copy > * { animation: none; }
 .qb-motion-off .qbh-glow, .qb-motion-off .qbh-glow-clip { display: none; }
 .qb-motion-off .qbh-marquee-track { animation: none; }
-.qb-motion-off .qbh-art-move { transform: none; }
+.qb-motion-off .qbh-art-move, .qb-motion-off .qbh-coil-move, .qb-motion-off .qbh-coil-pop { transform: none; opacity: 1; }
 .qb-motion-off .qbh-btn:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .qbh-hero-copy > * { animation: none; }
-  .qbh-art-move { transform: none; }
+  .qbh-art-move, .qbh-coil-move, .qbh-coil-pop { transform: none; }
   .qbh-glow, .qbh-glow-clip { display: none; }
   .qbh-logos .qbh-marquee-track { animation: none; transform: none; flex-wrap: wrap; justify-content: center; width: auto; gap: 20px 56px; }
   .qbh-logos .qbh-marquee-set[aria-hidden="true"], .qbh-marquee-btn { display: none; }
