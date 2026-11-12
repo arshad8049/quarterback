@@ -162,15 +162,15 @@ describe('KAN-111 grade-sanitize.mjs: pinned scope and fallback (review 10568)',
     assert.equal(r.status, 3); assert.deepEqual(JSON.parse(fs.readFileSync(path.join(d, 'pub', 'fallback.json'), 'utf8')).refusal, [{ code: 'required_test_name', index: 3 }]);
     fs.rmSync(d, { recursive: true, force: true });
   });
-  for (const [why, opts] of [['a pinned vault row is missing', { rows: ['qbt_00b20b1b0285'] }], ['a pinned required list is empty', { emptyList: 'qbt_9b9a5da937c9' }]]) {
+  for (const [why, opts, msg] of [['a pinned vault row is missing', { rows: ['qbt_00b20b1b0285'] }, /vault rows missing for qbt_9b9a5da937c9/], ['a pinned required list is empty', { emptyList: 'qbt_9b9a5da937c9' }, /qbt_9b9a5da937c9: FAIL_TO_PASS missing or empty/]]) {
     test(`fails closed (exit 1, nothing published) when ${why}`, () => {
       const d = realMode(opts); const r = goReal(d);
-      assert.equal(r.status, 1); assert.equal(fs.existsSync(path.join(d, 'pub')), false); fs.rmSync(d, { recursive: true, force: true });
+      assert.equal(r.status, 1); assert.match(r.stderr, msg); assert.equal(fs.existsSync(path.join(d, 'pub')), false); fs.rmSync(d, { recursive: true, force: true });
     });
   }
   test('--fixture-task-ids is refused for a real (non-fixture) summary', () => {
     const d = realMode(); const r = goReal(d, { 'fixture-task-ids': 'qbt_unrelated' });
-    assert.equal(r.status, 1); assert.equal(fs.existsSync(path.join(d, 'pub')), false); fs.rmSync(d, { recursive: true, force: true });
+    assert.equal(r.status, 1); assert.match(r.stderr, /refused for a real summary/); assert.equal(fs.existsSync(path.join(d, 'pub')), false); fs.rmSync(d, { recursive: true, force: true });
   });
   test('the fallback has only strictly validated fields, includes empty_patch_excluded, and never reports green (exit 3, full_report_refused)', () => {
     const d = realMode({ runOver: { infra_step: 'diff --git a/x b/x' } }); const r = goReal(d);
@@ -185,7 +185,7 @@ describe('KAN-111 grade-sanitize.mjs: pinned scope and fallback (review 10568)',
   for (const [why, runOver] of [['an unknown label', { label: 'pinned suite 0 > hidden fail case' }], ['an unknown outcome', { outcome: 'graded-ish' }], ['a non-integer rep', { rep: '1; rm' }], ['a non-boolean expectation', { expectation_met: 'yes' }]]) {
     test(`the fallback is blocked (exit 1, nothing published) on ${why}`, () => {
       const d = realMode({ runOver: { infra_step: 'diff --git a/x b/x', ...runOver } }); const r = goReal(d);
-      assert.equal(r.status, 1, r.stderr); assert.equal(fs.existsSync(path.join(d, 'pub')), false);
+      assert.equal(r.status, 1, r.stderr); assert.match(r.stderr, /fallback blocked/); assert.equal(fs.existsSync(path.join(d, 'pub')), false);
       assert.doesNotMatch(r.stderr + r.stdout, /hidden fail case/); fs.rmSync(d, { recursive: true, force: true });
     });
   }

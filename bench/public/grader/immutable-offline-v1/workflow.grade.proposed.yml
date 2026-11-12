@@ -140,8 +140,16 @@ jobs:
         run: |
           set -euo pipefail
           rev=$(jq -r '.sources[] | select(.source=="swe-bench-multilingual") | .revision' bench/public/sources.json)
+          # Exit 0 = full report published; 3 = full report refused, validated fallback published (never green);
+          # anything else = nothing publishable (review 10568)
+          rc=0
           node "$GRADER/grade-sanitize.mjs" "$WORK/A1" "$PUB" bench/public/out \
-            --qb-commit="$GITHUB_SHA" --dataset-revision="$rev" --lock-sha256="$LOCK_SHA256" --install-dir="$INST"
+            --qb-commit="$GITHUB_SHA" --dataset-revision="$rev" --lock-sha256="$LOCK_SHA256" --install-dir="$INST" || rc=$?
+          case "$rc" in
+            0) echo "published=full" >> "$GITHUB_OUTPUT" ;;
+            3) echo "published=fallback" >> "$GITHUB_OUTPUT"; echo "::error::full report refused; only the validated fallback is published" ;;
+            *) echo "::error::sanitizer refused; nothing publishable"; exit 1 ;;
+          esac
           # The install record is plain text from this job's own commands; it gets the lock sanitizer's checks
           mkdir -p "$WORK/inst-check" && cp "$INST"/* "$WORK/inst-check/"
           for f in "$WORK"/inst-check/*; do
@@ -151,11 +159,12 @@ jobs:
           ls "$INST" | LC_ALL=C sort | diff - <(printf '%s\n' harness-smoke.txt install-provenance.json installed-harness-files.sha256 pip-check.txt pip-freeze.txt swebench-rebuilt-wheel.sha256)
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4; only after the sanitizer passed
-        if: ${{ !cancelled() && steps.sanitize.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.sanitize.outcome == 'success' && (steps.sanitize.outputs.published == 'full' || steps.sanitize.outputs.published == 'fallback') }}
         with:
           name: kan111-grade
           path: |
             ${{ env.PUB }}/results.json
+            ${{ env.PUB }}/fallback.json
             ${{ env.PUB }}/sanitize-report.txt
             ${{ env.INST }}/swebench-rebuilt-wheel.sha256
             ${{ env.INST }}/pip-check.txt
@@ -166,6 +175,6 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-      - name: Fail the job if grading did not meet every expectation
-        if: ${{ !cancelled() && steps.grade.outcome != 'success' }}
-        run: echo "::error::grading did not pass every gate (see results.json)"; exit 1
+      - name: Fail the job if grading did not meet every expectation, or only the fallback could be published
+        if: ${{ !cancelled() && (steps.grade.outcome != 'success' || steps.sanitize.outputs.published != 'full') }}
+        run: echo "::error::not green (grade outcome ${{ steps.grade.outcome }}, published ${{ steps.sanitize.outputs.published }})"; exit 1

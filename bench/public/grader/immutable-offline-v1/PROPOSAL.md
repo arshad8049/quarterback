@@ -1,4 +1,4 @@
-# KAN-111: exact offline grader `immutable-offline-v1`, revision 5 (for review; only the approved lock phase has run)
+# KAN-111: exact offline grader `immutable-offline-v1`, revision 6 (for review; only the approved lock phase has run)
 
 Revision 3 answers KAN-111 review 10554 and correction 10555. Revision 2 answered review 10551, which builds on KAN-110 reviews 10545 and 10549. It covers immutable-js tasks **2005** and **2006** only.
 
@@ -244,6 +244,34 @@ The owner authorized installing the pinned harness **on the CI runner only** (co
 3. **Lock evidence persisted** in `lock-evidence/run-42906422892/` (commit `87f8e6f`): the zip and all six hashes equal 10559.
 
 The grade artifact allowlist gains `install-provenance.json`.
+
+## Grade run 42914501341 (approval 10564, commit `c199af1`): FAILED. Analysis in 10567, decision in 10568
+- **Passed in the real environment:** every install and provenance gate (evidence, 81 wheels, archive, offline build, `pip check`, installed set, source hashes, harness smoke).
+- **2006:** empty and gold 6/6 met; tamper, conflict and timeout met.
+- **2005:** empty and gold 0/6, with every required test "missing" in the strict view.
+- **Zero-byte control:** graded on both tasks.
+- **Sanitizer:** refused (a false positive), so no artifact was published.
+
+## Revision 6: review 10568 (red first in `99e6c7c`, 11 failing; fixtures only)
+1. **Empty patch excluded as the harness does.** `harnessExcludesPatch()` is true only for a submitted string that is exactly `""` (`run_evaluation.py` lines 627–639). The run is recorded as `empty_patch_excluded` before any container: no docker call at all, including cleanup. The no-candidate baseline (`null`) and whitespace-only patches are unaffected. The control now expects `empty_patch_excluded`; the conflict control is unchanged.
+2. **Diagnostics only for 2005.** No gate, parser, image or expectation change.
+   - **Per run (`log_diag`):** `jq_available` (a recorded `command -v jq` step before the eval); start/end marker presence; result-line counts inside the marker section and across the whole captured log; `command_not_found`; `jq_error`; and `output_capture` (`stdout_then_stderr`, which states how this runner captures output).
+   - **From `grade_report.py`:** `diagnostics` (marker presence, section and whole-log result-line counts, the official status-map size) plus `grade.log_gate`, `official_status_map_entries` and `strict_raw_result_lines`.
+   - Counts and booleans only.
+   - The grader test stub now mirrors the pinned `get_logs_eval` whole-log fallback.
+3. **Sanitizer.**
+   - **Scope:** names come from the two pinned tasks only (`TASKS` in `grade.mjs`; a fixture scope is accepted only for `fixture_mode` summaries).
+   - **Fail closed:** if either vault row or required list is missing or empty, or a name is under 6 characters, nothing is published (exit 1). Identity and install-record errors also publish nothing.
+   - **Fallback:** content refusals (a required name, patch text, a secret, an invalid fingerprint, invalid diagnostics) produce `fallback.json`, built independently from validated enums, integers and booleans (task, label, rep, outcome, expectation_met, accepted, plus refusal codes and indexes), and scanned separately. The sanitizer then exits 3. Any invalid value blocks the fallback (exit 1).
+   - **Never green:** the proposed workflow fails the job whenever only the fallback was published.
+
+**Observation for the reviewer (not acted on; needs a decision):**
+- The pinned harness reads the container output as one stream in arrival order (`docker_utils.exec_run_with_timeout`: `exec_start(stream=True)`, not demultiplexed).
+- This runner stores stdout and then stderr. With `set -x`, the Start/End markers go to stderr, while 2005's `jq` result lines go to stdout, so they land outside the marked section.
+- The official `get_logs_eval` falls back to the whole log when the section parses empty. Its own comment names this ordering case, which fits 2005's official resolution being as expected while the strict view (section only) saw nothing.
+- The diagnostics above will confirm or refute this. Capturing the output combined (`2>&1` inside the container) and mirroring the fallback in the strict view are candidate fixes, deliberately **not** made in revision 6.
+
+**Proposed CI change (inactive file only):** sanitize exit 0 → `published=full`; exit 3 → `published=fallback` plus an error annotation; anything else → step failure. Upload runs only when something was published (`fallback.json` added to the paths). The final step fails the job if grading failed **or** only the fallback was published. `plan-A1.txt` is now 324 commands for 20 runs. The active `.github/workflows/kan111-grade.yml` is unchanged; its one-run approval is spent.
 
 ## Incident: an unintended local execution attempt (disclosed, 2026-11-10)
 

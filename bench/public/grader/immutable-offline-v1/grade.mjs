@@ -38,6 +38,19 @@ export const H = { user: 'root', workdir: '/testbed', patchFile: '/tmp/patch.dif
 export const TAMPER_MARKER = '// KAN-111 tamper marker: a candidate edit to a hidden test file must be reverted by the grader';
 export const BUILD_GATE_EXIT = 97;
 export const BOUNDARY_EXIT = 98;
+// Review 10568: the pinned harness drops predictions whose model_patch is exactly "" (or None) before any container
+// (run_evaluation.py get_dataset_from_preds, lines 627-639). A submitted empty string is excluded the same way. The
+// intentional no-candidate baseline (patchText null) is NOT a submission, and whitespace-only patches go through apply.
+export function harnessExcludesPatch(p) { return typeof p === 'string' && p === ''; }
+// Review 10568 diagnostics: recognised result lines (JSON-transform "[STATUS] name" or verbose "✓/✕/○/✎ name")
+const RESULT_LINE = /^(\[(PASSED|FAILED|PENDING|TODO|SKIPPED)\]\s|(✓|✕|○|✎)\s)/;
+export function logDiagnostics(text, jqAvailable) {
+  const S = '>>>>> Start Test Output', E = '>>>>> End Test Output';
+  const count = (t) => t.split('\n').filter((l) => RESULT_LINE.test(l.trim())).length;
+  const section = text.includes(S) && text.includes(E) ? text.split(S)[1].split(E)[0] : '';
+  return { jq_available: jqAvailable, start_marker: text.includes(S), end_marker: text.includes(E), section_result_lines: count(section), whole_log_result_lines: count(text),
+    command_not_found: /command not found/.test(text), jq_error: /^jq: error/m.test(text), output_capture: 'stdout_then_stderr' };
+}
 
 /** Eval script per variant. A0 = official verbatim. A1 = only the `npm run build` line replaced by the gated
  *  offline steps. `instrument` separately inserts one test-boundary line before the official Start marker. */
@@ -142,6 +155,12 @@ export function main() {
       if (rec_('reverse check: git apply --check --reverse', ex(`git apply --check --reverse ${H.patchFile}`)).status === 0) return { ok: true, via: 'verified already applied' };
       return { ok: false, marker: H.APPLY_PATCH_FAIL };
     };
+    if (harnessExcludesPatch(patchText) && !tamper) {
+      // Excluded exactly as the harness does: no container, no docker call, never graded
+      rec.patch_sha256 = sha(patchText); rec.patch_bytes = 0; rec.outcome = 'empty_patch_excluded';
+      if (EXECUTE) fs.writeFileSync(path.join(dir, 'run.json'), JSON.stringify(rec, null, 2));
+      return rec;
+    }
     try {
       must('create container', ['docker', 'create', '--name', name, '--network', 'none', '--user', H.user, '--workdir', H.workdir, t.image, 'tail', '-f', '/dev/null']);
       must('start container', ['docker', 'start', name]);
@@ -171,10 +190,13 @@ export function main() {
       const ef = path.join(EXECUTE ? dir : os.tmpdir(), 'eval.sh'); if (EXECUTE) fs.writeFileSync(ef, evalText);
       must('copy eval script', ['docker', 'cp', ef, `${name}:/eval.sh`]);
       must('copy wrapper', ['docker', 'cp', path.join(HERE, 'grade-wrapper.sh'), `${name}:/grade-wrapper.sh`]);
+      const jq = rec_('jq availability: command -v jq', ex('command -v jq'));   // diagnostic only (review 10568)
       const t0 = Date.now();
       const r = run(['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '/grade-wrapper.sh', '/eval.sh'], { timeout: timeoutS * 1000, killSignal: 'SIGKILL' });
       rec.wall_s = (Date.now() - t0) / 1000; rec.eval_exit = r.status; rec.timed_out = r.signal === 'SIGKILL' || /ETIMEDOUT/.test(r.error || '');
-      if (EXECUTE) fs.writeFileSync(path.join(dir, 'test_output.txt'), r.stdout + (r.stderr ? `\n${r.stderr}` : '') + (rec.timed_out ? `\n\nTimeout error: ${timeoutS} seconds exceeded.` : ''));
+      const captured = (r.stdout || '') + (r.stderr ? `\n${r.stderr}` : '');
+      if (EXECUTE) fs.writeFileSync(path.join(dir, 'test_output.txt'), captured + (rec.timed_out ? `\n\nTimeout error: ${timeoutS} seconds exceeded.` : ''));
+      if (EXECUTE) rec.log_diag = logDiagnostics(captured, jq.status === 0);
       const env = /QBX_ENV_BEGIN([\s\S]*?)QBX_ENV_END/.exec(r.stdout || ''); rec.wrapper_env = env ? env[1].trim().split('\n') : null;
       if (rec.timed_out) { rec.outcome = 'timeout'; return rec; }
       if (r.status === BUILD_GATE_EXIT || /^>>>>> QBX Build Failed$/m.test(r.stdout)) { rec.outcome = 'build_failed'; return rec; }   // never a qualified replay
@@ -201,7 +223,10 @@ export function main() {
       if (g.status !== 0) throw new Infra(`grader exit ${g.status}`, g);
       let grade; try { grade = JSON.parse(fs.readFileSync(path.join(dir, 'grade.json'), 'utf8')); } catch (e) { throw new Infra('grader output unreadable', { stderr: e.message }); }
       if (!grade.acceptance || typeof grade.acceptance.accepted !== 'boolean') throw new Infra('grader output has no acceptance decision', { stderr: JSON.stringify(grade).slice(0, 400) });
-      rec.grade = { mode: gmode, accepted: grade.acceptance.accepted, reasons: grade.acceptance.reasons, official: grade.official && grade.official.resolution };
+      rec.grade = { mode: gmode, accepted: grade.acceptance.accepted, reasons: grade.acceptance.reasons, official: grade.official && grade.official.resolution,
+        log_gate: grade.official && grade.official.log_gate === 'ok' ? 'ok' : 'failed',
+        official_status_map_entries: grade.diagnostics ? grade.diagnostics.official_status_map_entries : null,
+        strict_raw_result_lines: grade.strict ? grade.strict.raw_result_lines : null };
       rec.outcome = 'graded';
       return rec;
     } catch (e) {
@@ -257,9 +282,14 @@ export function main() {
             else if (refTree[f] !== tr[f]) why.push(`tested ${f} differs from the gold run's`);
           }
         }
-      } else if (x.label === 'iso-patch-conflict' || x.label === 'iso-empty-patch-file') {
+      } else if (x.label === 'iso-patch-conflict') {
         if (x.outcome !== 'patch_apply_failed') why.push(`outcome ${x.outcome}, expected patch_apply_failed`);
         if (x.grade) why.push('a rejected patch was graded');
+      } else if (x.label === 'iso-empty-patch-file') {
+        // review 10568: the harness excludes an exactly-empty patch before any container
+        if (x.outcome !== 'empty_patch_excluded') why.push(`outcome ${x.outcome}, expected empty_patch_excluded`);
+        if (x.grade) why.push('an excluded empty patch was graded');
+        if (x.steps && x.steps.length) why.push('an excluded empty patch reached docker');
       } else if (x.label === 'iso-timeout-fixture') {
         if (x.outcome !== 'timeout') why.push(`outcome ${x.outcome}, expected timeout`);
       } else why.push(`outcome ${x.outcome}`);

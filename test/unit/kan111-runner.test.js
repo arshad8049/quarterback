@@ -88,11 +88,11 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
     const r = run({ evalExit: { gold: 97 } });
     assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'build_failed'); assert.equal(byLabel(r.summary, 'gold').grade, undefined);
   });
-  test('patch conflict or zero-byte patch that unexpectedly applies fails the isolation gate', () => {
+  test('a conflicting patch that unexpectedly applies fails the isolation gate (the zero-byte case never reaches apply: review 10568)', () => {
     const r = run({ apply: { default: 0 } });
     assert.equal(r.status, 1);
     assert.equal(byLabel(r.summary, 'iso-patch-conflict').expectation_met, false);
-    assert.equal(byLabel(r.summary, 'iso-empty-patch-file').expectation_met, false);
+    assert.equal(byLabel(r.summary, 'iso-empty-patch-file').outcome, 'empty_patch_excluded', 'excluded before apply, whatever the apply step would do');
   });
   test('tamper: proven only when the tamper applied before grading, is absent at the test boundary, and the tested tree matches gold', () => {
     assert.equal(byLabel(run({}).summary, 'iso-test-file-tamper').expectation_met, true);

@@ -51,6 +51,17 @@ try:
 except Exception as e:  # a harness API mismatch must surface, never be guessed around
     infra(f"harness: {type(e).__name__}: {e}")
 
+# ── Diagnostics (review 10568): counts and booleans only, never names or log text ──
+_RESULT = re.compile(r"^(\[(PASSED|FAILED|PENDING|TODO|SKIPPED)\]\s|(✓|✕|○|✎)\s)")
+_count = lambda t: sum(1 for l in t.split("\n") if _RESULT.match(l.strip()))
+_has = START_TEST_OUTPUT in log and END_TEST_OUTPUT in log
+out["diagnostics"] = {
+    "start_marker": START_TEST_OUTPUT in log, "end_marker": END_TEST_OUTPUT in log,
+    "section_result_lines": _count(log.split(START_TEST_OUTPUT, 1)[1].split(END_TEST_OUTPUT, 1)[0]) if _has else 0,
+    "whole_log_result_lines": _count(log),
+    "official_status_map_entries": len(status_map) if found else 0,
+}
+
 # ── Strict, additive view: every raw result line in the official test section counts, whatever its status ──
 section = log.split(START_TEST_OUTPUT, 1)[1].split(END_TEST_OUTPUT, 1)[0] if (START_TEST_OUTPUT in log and END_TEST_OUTPUT in log) else ""
 raw = []  # (key, status)

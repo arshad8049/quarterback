@@ -1,5 +1,5 @@
 # KAN-111 immutable-offline-v1, variant A1: PLAN ONLY (nothing executed)
-# 340 commands, 20 runs
+# 324 commands, 20 runs
 docker pull swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549
 docker create --name kan111-2005-empty-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-empty-1-plan
@@ -10,11 +10,12 @@ docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "bash /qbx
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-empty-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-empty-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-empty-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-1/grade.json empty
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-1/grade.json empty
 docker rm -f kan111-2005-empty-1-plan
 docker create --name kan111-2005-gold-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-gold-1-plan
@@ -27,11 +28,12 @@ docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "git apply 
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-gold-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-gold-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-gold-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-1/grade.json gold
 docker rm -f kan111-2005-gold-1-plan
 docker create --name kan111-2005-empty-2-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-empty-2-plan
@@ -42,11 +44,12 @@ docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "bash /qbx
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-empty-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-2-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-empty-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-empty-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-2/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-2/grade.json empty
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-2/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-2/grade.json empty
 docker rm -f kan111-2005-empty-2-plan
 docker create --name kan111-2005-gold-2-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-gold-2-plan
@@ -59,11 +62,12 @@ docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "git apply 
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-gold-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-2-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-gold-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-gold-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-2/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-2/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-2/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-2/grade.json gold
 docker rm -f kan111-2005-gold-2-plan
 docker create --name kan111-2005-empty-3-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-empty-3-plan
@@ -74,11 +78,12 @@ docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "bash /qbx
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-empty-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-3-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-empty-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-empty-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-3/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-empty-3/grade.json empty
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-3/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-empty-3/grade.json empty
 docker rm -f kan111-2005-empty-3-plan
 docker create --name kan111-2005-gold-3-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-gold-3-plan
@@ -91,11 +96,12 @@ docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "git apply 
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-gold-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-3-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-gold-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-gold-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-3/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-gold-3/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-3/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-gold-3/grade.json gold
 docker rm -f kan111-2005-gold-3-plan
 docker create --name kan111-2005-iso-test-file-tamper-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-iso-test-file-tamper-1-plan
@@ -115,11 +121,12 @@ docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bas
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-test-file-tamper-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-test-file-tamper-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-test-file-tamper-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-iso-test-file-tamper-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-test-file-tamper-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-test-file-tamper-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-test-file-tamper-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-test-file-tamper-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-test-file-tamper-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-test-file-tamper-1/grade.json gold
 docker rm -f kan111-2005-iso-test-file-tamper-1-plan
 docker create --name kan111-2005-iso-patch-conflict-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-iso-patch-conflict-1-plan
@@ -132,29 +139,13 @@ docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash 
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-patch-conflict-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-patch-conflict-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-patch-conflict-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-iso-patch-conflict-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-patch-conflict-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-patch-conflict-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-patch-conflict-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-patch-conflict-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-patch-conflict-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-patch-conflict-1/grade.json gold
 docker rm -f kan111-2005-iso-patch-conflict-1-plan
-docker create --name kan111-2005-iso-empty-patch-file-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
-docker start kan111-2005-iso-empty-patch-file-1-plan
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "git rev-parse HEAD"
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 || git diff --quiet 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 HEAD"
-docker cp <grader>/qbx-boundary.sh kan111-2005-iso-empty-patch-file-1-plan:/qbx-boundary.sh
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
-docker cp <run-dir>/patch.diff kan111-2005-iso-empty-patch-file-1-plan:/tmp/patch.diff
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "git -c core.fileMode=false diff"
-docker cp <run-dir>/eval.sh kan111-2005-iso-empty-patch-file-1-plan:/eval.sh
-docker cp <grader>/grade-wrapper.sh kan111-2005-iso-empty-patch-file-1-plan:/grade-wrapper.sh
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash /grade-wrapper.sh /eval.sh
-docker cp kan111-2005-iso-empty-patch-file-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
-docker exec -w /testbed -u root kan111-2005-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
-docker cp kan111-2005-iso-empty-patch-file-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-empty-patch-file-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-empty-patch-file-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-empty-patch-file-1/grade.json gold
-docker rm -f kan111-2005-iso-empty-patch-file-1-plan
 docker create --name kan111-2005-iso-timeout-fixture-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549 tail -f /dev/null
 docker start kan111-2005-iso-timeout-fixture-1-plan
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "git rev-parse HEAD"
@@ -164,11 +155,12 @@ docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2005-iso-timeout-fixture-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-timeout-fixture-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2005-iso-timeout-fixture-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-iso-timeout-fixture-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-timeout-fixture-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-timeout-fixture-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2005-iso-timeout-fixture-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2005 <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-timeout-fixture-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-timeout-fixture-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2005-iso-timeout-fixture-1/grade.json gold
 docker rm -f kan111-2005-iso-timeout-fixture-1-plan
 docker pull swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d
 docker create --name kan111-2006-empty-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
@@ -180,11 +172,12 @@ docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "bash /qbx
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-empty-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-empty-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-empty-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-1/grade.json empty
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-1/grade.json empty
 docker rm -f kan111-2006-empty-1-plan
 docker create --name kan111-2006-gold-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-gold-1-plan
@@ -197,11 +190,12 @@ docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "git apply 
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-gold-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-gold-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-gold-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-1/grade.json gold
 docker rm -f kan111-2006-gold-1-plan
 docker create --name kan111-2006-empty-2-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-empty-2-plan
@@ -212,11 +206,12 @@ docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "bash /qbx
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-empty-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-2-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-empty-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-empty-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-2/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-2/grade.json empty
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-2/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-2/grade.json empty
 docker rm -f kan111-2006-empty-2-plan
 docker create --name kan111-2006-gold-2-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-gold-2-plan
@@ -229,11 +224,12 @@ docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "git apply 
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-gold-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-2-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-gold-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-gold-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-2/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-2/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-2/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-2/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-2/grade.json gold
 docker rm -f kan111-2006-gold-2-plan
 docker create --name kan111-2006-empty-3-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-empty-3-plan
@@ -244,11 +240,12 @@ docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "bash /qbx
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-empty-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-3-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-empty-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-empty-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-3/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-empty-3/grade.json empty
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-3/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-empty-3/grade.json empty
 docker rm -f kan111-2006-empty-3-plan
 docker create --name kan111-2006-gold-3-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-gold-3-plan
@@ -261,11 +258,12 @@ docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "git apply 
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-gold-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-3-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-gold-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-gold-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-3/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-gold-3/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-3/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-3/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-gold-3/grade.json gold
 docker rm -f kan111-2006-gold-3-plan
 docker create --name kan111-2006-iso-test-file-tamper-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-iso-test-file-tamper-1-plan
@@ -285,11 +283,12 @@ docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bas
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-test-file-tamper-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-test-file-tamper-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-test-file-tamper-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-iso-test-file-tamper-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-test-file-tamper-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-test-file-tamper-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-test-file-tamper-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-test-file-tamper-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-test-file-tamper-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-test-file-tamper-1/grade.json gold
 docker rm -f kan111-2006-iso-test-file-tamper-1-plan
 docker create --name kan111-2006-iso-patch-conflict-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-iso-patch-conflict-1-plan
@@ -302,29 +301,13 @@ docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash 
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-patch-conflict-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-patch-conflict-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-patch-conflict-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-iso-patch-conflict-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-patch-conflict-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-patch-conflict-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-patch-conflict-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-patch-conflict-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-patch-conflict-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-patch-conflict-1/grade.json gold
 docker rm -f kan111-2006-iso-patch-conflict-1-plan
-docker create --name kan111-2006-iso-empty-patch-file-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
-docker start kan111-2006-iso-empty-patch-file-1-plan
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "git rev-parse HEAD"
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "test \"$(git rev-parse HEAD)\" = 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 || git diff --quiet 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 HEAD"
-docker cp <grader>/qbx-boundary.sh kan111-2006-iso-empty-patch-file-1-plan:/qbx-boundary.sh
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh start"
-docker cp <run-dir>/patch.diff kan111-2006-iso-empty-patch-file-1-plan:/tmp/patch.diff
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "git apply --verbose /tmp/patch.diff"
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "git -c core.fileMode=false diff"
-docker cp <run-dir>/eval.sh kan111-2006-iso-empty-patch-file-1-plan:/eval.sh
-docker cp <grader>/grade-wrapper.sh kan111-2006-iso-empty-patch-file-1-plan:/grade-wrapper.sh
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash /grade-wrapper.sh /eval.sh
-docker cp kan111-2006-iso-empty-patch-file-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
-docker exec -w /testbed -u root kan111-2006-iso-empty-patch-file-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
-docker cp kan111-2006-iso-empty-patch-file-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-empty-patch-file-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-empty-patch-file-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-empty-patch-file-1/grade.json gold
-docker rm -f kan111-2006-iso-empty-patch-file-1-plan
 docker create --name kan111-2006-iso-timeout-fixture-1-plan --network none --user root --workdir /testbed swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d tail -f /dev/null
 docker start kan111-2006-iso-timeout-fixture-1-plan
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "git rev-parse HEAD"
@@ -334,9 +317,10 @@ docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "git -c core.fileMode=false diff"
 docker cp <run-dir>/eval.sh kan111-2006-iso-timeout-fixture-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-timeout-fixture-1-plan:/grade-wrapper.sh
+docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "command -v jq"
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash /grade-wrapper.sh /eval.sh
 docker cp kan111-2006-iso-timeout-fixture-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-iso-timeout-fixture-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
-python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-timeout-fixture-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-timeout-fixture-1/required.json <grader>/results/darwin-arm64/A1-2026-11-10/2006-iso-timeout-fixture-1/grade.json gold
+python3 <grader>/grade_report.py immutable-js__immutable-js-2006 <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-timeout-fixture-1/test_output.txt <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-timeout-fixture-1/required.json <grader>/results/darwin-arm64/A1-2026-11-12/2006-iso-timeout-fixture-1/grade.json gold
 docker rm -f kan111-2006-iso-timeout-fixture-1-plan
