@@ -1,0 +1,2569 @@
+{
+  "schema": "qb-kan111-results/1",
+  "sanitized": true,
+  "adaptation": "immutable-offline-v1",
+  "variant": "A1",
+  "approved_by": "10572",
+  "execute": true,
+  "fixture_mode": false,
+  "harness": "SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+  "instrumentation_sha256": "8a01d4d8967600f74a8d133d5677d38e45b11bd88d8a8692829919467aa9b375",
+  "wrapper_sha256": "9d50247191821a5eabdb52327de0c94ab04bd788b9786af1f3b2948b2d11d9aa",
+  "gates_passed": true,
+  "plan_sha256": "310fd018f88fba9a143e02bd1a69732b1254c00700464cc7ce2dc10b6a4a20b4",
+  "runs": [
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "empty",
+      "label": "empty",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.98,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "8f2adc80412f9a16498c74506e9d49608b295beb3ef530e2f7f89f77021bbd6d",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "empty",
+        "accepted": true,
+        "official": "RESOLVED_NO",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "gold",
+      "label": "gold",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.828,
+      "patch_sha256": "ee2a6dd8664143cf3294ae60364d1ec790671c99414defef9e03548bf30b493f",
+      "patch_bytes": 1555,
+      "diff_before_sha256": "cef3bd623d7ee42a44e12ce007627be804c1de8b7eda3bb1a5ea68b0dc0c1a30",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "f66a85e48b1b7d45fa24f743462ab4ec2dde89bca3c8a6a36d75eb080e7612d6",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "c33a239f368c7292699a977c5bf7b121655950bc1d861efb88d79e99c40f8d41",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "empty",
+      "label": "empty",
+      "rep": 2,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.801,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "8f2adc80412f9a16498c74506e9d49608b295beb3ef530e2f7f89f77021bbd6d",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "empty",
+        "accepted": true,
+        "official": "RESOLVED_NO",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "gold",
+      "label": "gold",
+      "rep": 2,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.993,
+      "patch_sha256": "ee2a6dd8664143cf3294ae60364d1ec790671c99414defef9e03548bf30b493f",
+      "patch_bytes": 1555,
+      "diff_before_sha256": "cef3bd623d7ee42a44e12ce007627be804c1de8b7eda3bb1a5ea68b0dc0c1a30",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "f66a85e48b1b7d45fa24f743462ab4ec2dde89bca3c8a6a36d75eb080e7612d6",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "c33a239f368c7292699a977c5bf7b121655950bc1d861efb88d79e99c40f8d41",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "empty",
+      "label": "empty",
+      "rep": 3,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.792,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "8f2adc80412f9a16498c74506e9d49608b295beb3ef530e2f7f89f77021bbd6d",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "empty",
+        "accepted": true,
+        "official": "RESOLVED_NO",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "gold",
+      "label": "gold",
+      "rep": 3,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 37.205,
+      "patch_sha256": "ee2a6dd8664143cf3294ae60364d1ec790671c99414defef9e03548bf30b493f",
+      "patch_bytes": 1555,
+      "diff_before_sha256": "cef3bd623d7ee42a44e12ce007627be804c1de8b7eda3bb1a5ea68b0dc0c1a30",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "f66a85e48b1b7d45fa24f743462ab4ec2dde89bca3c8a6a36d75eb080e7612d6",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "c33a239f368c7292699a977c5bf7b121655950bc1d861efb88d79e99c40f8d41",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "gold",
+      "label": "iso-test-file-tamper",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.734,
+      "patch_sha256": "3daef64e5c18d7c9a15982c8fec8b1cad0100dad0e6545d07e80bbf552b43da9",
+      "patch_bytes": 1910,
+      "diff_before_sha256": "3daef64e5c18d7c9a15982c8fec8b1cad0100dad0e6545d07e80bbf552b43da9",
+      "tamper_marker_before_grading": 1,
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": {
+        "sha256": "f66a85e48b1b7d45fa24f743462ab4ec2dde89bca3c8a6a36d75eb080e7612d6",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "final_tree": {
+        "sha256": "c33a239f368c7292699a977c5bf7b121655950bc1d861efb88d79e99c40f8d41",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 22,
+        "whole_log_result_lines": 22,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 22,
+        "strict_raw_result_lines": 22,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: edit test file",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: capture diff",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: copy out",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: reset tree",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "isolation",
+      "label": "iso-patch-conflict",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "patch_apply_failed",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "patch_sha256": "882ce2191026d93c7342d3fdabcb45bff819ff1950e36af6cc5740e57c5602f3",
+      "patch_bytes": 159,
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": false
+      },
+      "wrapper_env": null,
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": null,
+      "final_tree": null,
+      "log_diag": null,
+      "grade": null,
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reset between apply attempts",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 2: git apply --verbose --3way",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reset between apply attempts",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 3: git apply --verbose --reject",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reset between apply attempts",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 4: patch --batch --forward --fuzz=5 -p1 -i",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reverse check: git apply --check --reverse",
+          "status": 1,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "isolation",
+      "label": "iso-empty-patch-file",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "empty_patch_excluded",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch_bytes": 0,
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": null,
+      "wrapper_env": null,
+      "start_tree": null,
+      "tested_tree": null,
+      "final_tree": null,
+      "log_diag": null,
+      "grade": null,
+      "steps": []
+    },
+    {
+      "task": "2005",
+      "instance_id": "immutable-js__immutable-js-2005",
+      "mode": "isolation",
+      "label": "iso-timeout-fixture",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 5,
+      "outcome": "timeout",
+      "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+      "eval_kind": "timeout-fixture (not the task eval)",
+      "eval_sha256": "c54cb4670a269766a03e549786e0a14a5ca7b4a28e61e032e3a1b34427d15c0d",
+      "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+      "eval_exit": null,
+      "timed_out": true,
+      "wall_s": 5.008,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+        "files": 391,
+        "marker_count": 0,
+        "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+      },
+      "tested_tree": null,
+      "final_tree": null,
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": false,
+        "end_marker": false,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 0,
+        "whole_log_result_lines": 0,
+        "output_capture": "combined_in_container"
+      },
+      "grade": null,
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "empty",
+      "label": "empty",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 36.565,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "aef6506d34e765b9524b51a0431e9480b280294aaea2ab098515c845f3089cea",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "empty",
+        "accepted": true,
+        "official": "RESOLVED_NO",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "gold",
+      "label": "gold",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 36.101,
+      "patch_sha256": "731c25ddabfc2a005c9019171b1245621233bf1b683214fc369ccdb95b65c5c7",
+      "patch_bytes": 1194,
+      "diff_before_sha256": "426b49213a43cd2d6a5ef33d50438e6918176ae10417fef0fdf7ae026120276f",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "ea34069582452f096f74638b7012d35cc1760b82a32e59d4eaf22ee4f892d8ce",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "21f15f01e25256dc7252422472f59d3515f07e4f7444056185a9d45681c67873",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "empty",
+      "label": "empty",
+      "rep": 2,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 36.737,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "aef6506d34e765b9524b51a0431e9480b280294aaea2ab098515c845f3089cea",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "empty",
+        "accepted": true,
+        "official": "RESOLVED_NO",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "gold",
+      "label": "gold",
+      "rep": 2,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 36.328,
+      "patch_sha256": "731c25ddabfc2a005c9019171b1245621233bf1b683214fc369ccdb95b65c5c7",
+      "patch_bytes": 1194,
+      "diff_before_sha256": "426b49213a43cd2d6a5ef33d50438e6918176ae10417fef0fdf7ae026120276f",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "ea34069582452f096f74638b7012d35cc1760b82a32e59d4eaf22ee4f892d8ce",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "21f15f01e25256dc7252422472f59d3515f07e4f7444056185a9d45681c67873",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "empty",
+      "label": "empty",
+      "rep": 3,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 36.673,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "aef6506d34e765b9524b51a0431e9480b280294aaea2ab098515c845f3089cea",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "empty",
+        "accepted": true,
+        "official": "RESOLVED_NO",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "gold",
+      "label": "gold",
+      "rep": 3,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 36.429,
+      "patch_sha256": "731c25ddabfc2a005c9019171b1245621233bf1b683214fc369ccdb95b65c5c7",
+      "patch_bytes": 1194,
+      "diff_before_sha256": "426b49213a43cd2d6a5ef33d50438e6918176ae10417fef0fdf7ae026120276f",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "ea34069582452f096f74638b7012d35cc1760b82a32e59d4eaf22ee4f892d8ce",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "21f15f01e25256dc7252422472f59d3515f07e4f7444056185a9d45681c67873",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "gold",
+      "label": "iso-test-file-tamper",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "graded",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": 0,
+      "timed_out": false,
+      "wall_s": 35.873,
+      "patch_sha256": "94401334e6af0b6ab79b10b8afd73088a4b99619b7106c6fda3ec428bf682e01",
+      "patch_bytes": 1513,
+      "diff_before_sha256": "94401334e6af0b6ab79b10b8afd73088a4b99619b7106c6fda3ec428bf682e01",
+      "tamper_marker_before_grading": 1,
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": true,
+        "via": "git apply --verbose"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": {
+        "sha256": "ea34069582452f096f74638b7012d35cc1760b82a32e59d4eaf22ee4f892d8ce",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "final_tree": {
+        "sha256": "21f15f01e25256dc7252422472f59d3515f07e4f7444056185a9d45681c67873",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": true,
+        "end_marker": true,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 23,
+        "whole_log_result_lines": 23,
+        "output_capture": "combined_in_container"
+      },
+      "grade": {
+        "mode": "gold",
+        "accepted": true,
+        "official": "RESOLVED_FULL",
+        "log_gate": "ok",
+        "official_status_map_entries": 23,
+        "strict_raw_result_lines": 23,
+        "reasons": []
+      },
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: edit test file",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: capture diff",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: copy out",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "build tamper: reset tree",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy tested-tree manifest",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (final)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy final manifest",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "isolation",
+      "label": "iso-patch-conflict",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "patch_apply_failed",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "patch_sha256": "882ce2191026d93c7342d3fdabcb45bff819ff1950e36af6cc5740e57c5602f3",
+      "patch_bytes": 159,
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "ok": false
+      },
+      "wrapper_env": null,
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": null,
+      "final_tree": null,
+      "log_diag": null,
+      "grade": null,
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy patch",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 1: git apply --verbose",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reset between apply attempts",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 2: git apply --verbose --3way",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reset between apply attempts",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 3: git apply --verbose --reject",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reset between apply attempts",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "apply attempt 4: patch --batch --forward --fuzz=5 -p1 -i",
+          "status": 1,
+          "signal": null
+        },
+        {
+          "step": "reverse check: git apply --check --reverse",
+          "status": 1,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "isolation",
+      "label": "iso-empty-patch-file",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 1800,
+      "outcome": "empty_patch_excluded",
+      "eval_kind": "A1 + test-boundary instrumentation",
+      "eval_sha256": "4ae5273df93116cc625c6552083ed427dac7395374e63eb46a1d4e7c043e6c65",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch_bytes": 0,
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": null,
+      "wrapper_env": null,
+      "start_tree": null,
+      "tested_tree": null,
+      "final_tree": null,
+      "log_diag": null,
+      "grade": null,
+      "steps": []
+    },
+    {
+      "task": "2006",
+      "instance_id": "immutable-js__immutable-js-2006",
+      "mode": "isolation",
+      "label": "iso-timeout-fixture",
+      "rep": 1,
+      "variant": "A1",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2006@sha256:ecf16bc4835839696fac8f3eed1ec36473306d5277a641f2e05254f9a552608d",
+      "network": "none",
+      "sys_admin": false,
+      "timeout_s": 5,
+      "outcome": "timeout",
+      "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+      "eval_kind": "timeout-fixture (not the task eval)",
+      "eval_sha256": "c54cb4670a269766a03e549786e0a14a5ca7b4a28e61e032e3a1b34427d15c0d",
+      "official_eval_sha256": "5ce0993702c9cb23375cd0bf35aced243bb51a2074ac637eb9ebc4972ff9f647",
+      "eval_exit": null,
+      "timed_out": true,
+      "wall_s": 5.008,
+      "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectation_met": true,
+      "expectation_failures": [],
+      "patch_apply": {
+        "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+      },
+      "wrapper_env": [
+        "CI=<unset>",
+        "node=v20.20.2 npm=10.8.2 arch=x86_64",
+        "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+      ],
+      "start_tree": {
+        "sha256": "e8267f88b9978ad545b88deba4fa2b0ddb48293250dec3270f60f995f4f6ac85",
+        "files": 245,
+        "marker_count": 0,
+        "node_modules": "92844c1f7510fa707e4b88eac97ce1b11d95450ba6600cee76636dba3282ce13"
+      },
+      "tested_tree": null,
+      "final_tree": null,
+      "log_diag": {
+        "jq_available": true,
+        "start_marker": false,
+        "end_marker": false,
+        "command_not_found": false,
+        "jq_error": false,
+        "section_result_lines": 0,
+        "whole_log_result_lines": 0,
+        "output_capture": "combined_in_container"
+      },
+      "grade": null,
+      "steps": [
+        {
+          "step": "create container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "start container",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "read HEAD",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "base check",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy boundary helper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "boundary helper (start)",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "diff before",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy eval script",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "copy wrapper",
+          "status": 0,
+          "signal": null
+        },
+        {
+          "step": "jq availability: command -v jq",
+          "status": 0,
+          "signal": null
+        }
+      ]
+    }
+  ],
+  "experiment": {
+    "qb_commit": "969f4e04c17f791386ebf66245053d490277ce75",
+    "dataset_revision": "846e647b9f33c0b51b739d005d13d85493c9af09",
+    "lock_sha256": "3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba",
+    "install_record_sha256": {
+      "harness-smoke.txt": "bd3950b0d5d6ddfc770835657a6ca134b642340a5189c734453a8e62647900a6",
+      "install-provenance.json": "f6d0b5a5d459709946ea72e7758b368ba88711e8fb82a19aa35bd0ee13e583d6",
+      "installed-harness-files.sha256": "1a454284cf5fd8afef66e40a0e0d3581548c2504a938fbdfdea35c20f177705c",
+      "pip-check.txt": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "pip-freeze.txt": "95e8e270e0bda745710e1f5c758be9f9468cc0f5aab03abe6cfc0e2064a4f174",
+      "swebench-rebuilt-wheel.sha256": "6ebbafdcbbb7ae020201c2725f18ad3c673a8ff7ae068d82daa6bfb00df7845f"
+    }
+  }
+}

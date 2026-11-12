@@ -1,0 +1,6 @@
+ok   grading functions import
+ok   2006 routes to the verbose Jest parser
+ok   2005 routes to the Jest JSON-line parser (PENDING is not a result)
+ok   unknown immutable-js instance is refused
+ok   PARSER_REGISTRY['parse_log_immutable_js'] is the reviewed parser (the key grade_report.py uses)
+ok   synthetic report resolves RESOLVED_FULL / RESOLVED_NO

@@ -1,0 +1,4 @@
+sanitize ok
+results.json sha256 814b8d0a04c9229c8a19ec779ee57e72821e2a999277646a576b217edfe983f6
+checked against 45 required test names of 2 pinned tasks, patch text and secret patterns
+runs 20
