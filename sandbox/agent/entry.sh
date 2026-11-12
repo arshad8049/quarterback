@@ -9,5 +9,4 @@ until socat -u OPEN:/dev/null TCP:127.0.0.1:8888 2>/dev/null; do
   i=$((i + 1)); [ "$i" -lt 50 ] || { echo "qb: proxy forwarder did not start" >&2; exit 70; }
   sleep 0.1
 done
-cd /work
-exec claude -p "$@"
+exec /usr/local/lib/qb/agent-run.sh "$@"

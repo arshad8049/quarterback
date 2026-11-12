@@ -94,7 +94,7 @@ describe('KAN-113 runAgentSandboxed with a pilot profile', () => {
     ['a different served model', stream({ msgModel: 'claude-sonnet-5-5' }), /served model/],
     ['an API key as the billing route', stream({ apiKeySource: 'ANTHROPIC_API_KEY' }), /api key/i],
     ['overage (paid usage) in use', stream({ overage: true }), /overage/],
-    ['no structured output at all', '', /served model/],
+    ['no structured output at all', '', /no init event/],
   ]) {
     test(`verification fails closed on ${why}: the attempt is an infrastructure stop, not a result`, async () => {
       const r = await runAgentSandboxed('task', '/repo', { agentProfile: profile(), approvedAuthRoutes: [TEST_ROUTE], runSandboxed: spy(completed(s)) });
@@ -152,7 +152,7 @@ describe('KAN-113 one shared 30-minute agent deadline across all attempts (froze
       agentProfile: profile({ max_attempts: 5 }), approvedAuthRoutes: [TEST_ROUTE], runSandboxed: staged(calls, 1) });
     assert.equal(r.status, 'agent_error'); assert.match(r.detail, /attempt/); assert.equal(calls.length, 0);
   });
-  for (const arm of ['B', 'E']) {
+  for (const arm of ['E']) {
     test(`arm ${arm}: three attempts share one 30-minute budget (deadlines 30, 20, 10 min), not 30 minutes each`, async () => {
       const { f, run, spec } = env(); const calls = []; const m = mockFetch(ollamaReply({ met: false, evidence: 'no', repair: 'fix' }));
       try {
@@ -177,7 +177,8 @@ describe('KAN-113 one shared 30-minute agent deadline across all attempts (froze
 describe('KAN-113 container entry and pipeline wiring', () => {
   test('the agent entrypoint hard-codes no flags; QB\'s legacy flags are the default only when no pilot args are given', () => {
     const entry = fs.readFileSync(path.join(ROOT, 'sandbox', 'agent', 'entry.sh'), 'utf8');
-    assert.match(entry, /^exec claude -p "\$@"$/m);
+    assert.match(entry, /^exec \/usr\/local\/lib\/qb\/agent-run\.sh "\$@"$/m);
+    assert.match(fs.readFileSync(path.join(ROOT, 'sandbox', 'agent', 'agent-run.sh'), 'utf8'), /^exec claude -p "\$@"$/m);
     const { agentTailArgs, DEFAULT_AGENT_ARGS } = require('../../lib/sandbox/agent');
     assert.deepEqual(DEFAULT_AGENT_ARGS, ['--dangerously-skip-permissions', '--output-format', 'text']);
     assert.deepEqual(agentTailArgs({}), DEFAULT_AGENT_ARGS);

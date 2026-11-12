@@ -11,8 +11,9 @@ RUN apt-get update \
  && npm cache clean --force
 COPY managed-settings.json /etc/claude-code/managed-settings.json
 COPY entry.sh /usr/local/lib/qb/agent-entry.sh
+COPY agent-run.sh /usr/local/lib/qb/agent-run.sh
 COPY deps-install.sh /usr/local/lib/qb/deps-install.sh
 COPY qb-test-reporter.mjs /usr/local/lib/qb/qb-test-reporter.mjs
 COPY qb-check-runner.mjs /usr/local/lib/qb/qb-check-runner.mjs
-RUN chmod 0755 /usr/local/lib/qb/agent-entry.sh /usr/local/lib/qb/deps-install.sh \
+RUN chmod 0755 /usr/local/lib/qb/agent-entry.sh /usr/local/lib/qb/agent-run.sh /usr/local/lib/qb/deps-install.sh \
  && chmod 0644 /usr/local/lib/qb/qb-test-reporter.mjs /usr/local/lib/qb/qb-check-runner.mjs

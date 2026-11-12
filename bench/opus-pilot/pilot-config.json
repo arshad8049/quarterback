@@ -53,5 +53,15 @@
     ],
     "auth_route": "unapproved",
     "environment": "both arms: plain unmodified Claude Code in the same pinned QB agent container (image, repo snapshot, network policy, managed settings, deadline)"
+  },
+  "pilot_arms": {
+    "A": {
+      "qb28_arm": "A",
+      "max_attempts": 1
+    },
+    "B": {
+      "qb28_arm": "E",
+      "max_attempts": 3
+    }
   }
 }

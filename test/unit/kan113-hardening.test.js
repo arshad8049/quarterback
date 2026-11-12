@@ -173,6 +173,6 @@ describe('KAN-113 10589: exact prompt bytes and non-interactive behaviour (fake 
   test('entry.sh hands over to agent-run.sh after the proxy forwarder (no prompt argument, no briefing path)', () => {
     const entry = fs.readFileSync(path.join(ROOT, 'sandbox', 'agent', 'entry.sh'), 'utf8');
     assert.match(entry, /^exec \/usr\/local\/lib\/qb\/agent-run\.sh "\$@"$/m);
-    assert.doesNotMatch(entry, /briefing/);
+    assert.doesNotMatch(entry.split('\n').filter((l) => /^\s*exec /.test(l)).join('\n'), /briefing|\.md/, 'the exec line passes no briefing path or prompt argument');
   });
 });

@@ -35,11 +35,11 @@ export function imagePin() {
 export function plannedArgv(cfg) { return ['claude', '-p', ...P.buildAgentArgs(P.profileFromConfig(cfg))]; }
 
 // Refusal checks on fixtures (no Docker, no model): what stops a misconfigured run, and where
-const fixtureStream = ({ apiKeySource = 'none', overage = false, model = 'claude-opus-5-5' } = {}) => [
-  { type: 'system', subtype: 'init', model, apiKeySource },
+const fixtureStream = ({ apiKeySource = 'none', overage = false, model = 'claude-opus-5-5', version = '2.1.322' } = {}) => [
+  { type: 'system', subtype: 'init', model, apiKeySource, claude_code_version: version },
   { type: 'assistant', message: { model } },
-  { type: 'rate_limit_event', rate_limit_info: { isUsingOverage: overage, overageStatus: overage ? 'allowed' : 'rejected' } },
-  { type: 'result', subtype: 'success', usage: {}, modelUsage: { [model]: { canonicalModel: model, provider: 'firstParty' } } },
+  { type: 'rate_limit_event', rate_limit_info: { status: 'allowed', rateLimitType: 'five_hour', isUsingOverage: overage, overageStatus: overage ? 'allowed' : 'rejected' } },
+  { type: 'result', subtype: 'success', is_error: false, usage: {}, modelUsage: { [model]: { canonicalModel: model, provider: 'firstParty' } } },
 ].map((x) => JSON.stringify(x)).join('\n') + '\n';
 export async function refusalChecks(cfg) {
   const prof = P.profileFromConfig(cfg);
@@ -51,8 +51,13 @@ export async function refusalChecks(cfg) {
   const billingOverage = P.verifyStream(fixtureStream({ overage: true }), prof);
   const wrongModel = P.verifyStream(fixtureStream({ model: 'claude-sonnet-5-5' }), prof);
   const good = P.verifyStream(fixtureStream(), prof);
-  const deadlineEach = P.budgetProblem(prof, { agentTimeMs: 3 * prof.agent_time_ms, armMaxAttempts: ARMS.E.max_attempts });   // "30 minutes each" misconfig
-  const deadlineOk = P.budgetProblem(prof, { agentTimeMs: prof.agent_time_ms, armMaxAttempts: ARMS.E.max_attempts });
+  const missingBilling = P.classifyAttempt({ stdout: fixtureStream().split('\n').filter((l) => !l.includes('rate_limit_event')).join('\n') }, prof);
+  const truncated = P.classifyAttempt({ stdout: fixtureStream(), dropped: 1024 }, prof);
+  const timeout = P.classifyAttempt({ stdout: fixtureStream().split('\n').filter((l) => !l.includes('"result"')).join('\n'), sandboxState: 'timeout' }, prof);
+  const tampered = P.checkProfile({ ...prof, model: 'claude-sonnet-5-5' }, { imagePin: AG.CLAUDE_VERSION, approved: [prof.auth_route] });
+  const deadlineEach = P.budgetProblem(prof, { agentTimeMs: 3 * prof.agent_time_ms, qb28Arm: 'E', armMaxAttempts: ARMS.E.max_attempts });   // "30 minutes each" misconfig
+  const deadlineOk = P.budgetProblem(prof, { agentTimeMs: prof.agent_time_ms, qb28Arm: 'E', armMaxAttempts: ARMS.E.max_attempts });
+  const nonPilotArm = P.budgetProblem(prof, { agentTimeMs: prof.agent_time_ms, qb28Arm: 'B', armMaxAttempts: ARMS.B.max_attempts });
   return {
     configured_pilot_run: { status: live.status, error: live.error, sandbox_started: live.sandbox !== null },
     version_mismatch: { refused: wrongVersion.length > 0, errors: wrongVersion },
@@ -62,7 +67,12 @@ export async function refusalChecks(cfg) {
     wrong_served_model: { refused: !wrongModel.ok, reasons: wrongModel.reasons },
     deadline_misconfigured_90_min_total: { refused: deadlineEach !== null, reason: deadlineEach },
     deadline_frozen_30_min_shared: { accepted: deadlineOk === null },
-    correct_stream: { accepted: good.ok },
+    non_pilot_arm_B: { refused: nonPilotArm !== null, reason: nonPilotArm },
+    missing_billing_telemetry: { outcome: missingBilling.outcome },
+    truncated_output: { outcome: truncated.outcome },
+    coding_timeout: { outcome: timeout.outcome, evidence_complete: timeout.evidence_complete },
+    tampered_profile: { refused: tampered.length > 0, errors: tampered },
+    correct_stream: { accepted: good.ok, outcome: good.outcome },
   };
 }
 

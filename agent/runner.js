@@ -79,7 +79,7 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
     const errs = P.checkProfile(profile, { imagePin: CLAUDE_VERSION, approved });
     if (errs.length) {
       return { status: 'blocked', diff: null, changes: [], unsupported_changes: [], base_tree: null, candidate_tree: null, exit_code: null, signal: null,
-        stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot preflight: ${errs.join('; ')}`, sandbox: null };
+        stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot preflight: ${errs.join('; ')}`, sandbox: null, pilot_outcome: 'preflight_refused' };
     }
   }
   const r = await run({
@@ -98,11 +98,12 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
     error: ['completed', 'no_change'].includes(status) ? null : (r.reason || r.error || status),
     sandbox,
   };
-  if (profile && ['completed', 'no_change'].includes(status)) {
-    // KAN-113: Claude Code's own report must show the requested model, the subscription route and no overage.
-    const v = require('../lib/sandbox/agent-profile').verifyStream(r.agent_stdout, profile);
-    out.agent_report = v.report;
-    if (!v.ok) { out.status = 'infra_error'; out.error = `pilot verification failed: ${v.reasons.join('; ')}`; }
+  if (profile && ['completed', 'no_change', 'timeout'].includes(status)) {
+    // KAN-113 (10589): classify from Claude Code's own report; distinct outcomes; a coding timeout keeps its status and patch.
+    const agentState = r.sandbox && r.sandbox.stages && r.sandbox.stages.agent ? r.sandbox.stages.agent.state : status;
+    const c = require('../lib/sandbox/agent-profile').classifyAttempt({ stdout: r.agent_stdout, dropped: r.agent_stdout_dropped || 0, sandboxState: agentState }, profile);
+    out.agent_report = c.report; out.pilot_outcome = c.outcome; out.pilot_evidence_complete = c.evidence_complete; out.pilot_reasons = c.reasons;
+    if (!['verified', 'coding_timeout'].includes(c.outcome)) { out.status = 'infra_error'; out.error = `pilot ${c.outcome}: ${c.reasons.join('; ')}`; }
   }
   return out;
 }
