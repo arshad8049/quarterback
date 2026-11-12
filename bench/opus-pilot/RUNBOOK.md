@@ -59,6 +59,15 @@ All budget values stay `null` in `pilot-config.json` until KAN-112 freezes them.
 - **Arm B:** **unverified**. See `docs/research/kan113-arm-b-route-review.md` for the exact QB route and its gaps (no `--model`, text output, permission mode, environment parity, refresh call, image not rebuilt).
 - `checkPilotConfig(…, 'live')` refuses while any arm is unverified.
 
+## 4d. Fairness decision (KAN-112 10586) and the rebuilt container (2026-11-12)
+- **Both arms:** plain, unmodified Claude Code in the **same** QB agent container, with identical args (`plannedArgv` in `dry-run.mjs`), explicit restricted permissions (`dontAsk` + allowlist; web denied), the same network (`--network none` + `api.anthropic.com`), the same 1,800 s shared agent time, and the same repo snapshot. Arm A = QB-28 arm A (1 attempt); arm B = QB-28 arm E (≤ 3 attempts sharing the budget).
+- **Image:** `qb-sandbox-agent:c-a11cdbc954d462aa`, Id `sha256:34f60e7f22e47dc67ce09617b32bb5a3e142c521fa061b41e2405f0a49e1e5a5`, linux/arm64 (this Mac's Docker), Claude Code 2.1.322. A different host or architecture means a rebuild with a new Id, recorded per trial.
+- **No-model dry run of both arms:** `evidence/dry-run-2026-11-12.json`. It holds each arm's effective settings and the refusal checks:
+  - an unapproved auth route is refused before any sandbox;
+  - the wrong version, bypass permissions, an API-key billing route, overage, a wrong served model, and a misconfigured deadline (90 min total) are all refused;
+  - the frozen 30-minute shared budget is accepted.
+- **The Mac smoke** verified the account and model access only. It is **not** the benchmark baseline. Both containerized arms are `unverified`.
+
 ## 5. Live trials: gated by arm B verification and a run approval
 **Auth route (owner decision):**
 - **Arm A:** the unmodified host `claude`, signed in by the owner (verified above).

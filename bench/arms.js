@@ -198,6 +198,11 @@ async function nativeArm(def, o) {
 async function runArm(o) {
   const def = ARMS[o.arm];
   if (!def) throw new Error(`unknown arm ${o.arm}`);
+  // KAN-113: a pilot arm runs only with the frozen shared budget and attempt limit, refused before any attempt
+  if (o.agentProfile) {
+    const bad = require('../lib/sandbox/agent-profile').budgetProblem(o.agentProfile, { agentTimeMs: o.agentTimeMs, armMaxAttempts: def.max_attempts });
+    if (bad) return { status: 'agent_error', detail: `blocked: ${bad}`, patch: '', attempts: 0, agent_ms: 0, internal_verdict: null, memory: { mode: 'off', store_sha256_before: null, recall_calls: 0, persist_calls: 0 } };
+  }
   const memOff = { mode: 'off', store_sha256_before: null, recall_calls: 0, persist_calls: 0 };
   if (def.feedback !== 'qb_verifier') return { ...(await nativeArm(def, o)), memory: memOff };
 

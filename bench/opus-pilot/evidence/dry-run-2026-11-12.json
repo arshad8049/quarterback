@@ -1,0 +1,203 @@
+{
+  "schema": "qb-opus-pilot-dry-run/1",
+  "executed_nothing": true,
+  "config_frozen": true,
+  "frozen_by": 10583,
+  "config_sha256": "3d641d02726fc03c5a1935267105723200acf0ac51519ed8be871175e315adc3",
+  "claude_code_version": {
+    "used_for_plan": "2.1.322",
+    "source": "config",
+    "image_pin": "2.1.322"
+  },
+  "requested_model": "claude-opus-5-5",
+  "served_model": "unverified: a dry run cannot observe which model serves a request",
+  "auth_route": "owner decision (KAN-113 10582): arm A = host claude on the owner sign-in (smoke-tested); arm B = QB Mode S (unverified). The dry run provides no credential to either arm",
+  "budgets": {
+    "coding_wall_clock_s": 1800,
+    "max_qb_attempts": 3,
+    "qb_attempts_share_coding_budget": true,
+    "max_turns": "not_enforced",
+    "usage_or_dollar_cap": "not_enforced",
+    "notes": "Arm A: claude -p killed at 1800 s. Arm B: QB total agent time across all attempts capped at 1800 s (agentTimeMs). QB non-agent stages use QB's stage deadlines and are reported separately."
+  },
+  "stop_rules": {
+    "on_rate_limit": "stop; INFRA_INTERRUPTION/rate_limit; no automatic retry",
+    "on_auth_failure": "stop; INFRA_INTERRUPTION/auth; no retry; never switch account or provider",
+    "on_host_failure": "stop; INFRA_INTERRUPTION/host; no retry",
+    "on_budget_reached": "stop; grade the existing patch; none = NO_USABLE_PATCH",
+    "on_preflight_failure": "refuse to start (version mismatch, credential or billing-override variable); not a trial",
+    "paid_usage": "never; overage must be off",
+    "reruns": "new attempt id, reviewer approval only, original retained"
+  },
+  "arms": [
+    {
+      "arm": "A",
+      "route_status": "unverified",
+      "qb28_arm": "A",
+      "max_attempts": 1,
+      "briefing": "task prompt + native note (QB-28 arm A)",
+      "launcher": "QB agent container (same image for both arms)",
+      "image": {
+        "tag": "qb-sandbox-agent:c-a11cdbc954d462aa",
+        "id": "sha256:34f60e7f22e47dc67ce09617b32bb5a3e142c521fa061b41e2405f0a49e1e5a5"
+      },
+      "claude_code_version": "2.1.322",
+      "argv": [
+        "claude",
+        "-p",
+        "--model",
+        "claude-opus-5-5",
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--no-session-persistence",
+        "--strict-mcp-config",
+        "--permission-mode",
+        "dontAsk",
+        "--allowed-tools",
+        "Read,Glob,Grep,Edit,Write,Bash,TodoWrite",
+        "--disallowed-tools",
+        "WebFetch,WebSearch"
+      ],
+      "env": {
+        "HOME": "/tmp/home",
+        "CLAUDE_CONFIG_DIR": "/cfg",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "DISABLE_AUTOUPDATER": "1",
+        "DISABLE_TELEMETRY": "1",
+        "DISABLE_ERROR_REPORTING": "1",
+        "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
+        "CLAUDE_CODE_DISABLE_ARTIFACT": "1"
+      },
+      "network": {
+        "docker": "--network none",
+        "egress_allowlist": [
+          "api.anthropic.com"
+        ]
+      },
+      "managed_settings": {
+        "permissions": {
+          "deny": [
+            "WebFetch",
+            "WebSearch"
+          ]
+        },
+        "enableAllProjectMcpServers": false,
+        "disableAllHooks": true
+      },
+      "deadline": {
+        "agent_time_ms_shared_across_attempts": 1800000
+      },
+      "credentials": "none provided (auth route unapproved; QB stored-credential flow not used for the pilot)",
+      "executed": false
+    },
+    {
+      "arm": "B",
+      "route_status": "unverified",
+      "qb28_arm": "E",
+      "max_attempts": 3,
+      "briefing": "approved contract briefing (QB-28 arm E, QB production orchestration)",
+      "launcher": "QB agent container (same image for both arms)",
+      "image": {
+        "tag": "qb-sandbox-agent:c-a11cdbc954d462aa",
+        "id": "sha256:34f60e7f22e47dc67ce09617b32bb5a3e142c521fa061b41e2405f0a49e1e5a5"
+      },
+      "claude_code_version": "2.1.322",
+      "argv": [
+        "claude",
+        "-p",
+        "--model",
+        "claude-opus-5-5",
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--no-session-persistence",
+        "--strict-mcp-config",
+        "--permission-mode",
+        "dontAsk",
+        "--allowed-tools",
+        "Read,Glob,Grep,Edit,Write,Bash,TodoWrite",
+        "--disallowed-tools",
+        "WebFetch,WebSearch"
+      ],
+      "env": {
+        "HOME": "/tmp/home",
+        "CLAUDE_CONFIG_DIR": "/cfg",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "DISABLE_AUTOUPDATER": "1",
+        "DISABLE_TELEMETRY": "1",
+        "DISABLE_ERROR_REPORTING": "1",
+        "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
+        "CLAUDE_CODE_DISABLE_ARTIFACT": "1"
+      },
+      "network": {
+        "docker": "--network none",
+        "egress_allowlist": [
+          "api.anthropic.com"
+        ]
+      },
+      "managed_settings": {
+        "permissions": {
+          "deny": [
+            "WebFetch",
+            "WebSearch"
+          ]
+        },
+        "enableAllProjectMcpServers": false,
+        "disableAllHooks": true
+      },
+      "deadline": {
+        "agent_time_ms_shared_across_attempts": 1800000
+      },
+      "credentials": "none provided (auth route unapproved; QB stored-credential flow not used for the pilot)",
+      "executed": false
+    }
+  ],
+  "refusal_checks": {
+    "configured_pilot_run": {
+      "status": "blocked",
+      "error": "pilot preflight: pilot profile: auth route \"unapproved\" is not approved for the pilot (QB's stored-credential flow is never used)",
+      "sandbox_started": false
+    },
+    "version_mismatch": {
+      "refused": true,
+      "errors": [
+        "pilot profile: Claude Code version 2.1.288 differs from the agent image pin 2.1.322"
+      ]
+    },
+    "bypass_permissions": {
+      "refused": true,
+      "errors": [
+        "pilot profile: permission mode must be dontAsk (explicit, restricted; never bypassPermissions)"
+      ]
+    },
+    "billing_api_key": {
+      "refused": true,
+      "reasons": [
+        "billing route: API key source is \"ANTHROPIC_API_KEY\", expected \"none\" (subscription)"
+      ]
+    },
+    "billing_overage": {
+      "refused": true,
+      "reasons": [
+        "billing route: overage (paid usage) was in use"
+      ]
+    },
+    "wrong_served_model": {
+      "refused": true,
+      "reasons": [
+        "served model claude-sonnet-5-5, requested claude-opus-5-5"
+      ]
+    },
+    "deadline_misconfigured_90_min_total": {
+      "refused": true,
+      "reason": "pilot budget: agent time 5400000 ms differs from the frozen 1800000 ms (one budget shared by all attempts)"
+    },
+    "deadline_frozen_30_min_shared": {
+      "accepted": true
+    },
+    "correct_stream": {
+      "accepted": true
+    }
+  }
+}
