@@ -137,6 +137,21 @@ describe('KAN-113 one shared 30-minute agent deadline across all attempts (froze
   };
   const BUDGET = CFG.budgets.coding_wall_clock_s * 1000;
   test('the frozen budget is 1,800,000 ms and QB gets at most 3 attempts', () => { assert.equal(BUDGET, 1_800_000); assert.equal(CFG.budgets.max_qb_attempts, 3); });
+  test('a misconfigured deadline is refused before any attempt: a pilot arm must get exactly the frozen shared budget', async () => {
+    assert.equal(profile().agent_time_ms, 1_800_000); assert.equal(profile().max_attempts, 3);
+    for (const [arm, ms] of [['A', 3_600_000], ['E', 900_000]]) {
+      const { f, run, spec } = env(); const calls = [];
+      const r = await runArm({ arm, spec, repoPath: f.repo.dir, run, agentTimeMs: ms, noLlmContext: true, judgeCache: path.join(tmp, 'jc'),
+        agentProfile: profile(), approvedAuthRoutes: [TEST_ROUTE], runSandboxed: staged(calls, 1) });
+      assert.equal(r.status, 'agent_error'); assert.match(r.detail, /pilot budget/); assert.equal(calls.length, 0, `${arm}: no attempt started`);
+    }
+  });
+  test('the QB attempt limit must equal the frozen maximum (arm E: 3)', async () => {
+    const { f, run, spec } = env(); const calls = [];
+    const r = await runArm({ arm: 'E', spec, repoPath: f.repo.dir, run, agentTimeMs: BUDGET, noLlmContext: true, judgeCache: path.join(tmp, 'jc'),
+      agentProfile: profile({ max_attempts: 5 }), approvedAuthRoutes: [TEST_ROUTE], runSandboxed: staged(calls, 1) });
+    assert.equal(r.status, 'agent_error'); assert.match(r.detail, /attempt/); assert.equal(calls.length, 0);
+  });
   for (const arm of ['B', 'E']) {
     test(`arm ${arm}: three attempts share one 30-minute budget (deadlines 30, 20, 10 min), not 30 minutes each`, async () => {
       const { f, run, spec } = env(); const calls = []; const m = mockFetch(ollamaReply({ met: false, evidence: 'no', repair: 'fix' }));
