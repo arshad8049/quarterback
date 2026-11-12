@@ -1,0 +1,21 @@
+{
+  "schema": "qb-opus-pilot-config/1",
+  "frozen": false,
+  "frozen_by": null,
+  "_comment": "UNFROZEN. Budgets and stopping rules are placeholders (null) until KAN-112 freezes the protocol; live use is refused until then. claude_code_version null = not chosen (QB's agent image pins 2.1.288, the host has 2.1.322).",
+  "requested_model": "claude-opus-5-5",
+  "effort": null,
+  "claude_code_version": null,
+  "budgets": {
+    "wall_clock_s": null,
+    "max_turns": null,
+    "qb_retries_share_coding_budget": null,
+    "notes": "A subscription cannot enforce an API-dollar budget; only limits Claude Code or the runner can actually enforce belong here."
+  },
+  "stop_rules": {
+    "on_rate_limit": null,
+    "on_auth_failure": null,
+    "on_host_failure": null,
+    "max_qb_retries": null
+  }
+}
