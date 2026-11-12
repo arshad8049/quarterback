@@ -69,8 +69,22 @@ async function execute(briefing, contract, context, options = {}) {
  */
 async function runAgentSandboxed(briefing, repoPath, options = {}) {
   const run = options.runSandboxed || runSandboxed;
+  // KAN-113 pilot: preflight BEFORE any sandbox, credential copy or pre-run refresh call. The test-only route list is
+  // honoured only together with an injected sandbox stand-in, so production can never widen the approved routes.
+  const profile = options.agentProfile || null;
+  if (profile) {
+    const P = require('../lib/sandbox/agent-profile');
+    const { CLAUDE_VERSION } = require('../lib/sandbox/agent');
+    const approved = options.runSandboxed && Array.isArray(options.approvedAuthRoutes) ? options.approvedAuthRoutes : P.APPROVED_AUTH_ROUTES;
+    const errs = P.checkProfile(profile, { imagePin: CLAUDE_VERSION, approved });
+    if (errs.length) {
+      return { status: 'blocked', diff: null, changes: [], unsupported_changes: [], base_tree: null, candidate_tree: null, exit_code: null, signal: null,
+        stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot preflight: ${errs.join('; ')}`, sandbox: null };
+    }
+  }
   const r = await run({
     repoPath, briefing,
+    ...(profile ? { agentArgs: require('../lib/sandbox/agent-profile').buildAgentArgs(profile), agentStdoutMaxBytes: require('../lib/sandbox/agent-profile').AGENT_STDOUT_MAX_BYTES } : {}),
     deadlines: options.timeoutMs ? { agent: options.timeoutMs } : undefined,
     snapshotPaths: options.snapshotPaths,
     checks: options.checks,
@@ -78,12 +92,19 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
   });
   const { status, diff = null, changes = [], unsupported_changes = [], base_tree = null, candidate_tree = null,
     exit_code = null, signal = null, stderr_tail = null, sandbox = null, patch_raw = null, base_listing = null } = r;
-  return {
+  const out = {
     status, diff, changes, unsupported_changes, base_tree, candidate_tree, exit_code, signal, stderr_tail,
     patch_raw, base_listing,
     error: ['completed', 'no_change'].includes(status) ? null : (r.reason || r.error || status),
     sandbox,
   };
+  if (profile && ['completed', 'no_change'].includes(status)) {
+    // KAN-113: Claude Code's own report must show the requested model, the subscription route and no overage.
+    const v = require('../lib/sandbox/agent-profile').verifyStream(r.agent_stdout, profile);
+    out.agent_report = v.report;
+    if (!v.ok) { out.status = 'infra_error'; out.error = `pilot verification failed: ${v.reasons.join('; ')}`; }
+  }
+  return out;
 }
 
 /**

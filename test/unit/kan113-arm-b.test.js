@@ -115,7 +115,14 @@ describe('KAN-113 one shared 30-minute agent deadline across all attempts (froze
   const ORACLE = { approved_by: 'qb-test-oracle', goal: 'formatDuration should show 30,000 ms as 30s', required_behavior: ['formatDuration(30000) returns "30s"'],
     acceptance_criteria: [{ id: 'AC-1', criterion: 'formatDuration(30000) returns "30s"', kind: 'non_behavioral', requirement_ids: ['R-1'] }],
     requirements: [{ id: 'R-1', quote: 'formatDuration should show 30,000 ms as 30s' }], verification_plan: ['run the tests'], scope: { allowed_changes: ['**'] } };
-  const failing = { status: 'ran', state: 'execution_error', exit_code: 1, report: null, report_error: null, output: 'visible fail' };
+  // The same synthetic node:test report the QB-28 tests use (a failing visible test), so QB's verifier sees a real test failure
+  const report = [
+    { type: 'qb:start', format: 'qb-node-test-events/1' },
+    { type: 'test:fail', name: 'visible', nesting: 0, path: [], file: '/verify/test/a.test.js', kind: 'test', skip: false, todo: false, failureType: 'testCodeFailure', error: 'expected 30s' },
+    { type: 'test:summary', file: null, counts: { tests: 1, passed: 0, failed: 1, cancelled: 0, skipped: 0, todo: 0 }, success: false },
+    { type: 'qb:end' },
+  ].map((e) => JSON.stringify(e)).join('\n') + '\n';
+  const failing = { status: 'ran', state: 'execution_error', exit_code: 1, report, report_error: null, output: 'visible fail' };
   function env() {
     const f = gradingFixture(); fixtures.push(f);
     const run = runStore.createRun({ kind: 'bench-arm', request: 'x', repoPath: f.repo.dir, baseSha: f.repo.head(), runsDir: path.join(tmp, `runs-${fixtures.length}`) });

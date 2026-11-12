@@ -109,12 +109,12 @@ describe('KAN-113 pilot config (budgets and stop rules stay configurable until K
     assert.equal(c.budgets.coding_wall_clock_s, 1800); assert.equal(c.budgets.max_qb_attempts, 3);
     assert.deepEqual(checkPilotConfig(c, 'dry-run'), []);
   });
-  test('live use stays refused while any arm route is unverified (arm A smoke-tested, arm B unverified)', async () => {
+  test('live use stays refused while any arm route is unverified (both containerized arms are unverified; the Mac smoke is not the baseline)', async () => {
     const { checkPilotConfig } = await loadCfg(); const c = JSON.parse(fs.readFileSync(CFG, 'utf8'));
-    assert.equal(c.arm_routes.A.status, 'smoke-tested'); assert.equal(c.arm_routes.B.status, 'unverified');
-    const errs = checkPilotConfig(c, 'live');
-    assert.deepEqual(errs, ['arm B route is unverified: review and verify it before any paired trial']);
-    const verified = { ...c, arm_routes: { ...c.arm_routes, B: { ...c.arm_routes.B, status: 'smoke-tested' } } };
+    assert.equal(c.arm_routes.A.status, 'unverified'); assert.equal(c.arm_routes.B.status, 'unverified');
+    assert.match(c.arm_routes.A.evidence, /not the benchmark baseline/);
+    assert.deepEqual(checkPilotConfig(c, 'live'), ['arm A route is unverified: review and verify it before any paired trial', 'arm B route is unverified: review and verify it before any paired trial']);
+    const verified = { ...c, arm_routes: { A: { ...c.arm_routes.A, status: 'smoke-tested' }, B: { ...c.arm_routes.B, status: 'smoke-tested' } } };
     assert.deepEqual(checkPilotConfig(verified, 'live'), []);
   });
   test('an unfrozen copy is refused for live use', async () => {
@@ -161,7 +161,7 @@ describe('KAN-113 dry run: auth-free and non-inference', () => {
     assert.equal(plan.arms[0].claude_code_version, plan.arms[1].claude_code_version);
     assert.equal(plan.served_model, 'unverified: a dry run cannot observe which model serves a request');
     assert.equal(plan.config_frozen, true); assert.equal(plan.frozen_by, 10583);
-    assert.deepEqual(plan.arms.map((a) => a.route_status), ['smoke-tested', 'unverified']);
+    assert.deepEqual(plan.arms.map((a) => a.route_status), ['unverified', 'unverified']);
     const { validateTrialRecord } = await load(); assert.deepEqual(validateTrialRecord(sample), [], 'the sample record validates');
   });
   test('a credential or billing-override variable in the environment stops the dry run; the value is never printed', () => {

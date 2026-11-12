@@ -164,7 +164,7 @@ async function nativeArm(def, o) {
       : base;
     const t = Date.now();
     const r = await runAgentSandboxed(briefing, repoPath, { timeoutMs: remaining, runSandboxed: o.runSandboxed, signal: o.signal,
-      checks: [] });
+      checks: [], ...(o.agentProfile ? { agentProfile: o.agentProfile, approvedAuthRoutes: o.approvedAuthRoutes } : {}) });
     const spent = agentStageMs(r, Date.now() - t);   // debit the agent stage only (QB-28 re-review)
     agentMs += spent.ms;
     timing.push({ attempt, agent_stage_ms: spent.ms, basis: spent.basis, invocation_ms: Date.now() - t });
@@ -216,6 +216,7 @@ async function runArm(o) {
       contract, repoPath: o.repoPath, agent: 'claude-code', maxRetries: def.max_attempts, run: o.run, budgetRun: o.budgetRun,
       baseSha: o.baseSha ?? null, memory: mem, noLlmContext: Boolean(o.noLlmContext), judgeCache: o.judgeCache,
       agentTimeMs: o.agentTimeMs, runSandboxed: o.runSandboxed, deps: o.deps,
+      ...(o.agentProfile ? { agentProfile: o.agentProfile, approvedAuthRoutes: o.approvedAuthRoutes } : {}),
     });
     const memory = def.memory === 'on'
       ? { mode: 'on', store_sha256_before: copy.before, ...counts }

@@ -8,8 +8,16 @@
   "effort_note": "CLI default in both arms (no --effort), recorded per trial",
   "claude_code_version": "2.1.322",
   "arm_routes": {
-    "A": { "status": "smoke-tested", "route": "unmodified host claude, owner's own sign-in", "evidence": "bench/opus-pilot/evidence/smoke-2026-11-12.json (KAN-113 10582)" },
-    "B": { "status": "unverified", "route": "QB agent stage (qb-sandbox-agent image, Mode S credential volume)", "evidence": "review pending on KAN-113" }
+    "A": {
+      "status": "unverified",
+      "route": "plain Claude Code in the QB agent container (pilot profile)",
+      "evidence": "the Mac smoke (2026-11-12) verified account and model access only; it is not the benchmark baseline"
+    },
+    "B": {
+      "status": "unverified",
+      "route": "QB arm E pipeline in the QB agent container (pilot profile)",
+      "evidence": "sign-in route not approved; QB's stored-credential flow is not used for the pilot"
+    }
   },
   "budgets": {
     "coding_wall_clock_s": 1800,
@@ -27,5 +35,23 @@
     "on_preflight_failure": "refuse to start (version mismatch, credential or billing-override variable); not a trial",
     "paid_usage": "never; overage must be off",
     "reruns": "new attempt id, reviewer approval only, original retained"
+  },
+  "agent": {
+    "permission_mode": "dontAsk",
+    "allowed_tools": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash",
+      "TodoWrite"
+    ],
+    "disallowed_tools": [
+      "WebFetch",
+      "WebSearch"
+    ],
+    "auth_route": "unapproved",
+    "environment": "both arms: plain unmodified Claude Code in the same pinned QB agent container (image, repo snapshot, network policy, managed settings, deadline)"
   }
 }

@@ -10,4 +10,4 @@ until socat -u OPEN:/dev/null TCP:127.0.0.1:8888 2>/dev/null; do
   sleep 0.1
 done
 cd /work
-exec claude -p --dangerously-skip-permissions --output-format text "$@"
+exec claude -p "$@"

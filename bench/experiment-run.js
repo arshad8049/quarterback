@@ -140,6 +140,7 @@ async function runExperiment(expDir, o) {
       run = runStore.createRun({ kind: 'bench-arm', request: spec.prompt, repoPath: ws.dir, baseSha: ws.baseSha, agent: AGENT,
         config: { experiment_id: m.experiment_id, trial_id: p.trial_id, arm: p.arm, task_id: p.task_id }, runsDir: o.runsDir });
       out = await runArm({ arm: p.arm, spec, repoPath: ws.dir, run, budgetRun, baseSha: ws.baseSha, agentTimeMs: m.budget.agent_time_ms,
+        ...(agentProfileFromManifest(m) ? { agentProfile: agentProfileFromManifest(m) } : {}),
         memoryStart: ARMS[p.arm].memory === 'on' ? { store: o.memoryStart || null, sha256: m.memory.starting_store_sha256 } : null,
         runSandboxed: o.runSandboxed, deps: o.deps, signal: budgetRun.signal });
       // The run record keeps QB's own outcome (E/F) — the SCORE is the external grade below.
@@ -224,4 +225,10 @@ async function main(argv) {
 
 if (require.main === module) main(process.argv).catch((e) => { console.error(`experiment-run: ${e.message}`); process.exit(1); });
 
-module.exports = { runExperiment, taskEntries, armDefinitions, trialUsage, parseShard, taskShards, configPaths };
+/** KAN-113: the pilot agent profile pinned in the manifest's config (same profile for every arm), or null. */
+function agentProfileFromManifest(m) {
+  const p = m && m.config && m.config.agent_profile;
+  return p && typeof p === 'object' ? p : null;
+}
+
+module.exports = { runExperiment, taskEntries, armDefinitions, trialUsage, parseShard, taskShards, configPaths, agentProfileFromManifest };
