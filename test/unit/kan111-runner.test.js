@@ -132,6 +132,41 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
     const r = run({ manifestCorrupt: { gold: true } });
     assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /manifest/);
   });
+  test('review 10568: an exactly-empty submitted patch is excluded before any container (no docker calls, never graded)', () => {
+    const d = setup({}); const calls = path.join(d, 'fake-calls.txt');
+    const r = spawnSync(process.execPath, [GRADE, '--execute', '--approved-by=FIXTURE', '--reps=1', '--fixture-timeout=1', `--out=${path.join(d, 'out')}`], {
+      encoding: 'utf8', timeout: 60_000,
+      env: { ...process.env, ...tripwire(d), QB_KAN111_FIXTURE: path.join(d, 'fixture.json'), QB_KAN111_DOCKER: path.join(FX, 'fake-docker.js'), SWEBENCH_PYTHON: process.execPath,
+        QB_KAN111_GRADER: path.join(FX, 'fake-grader.js'), FAKE_DOCKER_SCENARIO: path.join(d, 'scenario.json'), FAKE_BASE: 'base' } });
+    const summary = JSON.parse(fs.readFileSync(path.join(d, 'out', 'summary.json'), 'utf8'));
+    const log = fs.readFileSync(calls, 'utf8'); fs.rmSync(d, { recursive: true, force: true });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const x = byLabel(summary, 'iso-empty-patch-file');
+    assert.equal(x.outcome, 'empty_patch_excluded'); assert.equal(x.grade, undefined); assert.equal(x.expectation_met, true);
+    assert.deepEqual(x.steps, [], 'no docker step recorded for the excluded run');
+    assert.doesNotMatch(log, /iso-empty-patch-file/, 'the fake docker was never called for the excluded run');
+    assert.match(log, /iso-patch-conflict/, 'the conflict control still runs in a container');
+    assert.equal(byLabel(summary, 'empty').outcome, 'graded', 'the intentional no-candidate baseline is unaffected');
+  });
+  test('review 10568: only an exactly-empty string is excluded (harness rule); whitespace-only and the no-candidate baseline are not', async () => {
+    const { harnessExcludesPatch } = await import(GRADE);
+    assert.equal(harnessExcludesPatch(''), true);
+    for (const p of [' ', '\n', ' \n\t', 'diff --git a/x b/x\n', null, undefined]) assert.equal(harnessExcludesPatch(p), false, JSON.stringify(p));
+  });
+  test('review 10568: per-run log diagnostics are recorded (counts and booleans only) without changing grading', () => {
+    const r = run({ jqMissing: { gold: true }, resultsOutside: { gold: true } });
+    assert.equal(r.status, 0, r.stderr + r.stdout);
+    const g = byLabel(r.summary, 'gold'); const e = byLabel(r.summary, 'empty');
+    assert.equal(g.outcome, 'graded'); assert.equal(g.expectation_met, true, 'diagnostics never change the outcome');
+    assert.deepEqual(Object.keys(g.log_diag).sort(), ['command_not_found', 'end_marker', 'jq_available', 'jq_error', 'output_capture', 'section_result_lines', 'start_marker', 'whole_log_result_lines']);
+    assert.equal(g.log_diag.jq_available, false); assert.equal(e.log_diag.jq_available, true);
+    assert.equal(g.log_diag.start_marker, true); assert.equal(g.log_diag.end_marker, true);
+    assert.equal(g.log_diag.section_result_lines, 0); assert.equal(g.log_diag.whole_log_result_lines, 2, 'result lines outside the markers are counted separately');
+    assert.equal(e.log_diag.whole_log_result_lines, 0);
+    assert.equal(g.log_diag.output_capture, 'stdout_then_stderr');
+    assert.equal(g.grade.log_gate, 'ok');
+    assert.ok(g.steps.some((s) => /jq availability/.test(s.step)), 'the jq probe is a recorded step');
+  });
   test('review 10557: a manifest whose entry count differs from the printed FILES is an infrastructure error', () => {
     const r = run({ manifestFilesOff: { gold: 1 } });
     assert.equal(r.status, 1); assert.equal(byLabel(r.summary, 'gold').outcome, 'infra_error'); assert.match(byLabel(r.summary, 'gold').infra_step, /count/);

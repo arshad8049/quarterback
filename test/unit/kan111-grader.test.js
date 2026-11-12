@@ -82,7 +82,9 @@ const STUB = {
     'def get_logs_eval(spec, fp):',
     '    c = open(fp).read()',
     '    if START_TEST_OUTPUT not in c or END_TEST_OUTPUT not in c: return {}, False',
-    '    return parse_log_immutable_js(c.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0], spec), True',
+    '    sm = parse_log_immutable_js(c.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0], spec)',
+    '    if not sm: sm = parse_log_immutable_js(c, spec)   # pinned grading.py @02e7a74: falls back to the whole log',
+    '    return sm, True',
     'def get_eval_tests_report(sm, gold):',
     '    ok = lambda n: sm.get(n) == "PASSED"',
     '    return {"FAIL_TO_PASS": {"success": [n for n in gold["FAIL_TO_PASS"] if ok(n)], "failure": [n for n in gold["FAIL_TO_PASS"] if not ok(n)]},',
@@ -122,6 +124,15 @@ describe('KAN-111 strict grading checks (QB additions; harness stubbed)', { skip
     assert.deepEqual(out.strict.required.FAIL_TO_PASS.rows.map((r) => r.strict), ['failed']);
     assert.deepEqual(out.strict.required.PASS_TO_PASS.rows.map((r) => r.strict), ['passed', 'skipped']);
     assert.equal(out.strict.required.PASS_TO_PASS.rows[1].parsed_status, null, 'the official parser has no entry for it');
+  });
+  test('review 10568 diagnostics: results printed outside the markers are counted separately, and the official map size is reported', () => {
+    // Shape of the failed 2005 runs: the official parser finds results via its whole-log fallback; the strict view reads only the section
+    const log = `QBX_ENV_BEGIN\nCI=<unset>\nQBX_ENV_END\n>>>>> Start Test Output\n>>>>> End Test Output\n[PASSED] OrderedMap > a\n[FAILED] OrderedSet > f\n`;
+    const out = grade('immutable-js__immutable-js-2005', log, { FAIL_TO_PASS: ['OrderedSet > f'], PASS_TO_PASS: ['OrderedMap > a'] }, 'empty');
+    assert.deepEqual(out.diagnostics, { start_marker: true, end_marker: true, section_result_lines: 0, whole_log_result_lines: 2, official_status_map_entries: 2 });
+    assert.equal(out.official.resolution, 'RESOLVED_NO', 'the official path found the results via its fallback');
+    assert.deepEqual(out.strict.required.PASS_TO_PASS.rows.map((r) => r.strict), ['missing'], 'the strict view is unchanged in rev 6 (diagnostics only); this documents the divergence');
+    assert.ok(!JSON.stringify(out.diagnostics).includes('Ordered'), 'diagnostics carry counts, not names');
   });
   test('malformed report (no End marker): the log gate fails and nothing counts as present', () => {
     const out = grade('immutable-js__immutable-js-2006', '>>>>> Start Test Output\n  ✓ alpha (3 ms)\n(truncated', { FAIL_TO_PASS: ['alpha'], PASS_TO_PASS: [] });

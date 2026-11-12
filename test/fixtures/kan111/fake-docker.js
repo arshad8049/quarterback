@@ -9,7 +9,9 @@ const sc = JSON.parse(fs.readFileSync(process.env.FAKE_DOCKER_SCENARIO, 'utf8'))
 if (!sc.apply) sc.apply = { 'iso-patch-conflict': 1, 'iso-empty-patch-file': 1, default: 0 };
 if (!sc.evalSleep) sc.evalSleep = { 'iso-timeout-fixture': 5, default: 0 };
 const [cmd, ...rest] = process.argv.slice(2);
-if (process.env.FAKE_DOCKER_CALLS) fs.appendFileSync(process.env.FAKE_DOCKER_CALLS, `${cmd}\n`);
+// Each call is logged with its container name (review 10568: prove an excluded run made no docker calls)
+const callName = (rest.find((a) => /^kan111-/.test(a)) || '').split(':')[0];
+if (process.env.FAKE_DOCKER_CALLS) fs.appendFileSync(process.env.FAKE_DOCKER_CALLS, `${cmd} ${callName}\n`);
 const nameArg = (rest.find((a) => /^kan111-/.test(a)) || '');
 const m = /^kan111-(\d+)-(.+)-(\d+)-[a-z0-9]+(?::|$)/.exec(nameArg); const label = m ? m[2] : '';
 const pick = (o, d) => (!o ? d : o[label] !== undefined ? o[label] : o.default !== undefined ? o.default : d);
@@ -38,6 +40,7 @@ if (sh === 'git rev-parse HEAD') { process.stdout.write(process.env.FAKE_BASE ||
 if (/^test "\$\(git rev-parse HEAD\)"/.test(sh)) process.exit(pick(sc.baseCheck, 0));
 if (/^git apply --check --reverse/.test(sh)) { process.stderr.write('error: patch does not apply'); process.exit(1); }
 if (/^(git apply|patch )/.test(sh)) { const code = pick(sc.apply, 0); if (code) process.stderr.write('error: patch failed'); process.exit(code); }
+if (sh === 'command -v jq') process.exit(pick(sc.jqMissing, false) ? 1 : 0);
 if (/^grep -c /.test(sh)) { process.stdout.write(String(pick(sc.markerBefore, 1))); process.exit(0); }
 if (/qbx-boundary\.sh start/.test(sh)) { process.stdout.write(`QBX_START_SHA256=${H('start')}\nQBX_START_FILES=2\nQBX_START_MARKER_COUNT=0\nQBX_START_NODE_MODULES_SHA256=${nm('start')}\n`); process.exit(0); }
 if (/qbx-boundary\.sh final/.test(sh)) { process.stdout.write(`QBX_FINAL_SHA256=${H(`${H('base')}  ./__tests__/Range.ts\n`)}\nQBX_FINAL_FILES=1\nQBX_FINAL_MARKER_COUNT=0\nQBX_FINAL_NODE_MODULES_SHA256=${nm('final')}\n`); process.exit(0); }
@@ -50,7 +53,7 @@ if (rest.includes('/grade-wrapper.sh')) {
   else if (ec === 98) body = 'QBX boundary helper failed\n';
   else {
     const tm = testedManifest();
-    body = `QBX_TESTED_SHA256=${sha(tm)}\nQBX_TESTED_FILES=${tm.trim().split('\n').length + Number(pick(sc.manifestFilesOff, 0))}\nQBX_TESTED_MARKER_COUNT=${pick(sc.markerTested, 0)}\nQBX_TESTED_NODE_MODULES_SHA256=${nm('tested')}\n>>>>> Start Test Output\nok\n>>>>> End Test Output\n`;
+    body = `QBX_TESTED_SHA256=${sha(tm)}\nQBX_TESTED_FILES=${tm.trim().split('\n').length + Number(pick(sc.manifestFilesOff, 0))}\nQBX_TESTED_MARKER_COUNT=${pick(sc.markerTested, 0)}\nQBX_TESTED_NODE_MODULES_SHA256=${nm('tested')}\n>>>>> Start Test Output\nok\n>>>>> End Test Output\n${pick(sc.resultsOutside, false) ? '[PASSED] fixture suite > a\n[FAILED] fixture suite > b\n' : ''}`;
   }
   process.stdout.write(`QBX_ENV_BEGIN\nCI=<unset>\nQBX_ENV_END\n${body}QBX_EVAL_EXIT=${printed}\n`);
   process.exit(ec);
