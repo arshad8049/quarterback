@@ -38,6 +38,8 @@ export const H = { user: 'root', workdir: '/testbed', patchFile: '/tmp/patch.dif
 export const TAMPER_MARKER = '// KAN-111 tamper marker: a candidate edit to a hidden test file must be reverted by the grader';
 export const BUILD_GATE_EXIT = 97;
 export const BOUNDARY_EXIT = 98;
+export const EVAL_CMD = 'bash /grade-wrapper.sh /eval.sh 2>&1';   // review 10570: one stream, arrival order
+export const OUTPUT_CAPTURE = 'combined_in_container';
 // Review 10568: the pinned harness drops predictions whose model_patch is exactly "" (or None) before any container
 // (run_evaluation.py get_dataset_from_preds, lines 627-639). A submitted empty string is excluded the same way. The
 // intentional no-candidate baseline (patchText null) is NOT a submission, and whitespace-only patches go through apply.
@@ -49,7 +51,7 @@ export function logDiagnostics(text, jqAvailable) {
   const count = (t) => t.split('\n').filter((l) => RESULT_LINE.test(l.trim())).length;
   const section = text.includes(S) && text.includes(E) ? text.split(S)[1].split(E)[0] : '';
   return { jq_available: jqAvailable, start_marker: text.includes(S), end_marker: text.includes(E), section_result_lines: count(section), whole_log_result_lines: count(text),
-    command_not_found: /command not found/.test(text), jq_error: /^jq: error/m.test(text), output_capture: 'stdout_then_stderr' };
+    command_not_found: /command not found/.test(text), jq_error: /^jq: error/m.test(text), output_capture: OUTPUT_CAPTURE };
 }
 
 /** Eval script per variant. A0 = official verbatim. A1 = only the `npm run build` line replaced by the gated
@@ -192,7 +194,10 @@ export function main() {
       must('copy wrapper', ['docker', 'cp', path.join(HERE, 'grade-wrapper.sh'), `${name}:/grade-wrapper.sh`]);
       const jq = rec_('jq availability: command -v jq', ex('command -v jq'));   // diagnostic only (review 10568)
       const t0 = Date.now();
-      const r = run(['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '/grade-wrapper.sh', '/eval.sh'], { timeout: timeoutS * 1000, killSignal: 'SIGKILL' });
+      // Review 10570: the harness reads the evaluator's output as ONE stream in arrival order (exec_start(stream=True),
+      // not demultiplexed). Merge stderr into stdout at the evaluator process boundary, inside the container, so the
+      // capture keeps that order; bash -c returns the wrapper's exit status, and the host-side timeout is unchanged.
+      const r = run(['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', EVAL_CMD], { timeout: timeoutS * 1000, killSignal: 'SIGKILL' });
       rec.wall_s = (Date.now() - t0) / 1000; rec.eval_exit = r.status; rec.timed_out = r.signal === 'SIGKILL' || /ETIMEDOUT/.test(r.error || '');
       const captured = (r.stdout || '') + (r.stderr ? `\n${r.stderr}` : '');
       if (EXECUTE) fs.writeFileSync(path.join(dir, 'test_output.txt'), captured + (rec.timed_out ? `\n\nTimeout error: ${timeoutS} seconds exceeded.` : ''));

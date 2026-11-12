@@ -11,7 +11,7 @@ docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "git -c co
 docker cp <run-dir>/eval.sh kan111-2005-empty-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-empty-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-empty-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -29,7 +29,7 @@ docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "git -c cor
 docker cp <run-dir>/eval.sh kan111-2005-gold-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-gold-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-gold-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -45,7 +45,7 @@ docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "git -c co
 docker cp <run-dir>/eval.sh kan111-2005-empty-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-2-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-empty-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-empty-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -63,7 +63,7 @@ docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "git -c cor
 docker cp <run-dir>/eval.sh kan111-2005-gold-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-2-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-gold-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-gold-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -79,7 +79,7 @@ docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "git -c co
 docker cp <run-dir>/eval.sh kan111-2005-empty-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-empty-3-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-empty-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-empty-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -97,7 +97,7 @@ docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "git -c cor
 docker cp <run-dir>/eval.sh kan111-2005-gold-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-gold-3-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-gold-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-gold-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -122,7 +122,7 @@ docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bas
 docker cp <run-dir>/eval.sh kan111-2005-iso-test-file-tamper-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-test-file-tamper-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-iso-test-file-tamper-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-iso-test-file-tamper-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -140,7 +140,7 @@ docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash 
 docker cp <run-dir>/eval.sh kan111-2005-iso-patch-conflict-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-patch-conflict-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-iso-patch-conflict-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-iso-patch-conflict-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -156,7 +156,7 @@ docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash
 docker cp <run-dir>/eval.sh kan111-2005-iso-timeout-fixture-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2005-iso-timeout-fixture-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2005-iso-timeout-fixture-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2005-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2005-iso-timeout-fixture-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -173,7 +173,7 @@ docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "git -c co
 docker cp <run-dir>/eval.sh kan111-2006-empty-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-empty-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-empty-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -191,7 +191,7 @@ docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "git -c cor
 docker cp <run-dir>/eval.sh kan111-2006-gold-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-gold-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-gold-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -207,7 +207,7 @@ docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "git -c co
 docker cp <run-dir>/eval.sh kan111-2006-empty-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-2-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-empty-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-empty-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -225,7 +225,7 @@ docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "git -c cor
 docker cp <run-dir>/eval.sh kan111-2006-gold-2-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-2-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-gold-2-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-2-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-gold-2-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -241,7 +241,7 @@ docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "git -c co
 docker cp <run-dir>/eval.sh kan111-2006-empty-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-empty-3-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-empty-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-empty-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-empty-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -259,7 +259,7 @@ docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "git -c cor
 docker cp <run-dir>/eval.sh kan111-2006-gold-3-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-gold-3-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-gold-3-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-gold-3-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-gold-3-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -284,7 +284,7 @@ docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bas
 docker cp <run-dir>/eval.sh kan111-2006-iso-test-file-tamper-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-test-file-tamper-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-iso-test-file-tamper-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-test-file-tamper-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-iso-test-file-tamper-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -302,7 +302,7 @@ docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash 
 docker cp <run-dir>/eval.sh kan111-2006-iso-patch-conflict-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-patch-conflict-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-iso-patch-conflict-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-patch-conflict-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-iso-patch-conflict-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt
@@ -318,7 +318,7 @@ docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash
 docker cp <run-dir>/eval.sh kan111-2006-iso-timeout-fixture-1-plan:/eval.sh
 docker cp <grader>/grade-wrapper.sh kan111-2006-iso-timeout-fixture-1-plan:/grade-wrapper.sh
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "command -v jq"
-docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash /grade-wrapper.sh /eval.sh
+docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "bash /grade-wrapper.sh /eval.sh 2>&1"
 docker cp kan111-2006-iso-timeout-fixture-1-plan:/tmp/qbx-tested.txt <run-dir>/tested-tree.txt
 docker exec -w /testbed -u root kan111-2006-iso-timeout-fixture-1-plan /bin/bash -c "bash /qbx-boundary.sh final"
 docker cp kan111-2006-iso-timeout-fixture-1-plan:/tmp/qbx-final.txt <run-dir>/final-tree.txt

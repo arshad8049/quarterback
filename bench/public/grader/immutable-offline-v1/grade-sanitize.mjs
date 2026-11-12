@@ -49,7 +49,7 @@ function checkDiag(r, i) {
   const d = r.log_diag;
   if (d !== undefined && d !== null) {
     const keys = Object.keys(d).sort(); const want = [...DIAG_BOOL, ...DIAG_INT, 'output_capture'].sort();
-    if (JSON.stringify(keys) !== JSON.stringify(want) || !DIAG_BOOL.every((k) => typeof d[k] === 'boolean') || !DIAG_INT.every((k) => isCount(d[k])) || d.output_capture !== 'stdout_then_stderr')
+    if (JSON.stringify(keys) !== JSON.stringify(want) || !DIAG_BOOL.every((k) => typeof d[k] === 'boolean') || !DIAG_INT.every((k) => isCount(d[k])) || d.output_capture !== 'combined_in_container')
       throw new Refuse('invalid_diagnostics', `run ${i}: log_diag is not the expected counts and booleans`);
   }
   const g = r.grade;

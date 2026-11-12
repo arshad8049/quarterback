@@ -1,4 +1,4 @@
-# KAN-111: exact offline grader `immutable-offline-v1`, revision 6 (for review; only the approved lock phase has run)
+# KAN-111: exact offline grader `immutable-offline-v1`, revision 7 (for review; only the approved lock phase has run)
 
 Revision 3 answers KAN-111 review 10554 and correction 10555. Revision 2 answered review 10551, which builds on KAN-110 reviews 10545 and 10549. It covers immutable-js tasks **2005** and **2006** only.
 
@@ -272,6 +272,19 @@ The grade artifact allowlist gains `install-provenance.json`.
 - The diagnostics above will confirm or refute this. Capturing the output combined (`2>&1` inside the container) and mirroring the fallback in the strict view are candidate fixes, deliberately **not** made in revision 6.
 
 **Proposed CI change (inactive file only):** sanitize exit 0 → `published=full`; exit 3 → `published=fallback` plus an error annotation; anything else → step failure. Upload runs only when something was published (`fallback.json` added to the paths). The final step fails the job if grading failed **or** only the fallback was published. `plan-A1.txt` is now 324 commands for 20 runs. The active `.github/workflows/kan111-grade.yml` is unchanged; its one-run approval is spent.
+
+## Revision 7: review 10570, combined capture (red first in `c3b3234`)
+- **Change:** the eval wrapper now runs as `docker exec … /bin/bash -c 'bash /grade-wrapper.sh /eval.sh 2>&1'`. stderr is merged into stdout at the evaluator process boundary, inside the container, so the capture keeps arrival order like the harness's single stream.
+  - `bash -c` returns the wrapper's exit status, so `QBX_EVAL_EXIT` is still checked against it; the host-side timeout (SIGKILL) is unchanged.
+  - `log_diag.output_capture` is now `combined_in_container`; the sanitizer refuses any other value.
+- **Unchanged:** the strict view stays marker-scoped (no whole-log fallback). No change to test assertions, images, parsers, expectations or scoring.
+- **Fixture:** `splitStreams` puts the markers on stderr and the results on stdout, merged only when the command combines them in the container.
+- **Tests:**
+  - the runner's section counts are 2/2 for empty and gold, the exit statuses (1 and 0) survive, and the timeout is unchanged;
+  - the fixture without the merge reproduces 0 results in the section;
+  - grading through `grade_report.py` is accepted when merged, and `missing` (not accepted) when not;
+  - the sanitizer refuses the retired value.
+- **Status:** the 2005 explanation is plausible, not yet confirmed by a real run. `plan-A1.txt` is 324 commands for 20 runs.
 
 ## Incident: an unintended local execution attempt (disclosed, 2026-11-10)
 
