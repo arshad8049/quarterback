@@ -17,10 +17,22 @@ claude doctor                                        # installation health; make
 3. **In any Claude Code session:** `/status` shows the plan and the remaining allocation. Record it before the pilot.
 4. **No overrides in the shell:** `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_BASE_URL` and the Bedrock/Vertex/Foundry switches must stay unset. The dry run enforces this. Checked unset on this Mac on 2026-11-12.
 
+## 2b. Owner decisions (2026-11-12, recorded on KAN-113)
+- **Auth:** the owner uses his own Claude subscription and treats the questions in the Anthropic inquiry as approved for this early-stage testing. The inquiry is **not sent**.
+- **Billing:** no usage credits. Only the 5-hour and weekly plan limits apply, so there is no paid fallback. Confirmed by the smoke: `isUsingOverage: false`, `overageStatus: rejected` (`out_of_credits`).
+- **`qb-claude-auth` volume:** kept (minimal loss); QB's own runs use it.
+
 ## 3. Facts recorded on 2026-11-12 (`claude doctor`, `claude --help`)
 - **Host Claude Code:** 2.1.322, native install. Auto-updates are **enabled** (channel `latest`). The last update attempt failed (`install_failed`). QB's agent image pins **2.1.288**.
 - **Version parity:** both arms must run one version, frozen in KAN-112. During the pilot the host must not auto-update (`DISABLE_AUTOUPDATER=1` for every trial process, as `plan.json` already sets). Record `claude --version` before each trial.
 - **Account type:** remote managed settings are not fetched ("requires an Enterprise or Team subscription"), and organization policy is not applicable (individual plan).
+
+**Live route verified (one owner-approved smoke call, `evidence/smoke-2026-11-12.json`):**
+- The owner's existing sign-in on the unmodified host `claude` 2.1.322 served `--model claude-opus-5-5`. Every report agrees: `system/init.model`, each `assistant.message.model`, and `result.modelUsage` (`canonicalModel`).
+- `apiKeySource: none`, `provider: firstParty`.
+- Token usage is reported (input, output, cache read and write, thinking).
+- `costUSD` is labelled `costBasis: list`, so it's recorded only as an estimate.
+- `bench/opus-pilot/extract.mjs` turns this output into the audit fields.
 
 ## 4. Limits we can actually enforce, and ones we can't
 | Limit | Mechanism | Status |
@@ -36,7 +48,14 @@ claude doctor                                        # installation health; make
 
 All budget values stay `null` in `pilot-config.json` until KAN-112 freezes them. Live use is refused until then.
 
-## 5. Live trials: BLOCKED
+## 5. Live trials: gated by KAN-112, not by auth
+**Auth route (owner decision):**
+- **Arm A:** the unmodified host `claude`, signed in by the owner (verified above).
+- **Arm B:** QB's agent stage. Its current subscription mode stores and copies the credential, plus a pre-run refresh call; the owner accepts that for this testing. The refresh call is recorded as auxiliary usage.
+
+**Remaining gates:** KAN-112 frozen (`pilot-config.json` `frozen: true`, `frozen_by` set, one Claude Code version for both arms) and a run approval.
+
+### Previous gate list (superseded by the owner decision above)
 **Gates (all required):**
 1. Anthropic's written answer that option A is permitted (inquiry: `docs/research/kan113-anthropic-inquiry.md`);
 2. the reviewer's approval of the auth route;

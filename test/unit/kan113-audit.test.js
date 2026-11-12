@@ -36,6 +36,7 @@ function record(over = {}) {
     usage: { input_tokens: U('not exposed'), output_tokens: U('not exposed'), cache_read_tokens: U('not exposed'), cache_write_tokens: U('not exposed'), reasoning_tokens: U('not exposed') },
     auxiliary_usage: [],
     human_events: [{ at: '2026-11-13T00:00:00Z', kind: 'setup', minutes: 3 }],
+    billing_route: { api_key_source: 'none', provider: 'firstParty', is_using_overage: false, overage_status: 'rejected' },
     ...over,
   };
 }
@@ -158,5 +159,46 @@ describe('KAN-113 dry run: auth-free and non-inference', () => {
   test('a configured Claude Code version that differs from the QB agent image pin stops the dry run', () => {
     const { r, called } = setup({}, { claude_code_version: '0.0.1' });
     assert.equal(r.status, 1); assert.match(r.stderr, /version/); assert.equal(called, false);
+  });
+});
+
+// Shape of Claude Code 2.1.322 `-p --output-format stream-json --verbose` output (field names observed in the
+// 2026-11-12 owner-approved smoke; values here are synthetic)
+const STREAM = [
+  { type: 'system', subtype: 'init', model: 'claude-opus-5-5', apiKeySource: 'none', claude_code_version: '2.1.322', session_id: 'fixture' },
+  { type: 'assistant', message: { model: 'claude-opus-5-5', usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 30, cache_creation_input_tokens: 40 } } },
+  { type: 'rate_limit_event', rate_limit_info: { status: 'allowed', rateLimitType: 'five_hour', isUsingOverage: false, overageStatus: 'rejected', overageDisabledReason: 'out_of_credits' } },
+  { type: 'result', subtype: 'success', is_error: false, num_turns: 1, total_cost_usd: 0.11, usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 30, cache_creation_input_tokens: 40 },
+    modelUsage: { 'claude-opus-5-5': { canonicalModel: 'claude-opus-5-5', provider: 'firstParty', costBasis: 'list', costUSD: 0.11, thinkingTokens: 5, inputTokens: 10, outputTokens: 20 } } },
+].map((x) => JSON.stringify(x)).join('\n') + '\n';
+
+describe('KAN-113 extraction from Claude Code stream-json (owner-approved route, 10582)', () => {
+  test('served model, usage, billing route and a labelled cost estimate come from Claude Code\'s own output', async () => {
+    const { fromStreamJson } = await import(path.join(DIR, 'extract.mjs'));
+    const x = fromStreamJson(STREAM);
+    assert.equal(x.model.served, 'claude-opus-5-5');
+    assert.deepEqual(x.usage, { input_tokens: 10, output_tokens: 20, cache_read_tokens: 30, cache_write_tokens: 40, reasoning_tokens: 5 });
+    assert.deepEqual(x.billing_route, { api_key_source: 'none', provider: 'firstParty', is_using_overage: false, overage_status: 'rejected' });
+    assert.deepEqual(x.estimates, { api_equivalent_usd: { value: 0.11, label: 'estimate', basis: 'Claude Code costUSD at list price (costBasis=list); not a subscription charge' } });
+    const { validateTrialRecord } = await load();
+    assert.deepEqual(validateTrialRecord(record({ model: { requested: 'claude-opus-5-5', served: x.model.served }, usage: x.usage, billing_route: x.billing_route, estimates: x.estimates })), []);
+  });
+  test('disagreeing model reports are not resolved silently: served becomes unobservable with the reason', async () => {
+    const { fromStreamJson } = await import(path.join(DIR, 'extract.mjs'));
+    const x = fromStreamJson(STREAM.replace('"message":{"model":"claude-opus-5-5"', '"message":{"model":"claude-sonnet-5-5"'));
+    assert.match(x.model.served.unobservable, /disagree/);
+  });
+  test('fields Claude Code does not report are marked unavailable, never invented', async () => {
+    const { fromStreamJson } = await import(path.join(DIR, 'extract.mjs'));
+    const x = fromStreamJson(JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 3 } }) + '\n');
+    assert.equal(x.usage.input_tokens, 3);
+    assert.deepEqual(x.usage.output_tokens, { unavailable: 'not reported by Claude Code' });
+    assert.ok(x.model.served.unobservable);
+    assert.deepEqual(x.billing_route.api_key_source, { unavailable: 'not reported by Claude Code' });
+  });
+  test('an API key or overage in the billing route fails validation (no paid fallback)', async () => {
+    const { validateTrialRecord } = await load();
+    assert.ok(validateTrialRecord(record({ billing_route: { api_key_source: 'ANTHROPIC_API_KEY', provider: 'firstParty', is_using_overage: false, overage_status: 'rejected' } })).some((e) => /billing_route.api_key_source/.test(e)));
+    assert.ok(validateTrialRecord(record({ billing_route: { api_key_source: 'none', provider: 'firstParty', is_using_overage: true, overage_status: 'allowed' } })).some((e) => /overage/.test(e)));
   });
 });

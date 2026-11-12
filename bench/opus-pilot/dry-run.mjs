@@ -76,6 +76,7 @@ function main(argv) {
     qb_verdict: null, independent_score: 'INVALID_MEASUREMENT', interruption: { reason: 'none', detail_sha256: null },
     model: { requested: cfg.requested_model, served: { unobservable: 'dry run: no request was made' } },
     usage: Object.fromEntries(USAGE_FIELDS.map((f) => [f, unavailable])), auxiliary_usage: [], human_events: [],
+    billing_route: { api_key_source: unavailable, provider: unavailable, is_using_overage: unavailable, overage_status: unavailable },
   };
   const verrs = validateTrialRecord(sample);
   if (verrs.length) { console.error(`dry run failed: the sample record does not validate:\n  ${verrs.join('\n  ')}`); return 1; }

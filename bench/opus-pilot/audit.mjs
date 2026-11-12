@@ -17,7 +17,7 @@ export const QB_VERDICTS = ['approved', 'rejected', 'abstained', 'blocked'];
 export const HUMAN_EVENTS = ['contract_authoring', 'contract_approval', 'setup', 'sign_in', 'clarification', 'correction', 'review'];
 export const USAGE_FIELDS = ['input_tokens', 'output_tokens', 'cache_read_tokens', 'cache_write_tokens', 'reasoning_tokens'];
 const TOP = ['schema', 'trial_id', 'pair_id', 'arm', 'order_in_pair', 'task', 'versions', 'config', 'environment', 'prompts', 'transcript', 'timing',
-  'attempts', 'test_output', 'qb_verdict', 'independent_score', 'interruption', 'model', 'usage', 'auxiliary_usage', 'human_events', 'estimates'];
+  'attempts', 'test_output', 'qb_verdict', 'independent_score', 'interruption', 'model', 'usage', 'auxiliary_usage', 'human_events', 'estimates', 'billing_route'];
 // Credential-like content. Matched against the whole serialized record; errors name the pattern, never the match.
 const SECRETS = [
   ['an Anthropic key/token prefix', /sk-ant-/], ['a Bearer token', /Bearer\s+[A-Za-z0-9._~+/-]{10,}/], ['an OAuth credential blob', /claudeAiOauth/],
@@ -105,6 +105,19 @@ export function validateTrialRecord(r, { forbidden = [] } = {}) {
   if (!nonEmpty(m.requested)) errs.push('model.requested is required');
   if (!(nonEmpty(m.served) || (isObj(m.served) && nonEmpty(m.served.unobservable)))) errs.push('model.served must be the served model id, or { unobservable: "<reason>" }');
 
+  // Billing route (owner decision 10582: subscription only, no paid fallback). From Claude Code's own output:
+  // apiKeySource must be "none" and overage must not be in use; fields Claude Code did not report are marked unavailable.
+  const b = r.billing_route;
+  const na = (v) => isObj(v) && nonEmpty(v.unavailable);
+  if (!isObj(b)) errs.push('billing_route is required');
+  else {
+    for (const k of Object.keys(b)) if (!['api_key_source', 'provider', 'is_using_overage', 'overage_status'].includes(k)) errs.push(`billing_route: unknown field ${k}`);
+    if (!(b.api_key_source === 'none' || na(b.api_key_source))) errs.push('billing_route.api_key_source must be "none" (subscription, no API key)');
+    if (!(nonEmpty(b.provider) || na(b.provider))) errs.push('billing_route.provider must be a provider name or unavailable');
+    if (b.is_using_overage === true) errs.push('billing_route: overage (paid usage) was in use; the pilot allows no paid fallback');
+    else if (!(b.is_using_overage === false || na(b.is_using_overage))) errs.push('billing_route.is_using_overage must be false or unavailable');
+    if (!(nonEmpty(b.overage_status) || na(b.overage_status))) errs.push('billing_route.overage_status must be a status or unavailable');
+  }
   usageErrors(r.usage, 'usage', errs);
   if (!Array.isArray(r.auxiliary_usage)) errs.push('auxiliary_usage must be a list (empty if none)');
   else r.auxiliary_usage.forEach((a, i) => {

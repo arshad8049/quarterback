@@ -1,0 +1,73 @@
+{
+  "schema": "qb-opus-pilot-smoke/1",
+  "what": "One owner-approved live call to verify the auth/model route (KAN-113, owner decision 2026-11-12). Not a pilot trial; no task material.",
+  "when_utc": {
+    "start": "2026-11-12T19:44:05Z",
+    "end": "2026-11-12T19:44:11Z"
+  },
+  "command": "DISABLE_AUTOUPDATER=1 claude -p \"Reply with exactly: OK\" --model claude-opus-5-5 --output-format stream-json --verbose --no-session-persistence --strict-mcp-config --disallowed-tools \"Bash Edit Write WebFetch WebSearch\"  (empty temp dir, owner's existing Claude Code sign-in, no override variables set)",
+  "exit_code": 0,
+  "result_text": "OK",
+  "extracted_by": "bench/opus-pilot/extract.mjs",
+  "extracted": {
+    "model": {
+      "requested": "claude-opus-5-5",
+      "served": "claude-opus-5-5"
+    },
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 4,
+      "cache_read_tokens": 8711,
+      "cache_write_tokens": 13764,
+      "reasoning_tokens": 0
+    },
+    "billing_route": {
+      "api_key_source": "none",
+      "provider": "firstParty",
+      "is_using_overage": false,
+      "overage_status": "rejected"
+    },
+    "claude_code_version": "2.1.322",
+    "num_turns": 1,
+    "is_error": false,
+    "rate_limit_type": "five_hour",
+    "estimates": {
+      "api_equivalent_usd": {
+        "value": 0.1119422,
+        "label": "estimate",
+        "basis": "Claude Code costUSD at list price (costBasis=list); not a subscription charge"
+      }
+    }
+  },
+  "rate_limit_event": {
+    "status": "allowed",
+    "rateLimitType": "five_hour",
+    "isUsingOverage": false,
+    "overageStatus": "rejected",
+    "overageDisabledReason": "out_of_credits",
+    "windows": [
+      "five_hour",
+      "seven_day"
+    ]
+  },
+  "observed_fields": {
+    "served_model": [
+      "system/init.model",
+      "assistant.message.model (per response)",
+      "result.modelUsage keys and .canonicalModel"
+    ],
+    "usage": [
+      "result.usage.{input_tokens, output_tokens, cache_read_input_tokens, cache_creation_input_tokens}",
+      "result.modelUsage[*].thinkingTokens"
+    ],
+    "billing": [
+      "system/init.apiKeySource",
+      "result.modelUsage[*].provider",
+      "rate_limit_event.rate_limit_info.{isUsingOverage, overageStatus}"
+    ],
+    "cost": [
+      "result.total_cost_usd and modelUsage[*].costUSD with costBasis=list (API list-price estimate, not a charge)"
+    ]
+  },
+  "not_kept": "raw stream (session id, local paths, credential expiry timestamp) was not stored"
+}
