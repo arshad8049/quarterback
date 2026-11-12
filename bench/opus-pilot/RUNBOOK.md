@@ -48,12 +48,23 @@ claude doctor                                        # installation health; make
 
 All budget values stay `null` in `pilot-config.json` until KAN-112 freezes them. Live use is refused until then.
 
-## 5. Live trials: gated by KAN-112, not by auth
+## 4b. Frozen parameters (KAN-112 comment 10583)
+- **Version:** Claude Code **2.1.322** in both arms, checked per trial. QB's image is re-pinned to it but not yet rebuilt.
+- **Model and effort:** `--model claude-opus-5-5` in both arms; effort is the CLI default.
+- **Budgets:** coding wall-clock **1,800 s** per arm per trial. QB: max **3** attempts, sharing those 1,800 s. Turns and token/dollar caps are not enforced (recorded only).
+- **Stop rules:** a rate limit, auth failure or host failure → stop, record `INFRA_INTERRUPTION`, no automatic retry. Budget reached → grade the existing patch. Preflight failure → refuse to start. Never paid usage. Reruns only with approval, originals kept.
+
+## 4c. Arm status
+- **Arm A:** **smoke-tested** (host `claude` 2.1.322, the owner's sign-in; `evidence/smoke-2026-11-12.json`).
+- **Arm B:** **unverified**. See `docs/research/kan113-arm-b-route-review.md` for the exact QB route and its gaps (no `--model`, text output, permission mode, environment parity, refresh call, image not rebuilt).
+- `checkPilotConfig(…, 'live')` refuses while any arm is unverified.
+
+## 5. Live trials: gated by arm B verification and a run approval
 **Auth route (owner decision):**
 - **Arm A:** the unmodified host `claude`, signed in by the owner (verified above).
 - **Arm B:** QB's agent stage. Its current subscription mode stores and copies the credential, plus a pre-run refresh call; the owner accepts that for this testing. The refresh call is recorded as auxiliary usage.
 
-**Remaining gates:** KAN-112 frozen (`pilot-config.json` `frozen: true`, `frozen_by` set, one Claude Code version for both arms) and a run approval.
+**Remaining gates:** arm B verified (review document above) and a reviewer-approved paired trial. KAN-112 freeze: done (10583).
 
 ### Previous gate list (superseded by the owner decision above)
 **Gates (all required):**

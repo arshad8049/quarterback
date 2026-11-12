@@ -27,6 +27,9 @@ export function checkPilotConfig(c, mode) {
     if (typeof c.claude_code_version !== 'string' || !/^\d+\.\d+\.\d+$/.test(c.claude_code_version)) errs.push('claude_code_version must be set to the one version both arms use');
     for (const [k, v] of Object.entries(c.budgets || {})) if (k !== 'notes' && (v === null || v === undefined)) errs.push(`budgets.${k} is unset`);
     for (const [k, v] of Object.entries(c.stop_rules || {})) if (v === null || v === undefined) errs.push(`stop_rules.${k} is unset`);
+    // A paired trial needs every arm's route verified (KAN-113: arm A smoke-tested, arm B unverified)
+    for (const [arm, r] of Object.entries(c.arm_routes || {})) if (!r || r.status === 'unverified') errs.push(`arm ${arm} route is unverified: review and verify it before any paired trial`);
+    if (!c.arm_routes || !c.arm_routes.A || !c.arm_routes.B) errs.push('arm_routes must describe arms A and B');
   }
   return errs;
 }

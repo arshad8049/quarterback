@@ -48,16 +48,16 @@ function main(argv) {
   const version = cfg.claude_code_version || pin;
   const argvA = plannedArgv(cfg);
   const plan = {
-    schema: 'qb-opus-pilot-dry-run/1', executed_nothing: true, config_frozen: cfg.frozen,
+    schema: 'qb-opus-pilot-dry-run/1', executed_nothing: true, config_frozen: cfg.frozen, frozen_by: cfg.frozen_by,
     config_sha256: sha(fs.readFileSync(opt.config)),
     claude_code_version: { used_for_plan: version, source: cfg.claude_code_version ? 'config' : 'QB agent image pin (config unset)', image_pin: pin },
     requested_model: cfg.requested_model,
     served_model: 'unverified: a dry run cannot observe which model serves a request',
-    auth_route: 'BLOCKED pending Anthropic clarification on option A (KAN-113 10579); no credential is provided to either arm in this plan',
+    auth_route: 'owner decision (KAN-113 10582): arm A = host claude on the owner sign-in (smoke-tested); arm B = QB Mode S (unverified). The dry run provides no credential to either arm',
     budgets: cfg.budgets, stop_rules: cfg.stop_rules,
     arms: [
-      { arm: 'A', launcher: 'unmodified Claude Code CLI', claude_code_version: version, argv: argvA, env: { DISABLE_AUTOUPDATER: '1' }, executed: false },
-      { arm: 'B', launcher: 'QB agent stage (unmodified Claude Code CLI in the QB container)', claude_code_version: version, argv: argvA,
+      { arm: 'A', route_status: (cfg.arm_routes && cfg.arm_routes.A && cfg.arm_routes.A.status) || 'unknown', launcher: 'unmodified Claude Code CLI', claude_code_version: version, argv: argvA, env: { DISABLE_AUTOUPDATER: '1' }, executed: false },
+      { arm: 'B', route_status: (cfg.arm_routes && cfg.arm_routes.B && cfg.arm_routes.B.status) || 'unknown', launcher: 'QB agent stage (unmodified Claude Code CLI in the QB container)', claude_code_version: version, argv: argvA,
         env: { HOME: '/tmp/home', CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1', DISABLE_AUTOUPDATER: '1', DISABLE_TELEMETRY: '1', DISABLE_ERROR_REPORTING: '1' }, executed: false },
     ],
   };

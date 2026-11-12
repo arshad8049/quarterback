@@ -1,21 +1,31 @@
 {
   "schema": "qb-opus-pilot-config/1",
-  "frozen": false,
-  "frozen_by": null,
-  "_comment": "UNFROZEN. Budgets and stopping rules are placeholders (null) until KAN-112 freezes the protocol; live use is refused until then. claude_code_version null = not chosen (QB's agent image pins 2.1.288, the host has 2.1.322).",
+  "frozen": true,
+  "frozen_by": 10583,
+  "_comment": "FROZEN by KAN-112 comment 10583 (2026-11-12): CLI version, budgets and stopping rules only. Not a paired-trial approval: arm B is unverified.",
   "requested_model": "claude-opus-5-5",
   "effort": null,
-  "claude_code_version": null,
+  "effort_note": "CLI default in both arms (no --effort), recorded per trial",
+  "claude_code_version": "2.1.322",
+  "arm_routes": {
+    "A": { "status": "smoke-tested", "route": "unmodified host claude, owner's own sign-in", "evidence": "bench/opus-pilot/evidence/smoke-2026-11-12.json (KAN-113 10582)" },
+    "B": { "status": "unverified", "route": "QB agent stage (qb-sandbox-agent image, Mode S credential volume)", "evidence": "review pending on KAN-113" }
+  },
   "budgets": {
-    "wall_clock_s": null,
-    "max_turns": null,
-    "qb_retries_share_coding_budget": null,
-    "notes": "A subscription cannot enforce an API-dollar budget; only limits Claude Code or the runner can actually enforce belong here."
+    "coding_wall_clock_s": 1800,
+    "max_qb_attempts": 3,
+    "qb_attempts_share_coding_budget": true,
+    "max_turns": "not_enforced",
+    "usage_or_dollar_cap": "not_enforced",
+    "notes": "Arm A: claude -p killed at 1800 s. Arm B: QB total agent time across all attempts capped at 1800 s (agentTimeMs). QB non-agent stages use QB's stage deadlines and are reported separately."
   },
   "stop_rules": {
-    "on_rate_limit": null,
-    "on_auth_failure": null,
-    "on_host_failure": null,
-    "max_qb_retries": null
+    "on_rate_limit": "stop; INFRA_INTERRUPTION/rate_limit; no automatic retry",
+    "on_auth_failure": "stop; INFRA_INTERRUPTION/auth; no retry; never switch account or provider",
+    "on_host_failure": "stop; INFRA_INTERRUPTION/host; no retry",
+    "on_budget_reached": "stop; grade the existing patch; none = NO_USABLE_PATCH",
+    "on_preflight_failure": "refuse to start (version mismatch, credential or billing-override variable); not a trial",
+    "paid_usage": "never; overage must be off",
+    "reruns": "new attempt id, reviewer approval only, original retained"
   }
 }
