@@ -44,7 +44,9 @@ if (sh === 'command -v jq') process.exit(pick(sc.jqMissing, false) ? 1 : 0);
 if (/^grep -c /.test(sh)) { process.stdout.write(String(pick(sc.markerBefore, 1))); process.exit(0); }
 if (/qbx-boundary\.sh start/.test(sh)) { process.stdout.write(`QBX_START_SHA256=${H('start')}\nQBX_START_FILES=2\nQBX_START_MARKER_COUNT=0\nQBX_START_NODE_MODULES_SHA256=${nm('start')}\n`); process.exit(0); }
 if (/qbx-boundary\.sh final/.test(sh)) { process.stdout.write(`QBX_FINAL_SHA256=${H(`${H('base')}  ./__tests__/Range.ts\n`)}\nQBX_FINAL_FILES=1\nQBX_FINAL_MARKER_COUNT=0\nQBX_FINAL_NODE_MODULES_SHA256=${nm('final')}\n`); process.exit(0); }
-if (rest.includes('/grade-wrapper.sh')) {
+if (rest.some((a) => a.includes('/grade-wrapper.sh'))) {
+  // Review 10570: the eval wrapper's two streams are merged in arrival order only when the command combines them in the container
+  const combined = /2>&1/.test(sh);
   const sleep = pick(sc.evalSleep, 0); if (sleep) { const end = Date.now() + sleep * 1000; while (Date.now() < end) { /* busy wait so a SIGKILL is the only way out */ } }
   const ec = pick(sc.evalExit, label === 'empty' ? 1 : 0);
   const printed = pick(sc.evalExitPrinted, ec);
@@ -54,6 +56,16 @@ if (rest.includes('/grade-wrapper.sh')) {
   else {
     const tm = testedManifest();
     body = `QBX_TESTED_SHA256=${sha(tm)}\nQBX_TESTED_FILES=${tm.trim().split('\n').length + Number(pick(sc.manifestFilesOff, 0))}\nQBX_TESTED_MARKER_COUNT=${pick(sc.markerTested, 0)}\nQBX_TESTED_NODE_MODULES_SHA256=${nm('tested')}\n>>>>> Start Test Output\nok\n>>>>> End Test Output\n${pick(sc.resultsOutside, false) ? '[PASSED] fixture suite > a\n[FAILED] fixture suite > b\n' : ''}`;
+  }
+  if (pick(sc.splitStreams, false) && ec !== 97 && ec !== 98) {
+    // set -x writes the markers to stderr; the jq-transformed results go to stdout (the 2005 shape)
+    const tm = testedManifest();
+    const head = `QBX_ENV_BEGIN\nCI=<unset>\nQBX_ENV_END\nQBX_TESTED_SHA256=${sha(tm)}\nQBX_TESTED_FILES=${tm.trim().split('\n').length}\nQBX_TESTED_MARKER_COUNT=0\nQBX_TESTED_NODE_MODULES_SHA256=${nm('tested')}\n`;
+    const events = [['err', "+ : '>>>>> Start Test Output'\n"], ['out', '[PASSED] fixture suite > a\n'], ['out', '[FAILED] fixture suite > b\n'], ['err', "+ : '>>>>> End Test Output'\n"]];
+    let out = head, err = '';
+    for (const [k, t] of events) if (combined || k === 'out') out += t; else err += t;
+    process.stdout.write(`${out}QBX_EVAL_EXIT=${printed}\n`); if (err) process.stderr.write(err);
+    process.exit(ec);
   }
   process.stdout.write(`QBX_ENV_BEGIN\nCI=<unset>\nQBX_ENV_END\n${body}QBX_EVAL_EXIT=${printed}\n`);
   process.exit(ec);

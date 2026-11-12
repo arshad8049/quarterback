@@ -163,9 +163,34 @@ describe('KAN-111 runner gates (fake docker and grader; no real execution)', () 
     assert.equal(g.log_diag.start_marker, true); assert.equal(g.log_diag.end_marker, true);
     assert.equal(g.log_diag.section_result_lines, 0); assert.equal(g.log_diag.whole_log_result_lines, 2, 'result lines outside the markers are counted separately');
     assert.equal(e.log_diag.whole_log_result_lines, 0);
-    assert.equal(g.log_diag.output_capture, 'stdout_then_stderr');
+    assert.equal(g.log_diag.output_capture, 'combined_in_container');
     assert.equal(g.grade.log_gate, 'ok');
     assert.ok(g.steps.some((s) => /jq availability/.test(s.step)), 'the jq probe is a recorded step');
+  });
+  test('review 10570: markers on stderr and results on stdout are captured in arrival order (stderr merged into stdout in the container)', () => {
+    const r = run({ splitStreams: { default: true } });
+    assert.equal(r.status, 0, r.stderr + r.stdout);
+    for (const label of ['empty', 'gold']) {
+      const x = byLabel(r.summary, label);
+      assert.equal(x.outcome, 'graded', label);
+      assert.equal(x.log_diag.output_capture, 'combined_in_container');
+      assert.equal(x.log_diag.start_marker, true); assert.equal(x.log_diag.end_marker, true);
+      assert.equal(x.log_diag.section_result_lines, 2, `${label}: both result lines fall inside the markers`);
+      assert.equal(x.log_diag.whole_log_result_lines, 2);
+    }
+    assert.equal(byLabel(r.summary, 'empty').eval_exit, 1, 'the eval exit status survives the merge (fixture empty runs exit 1)');
+    assert.equal(byLabel(r.summary, 'gold').eval_exit, 0);
+    assert.equal(byLabel(r.summary, 'iso-timeout-fixture').outcome, 'timeout', 'timeout handling is unchanged');
+  });
+  test('review 10570: the split-stream fixture reproduces the failure when the streams are NOT merged (models run 42914501341)', () => {
+    const d = setup({ splitStreams: { default: true } });
+    const a = spawnSync(process.execPath, [path.join(FX, 'fake-docker.js'), 'exec', '-w', '/testbed', '-u', 'root', 'kan111-2006-gold-1-abc', '/bin/bash', '/grade-wrapper.sh', '/eval.sh'], { encoding: 'utf8', env: { ...process.env, FAKE_DOCKER_SCENARIO: path.join(d, 'scenario.json') } });
+    const b = spawnSync(process.execPath, [path.join(FX, 'fake-docker.js'), 'exec', '-w', '/testbed', '-u', 'root', 'kan111-2006-gold-1-abc', '/bin/bash', '-c', 'bash /grade-wrapper.sh /eval.sh 2>&1'], { encoding: 'utf8', env: { ...process.env, FAKE_DOCKER_SCENARIO: path.join(d, 'scenario.json') } });
+    fs.rmSync(d, { recursive: true, force: true });
+    const sec = (t) => (t.includes('>>>>> Start Test Output') && t.includes('>>>>> End Test Output') ? t.split('>>>>> Start Test Output')[1].split('>>>>> End Test Output')[0] : '');
+    assert.equal((sec(a.stdout + '\n' + a.stderr).match(/^\[(PASSED|FAILED)\]/mg) || []).length, 0, 'stdout-then-stderr: no results inside the markers');
+    assert.equal((sec(b.stdout).match(/^\[(PASSED|FAILED)\]/mg) || []).length, 2, 'merged in arrival order: both results inside the markers');
+    assert.equal(b.stderr, '');
   });
   test('review 10557: a manifest whose entry count differs from the printed FILES is an infrastructure error', () => {
     const r = run({ manifestFilesOff: { gold: 1 } });

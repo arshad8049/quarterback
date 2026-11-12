@@ -134,6 +134,20 @@ describe('KAN-111 strict grading checks (QB additions; harness stubbed)', { skip
     assert.deepEqual(out.strict.required.PASS_TO_PASS.rows.map((r) => r.strict), ['missing'], 'the strict view is unchanged in rev 6 (diagnostics only); this documents the divergence');
     assert.ok(!JSON.stringify(out.diagnostics).includes('Ordered'), 'diagnostics carry counts, not names');
   });
+  test('review 10570: strict grading of the 2005 shape is correct when the streams are merged, and blind when they are not', () => {
+    const FXD = path.join(__dirname, '..', 'fixtures', 'kan111');
+    const sc = path.join(os.tmpdir(), `kan111-split-${process.pid}.json`); fs.writeFileSync(sc, JSON.stringify({ splitStreams: { default: true } }));
+    const fake = (cmd) => spawnSync(process.execPath, [path.join(FXD, 'fake-docker.js'), 'exec', '-w', '/testbed', '-u', 'root', 'kan111-2005-empty-1-abc', '/bin/bash', ...cmd], { encoding: 'utf8', env: { ...process.env, FAKE_DOCKER_SCENARIO: sc } });
+    const merged = fake(['-c', 'bash /grade-wrapper.sh /eval.sh 2>&1']); const separate = fake(['/grade-wrapper.sh', '/eval.sh']); fs.rmSync(sc);
+    const req = { FAIL_TO_PASS: ['fixture suite > b'], PASS_TO_PASS: ['fixture suite > a'] };
+    const ok = grade('immutable-js__immutable-js-2005', merged.stdout, req, 'empty');
+    assert.deepEqual(ok.strict.required.FAIL_TO_PASS.rows.map((r) => r.strict), ['failed']);
+    assert.deepEqual(ok.strict.required.PASS_TO_PASS.rows.map((r) => r.strict), ['passed']);
+    assert.equal(ok.acceptance.accepted, true); assert.equal(ok.diagnostics.section_result_lines, 2);
+    const blind = grade('immutable-js__immutable-js-2005', separate.stdout + '\n' + separate.stderr, req, 'empty');
+    assert.deepEqual(blind.strict.required.PASS_TO_PASS.rows.map((r) => r.strict), ['missing'], 'strict stays marker-scoped: no whole-log fallback');
+    assert.equal(blind.acceptance.accepted, false);
+  });
   test('malformed report (no End marker): the log gate fails and nothing counts as present', () => {
     const out = grade('immutable-js__immutable-js-2006', '>>>>> Start Test Output\n  ✓ alpha (3 ms)\n(truncated', { FAIL_TO_PASS: ['alpha'], PASS_TO_PASS: [] });
     assert.match(out.official.log_gate, /failed/);

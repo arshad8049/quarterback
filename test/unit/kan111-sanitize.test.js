@@ -190,7 +190,7 @@ describe('KAN-111 grade-sanitize.mjs: pinned scope and fallback (review 10568)',
     });
   }
   test('log diagnostics pass through the full report only as validated counts and booleans', () => {
-    const diag = { jq_available: false, start_marker: true, end_marker: true, section_result_lines: 0, whole_log_result_lines: 44, command_not_found: false, jq_error: false, output_capture: 'stdout_then_stderr' };
+    const diag = { jq_available: false, start_marker: true, end_marker: true, section_result_lines: 0, whole_log_result_lines: 44, command_not_found: false, jq_error: false, output_capture: 'combined_in_container' };
     const ok = realMode({ runOver: { log_diag: diag, grade: { mode: 'empty', accepted: false, official: 'RESOLVED_NO', log_gate: 'ok', official_status_map_entries: 44, strict_raw_result_lines: 0, reasons: [] } } });
     assert.equal(goReal(ok).status, 0);
     const j = JSON.parse(fs.readFileSync(path.join(ok, 'pub', 'results.json'), 'utf8'));
@@ -199,5 +199,14 @@ describe('KAN-111 grade-sanitize.mjs: pinned scope and fallback (review 10568)',
     const bad = realMode({ runOver: { log_diag: { ...diag, whole_log_result_lines: 'many', extra: 'x' } } }); const r = goReal(bad);
     assert.equal(r.status, 3); assert.deepEqual(JSON.parse(fs.readFileSync(path.join(bad, 'pub', 'fallback.json'), 'utf8')).refusal, [{ code: 'invalid_diagnostics' }]);
     fs.rmSync(bad, { recursive: true, force: true });
+  });
+});
+
+describe('KAN-111 grade-sanitize.mjs: capture mode schema (review 10570)', () => {
+  test('the retired capture value stdout_then_stderr is refused as invalid diagnostics', () => {
+    const diag = { jq_available: true, start_marker: true, end_marker: true, section_result_lines: 2, whole_log_result_lines: 2, command_not_found: false, jq_error: false, output_capture: 'stdout_then_stderr' };
+    const d = realMode({ runOver: { log_diag: diag } }); const r = goReal(d);
+    assert.equal(r.status, 3); assert.deepEqual(JSON.parse(fs.readFileSync(path.join(d, 'pub', 'fallback.json'), 'utf8')).refusal, [{ code: 'invalid_diagnostics' }]);
+    fs.rmSync(d, { recursive: true, force: true });
   });
 });
