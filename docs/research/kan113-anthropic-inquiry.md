@@ -1,5 +1,7 @@
 # DRAFT inquiry to Anthropic (KAN-113, option C). NOT SENT.
 
+Also saved as a Gmail draft in Arshad's mailbox on 2026-11-12, with no recipient set. Arshad adds the address, or uses the support.claude.com form, and sends.
+
 Status: draft for Arshad. It is sent only with Arshad's authorization, through a channel Arshad chooses (for example the support form on support.claude.com). Nothing here contains a credential.
 
 ---
