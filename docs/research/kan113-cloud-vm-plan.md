@@ -39,7 +39,7 @@ Both are general-purpose x86 instances with on-demand billing per second or minu
 - **Teardown:** destroy the VM after the pilot, or keep it stopped. Evidence (sanitized artifacts) is copied off first.
 
 ## 5. Not suitable
-- **GitHub Actions runners** (used for KAN-111 grading): no interactive TTY for sign-in, and a subscription sign-in must not live in CI.
+- **GitHub Actions runners** (used for KAN-111 grading): no interactive TTY, so our *current interactive design* can't run there unattended. **Corrected (10595/10596):** a different documented route exists (the official GitHub integration with `claude setup-token`), and it needs review; see `kan113-auth-route-comparison.md`. **Superseded by 10596:** host qualification now runs on the free GitHub runner first, and AWS/Azure is a fallback only.
 - **The owner's Mac:** the owner asked to avoid the strain, and it fails admission.
 
 ## 6. Steps (each billable step needs the owner's go-ahead)

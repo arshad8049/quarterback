@@ -1,0 +1,171 @@
+{
+  "kan": "KAN-113",
+  "review": "10596",
+  "commit": "138eb0713f3528bfb27b000aed1a4f36aa9f79f8",
+  "at": "2026-11-13T18:31:45.226Z",
+  "model_calls": 0,
+  "credentials_used": "none",
+  "host": {
+    "arch": "x86_64",
+    "kernel": "7.0.0-1017-azure",
+    "os": "Ubuntu 24.04.5 LTS",
+    "runner_image": "ubuntu24 20261101.360.1",
+    "cpus": 4,
+    "mem_total_bytes": 16760348672,
+    "mem_available_bytes": 15666626560,
+    "docker": "28.0.4",
+    "docker_root": "/var/lib/docker",
+    "disk_free_bytes_root": 92031692800,
+    "disk_free_bytes_docker": 90025336832,
+    "node": "v22.23.4",
+    "disk_free_bytes_after": 90025336832,
+    "disk_free_bytes_end": 90022572032
+  },
+  "images": {
+    "tools": "sha256:6bceaa0c499128a11beaa76f8c0463baada04cc1ed4c274b4cf01c6b476fe1ac",
+    "proxy": "sha256:70fbc2ac4680c01e4726a7d90081724aad8d91d96fdcfb18ee5747eaa46d89c7",
+    "agent": "sha256:4a395d8615bb52f96d8ccd03b2039329ef911967bc69fd1353372df4730b502a",
+    "agent_tag": "qb-sandbox-agent:c-6e9312968a31b7b8",
+    "agent_cli_version": "2.1.322 (Claude Code)",
+    "fake_cli": "sha256:f0a4106d5f9220d7bbc2ee8b95c94c6c6189ba93ad4dd304eda38115c0aef6d1",
+    "fake_cli_tag": "qb-kan113-fake-cli:qualify"
+  },
+  "admission": {
+    "ok": true,
+    "reason": null,
+    "memory_checked": true,
+    "peak_bytes": 9808065332,
+    "mem_available_bytes": 15299891200
+  },
+  "pipeline": {
+    "status": "completed",
+    "reason": "exit 0",
+    "run_id": "qb-mwfbdp80-1ec318",
+    "admission": {
+      "memory_checked": true,
+      "peak": 9808065332,
+      "mem_available": 15313395712
+    },
+    "credential_mode": "none",
+    "classification": "verified",
+    "classification_reasons": [],
+    "fake_marker": true,
+    "changes": [
+      "QB_FAKE_AGENT_CHANGE.txt"
+    ],
+    "duration_ms": 12615,
+    "fake_change_captured": true,
+    "leftovers_removed": true
+  },
+  "cleanup": {
+    "normal": true,
+    "refusal": true,
+    "timeout": true,
+    "cancellation": true,
+    "crash": true
+  },
+  "cleanup_detail": {
+    "normal": {
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 42
+    },
+    "refusal": {
+      "pilot_outcome": "preflight_refused",
+      "error": "pilot preflight: pilot profile: auth route \"unapproved\" is not approved for the pilot (QB's stored-credential flow is never used)",
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 42
+    },
+    "timeout": {
+      "status": "timeout",
+      "reason": "stage deadline",
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 42
+    },
+    "cancellation": {
+      "status": "cancelled",
+      "reason": "cancelled: qualification cancel",
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 42
+    },
+    "crash": {
+      "agent_started_before_kill": true,
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 38874
+    }
+  },
+  "isolation": {
+    "bash_normal_mode_blocks_dummy": false,
+    "file_tools_enforced": false,
+    "file_tools_detail": "the Read/Edit/Write/Glob/Grep tools run in the CLI process outside the Bash sandbox; their deny rules (incl. symlink-resolved paths) can only be exercised by a model turn, which this approval excludes",
+    "bash_detail": "bwrap: No permissions to create new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>. | rc=1"
+  },
+  "evaluation": {
+    "passed": false,
+    "first_blocker": {
+      "gate": "isolation",
+      "problems": [
+        "Bash sandbox (normal mode) did not block the dummy credential: bwrap: No permissions to create new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>. | rc=1",
+        "file-tool and resolved-path enforcement not shown: the Read/Edit/Write/Glob/Grep tools run in the CLI process outside the Bash sandbox; their deny rules (incl. symlink-resolved paths) can only be exercised by a model turn, which this approval excludes"
+      ]
+    },
+    "gates": [
+      {
+        "gate": "host",
+        "status": "passed"
+      },
+      {
+        "gate": "disk",
+        "status": "passed"
+      },
+      {
+        "gate": "admission",
+        "status": "passed"
+      },
+      {
+        "gate": "images",
+        "status": "passed"
+      },
+      {
+        "gate": "pipeline",
+        "status": "passed"
+      },
+      {
+        "gate": "cleanup",
+        "status": "passed"
+      },
+      {
+        "gate": "isolation",
+        "status": "failed",
+        "problems": [
+          "Bash sandbox (normal mode) did not block the dummy credential: bwrap: No permissions to create new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>. | rc=1",
+          "file-tool and resolved-path enforcement not shown: the Read/Edit/Write/Glob/Grep tools run in the CLI process outside the Bash sandbox; their deny rules (incl. symlink-resolved paths) can only be exercised by a model turn, which this approval excludes"
+        ]
+      }
+    ]
+  }
+}
