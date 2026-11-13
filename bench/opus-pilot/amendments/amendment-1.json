@@ -1,0 +1,51 @@
+{
+  "schema": "qb-opus-pilot-amendment/1",
+  "amendment": 1,
+  "amends": "bench/opus-pilot/pilot-config.json",
+  "base_sha256": "c5ef88e57af8e04e76d2cb35c578d3b194cd297a5e2ffd78244471a2c58fba08",
+  "base_commit": "2f683ac01ddef32f97db72c0af31dfd76b29e012",
+  "approved_by": 10599,
+  "references": [10583, 10586],
+  "_comment": "KAN-112 10599: engineering caps for the next version. The frozen base (10583) is not rewritten. Not a live-trial approval; sampling and the remaining protocol sections are not approved here.",
+  "time": {
+    "coding_s": 1800,
+    "sign_in_max_s": 600,
+    "trial_total_s": 5400,
+    "total_starts_at": "arm_trial_start_before_first_setup_or_sign_in",
+    "total_covers": "every stage: setup, sign-in, deps, agent, capture, verify, grading inside the trial",
+    "every_stage_capped_by_remaining_total": true,
+    "cleanup_runs_after_deadline": true,
+    "preparation_outside_trial": "recorded separately (preparation_ms); not on the trial clock"
+  },
+  "attempts": { "A": 1, "E": 3 },
+  "outcomes": {
+    "execution_verified": "execution evidence verified (model, CLI, billing route); NOT task solved and NOT tests passed",
+    "incomplete_evidence": "some execution evidence missing, truncated or malformed; missing billing evidence is unknown, never free",
+    "usage_limit": "429 or a rate-limit window not allowed; stop, no retry",
+    "coding_timeout": "the shared 1,800 s coding budget ran out; the safely captured patch is graded under 10583",
+    "auth_timeout": "the 10-min sign-in window (or the remaining total) expired during sign-in",
+    "infra_interruption": "an actual host or network failure (kind + stage recorded)",
+    "pipeline_total_timeout": "the 90-min arm-trial total ran out during ordinary QB/setup/verification work (stage recorded); a workflow-budget outcome, not an infrastructure failure",
+    "policy_violation": "wrong served model, non-subscription key source, non-first-party provider, or overage on any event",
+    "preflight_refused": "refused before any sandbox; not an executed trial, but the slot stays visible"
+  },
+  "precedence": ["policy_violation", "usage_limit", "auth_timeout", "infra_interruption", "pipeline_total_timeout", "coding_timeout", "incomplete_evidence", "execution_verified"],
+  "flags": "all categories that applied are kept in flags[]; precedence only picks the primary label",
+  "grader_outcome": "a separate field, filled only by the independent grader",
+  "patch_use": { "coding_timeout": "grade_under_10583", "execution_verified": "grade_under_10583", "other_interruptions": "diagnostic_only (never a valid completed trial)" },
+  "billing_evidence_sufficient": [
+    "api_key_source_none",
+    "at_least_one_rate_limit_event",
+    "every_event_overage_false_boolean",
+    "provider_first_party_every_model",
+    "no_model_other_than_requested"
+  ],
+  "accounting": {
+    "keep_every_assigned_slot": true,
+    "report_separately": ["assigned", "refused", "executed", "interrupted", "execution_valid_pairs", "by_outcome", "reruns"],
+    "execution_valid_for_pairing": ["execution_verified", "coding_timeout"],
+    "reruns": "separate approval id required; the original slot is retained"
+  },
+  "effort_reported_separately_per_arm": ["coding_ms", "total_elapsed_ms", "preparation_ms", "human_ms.sign_in", "human_ms.contract_authoring", "human_ms.other"],
+  "scope_note": "contracts are preapproved after L1, so the pilot does not measure end-to-end automatic checklist generation"
+}
