@@ -84,7 +84,7 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
   }
   const r = await run({
     repoPath, briefing,
-    ...(profile ? { agentArgs: require('../lib/sandbox/agent-profile').buildAgentArgs(profile), agentStdoutMaxBytes: require('../lib/sandbox/agent-profile').AGENT_STDOUT_MAX_BYTES } : {}),
+    ...(profile ? { requireMemoryCheck: true, agentArgs: require('../lib/sandbox/agent-profile').buildAgentArgs(profile), agentStdoutMaxBytes: require('../lib/sandbox/agent-profile').AGENT_STDOUT_MAX_BYTES } : {}),
     deadlines: options.timeoutMs ? { agent: options.timeoutMs } : undefined,
     snapshotPaths: options.snapshotPaths,
     checks: options.checks,

@@ -1,0 +1,41 @@
+# KAN-113 10596: owner-triggered host qualification on a FREE GitHub-hosted runner (public repo).
+# No secrets, no model calls, no credentials: the agent CLI is a fake (bench/opus-pilot/host/fake-cli).
+# Trigger: the owner edits bench/opus-pilot/host/run-request.txt on kan113-runner-prep and pushes.
+name: kan113-host-qualify
+on:
+  push:
+    branches: [kan113-runner-prep]
+    paths: [bench/opus-pilot/host/run-request.txt]
+permissions:
+  contents: read
+concurrency: { group: kan113-host-qualify, cancel-in-progress: false }
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      QB_INTEGRATION: '0'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install
+        run: |
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - name: Unit tests
+        run: npm run test:ci
+      - name: Host qualification (fake CLI, no model)
+        run: node bench/opus-pilot/host/qualify.mjs --out host-report.json
+      - name: Show report
+        if: always()
+        run: cat host-report.json || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: kan113-host-report
+          path: |
+            host-report.json
+            unit.tap
+          retention-days: 30
