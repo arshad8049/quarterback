@@ -80,7 +80,7 @@ describe('KAN-113 10596: the fake CLI used for the no-model pipeline', () => {
     const r = spawnSync('sh', [FAKE, '-p', ...P.buildAgentArgs(profile())], { cwd: d, input: 'qualification task\n', encoding: 'utf8', env: { PATH: process.env.PATH } });
     assert.equal(r.status, 0, r.stderr);
     assert.ok(fs.existsSync(path.join(d, 'QB_FAKE_AGENT_CHANGE.txt')));
-    const c = P.classifyAttempt({ stdout: r.stdout }, profile());
+    const c = P.classifyAttempt({ stdout: r.stdout }, profile(), { allowSynthetic: true });
     assert.equal(c.outcome, 'verified', c.reasons.join('; '));
     assert.match(r.stdout, /"qb_fake_cli":true/);
     fs.rmSync(d, { recursive: true, force: true });

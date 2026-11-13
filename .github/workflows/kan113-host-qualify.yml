@@ -39,3 +39,46 @@ jobs:
             host-report.json
             unit.tap
           retention-days: 30
+
+  # KAN-113 10600 §2: Option B WIRING test only. The pinned official action runs with a RECORDING fake CLI and a
+  # synthetic value generated in this job (not a repository secret). No real authentication, no provider call
+  # (Anthropic hosts sinkholed + unreachable base URL), read-only token, no repository writes.
+  option-b-wiring:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Synthetic dummy value and fail-closed network for Anthropic hosts
+        run: |
+          echo "QB_OPTION_B_DUMMY=QB-DUMMY-NOT-A-TOKEN-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+          echo "0.0.0.0 api.anthropic.com claude.ai console.anthropic.com statsig.anthropic.com mcp-proxy.anthropic.com" | sudo tee -a /etc/hosts >/dev/null
+          getent hosts api.anthropic.com
+      - name: Official action v1.0.275 (pinned) with the recording fake CLI
+        id: action
+        continue-on-error: true
+        uses: anthropics/claude-code-action@4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8
+        env:
+          ANTHROPIC_BASE_URL: http://127.0.0.1:9
+        with:
+          prompt: "KAN-113 option-B wiring test. A recording fake CLI stops before any model call."
+          claude_code_oauth_token: ${{ env.QB_OPTION_B_DUMMY }}
+          github_token: ${{ github.token }}
+          path_to_claude_code_executable: ${{ github.workspace }}/bench/opus-pilot/host/option-b/record-claude.sh
+          claude_args: "--model claude-opus-5-5 --output-format stream-json --verbose --no-session-persistence --strict-mcp-config --permission-mode dontAsk --allowed-tools Read,Glob,Grep,Edit,Write,Bash,TodoWrite --disallowed-tools WebFetch,WebSearch"
+      - name: Summarize (paths and names only, never values)
+        if: always()
+        run: node bench/opus-pilot/host/option-b/summarize.mjs option-b-report.json "$QB_OPTION_B_DUMMY" "${{ steps.action.outcome }}" "$RUNNER_TEMP" "$GITHUB_WORKSPACE" "$HOME"
+      - name: Show report
+        if: always()
+        run: cat option-b-report.json || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: kan113-option-b-report
+          path: option-b-report.json
+          retention-days: 30

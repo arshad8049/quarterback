@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "deny": ["WebFetch", "WebSearch", "Read(//cfg/**)", "Edit(//cfg/**)", "Read(//proc/**)", "Edit(//etc/claude-code/**)"]
+  },
+  "enableAllProjectMcpServers": false,
+  "disableAllHooks": true
+}

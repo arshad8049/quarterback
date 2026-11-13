@@ -77,6 +77,11 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
     const { CLAUDE_VERSION } = require('../lib/sandbox/agent');
     const approved = options.runSandboxed && Array.isArray(options.approvedAuthRoutes) ? options.approvedAuthRoutes : P.APPROVED_AUTH_ROUTES;
     const errs = P.checkProfile(profile, { imagePin: CLAUDE_VERSION, approved });
+    // KAN-113 10600: qualification-only options and an overridden (e.g. fake) agent image are never allowed live
+    for (const k of ['noCredentials', 'qualificationOnly', 'allowSynthetic']) if (options[k] !== undefined) errs.push(`${k} is qualification-only and refused for pilot runs`);
+    const { AGENT_IMAGE } = require('../lib/sandbox/agent');
+    const pinned = require('../lib/sandbox/docker').contentTag('qb-sandbox-agent', require('path').join(__dirname, '..', 'sandbox', 'agent'), ['.']);
+    if (AGENT_IMAGE !== pinned) errs.push(`agent image ${AGENT_IMAGE} is not the pinned content-tagged image ${pinned}`);
     if (errs.length) {
       return { status: 'blocked', diff: null, changes: [], unsupported_changes: [], base_tree: null, candidate_tree: null, exit_code: null, signal: null,
         stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot preflight: ${errs.join('; ')}`, sandbox: null, pilot_outcome: 'preflight_refused' };

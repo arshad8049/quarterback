@@ -65,11 +65,11 @@ async function pipelineRun({ briefing = 'qualification task (fake CLI)\n', agent
   const profile = { ...P.profileFromConfig(P.loadReviewed()), auth_route: 'qualification-fake-cli' };
   const repo = fixtureRepo(); const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kan113q-'));
   try {
-    const r = await runSandboxed({ repoPath: repo.dir, briefing, stateDir, noCredentials: true, requireMemoryCheck: true,
+    const r = await runSandboxed({ repoPath: repo.dir, briefing, stateDir, noCredentials: true, qualificationOnly: true, requireMemoryCheck: true,
       agentArgs: P.buildAgentArgs(profile), agentStdoutMaxBytes: P.AGENT_STDOUT_MAX_BYTES,
       ...(agentMs ? { deadlines: { agent: agentMs } } : {}), ...(signal ? { signal } : {}) });
     const c = r.agent_stdout != null ? P.classifyAttempt({ stdout: r.agent_stdout, dropped: r.agent_stdout_dropped || 0,
-      sandboxState: r.sandbox && r.sandbox.stages && r.sandbox.stages.agent ? r.sandbox.stages.agent.state : 'completed' }, profile) : null;
+      sandboxState: r.sandbox && r.sandbox.stages && r.sandbox.stages.agent ? r.sandbox.stages.agent.state : 'completed' }, profile, { allowSynthetic: true }) : null;
     return { status: r.status, reason: r.reason || null, run_id: r.sandbox && r.sandbox.run_id, admission: r.sandbox && r.sandbox.admission,
       credential_mode: r.sandbox && r.sandbox.credential_mode, classification: c ? c.outcome : null, classification_reasons: c ? c.reasons : [],
       fake_marker: /"qb_fake_cli":true/.test(r.agent_stdout || ''), changes: (r.changes || []).map((x) => x.file), duration_ms: r.duration_ms };
@@ -94,7 +94,7 @@ async function buildImages() {
 /** Dummy credential boundary: bubblewrap NORMAL mode (weaker nesting is not approved) under QB's hardening. */
 function isolationProbe(agentTag) {
   const out = { bash_normal_mode_blocks_dummy: false, file_tools_enforced: false,
-    file_tools_detail: 'the Read/Edit/Write/Glob/Grep tools run in the CLI process outside the Bash sandbox; their deny rules (incl. symlink-resolved paths) can only be exercised by a model turn, which this approval excludes' };
+    file_tools_detail: 'not run' };
   const ctx = fs.mkdtempSync(path.join(os.tmpdir(), 'kan113bw-'));
   try {
     fs.writeFileSync(path.join(ctx, 'Dockerfile'), `FROM ${agentTag}\nUSER root\nRUN apt-get update -qq && apt-get install -y -qq --no-install-recommends bubblewrap >/dev/null && rm -rf /var/lib/apt/lists/*\nUSER 10001:10001\n`);
@@ -111,6 +111,35 @@ function isolationProbe(agentTag) {
   } catch (e) { out.bash_detail = `probe could not run: ${String(e.message).slice(0, 200)}`; }
   finally { fs.rmSync(ctx, { recursive: true, force: true }); trySh('docker', ['image', 'rm', '-f', BWRAP_TAG]); }
   return out;
+}
+
+/** 10600 §1: read-only userns diagnostics, plus kernel-log lines (AppArmor/seccomp) emitted during the bwrap probe. */
+function usernsDiagnostics(sinceIso) {
+  const out = {};
+  for (const l of (trySh('sh', [path.join(HERE, 'userns-diag.sh')]) || '').split('\n')) { const i = l.indexOf('='); if (i > 0) out[l.slice(0, i)] = l.slice(i + 1); }
+  const log = trySh('sudo', ['-n', 'journalctl', '-k', '--since', sinceIso, '--no-pager', '-o', 'short-iso']) || trySh('sudo', ['-n', 'dmesg']) || '';
+  out.kernel_log_apparmor_userns_denials = log.split('\n').filter((l) => /apparmor="DENIED"/.test(l) && /userns/.test(l)).map((l) => l.replace(/\s+/g, ' ').slice(0, 300)).slice(0, 5);
+  out.kernel_log_seccomp_lines = log.split('\n').filter((l) => /seccomp|type=1326/i.test(l)).map((l) => l.slice(0, 300)).slice(0, 5);
+  return out;
+}
+
+/** 10600 §3/§4: the CLI's own tool host (`claude mcp serve`), no model, no network, dummy file + symlinks. */
+function toolProbe(agentTag, variant, { settingsName = variant, extraEnv = [] } = {}) {
+  const settings = path.join(HERE, 'probe', `settings-${settingsName}.json`);
+  const env = [...extraEnv, 'HOME=/tmp/home', 'CLAUDE_CONFIG_DIR=/cfg', 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1', 'DISABLE_AUTOUPDATER=1', 'DISABLE_TELEMETRY=1', 'DISABLE_ERROR_REPORTING=1'];
+  let raw; try {
+    raw = sh('docker', ['run', '--rm', '--user', '10001:10001', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--read-only', '--init', '--network', 'none',
+      '--tmpfs', '/tmp', '--tmpfs', '/tmp/home:rw,size=64m,uid=10001,gid=10001,mode=0700', '--tmpfs', '/cfg:rw,size=1m,uid=10001,gid=10001,mode=0700',
+      '--tmpfs', '/work:rw,size=16m,uid=10001,gid=10001', ...env.flatMap((e) => ['-e', e]),
+      '-v', `${path.join(HERE, 'probe')}:/probe:ro`, '-v', `${settings}:/etc/claude-code/managed-settings.json:ro`,
+      '--entrypoint', 'node', agentTag, '/probe/tool-probe.mjs'], { timeout: 180_000 });
+  } catch (e) { raw = String(e.stdout || ''); if (!raw) return { variant, error: String(e.stderr || e.message).slice(-400) }; }
+  try { return { variant, ...JSON.parse(raw.split('\n').filter(Boolean).pop()) }; } catch { return { variant, error: 'unparseable probe output' }; }
+}
+
+function tapTotals(file) {
+  if (!fs.existsSync(file)) return null; const t = fs.readFileSync(file, 'utf8'); const g = (k) => { const m = t.match(new RegExp(`^# ${k} (\\d+)$`, 'm')); return m ? Number(m[1]) : null; };
+  return { tests: g('tests'), pass: g('pass'), fail: g('fail'), skipped: g('skipped'), todo: g('todo'), cancelled: g('cancelled') };
 }
 
 async function crashCase() {
@@ -165,14 +194,39 @@ async function main() {
     const k = await crashCase();
     report.cleanup.crash = k.agent_started_before_kill && k.clean; report.cleanup_detail.crash = k; save();
 
+    const since = new Date(Date.now() - 1000).toISOString().replace('T', ' ').slice(0, 19);
     report.isolation = isolationProbe(report.images.agent_tag);
+    report.isolation.userns_diagnostics = usernsDiagnostics(since);
+    const fileRules = toolProbe(report.images.agent_tag, 'file-rules');
+    const sandboxRequired = toolProbe(report.images.agent_tag, 'sandbox-required');
+    // Dummy env token (CLAUDE_CODE_OAUTH_TOKEN is how the official GitHub route passes the token), with and without
+    // the CLI's documented subprocess env scrub. No network: the dummy can't be used for anything.
+    const DUMMY_ENV = 'CLAUDE_CODE_OAUTH_TOKEN=DUMMY-NOT-A-SECRET-7f3a-env';
+    const envNoScrub = toolProbe(report.images.agent_tag, 'env-noscrub', { settingsName: 'file-rules', extraEnv: [DUMMY_ENV] });
+    const envScrub = toolProbe(report.images.agent_tag, 'env-scrub', { settingsName: 'file-rules', extraEnv: [DUMMY_ENV, 'CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1'] });
+    const bashCase = (r, kind) => { const c = (r.cases || []).find((x) => x.tool === 'Bash' && x.kind === kind); return c ? (c.result || (c.dummy_visible ? 'dummy_visible' : c.is_error ? 'error_or_denied' : 'not_visible')) : 'not_run'; };
+    report.isolation.env_token = { no_scrub: bashCase(envNoScrub, 'env-token'), scrub: bashCase(envScrub, 'env-token'), started: { no_scrub: envNoScrub.started, scrub: envScrub.started } };
+    report.isolation.bash_unsandboxed_reads = { cat_cred: bashCase(fileRules, 'cat-cred'), cat_symlink: bashCase(fileRules, 'cat-symlink') };
+    report.isolation.tool_probe = { file_rules: fileRules, sandbox_required: sandboxRequired, env_noscrub: envNoScrub, env_scrub: envScrub };
+    const FILE_TOOLS = ['Read', 'Edit', 'Write', 'Glob', 'Grep'];
+    const credCases = (fileRules.cases || []).filter((c) => FILE_TOOLS.includes(c.tool) && c.kind !== 'control' && c.kind !== 'work-tree');
+    const control = (fileRules.cases || []).find((c) => c.kind === 'control');
+    const leaks = credCases.filter((c) => c.result !== 'tool_not_exposed' && (c.dummy_visible || c.dummy_modified || c.new_file_in_cfg));
+    const exercised = credCases.filter((c) => c.result !== 'tool_not_exposed');
+    report.isolation.file_tools_enforced = Boolean(fileRules.started) && exercised.length > 0 && leaks.length === 0 && Boolean(control && !control.is_error)
+      && ['Read', 'Edit', 'Write', 'Glob', 'Grep'].every((t) => exercised.some((c) => c.tool === t));
+    report.isolation.file_tools_detail = !fileRules.started ? `tool host did not start: ${fileRules.error || fileRules.stderr_tail || 'unknown'}`
+      : leaks.length ? `dummy reachable via: ${leaks.map((c) => `${c.tool}/${c.kind}`).join(', ')}`
+      : `no leak in ${exercised.length} cases through the CLI tool host (mcp serve); a regression example, not proof of a complete boundary`;
   } catch (e) {
     report.error = `${e.code || 'error'}: ${String(e.message).slice(0, 500)}`;
   } finally {
-    report.host.disk_free_bytes_end = measure().disk_free_bytes_docker; save();
+    report.host.disk_free_bytes_end = measure().disk_free_bytes_docker; report.unit_tap = tapTotals(path.join(ROOT, 'unit.tap')); save();
     const ev = report.evaluation;
     console.log(ev.passed ? 'HOST QUALIFIED' : `BLOCKED at ${ev.first_blocker.gate}: ${ev.first_blocker.problems.join('; ')}`);
     for (const g of ev.gates) console.log(`  ${g.gate}: ${g.status}`);
+    console.log(`report sha256 ${require('node:crypto').createHash('sha256').update(fs.readFileSync(outPath)).digest('hex')}`);
+    process.exitCode = ev.passed ? 0 : 2;      // 10600 §5: a blocked qualification is a RED job, never green
   }
 }
 main().catch((e) => { console.error(e.message); process.exit(1); });

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": ["WebFetch", "WebSearch", "Read(//cfg/**)", "Edit(//cfg/**)", "Read(//proc/**)", "Edit(//etc/claude-code/**)"]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": { "denyRead": ["/cfg"] }
+  },
+  "enableAllProjectMcpServers": false,
+  "disableAllHooks": true
+}
