@@ -189,13 +189,40 @@ function reportData(expDir, { allowMixed = false } = {}) {
   };
   // QB-30: the predeclared analysis — task as the unit, cluster bootstrap, strata, attrition next to completion
   data.analysis = analyze(data, m);
+  // KAN-112 10603: pilot slot accounting and effort, from each trial's pilot.json (every planned slot stays visible)
+  const pilotRows = exp.trials.filter((t) => t.artifacts['pilot.json'])
+    .map((t) => JSON.parse(fs.readFileSync(path.join(expDir, t.artifacts['pilot.json'].path), 'utf8')));
+  if (pilotRows.length) data.pilot = pilotSummary(m, pilotRows, [X, Y]);
   return data;
+}
+
+function pilotSummary(m, rows, arms) {
+  const { accountSlots } = require('../lib/pilot/trial-policy');
+  const find = (o) => rows.find((r) => r.slot.trial_id === o.trial_id && r.slot.arm === o.arm);
+  const slots = m.trial_plan.order.map((o) => { const r = find(o); return { task: `${o.task_id}#${o.repetition}`, arm: o.arm, primary: r ? r.primary : 'not_run' }; });
+  const acc = accountSlots(slots, { arms });
+  const effort = {};
+  for (const r of rows) {
+    const e = effort[r.slot.arm] || (effort[r.slot.arm] = { trials: 0, coding_ms: 0, total_elapsed_ms: 0, preparation_ms: 0, human_ms: {} });
+    e.trials++; e.coding_ms += r.effort.coding_ms; e.total_elapsed_ms += r.effort.total_elapsed_ms; e.preparation_ms += r.effort.preparation_ms;
+    for (const [k, v] of Object.entries(r.effort.human_ms || {})) e.human_ms[k] = (e.human_ms[k] || 0) + v;
+  }
+  const grades = { valid: rows.filter((r) => r.grade_use === 'valid').length, diagnostic: rows.filter((r) => r.grade_use === 'diagnostic').length,
+    not_graded: rows.filter((r) => r.grade_use === 'not_graded').length };
+  return { amendment_sha256: [...new Set(rows.map((r) => r.amendment_sha256))], slots: { assigned: acc.assigned, refused: acc.refused, executed: acc.executed,
+    interrupted: acc.interrupted, not_run: slots.filter((x) => x.primary === 'not_run').length, execution_valid_pairs: acc.execution_valid_pairs, by_outcome: acc.by_outcome },
+    grades, effort, rows: rows.map((r) => ({ ...r.slot, primary: r.primary, flags: r.flags, valid_completed_trial: r.valid_completed_trial, grade_use: r.grade_use, grader_outcome: r.grader_outcome })) };
 }
 
 // ── Formatting ────────────────────────────────────────────────────────────────
 
 function lines(d, md) {
   const L = [];
+  if (d.pilot) {
+    const s = d.pilot.slots;
+    L.push(`${md ? '**' : ''}Pilot slots${md ? '**' : ''}: assigned ${s.assigned}, refused ${s.refused}, executed ${s.executed}, interrupted ${s.interrupted}, not run ${s.not_run}, execution-valid pairs ${s.execution_valid_pairs}; grades valid ${d.pilot.grades.valid}, diagnostic ${d.pilot.grades.diagnostic}`);
+    L.push(`Pilot outcomes: ${Object.entries(s.by_outcome).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+  }
   const [X, Y] = d.primary_comparison;
   const h = (t) => L.push(md ? `## ${t}` : `\n${t}\n${'─'.repeat(t.length)}`);
   L.push(md ? `# Experiment ${d.experiment_id}${d.mixed ? ' — MIXED' : ''}` : `QUARTERBACK EXPERIMENT REPORT — ${d.experiment_id}${d.mixed ? '  [MIXED]' : ''}`);

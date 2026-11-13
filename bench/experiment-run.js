@@ -34,6 +34,7 @@ const { seededOrder, holdoutGate } = require('./plan');
 const { grade, GRADER_FILES } = require('./grader');
 const { checkFrozen, readLock, LOCK_FILE } = require('./spec');
 const S = require('./schemas');
+const TP = require('../lib/pilot/trial-policy');
 
 const AGENT = { type: 'claude-code', version: AGENT_VERSION, isolation: 'sandbox' };
 
@@ -115,6 +116,8 @@ async function runExperiment(expDir, o) {
   if (o.memoryStart ? S.treeHash(o.memoryStart) !== m.memory.starting_store_sha256 : m.memory.starting_store_sha256 !== null) {
     throw new Error('starting memory store does not match the manifest');
   }
+  // KAN-112 10603: a pilot experiment must pin the reviewed amendment and pass its gate before ANY arm-trial.
+  const pilot = pilotSetup(m, o);
   const results = [];
   // QB-30: a shard runs only its whole tasks; the rest of the plan is left to the other shards.
   const mine = o.shard ? new Set(taskShards(m.tasks.map((t) => t.id), o.shard.count)[o.shard.index]) : null;
@@ -128,19 +131,24 @@ async function runExperiment(expDir, o) {
     // Every container this trial creates (arm AND grading) launches from the pinned immutable
     // image ids, and each created container's image is verified before it starts.
     const release = D.bindImages(Object.fromEntries(Object.values(runtime.image_ids || {}).map((x) => [x.ref, x.id])));
-    let launched = []; let g = null;
+    let launched = []; let g = null; let pt = null;
     const started = new Date();
     let ws = null; let run = null; let out; let usage = null;
     try {
     // QB-28 re-review: one budget run per arm-trial. trial_deadline_ms covers EVERY stage,
     // external grading included; model_call_deadline_ms is the per-call limit in force.
-    const budgetRun = budget.startRun({ deadlineMs: m.budget.trial_deadline_ms, agent: AGENT, modelCallMs: m.budget.model_call_deadline_ms });
+    // KAN-112 10603: the arm-trial clock starts here, before the first setup or sign-in, and covers every stage.
+    pt = pilot ? pilotTrial(pilot, o) : null;
+    const budgetRun = budget.startRun({ deadlineMs: pt ? pt.totalMs : m.budget.trial_deadline_ms, agent: AGENT, modelCallMs: m.budget.model_call_deadline_ms });
+    if (pt) budgetRun.signal.addEventListener('abort', () => { if (!pt.abortStage) pt.abortStage = pt.stage; });
     try {
       ws = createWorkspace(require('./repos').resolveSource(spec.repo.source), { baseRev: spec.repo.base_rev, label: `${p.task_id}-${p.arm}` });
       run = runStore.createRun({ kind: 'bench-arm', request: spec.prompt, repoPath: ws.dir, baseSha: ws.baseSha, agent: AGENT,
         config: { experiment_id: m.experiment_id, trial_id: p.trial_id, arm: p.arm, task_id: p.task_id }, runsDir: o.runsDir });
-      out = await runArm({ arm: p.arm, spec, repoPath: ws.dir, run, budgetRun, baseSha: ws.baseSha, agentTimeMs: m.budget.agent_time_ms,
+      if (pt) pt.stage = 'arm';
+      out = await runArm({ arm: p.arm, spec, repoPath: ws.dir, run, budgetRun, baseSha: ws.baseSha, agentTimeMs: pt ? pt.codingMs : m.budget.agent_time_ms,
         ...(agentProfileFromManifest(m) ? { agentProfile: agentProfileFromManifest(m) } : {}),
+        ...(pt ? { pilot: pt.hooks, approvedAuthRoutes: o.approvedAuthRoutes } : {}),
         memoryStart: ARMS[p.arm].memory === 'on' ? { store: o.memoryStart || null, sha256: m.memory.starting_store_sha256 } : null,
         runSandboxed: o.runSandboxed, deps: o.deps, signal: budgetRun.signal });
       // The run record keeps QB's own outcome (E/F) — the SCORE is the external grade below.
@@ -157,8 +165,11 @@ async function runExperiment(expDir, o) {
     }
     // QB-27: the same external grader for every arm; nothing about the arm reaches it.
     // It runs inside the trial's budget run: the trial deadline cancels grading too.
+    if (pt) { pt.clock.debitCoding(out.agent_ms || 0); pt.stage = 'grading'; }
+    // KAN-112 10603 / 10583: a coding-timeout patch is graded; other interruptions are never graded as valid trials.
+    const pre = pt ? pilotClassify(pt, out, null) : null;
     try {
-      if (out.status === 'completed') {
+      if (out.status === 'completed' || (pre && pre.primary === 'coding_timeout' && out.patch)) {
         g = await grade({ spec, patch: out.patch, ...(o.grader || {}), sandbox: { ...((o.grader && o.grader.sandbox) || {}), signal: budgetRun.signal } });
         if (budgetRun.interrupted()) out = { ...out, status: 'timeout', detail: `trial deadline (${m.budget.trial_deadline_ms} ms) reached during external grading` };
       }
@@ -172,6 +183,7 @@ async function runExperiment(expDir, o) {
     const finished = new Date();
     // The trial's runtime evidence: its own preflight identity plus every container it actually launched.
     const artifacts = { 'patch.diff': out.patch || '', 'usage.json': usage, 'runtime.json': { ...runtime, launched } };
+    if (pt) artifacts['pilot.json'] = pilotRecord(pt, out, g, p, pilot);
     if (g) artifacts['grade.json'] = g;
     if (run) artifacts['run.json'] = { run_id: run.id, outcome: run.manifest.outcome, attempts: run.manifest.attempts.length };
     results.push(recordTrial(expDir, {
@@ -224,6 +236,65 @@ async function main(argv) {
 }
 
 if (require.main === module) main(process.argv).catch((e) => { console.error(`experiment-run: ${e.message}`); process.exit(1); });
+
+/** KAN-112 10603: gate + setup for a pilot experiment; null for a non-pilot one. */
+function pilotSetup(m, o) {
+  if (!agentProfileFromManifest(m)) return null;
+  const g = TP.pilotGate(m);
+  if (g.problems.length) throw new Error(`pilot gate (KAN-112 amendment): ${g.problems.join('; ')}`);
+  const seam = typeof o.runSandboxed === 'function';
+  // No real sign-in is implemented or approved: a pilot runs only with a FAKE adapter under the test sandbox seam.
+  if (!seam || typeof o.signInAdapter !== 'function') throw new Error('pilot run refused: no approved sign-in implementation (a fake sign-in adapter is accepted only with the test sandbox seam)');
+  // test seam only: shrinks the TOTAL and SIGN-IN windows so deadline cases run in seconds; the coding budget is never scaled
+  const scale = typeof o.timeScale === 'number' && o.timeScale > 0 && o.timeScale <= 1 ? o.timeScale : 1;
+  return { amendment: g.amendment, sha256: g.sha256, scale, totalMs: Math.round(m.budget.trial_deadline_ms * scale), codingMs: m.budget.agent_time_ms };
+}
+
+/** One arm-trial's clock, attempt recorder and sign-in hook. */
+function pilotTrial(pilot, o) {
+  const a = pilot.amendment; const k = pilot.scale;
+  const scaled = { ...a, time: { ...a.time, sign_in_max_s: a.time.sign_in_max_s * k, trial_total_s: a.time.trial_total_s * k } };
+  const pt = { clock: new TP.TrialClock(scaled, { startMs: Date.now(), preparationMs: 0 }), attempts: [], stage: 'setup', abortStage: null,
+    totalMs: pilot.totalMs, codingMs: pilot.codingMs, signIns: 0, signInTimeouts: 0 };
+  pt.hooks = {
+    record: (x) => pt.attempts.push(x),
+    onStage: (st) => { pt.stage = st; },
+    signIn: async ({ signal }) => {
+      const budgetMs = pt.clock.signInBudgetMs(Date.now()); pt.signIns++;
+      if (budgetMs <= 0) { pt.signInTimeouts++; return { status: 'timeout' }; }
+      const t0 = Date.now(); let timer;
+      const r = await Promise.race([
+        Promise.resolve(o.signInAdapter({ budgetMs, signal })).catch(() => ({ status: 'error' })),
+        new Promise((res) => { timer = setTimeout(() => res({ status: 'timeout' }), budgetMs); }),
+      ]);
+      clearTimeout(timer); pt.clock.recordHuman('sign_in', Date.now() - t0);
+      if (r.status === 'timeout') pt.signInTimeouts++;
+      return r;
+    },
+  };
+  return pt;
+}
+
+function pilotClassify(pt, out, g) {
+  const hostFailure = pt.attempts.find((x) => x.host_failure) || (!pt.abortStage && out.status === 'infra_error' && !pt.attempts.length ? { stage: pt.stage } : null);
+  return TP.classifyTrial({
+    attempts: pt.attempts.filter((x) => !x.host_failure),
+    hostFailure: hostFailure ? { kind: 'host', stage: hostFailure.stage || 'agent' } : null,
+    totalDeadline: pt.abortStage ? { hit: true, stage: pt.abortStage } : null,
+    patchCaptured: Boolean(out.patch), graderOutcome: g ? g.outcome : null,
+  }, null);
+}
+
+function pilotRecord(pt, out, g, p, pilot) {
+  const c = pilotClassify(pt, out, g);
+  return { schema: 'qb-pilot-trial/1', amendment_sha256: pilot.sha256, time_scale: pilot.scale,
+    slot: { trial_id: p.trial_id, task_id: p.task_id, repetition: p.repetition, arm: p.arm, pilot_arm: p.arm === 'E' ? 'B' : p.arm },
+    primary: c.primary, flags: c.flags, reasons: c.reasons.slice(0, 20), cause: c.cause, execution_evidence: c.execution_evidence,
+    grader_outcome: c.grader_outcome, grade_use: g ? (c.patch_use === 'grade_under_10583' ? 'valid' : 'diagnostic') : 'not_graded',
+    patch_use: c.patch_use, valid_completed_trial: c.valid_completed_trial,
+    attempts: pt.attempts.map((x) => ({ flags: x.flags, sandbox_state: x.sandbox_state || null })), sign_ins: pt.signIns,
+    effort: pt.clock.report(Date.now()) };
+}
 
 /** KAN-113: the pilot agent profile pinned in the manifest's config (same profile for every arm), or null. */
 function agentProfileFromManifest(m) {

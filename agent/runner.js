@@ -83,10 +83,24 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
     const pinned = require('../lib/sandbox/docker').contentTag('qb-sandbox-agent', require('path').join(__dirname, '..', 'sandbox', 'agent'), ['.']);
     if (AGENT_IMAGE !== pinned) errs.push(`agent image ${AGENT_IMAGE} is not the pinned content-tagged image ${pinned}`);
     if (errs.length) {
+      if (options.pilot && options.pilot.record) options.pilot.record({ flags: ['preflight_refused'], reasons: errs });
       return { status: 'blocked', diff: null, changes: [], unsupported_changes: [], base_tree: null, candidate_tree: null, exit_code: null, signal: null,
         stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot preflight: ${errs.join('; ')}`, sandbox: null, pilot_outcome: 'preflight_refused' };
     }
   }
+  // KAN-112 10603: per-attempt sign-in through the trial's adapter (fake only; no real sign-in exists), capped by the
+  // trial clock (min(10 min, remaining total)). A timeout ends the attempt before any sandbox.
+  if (profile && options.pilot && typeof options.pilot.signIn === 'function') {
+    if (options.pilot.onStage) options.pilot.onStage('sign_in');
+    const s = await options.pilot.signIn({ signal: options.signal });
+    if (!s || s.status !== 'ok') {
+      const why = s && s.status === 'timeout' ? 'auth_timeout' : 'infra_interruption';
+      options.pilot.record({ flags: [why], reasons: [`sign-in ${s ? s.status : 'failed'}`] });
+      return { status: 'blocked', diff: null, changes: [], unsupported_changes: [], base_tree: null, candidate_tree: null, exit_code: null, signal: null,
+        stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot ${why}: sign-in ${s ? s.status : 'failed'}`, sandbox: null, pilot_outcome: why };
+    }
+  }
+  if (profile && options.pilot && options.pilot.onStage) options.pilot.onStage('agent');
   const r = await run({
     repoPath, briefing,
     ...(profile ? { requireMemoryCheck: true, agentArgs: require('../lib/sandbox/agent-profile').buildAgentArgs(profile), agentStdoutMaxBytes: require('../lib/sandbox/agent-profile').AGENT_STDOUT_MAX_BYTES } : {}),
@@ -103,11 +117,16 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
     error: ['completed', 'no_change'].includes(status) ? null : (r.reason || r.error || status),
     sandbox,
   };
+  // a cancelled sandbox is the trial deadline/cancellation (recorded by the trial), not a host failure
+  if (profile && options.pilot && options.pilot.record && !['completed', 'no_change', 'timeout', 'cancelled'].includes(status)) {
+    options.pilot.record({ flags: ['infra_interruption'], reasons: [`sandbox ${status}: ${out.error}`], host_failure: true });
+  }
   if (profile && ['completed', 'no_change', 'timeout'].includes(status)) {
     // KAN-113 (10589): classify from Claude Code's own report; distinct outcomes; a coding timeout keeps its status and patch.
     const agentState = r.sandbox && r.sandbox.stages && r.sandbox.stages.agent ? r.sandbox.stages.agent.state : status;
     const c = require('../lib/sandbox/agent-profile').classifyAttempt({ stdout: r.agent_stdout, dropped: r.agent_stdout_dropped || 0, sandboxState: agentState }, profile);
-    out.agent_report = c.report; out.pilot_outcome = c.outcome; out.pilot_evidence_complete = c.evidence_complete; out.pilot_reasons = c.reasons;
+    out.agent_report = c.report; out.pilot_outcome = c.outcome; out.pilot_evidence_complete = c.evidence_complete; out.pilot_reasons = c.reasons; out.pilot_flags = c.flags;
+    if (options.pilot && options.pilot.record) options.pilot.record({ flags: c.flags, reasons: c.reasons, sandbox_state: agentState });
     if (!['verified', 'coding_timeout'].includes(c.outcome)) { out.status = 'infra_error'; out.error = `pilot ${c.outcome}: ${c.reasons.join('; ')}`; }
   }
   return out;
