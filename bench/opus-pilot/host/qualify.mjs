@@ -109,6 +109,7 @@ function isolationProbe(agentTag) {
     out.bash_normal_mode_blocks_dummy = !leaked && /BLOCKED/.test(r) && /rc=0/.test(r);
     out.bash_detail = leaked ? 'dummy value readable' : r.split('\n').filter((l) => /bwrap|BLOCKED|rc=/.test(l)).slice(0, 3).join(' | ').slice(0, 300);
   } catch (e) { out.bash_detail = `probe could not run: ${String(e.message).slice(0, 200)}`; }
+  try { out.container_diagnostics_bwrap_image = containerDiagnostics(BWRAP_TAG, { bwrap: true }); } catch {}
   finally { fs.rmSync(ctx, { recursive: true, force: true }); trySh('docker', ['image', 'rm', '-f', BWRAP_TAG]); }
   return out;
 }
@@ -117,10 +118,42 @@ function isolationProbe(agentTag) {
 function usernsDiagnostics(sinceIso) {
   const out = {};
   for (const l of (trySh('sh', [path.join(HERE, 'userns-diag.sh')]) || '').split('\n')) { const i = l.indexOf('='); if (i > 0) out[l.slice(0, i)] = l.slice(i + 1); }
-  const log = trySh('sudo', ['-n', 'journalctl', '-k', '--since', sinceIso, '--no-pager', '-o', 'short-iso']) || trySh('sudo', ['-n', 'dmesg']) || '';
+  const j = trySh('sudo', ['-n', 'journalctl', '-k', '--since', sinceIso, '--no-pager', '-o', 'short-iso']);
+  const dm = j === null ? trySh('sudo', ['-n', 'dmesg']) : null;
+  const log = j !== null ? j : (dm || '');
+  out.kernel_log_read = j !== null ? 'journalctl' : dm !== null ? 'dmesg' : 'failed';
+  out.kernel_log_lines = log ? log.split('\n').length : 0;
   out.kernel_log_apparmor_userns_denials = log.split('\n').filter((l) => /apparmor="DENIED"/.test(l) && /userns/.test(l)).map((l) => l.replace(/\s+/g, ' ').slice(0, 300)).slice(0, 5);
   out.kernel_log_seccomp_lines = log.split('\n').filter((l) => /seccomp|type=1326/i.test(l)).map((l) => l.slice(0, 300)).slice(0, 5);
   return out;
+}
+
+/** 10604 §1: read-only, inside QB's hardened container (exact flags, nothing relaxed): LSM/seccomp/caps and namespace errno. */
+function containerDiagnostics(image, { bwrap = false } = {}) {
+  const script = 'grep -E "^(Seccomp|Seccomp_filters|NoNewPrivs|CapEff|CapBnd|CapPrm):" /proc/self/status; '
+    + 'printf "apparmor_profile="; cat /proc/self/attr/current 2>/dev/null || echo unavailable; '
+    + 'printf "unshare_user="; unshare -U true 2>&1 && echo ok; echo "unshare_rc=$?"; '
+    + (bwrap ? 'printf "bwrap_unshare_user="; bwrap --unshare-user --ro-bind / / true 2>&1 && echo ok; echo "bwrap_rc=$?"; ' : '');
+  let r; try {
+    r = sh('docker', ['run', '--rm', '--user', '10001:10001', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--read-only', '--tmpfs', '/tmp', '--init', '--network', 'none',
+      '--entrypoint', 'sh', image, '-c', script]);
+  } catch (e) { r = String(e.stdout || '') + String(e.stderr || ''); }
+  const out = {};
+  for (const l of r.split('\n')) { const m = l.match(/^([A-Za-z_]+)[:=]\s*(.*)$/); if (m) out[m[1]] = m[2].slice(0, 300); }
+  return out;
+}
+
+/** 10604 §5: what went into the agent image, so same-tag Id drift can be explained and pinned. */
+function buildInputs(agentTag) {
+  const base = trySh('docker', ['image', 'inspect', '-f', '{{json .RepoDigests}}', 'node:24-bookworm-slim']);
+  const inImage = (cmd) => trySh('docker', ['run', '--rm', '--network', 'none', '--entrypoint', 'sh', agentTag, '-c', cmd]);
+  const dpkg = inImage("dpkg-query -W -f '${Package}=${Version}\\n' | sort");
+  const npm = inImage('npm ls -g --depth=0 --json 2>/dev/null');
+  const crypto = require('node:crypto'); const h = (x) => (x ? crypto.createHash('sha256').update(x).digest('hex') : null);
+  return { base_image_ref: 'node:24-bookworm-slim (floating tag in sandbox/agent/Dockerfile)', base_repo_digests: base ? JSON.parse(base) : null,
+    dpkg_packages: dpkg ? dpkg.split('\n').length : null, dpkg_list_sha256: h(dpkg), apt_selected: dpkg ? dpkg.split('\n').filter((l) => /^(socat|git|ca-certificates|curl)=/.test(l)) : null,
+    npm_global: npm ? Object.fromEntries(Object.entries(JSON.parse(npm).dependencies || {}).map(([k, v]) => [k, v.version])) : null,
+    created: trySh('docker', ['image', 'inspect', '-f', '{{.Created}}', agentTag]), layers: (trySh('docker', ['image', 'inspect', '-f', '{{json .RootFS.Layers}}', agentTag]) || 'null') };
 }
 
 /** 10600 §3/§4: the CLI's own tool host (`claude mcp serve`), no model, no network, dummy file + symlinks. */
@@ -197,6 +230,8 @@ async function main() {
     const since = new Date(Date.now() - 1000).toISOString().replace('T', ' ').slice(0, 19);
     report.isolation = isolationProbe(report.images.agent_tag);
     report.isolation.userns_diagnostics = usernsDiagnostics(since);
+    report.isolation.container_diagnostics = { agent: containerDiagnostics(report.images.agent_tag) };
+    report.images.build_inputs = buildInputs(report.images.agent_tag);
     const fileRules = toolProbe(report.images.agent_tag, 'file-rules');
     const sandboxRequired = toolProbe(report.images.agent_tag, 'sandbox-required');
     // Dummy env token (CLAUDE_CODE_OAUTH_TOKEN is how the official GitHub route passes the token), with and without

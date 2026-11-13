@@ -1,0 +1,270 @@
+{
+ "local_node": "v20.20.2",
+ "runner_node": "v22.23.4",
+ "only_runner": [
+  "CORS is scoped to the signup endpoint and its allowed origins > an allowed origin gets its own origin back on preflight and POST",
+  "CORS is scoped to the signup endpoint and its allowed origins > any other origin gets no CORS grant (pre-fix: \"*\" everywhere); server-side checks still apply",
+  "CORS is scoped to the signup endpoint and its allowed origins > telemetry and admin endpoints never send a CORS grant",
+  "CORS is scoped to the signup endpoint and its allowed origins > without ALLOWED_ORIGINS (production) no browser origin is granted",
+  "Gmail provider > CR/LF in the agent field is refused before anything is saved or sent (no header injection)",
+  "Gmail provider > Gmail 403 (API disabled or scope missing) is blocked_config; a quota 403 is retried",
+  "Gmail provider > Gmail 429 is transient: failed, then sent by the cron",
+  "Gmail provider > Gmail 500 is transient: failed, then sent by the cron",
+  "Gmail provider > Gmail 503 is transient: failed, then sent by the cron",
+  "Gmail provider > a 401 on send drops the cached token; the next send exchanges a fresh one",
+  "Gmail provider > a revoked refresh token (invalid_grant) is blocked_config and the cron does not retry it",
+  "Gmail provider > a signup sends the welcome and the owner notice through the Gmail API from the owner account",
+  "Gmail provider > an unknown EMAIL_PROVIDER sends nothing (blocked_config)",
+  "Gmail provider > missing Gmail credentials: blocked_config, Google is never called",
+  "Gmail provider > staging (EMAIL_MODE=test) with the Gmail provider never calls Google",
+  "Gmail provider > the Message-ID is stable per delivery, so a re-sent job collapses in the mailbox",
+  "Gmail provider > the telemetry link email carries the one-time link in both parts",
+  "Gmail provider > the welcome email sends people to the setup guide on main (owner decision 2026-11-08)",
+  "QB-27: blinded adjudication > packets carry no arm, trial, or internal verdict; order is seeded; verdicts are never overwritten; disagreement stays visible",
+  "QB-27: grading is independent of QB's contract > grader spy: no contract, criteria, briefing or checks reach the grading run",
+  "QB-27: grading is independent of QB's contract > the grade record is a valid qb-grade/1 bound to spec, patch and grader hashes; no network, no credentials",
+  "QB-27: grading is independent of QB's contract > the review example: a correct 30s patch passes and the invented 5m patch fails, whatever the contract says",
+  "QB-27: precise grading outcomes > a patch touching a grader-owned path fails before anything runs",
+  "QB-27: precise grading outcomes > a syntax error, a patch that does not apply, and an empty (no-change) patch all FAIL",
+  "QB-27: precise grading outcomes > an unavailable sandbox is infra_error, recorded separately from pass/fail",
+  "QB-27: precise grading outcomes > grader faults are grader_error, never a fail: unqualified suite, changed suite, changed grader, missing suite command",
+  "QB-27: precise grading outcomes > needs_adjudication only for checks the frozen spec reserves \u2014 never as a catch-all",
+  "QB-27: qualification and freezing > KAN-65 (FY-08): a base that fails its OWN tests is not qualified, whatever the hidden suite says",
+  "QB-27: qualification and freezing > KAN-65 review: a broken .quarterback.json fails qualification instead of skipping the base check",
+  "QB-27: qualification and freezing > a suite is qualified only if the reference passes and every incorrect implementation fails its tests",
+  "QB-27: qualification and freezing > freezing needs qualification; a frozen spec cannot be edited; a new version needs a disclosed changelog entry",
+  "QB-27: the benchmark scores arms only through the grader > gradeArm: the score comes from the grader for every arm; the internal verdict and contract are never consulted",
+  "QB-27: the benchmark scores arms only through the grader > no frozen spec, or a blocked arm, is ungraded \u2014 never a pass or a fail",
+  "QB-32 re-review: deletion cannot be undone by an in-flight upload > a partial database failure inside deletion applies neither step (no revoked-but-kept state); a retry succeeds",
+  "QB-32 re-review: deletion cannot be undone by an in-flight upload > concurrent revoke and upload: whatever the interleaving, nothing stays after revocation+deletion",
+  "QB-32 re-review: deletion cannot be undone by an in-flight upload > the other order: an upload that inserted before the deletion is deleted by it",
+  "QB-32 re-review: deletion cannot be undone by an in-flight upload > upload paused after authorization, delete completes, upload resumes \u2192 refused, and no metric survives (pre-fix: 200 and a row)",
+  "QB-32: deletion and retention > a token holder deletes every record sent with it (and the token is revoked); other users' records stay",
+  "QB-32: deletion and retention > the cron handler enforces retention (metrics 180 d, codes 7 d, abuse rows 2 d, delivered emails 30 d)",
+  "QB-33 re-review 2: concurrent requests cannot exceed a quota > metrics: 59 in the hour + 2 concurrent uploads \u2192 exactly one 200 and one 429, 60 rows (pre-fix: both 200, 61 rows)",
+  "QB-33 re-review 2: concurrent requests cannot exceed a quota > metrics: a revoked token is still 401, not 429, whatever the quota",
+  "QB-33 re-review 2: concurrent requests cannot exceed a quota > signups: 9 attempts from an IP in the hour + 2 concurrent \u2192 one registered and one 429, 10 attempts (pre-fix: 11, both registered)",
+  "QB-33 re-review 2: concurrent requests cannot exceed a quota > telemetry-link requests: 2 in the hour + 2 concurrent \u2192 one 202 and one 429, 3 rows (pre-fix: 4)",
+  "QB-33 re-review: no enumeration, hard body limit > a chunked body without Content-Length is cut off once over the limit (413) \u2014 the rest is never read",
+  "QB-33 re-review: no enumeration, hard body limit > repeated link requests get the same answers for registered and unregistered addresses (pre-fix: [202,202,202,429] vs [202,202,202,202])",
+  "QB-33: an email is not a credential > a known registration email alone is refused (401) and stores nothing (pre-fix: 200 and a row)",
+  "QB-33: an email is not a credential > a revoked, malformed or unknown token is refused",
+  "QB-33: an email is not a credential > link requests are rate limited per email",
+  "QB-33: an email is not a credential > verification: the link is emailed only for a registered address, works once, and expires; only hashes are stored",
+  "QB-33: strict metrics > a valid record keeps its exact declared types and is labelled client_reported, in storage and in the admin report",
+  "QB-33: strict metrics > an oversized payload is 413; a duplicate run_id is 409 (replay); the per-token hourly limit is 429",
+  "QB-33: strict metrics > string booleans, negative or out-of-range values, missing and unknown fields are rejected (pre-fix: \"false\" became passed=1)",
+  "QB-34: CSV export is inert in spreadsheets > every formula-like cell is prefixed so it opens as text (pre-fix: quoted but still evaluated)",
+  "QB-34: admin authentication > a query-string secret is refused even when correct (pre-fix: ?secret= was the only way in)",
+  "QB-34: admin authentication > missing, wrong or non-Bearer credentials get 401 and no signup data; responses are no-store without CORS",
+  "QB-34: admin authentication > the Bearer header works; authorized responses are no-store, without a CORS grant",
+  "QB-34: pagination > limit and cursor page through signups newest first; bad parameters are 400",
+  "QB-35 re-review 2: delivery completion outlives retention > a never-enqueued registration is still repaired after retention ran (completed vs never enqueued)",
+  "QB-35 re-review 2: delivery completion outlives retention > register, let retention remove the sent rows, register again \u2192 no second welcome or owner notice (pre-fix: 2 welcomes)",
+  "QB-35 re-review 2: delivery completion outlives retention > the durable completion state holds no address, payload or log",
+  "QB-35 re-review 2: delivery completion outlives retention > the migration's legacy markers expiring does not re-send to a pre-tracking signup (pre-fix: a welcome)",
+  "QB-35 re-review: registration and delivery intents are atomic > a DB failure before either enqueue leaves no registration; a retry registers and sends each email once (pre-fix: registered forever without jobs)",
+  "QB-35 re-review: registration and delivery intents are atomic > a DB failure between the two enqueues leaves no registration; a retry registers and sends each email once (pre-fix: registered forever without jobs)",
+  "QB-35 re-review: registration and delivery intents are atomic > a registration missing its jobs (older worker / crash) is repaired by a retry, without re-sending completed jobs",
+  "QB-35 re-review: registration and delivery intents are atomic > concurrent duplicates with a transient enqueue failure still end with one row and one welcome",
+  "QB-35: abuse controls > more than 10 attempts per IP per hour are refused (429); the IP is stored only as a hash in the limiter",
+  "QB-35: atomic registration > concurrent duplicate submissions create one row and one welcome email (pre-fix: select-then-insert raced)",
+  "QB-35: defined responses for bad input > null, arrays, numbers, wrong types, unknown fields and oversized bodies are 400/413, never a crash (pre-fix: null threw)",
+  "QB-35: registration is separate from delivery > a failed email service: registered, the response says pending, the failure is observable; the retry delivers exactly once",
+  "QB-35: registration is separate from delivery > repeated failures stop at a visible dead state; a send interrupted mid-flight is retried",
+  "QB-37: deployment smoke checks against a local staging (real worker, mocked mail) > beyond smoke: signup \u2192 report \u2192 metrics routing works end to end on staging with mocked mail",
+  "QB-37: deployment smoke checks against a local staging (real worker, mocked mail) > every smoke check passes; no check creates data or sends email",
+  "configuration errors stop instead of retrying > a 500 or a network error stays retryable (failed), not blocked",
+  "configuration errors stop instead of retrying > after the repair, re-queued jobs are sent exactly once",
+  "configuration errors stop instead of retrying > no API key: blocked_config without calling the provider",
+  "configuration errors stop instead of retrying > provider 401: blocked_config, the signup is registered, the cron does not retry",
+  "configuration errors stop instead of retrying > provider 403: blocked_config, the signup is registered, the cron does not retry",
+  "live: the real reporter on this Node > failing \u2192 failed",
+  "live: the real reporter on this Node > passing \u2192 passed",
+  "live: the real reporter on this Node > timed out \u2192 error / cancelled_tests",
+  "migration 0006 > rebuilds email_deliveries: every row and column kept, blocked_config allowed, the index restored",
+  "signup survives email failures > a crash after the batch commits (claiming the job fails) still answers registered; the cron sends each job once",
+  "signup survives email failures > a crash before the batch commits saves nothing (500), and the retry succeeds with one row",
+  "signup survives email failures > concurrent duplicates with a failing provider: one row, one job per kind, at most one successful send each",
+  "staging isolation > EMAIL_MODE=test sends nothing and records the delivery as simulated",
+  "staging isolation > EMAIL_MODE=test with EMAIL_ALLOWLIST sends only to listed recipients",
+  "staging isolation > an unknown EMAIL_MODE fails closed: nothing is sent",
+  "staging isolation > links in emails use SITE_URL"
+ ],
+ "only_local": [
+  "KAN-112 10603: both arms load and validate the pinned amendment",
+  "KAN-112 10603: both arms load and validate the pinned amendment > A and E run end to end: execution_verified, graded as valid, slot/effort records consumed by the report",
+  "KAN-112 10603: both arms load and validate the pinned amendment > refused before any arm-trial: a budget that disagrees with the amendment",
+  "KAN-112 10603: both arms load and validate the pinned amendment > refused before any arm-trial: a qualification-only setting in the live config",
+  "KAN-112 10603: both arms load and validate the pinned amendment > refused before any arm-trial: a tampered amendment (pin differs)",
+  "KAN-112 10603: both arms load and validate the pinned amendment > refused before any arm-trial: no pinned amendment",
+  "KAN-112 10603: both arms load and validate the pinned amendment > refused before any arm-trial: no sign-in adapter (no real sign-in exists)",
+  "KAN-112 10603: outcomes, patches and flags are preserved",
+  "KAN-112 10603: outcomes, patches and flags are preserved > a real host failure (sandbox infra_error) is infra_interruption with its stage",
+  "KAN-112 10603: outcomes, patches and flags are preserved > coding_timeout keeps its captured patch and grades it under 10583 (valid grade)",
+  "KAN-112 10603: outcomes, patches and flags are preserved > incomplete execution evidence never becomes an execution-valid completed pair, and its patch is not graded",
+  "KAN-112 10603: outcomes, patches and flags are preserved > timeout + missing billing evidence: primary coding_timeout, both flags kept, never execution-valid evidence",
+  "KAN-112 10603: shared coding budget and the total clock at every stage",
+  "KAN-112 10603: shared coding budget and the total clock at every stage > arm E: attempts share the 1,800 s coding budget (each gets only what remains), recorded as coding effort",
+  "KAN-112 10603: shared coding budget and the total clock at every stage > sign-in that outlasts its window is auth_timeout: no sandbox starts, nothing is graded, the workspace is cleaned",
+  "KAN-112 10603: shared coding budget and the total clock at every stage > the total deadline during external grading is pipeline_total_timeout (stage grading); the grade is not a valid trial",
+  "KAN-112 10603: shared coding budget and the total clock at every stage > the total deadline during the agent stage is pipeline_total_timeout (stage agent), not infrastructure; cleanup runs"
+ ],
+ "local_skips": [
+  [
+   "QB-33 re-review: no enumeration, hard body limit",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-32 re-review: deletion cannot be undone by an in-flight upload",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-35 re-review: registration and delivery intents are atomic",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-33 re-review 2: concurrent requests cannot exceed a quota",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-35 re-review 2: delivery completion outlives retention",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "live: the real reporter on this Node",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "live: the reporter records the assertion message of a failing test",
+   "node < 22 has no test:summary"
+  ],
+  [
+   "live: the reporter records each failing test's suite path, so same-named tests in two suites stay distinct",
+   "node < 22 has no test:summary"
+  ],
+  [
+   "QB-27: grading is independent of QB's contract",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-27: the benchmark scores arms only through the grader",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-27: precise grading outcomes",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-27: the hidden suite stays hidden > a suite inside the task repository is refused (suite_leaked)",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-27: the hidden suite stays hidden > a suite file present anywhere in the task repository history is refused (suite_leaked)",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-27: qualification and freezing",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-27: blinded adjudication",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-30: curation > qualify \u2192 a draft spec with qualification and NO approved oracle",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-30: curation > freeze refuses a draft whose task, reference, incorrect tree or grader changed since qualification",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-30: curation > freeze with an approver: the oracle names them, the spec is frozen in the lock",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-30: curation > a suite that passes a wrong implementation is refused (not qualified, no draft)",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-30: curation > already_satisfied: no reference tree means the correct change is NO change (empty patch passes)",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-30: reproducible task repositories > the grader grades a spec whose repository is qb-bench:<name>",
+   "node v20.20.2 has no test:summary event"
+  ],
+  [
+   "QB-32: deletion and retention",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-33: an email is not a credential",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-33: strict metrics",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-34: admin authentication",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-34: CSV export is inert in spreadsheets",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-34: pagination",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-35: defined responses for bad input",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-35: atomic registration",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-35: registration is separate from delivery",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-35: abuse controls",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "QB-37: deployment smoke checks against a local staging (real worker, mocked mail)",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "signup survives email failures",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "configuration errors stop instead of retrying",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "staging isolation",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "CORS is scoped to the signup endpoint and its allowed origins",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "migration 0006",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ],
+  [
+   "Gmail provider",
+   "node:sqlite unavailable on node v20.20.2 (CI runs Node 22/24)"
+  ]
+ ],
+ "todo": [
+  "KAN-104: malformed model JSON gets the one shared correction > malformed \u2192 parseable but wrong: each defect alone, and where it is stopped today > KNOWN GAP: L1 should reject a call_returns check that contradicts the request's own example"
+ ]
+}

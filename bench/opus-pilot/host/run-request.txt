@@ -1,1 +1,1 @@
-KAN-113 10600 host qualification request #2 (owner directed in chat, 2026-11-13): read-only userns diagnostics, no-model tool probe (mcp serve), Option B wiring test with a synthetic value. No model, no secrets.
+KAN-113 10604 request #3 (owner directed in chat, 2026-11-13): ONE bounded read-only diagnostic pass (in-container Seccomp/NoNewPrivs/CapEff, namespace errno, kernel-log read status) + build inputs. No security changes, no model, no secrets.
