@@ -1,0 +1,12 @@
+{
+  "action_step_outcome": "failure",
+  "cli_calls": 0,
+  "calls": [],
+  "dummy_found_in_files": [
+    "~/work/_temp/_runner_file_commands/set_env_4e12a117-a13f-422d-8774-20c51d34a514",
+    "~/actions-runner/cached/2.338.2/_diag/blocks/d0af47f6-70eb-889c-9ada-fc948ac99619_427ada1b-a773-5dc3-b951-251bb184dcf7.1",
+    "~/actions-runner/cached/2.338.2/_diag/pages/d0af47f6-70eb-889c-9ada-fc948ac99619_427ada1b-a773-5dc3-b951-251bb184dcf7_1.log",
+    "~/work/_temp/_runner_file_commands/set_env_4e12a117-a13f-422d-8774-20c51d34a514"
+  ],
+  "version_probe_calls": 0
+}

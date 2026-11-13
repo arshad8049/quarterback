@@ -1,0 +1,547 @@
+{
+  "kan": "KAN-113",
+  "review": "10596",
+  "commit": "3b69a650e3ddbe4142fc1671665897bf4285940d",
+  "at": "2026-11-13T19:18:27.174Z",
+  "model_calls": 0,
+  "credentials_used": "none",
+  "host": {
+    "arch": "x86_64",
+    "kernel": "7.0.0-1017-azure",
+    "os": "Ubuntu 24.04.5 LTS",
+    "runner_image": "ubuntu24 20261101.360.1",
+    "cpus": 4,
+    "mem_total_bytes": 16760348672,
+    "mem_available_bytes": 15748149248,
+    "docker": "28.0.4",
+    "docker_root": "/var/lib/docker",
+    "disk_free_bytes_root": 92031750144,
+    "disk_free_bytes_docker": 90025209856,
+    "node": "v22.23.4",
+    "disk_free_bytes_after": 90025209856,
+    "disk_free_bytes_end": 90022367232
+  },
+  "images": {
+    "tools": "sha256:fe46745998ca7f9784b2dc1d5cb6c8400836beb077aca0a78c1061b5d6bf5f4a",
+    "proxy": "sha256:5f02a91ebd033e66274caa28716749732f1e1ed3bc57f0cb208839f93b73ec93",
+    "agent": "sha256:4ee767b793107ac184c4a5bc9518b60af2ba9d7a38ee72c47e7bbbb46f818e25",
+    "agent_tag": "qb-sandbox-agent:c-6e9312968a31b7b8",
+    "agent_cli_version": "2.1.322 (Claude Code)",
+    "fake_cli": "sha256:b877571a7380fd9b17751602f79ab53adfe448ed3bb9d6883469820e9f4a0ad7",
+    "fake_cli_tag": "qb-kan113-fake-cli:qualify"
+  },
+  "admission": {
+    "ok": true,
+    "reason": null,
+    "memory_checked": true,
+    "peak_bytes": 9808065332,
+    "mem_available_bytes": 15311134720
+  },
+  "pipeline": {
+    "status": "completed",
+    "reason": "exit 0",
+    "run_id": "qb-mwfd1tkw-914b0b",
+    "admission": {
+      "memory_checked": true,
+      "peak": 9808065332,
+      "mem_available": 15311101952
+    },
+    "credential_mode": "none",
+    "classification": "verified",
+    "classification_reasons": [],
+    "fake_marker": true,
+    "changes": [
+      "QB_FAKE_AGENT_CHANGE.txt"
+    ],
+    "duration_ms": 14302,
+    "fake_change_captured": true,
+    "leftovers_removed": true
+  },
+  "cleanup": {
+    "normal": true,
+    "refusal": true,
+    "timeout": true,
+    "cancellation": true,
+    "crash": true
+  },
+  "cleanup_detail": {
+    "normal": {
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 46
+    },
+    "refusal": {
+      "pilot_outcome": "preflight_refused",
+      "error": "pilot preflight: pilot profile: auth route \"unapproved\" is not approved for the pilot (QB's stored-credential flow is never used); agent image qb-kan113-fake-cli:qualify is not the pinned content-tagged image qb-sandbox-agent:c-6e9312968a31b7b8",
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 46
+    },
+    "timeout": {
+      "status": "timeout",
+      "reason": "stage deadline",
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 45
+    },
+    "cancellation": {
+      "status": "cancelled",
+      "reason": "cancelled: qualification cancel",
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 45
+    },
+    "crash": {
+      "agent_started_before_kill": true,
+      "clean": true,
+      "left": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0
+      },
+      "waited_ms": 39014
+    }
+  },
+  "isolation": {
+    "bash_normal_mode_blocks_dummy": false,
+    "file_tools_enforced": false,
+    "file_tools_detail": "dummy reachable via: Read/direct, Read/symlink, Read/dir-symlink, Read/chained-symlink, Write/dir-symlink",
+    "bash_detail": "bwrap: No permissions to create new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>. | rc=1",
+    "userns_diagnostics": {
+      "sysctl.kernel.apparmor_restrict_unprivileged_userns": "1",
+      "sysctl.kernel.apparmor_restrict_unprivileged_unconfined": "0",
+      "sysctl.kernel.unprivileged_userns_clone": "1",
+      "sysctl.user.max_user_namespaces": "58121",
+      "apparmor.enabled": "Y",
+      "apparmor.bwrap_profile_files": "lxc-usernsexec,unprivileged_userns,",
+      "host.self_status": "CapEff: 0000000000000000 NoNewPrivs: 0 Seccomp: 0",
+      "host.unshare_user": "ok",
+      "host.bwrap_present": "absent",
+      "docker.security_options": "[\"name=apparmor\",\"name=seccomp,profile=builtin\",\"name=cgroupns\"]",
+      "docker.default_apparmor_profile_loaded": "1",
+      "kernel_log_apparmor_userns_denials": [],
+      "kernel_log_seccomp_lines": []
+    },
+    "env_token": {
+      "no_scrub": "not_visible",
+      "scrub": "not_run",
+      "started": {
+        "no_scrub": true,
+        "scrub": false
+      }
+    },
+    "bash_unsandboxed_reads": {
+      "cat_cred": "dummy_visible",
+      "cat_symlink": "dummy_visible"
+    },
+    "tool_probe": {
+      "file_rules": {
+        "variant": "file-rules",
+        "started": true,
+        "stderr_tail": "",
+        "tools": [
+          "Agent",
+          "Bash",
+          "CronCreate",
+          "CronDelete",
+          "CronList",
+          "Edit",
+          "EnterWorktree",
+          "ExitWorktree",
+          "ListAgents",
+          "Monitor",
+          "NotebookEdit",
+          "Read",
+          "ReportFindings",
+          "ScheduleWakeup",
+          "SendMessage",
+          "Skill",
+          "TaskStop",
+          "ToolSearch",
+          "WebFetch",
+          "WebSearch",
+          "Workflow",
+          "Write"
+        ],
+        "cases": [
+          {
+            "tool": "Read",
+            "kind": "direct",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/cfg/.credentials.json\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/link-to-cred\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "dir-symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/link-to-cfg/.credentials.json\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "chained-symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/sub/chained\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "control",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/ok.txt\\\",\\\"content\\\":\\\"ordinary file\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Grep",
+            "kind": "dir",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Grep",
+            "kind": "symlink",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Grep",
+            "kind": "work-tree",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Glob",
+            "kind": "dir",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Glob",
+            "kind": "dir-symlink",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Edit",
+            "kind": "symlink",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": true,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"Refusing to write /work/link-to-cred: it is a symbolic link. Write to the link's target path instead.\"}],\"isError\":true}"
+          },
+          {
+            "tool": "Write",
+            "kind": "symlink",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": true,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"Refusing to write /work/link-to-cred: it is a symbolic link. Write to the link's target path instead.\"}],\"isError\":true}"
+          },
+          {
+            "tool": "Write",
+            "kind": "dir-symlink",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"create\\\",\\\"filePath\\\":\\\"/work/link-to-cfg/new.txt\\\",\\\"content\\\":\\\"x\\\",\\\"structuredPatch\\\":[],\\\"originalFile\\\":null,\\\"userModified\\\":false}\"}]}"
+          },
+          {
+            "tool": "Bash",
+            "kind": "env-token",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"stdout\\\":\\\"UNSET\\\",\\\"stderr\\\":\\\"\\\",\\\"interrupted\\\":false,\\\"isImage\\\":false,\\\"noOutputExpected\\\":false}\"}]}"
+          },
+          {
+            "tool": "Bash",
+            "kind": "cat-cred",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"stdout\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"interrupted\\\":false,\\\"isImage\\\":false,\\\"noOutputExpected\\\":false}\"}]}"
+          },
+          {
+            "tool": "Bash",
+            "kind": "cat-symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"stdout\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"interrupted\\\":false,\\\"isImage\\\":false,\\\"noOutputExpected\\\":false}\"}]}"
+          }
+        ],
+        "exit": {
+          "code": 143,
+          "signal": null
+        }
+      },
+      "sandbox_required": {
+        "variant": "sandbox-required",
+        "started": false,
+        "stderr_tail": "Error: sandbox required but unavailable: sandbox is enabled but dependencies are missing: bubblewrap (bwrap) not installed · install missing tools (e.g. apt install bubblewrap socat) or see https://code.claude.com/docs/en/sandboxing\n  sandbox.failIfUnavailable is set — refusing to start without a wo",
+        "tools": [],
+        "cases": [],
+        "exit": {
+          "code": 1,
+          "signal": null
+        }
+      },
+      "env_noscrub": {
+        "variant": "env-noscrub",
+        "started": true,
+        "stderr_tail": "",
+        "tools": [
+          "Agent",
+          "Bash",
+          "CronCreate",
+          "CronDelete",
+          "CronList",
+          "Edit",
+          "EnterWorktree",
+          "ExitWorktree",
+          "ListAgents",
+          "Monitor",
+          "NotebookEdit",
+          "Read",
+          "ReportFindings",
+          "ScheduleWakeup",
+          "SendMessage",
+          "Skill",
+          "TaskStop",
+          "ToolSearch",
+          "WebSearch",
+          "Workflow",
+          "Write"
+        ],
+        "cases": [
+          {
+            "tool": "Read",
+            "kind": "direct",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/cfg/.credentials.json\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/link-to-cred\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "dir-symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/link-to-cfg/.credentials.json\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "chained-symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/sub/chained\\\",\\\"content\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Read",
+            "kind": "control",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"text\\\",\\\"file\\\":{\\\"filePath\\\":\\\"/work/ok.txt\\\",\\\"content\\\":\\\"ordinary file\\\\n\\\",\\\"numLines\\\":2,\\\"startLine\\\":1,\\\"totalLines\\\":2}}\"}]}"
+          },
+          {
+            "tool": "Grep",
+            "kind": "dir",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Grep",
+            "kind": "symlink",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Grep",
+            "kind": "work-tree",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Glob",
+            "kind": "dir",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Glob",
+            "kind": "dir-symlink",
+            "result": "tool_not_exposed"
+          },
+          {
+            "tool": "Edit",
+            "kind": "symlink",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": true,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"Refusing to write /work/link-to-cred: it is a symbolic link. Write to the link's target path instead.\"}],\"isError\":true}"
+          },
+          {
+            "tool": "Write",
+            "kind": "symlink",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": false,
+            "is_error": true,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"Refusing to write /work/link-to-cred: it is a symbolic link. Write to the link's target path instead.\"}],\"isError\":true}"
+          },
+          {
+            "tool": "Write",
+            "kind": "dir-symlink",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"type\\\":\\\"create\\\",\\\"filePath\\\":\\\"/work/link-to-cfg/new.txt\\\",\\\"content\\\":\\\"x\\\",\\\"structuredPatch\\\":[],\\\"originalFile\\\":null,\\\"userModified\\\":false}\"}]}"
+          },
+          {
+            "tool": "Bash",
+            "kind": "env-token",
+            "dummy_visible": false,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"stdout\\\":\\\"UNSET\\\",\\\"stderr\\\":\\\"\\\",\\\"interrupted\\\":false,\\\"isImage\\\":false,\\\"noOutputExpected\\\":false}\"}]}"
+          },
+          {
+            "tool": "Bash",
+            "kind": "cat-cred",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"stdout\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"interrupted\\\":false,\\\"isImage\\\":false,\\\"noOutputExpected\\\":false}\"}]}"
+          },
+          {
+            "tool": "Bash",
+            "kind": "cat-symlink",
+            "dummy_visible": true,
+            "dummy_modified": false,
+            "new_file_in_cfg": true,
+            "is_error": false,
+            "message": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"stdout\\\":\\\"{\\\\\\\"qb_probe_dummy\\\\\\\":\\\\\\\"<DUMMY>\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"interrupted\\\":false,\\\"isImage\\\":false,\\\"noOutputExpected\\\":false}\"}]}"
+          }
+        ],
+        "exit": {
+          "code": 143,
+          "signal": null
+        }
+      },
+      "env_scrub": {
+        "variant": "env-scrub",
+        "started": false,
+        "stderr_tail": "Claude Code could not start: bubblewrap is required for subprocess env scrubbing and isolation. Install with: sudo apt-get install -y bubblewrap, set sandbox.bwrapPath in managed settings, or set CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=0 to disable (loses subprocess isolation).\n",
+        "tools": [],
+        "cases": [],
+        "exit": {
+          "code": 1,
+          "signal": null
+        }
+      }
+    }
+  },
+  "evaluation": {
+    "passed": false,
+    "first_blocker": {
+      "gate": "isolation",
+      "problems": [
+        "Bash sandbox (normal mode) did not block the dummy credential: bwrap: No permissions to create new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>. | rc=1",
+        "file-tool and resolved-path enforcement not shown: dummy reachable via: Read/direct, Read/symlink, Read/dir-symlink, Read/chained-symlink, Write/dir-symlink"
+      ]
+    },
+    "gates": [
+      {
+        "gate": "host",
+        "status": "passed"
+      },
+      {
+        "gate": "disk",
+        "status": "passed"
+      },
+      {
+        "gate": "admission",
+        "status": "passed"
+      },
+      {
+        "gate": "images",
+        "status": "passed"
+      },
+      {
+        "gate": "pipeline",
+        "status": "passed"
+      },
+      {
+        "gate": "cleanup",
+        "status": "passed"
+      },
+      {
+        "gate": "isolation",
+        "status": "failed",
+        "problems": [
+          "Bash sandbox (normal mode) did not block the dummy credential: bwrap: No permissions to create new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>. | rc=1",
+          "file-tool and resolved-path enforcement not shown: dummy reachable via: Read/direct, Read/symlink, Read/dir-symlink, Read/chained-symlink, Write/dir-symlink"
+        ]
+      }
+    ]
+  },
+  "unit_tap": {
+    "tests": 1182,
+    "pass": 1181,
+    "fail": 0,
+    "skipped": 0,
+    "todo": 1,
+    "cancelled": 0
+  }
+}

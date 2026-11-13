@@ -39,3 +39,18 @@ A dummy-secret workflow:
 - record whether the dummy reaches the tool environment, which args arrive, and what the logs and outputs contain.
 
 Live use of either route stays blocked until reviewed.
+
+## Addendum (10600): source-backed findings for R2. Supersedes the "likely" and "open" cells above where they differ
+Source: `anthropics/claude-code-action` **v1.0.275**, commit `4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8` (tag object `4a0465fcf999da98c6ba185172bf18ddf1a85003`), read 2026-11-13.
+
+| Question | Finding | Where |
+|---|---|---|
+| CLI version | It installs **2.1.323** by default (`curl https://claude.ai/install.sh \| bash -s -- 2.1.323`), **not** our frozen 2.1.322 | `src/entrypoints/run.ts` `installClaudeCode` |
+| Executable override | `path_to_claude_code_executable` **skips the install** and prepends its directory to PATH. So an exact 2.1.322 binary can be supplied. With an override, the default permission mode is no longer `auto` | `run.ts`; `src/modes/permission-mode.ts` `defaultsToAutoMode` |
+| How the CLI is invoked | Through the Agent SDK (`@anthropic-ai/claude-agent-sdk ^0.3.323`) with `pathToClaudeCodeExecutable`. `claude_args` become extra args, and the SDK adds its own. **The argv is not identical to our plain `claude -p`**; run #2 records the exact argv | `base-action/src/run-claude*.ts`, `parse-sdk-options.ts` |
+| Token exposure | The CLI child gets `env = { ...process.env }`, which includes `CLAUDE_CODE_OAUTH_TOKEN`. Only the OIDC request vars and `ALL_INPUTS` are deleted. Bash children inherit it unless `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` is on, which the action sets by default **only** with `allowed_non_write_users` | `parse-sdk-options.ts` ~L294–310; `action.yml` |
+| Requires a credential to start | Yes: `validateEnvironmentVariables` refuses without `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN` or workload identity. The wiring test injects a **synthetic** value generated in the job, not a repo secret | `base-action/src/validate-env.ts` |
+| Container | There's no container input. The action runs on the runner host (composite steps; Bun). Running it inside QB's pinned container is **not supported as shipped** | `action.yml` |
+| AppArmor userns | When subprocess isolation is enabled, the action runs `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` itself, so that bubblewrap works on Ubuntu 24.04. **Information only; it does not authorize option A** | `action.yml`, step "Install subprocess isolation dependencies" |
+
+**Conclusion for R2.** It can pin the CLI via the override. But it isn't the same invocation as our frozen `claude -p` (SDK argv), it doesn't run in QB's container, and it puts the token in the CLI's environment. Using it would need a disclosed KAN-112 protocol amendment for **both** arms, not a silent substitution.
