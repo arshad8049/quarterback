@@ -1,0 +1,37 @@
+{
+  "platform": "linux-x64",
+  "host": {
+    "uname": "Linux 7.0.0-1017-azure x86_64",
+    "hostname": "runnervm7aw5e",
+    "cpus": 4,
+    "memory_bytes": {
+      "total": 16760344576,
+      "available": 15816744960
+    }
+  },
+  "docker": "28.0.4 x86_64 Ubuntu 24.04.5 LTS cgroup2 mem=16760344576 cpus=4",
+  "qb_source": "8cf32bbd6e4a2a8d1fdf33a53d847e37eae797df",
+  "qb_sandbox_matches_main_784e721": true,
+  "images": {
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:0070713b058152b9b4c36263fbd8ec9aac39c173a58293905777bbffd6a89894 amd64"
+    },
+    "tools": {
+      "ref": "sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db",
+      "id": "sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db amd64"
+    },
+    "node_base_repo_digests": null
+  },
+  "stage_memory_limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "admission": {
+    "ok": true,
+    "reason": null,
+    "peak": 9808065332,
+    "mem_available": 15314087936
+  }
+}

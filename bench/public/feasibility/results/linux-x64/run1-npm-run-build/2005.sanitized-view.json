@@ -1,0 +1,110 @@
+{
+  "schema": "qb-feasibility/1",
+  "task": "2005",
+  "task_id": "qbt_9b9a5da937c9",
+  "instance": "immutable-js__immutable-js-2005",
+  "base": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+  "started": "2026-11-10T17:54:39.704Z",
+  "host": {
+    "platform": "linux/x64",
+    "docker": "28.0.4 x86_64 cgroup2 mem=16760344576"
+  },
+  "qb_source": "8cf32bbd6e4a2a8d1fdf33a53d847e37eae797df",
+  "commands": [
+    "git fetch --depth 1 https://github.com/immutable-js/immutable-js.git 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6 && git checkout --detach FETCH_HEAD",
+    "QB prepareDeps: deps-plan.sh \u2192 npm ci --no-audit --no-fund --registry=https://registry.npmjs.org/ (DEPS proxy, registry.npmjs.org only) \u2192 deps-check.sh",
+    "probe: echo \"arch=$(uname -m) node=$(node -v) npm=$(npm -v)\"; node -p \"'jest='+require('/scratch/node_modules/jest/package.json').version\"; node -p \"'jest-cli-bin='+require('fs').realpathSync('/scratch/node_modules/.bin/jest')\"; node -e \"try{const m=require('/scratch/node_modules/microtime');console.log('microtime=loads now='+(typeof m.now()))}catch(e){console.log('microtime=FAILS '+e.message.split('\\n')[0])}\"; ls /scratch/node_modules/microtime/build/Release 2>/dev/null | head -3 | sed \"s/^/microtime-build:/\"; ls /scratch/node_modules/microtime/prebuilds 2>/dev/null | sed \"s/^/microtime-prebuilds:/\"; [ -e /scratch/node_modules/esbuild ] && (node /scratch/node_modules/esbuild/bin/esbuild --version 2>&1 | sed \"s/^/esbuild=/\") || echo esbuild=absent; ls /scratch/node_modules/@esbuild 2>/dev/null | sed \"s/^/esbuild-platform:/\"; command -v cc gcc g++ make python3 2>/dev/null | sed \"s/^/toolchain:/\"; echo toolchain-check-done",
+    "build: npm run build   (explicit pre-test step; same as the grader runs before Jest)"
+  ],
+  "stages": {
+    "seed": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 302
+    },
+    "deps": {
+      "status": "ready",
+      "reason": null,
+      "detail": null,
+      "wall_ms": 18695,
+      "plan": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 225
+      },
+      "install": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 15465
+      },
+      "check": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 142
+      },
+      "node_modules_kib": 702552
+    },
+    "base_prep": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 168
+    },
+    "probe": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 440,
+      "output": "arch=x86_64 node=v24.22.2 npm=11.19.1\njest=29.6.4\njest-cli-bin=/scratch/node_modules/jest/bin/jest.js\nmicrotime=loads now=number\nmicrotime-prebuilds:darwin-x64\nmicrotime-prebuilds:linux-arm\nmicrotime-prebuilds:linux-x64\nmicrotime-prebuilds:win32-x64\nesbuild-platform:linux-x64\ntoolchain-check-done\nesbuild=probe error (my probe ran the native esbuild binary through node; the output was the ELF binary, removed here). @esbuild/linux-x64 is present.\nQB_FEAS_MEMORY_PEAK=39460864\n"
+    },
+    "build": {
+      "state": "execution_error",
+      "reason": "exit 1",
+      "exit_code": 1,
+      "oom_killed": false,
+      "duration_ms": 2736,
+      "memory_peak_bytes": 272703488
+    }
+  },
+  "findings": {
+    "result": "build_failed",
+    "build_error": "\u001b[36m\n\u001b[1m/scratch/src/Immutable.js\u001b[22m \u2192 \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m...\u001b[39m\n\u001b[1m\u001b[33m(!) Circular dependencies\u001b[39m\u001b[22m\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\n\u001b[32mcreated \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m in \u001b[1m1.3s\u001b[22m\u001b[39m\nfetch failed\nnode:internal/process/promises:394\n    triggerUncaughtException(err, true /* fromPromise */);\n    ^\n\n[TypeError: fetch failed] {\n  [cause]: Error: getaddrinfo EAI_AGAIN bundlephobia.com\n      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:123:26) {\n    errno: -3001,\n    code: 'EAI_AGAIN',\n    syscall: 'getaddrinfo',\n    hostname: 'bundlephobia.com'\n  }\n}\n\nNode.js v24.22.2\nERROR: \"build:stats\" exited with 1.\n"
+  },
+  "checkout": {
+    "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+    "tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb"
+  },
+  "run_id": "qb-feas2005-mwazpfts-1e8a",
+  "images": {
+    "tools": {
+      "ref": "sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db",
+      "id": "sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db amd64"
+    },
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:0070713b058152b9b4c36263fbd8ec9aac39c173a58293905777bbffd6a89894 amd64"
+    }
+  },
+  "limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "finished": "2026-11-10T17:55:07.080Z",
+  "sanitized": "probe esbuild lines replaced: they contained raw ELF bytes from a probe mistake; see feasibility/README.md"
+}

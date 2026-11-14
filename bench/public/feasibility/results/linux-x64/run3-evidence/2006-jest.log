@@ -1,0 +1,57 @@
+# exit 0 state completed
+# stdout (tail)
+QB_FEAS_MEMORY_PEAK=819044352
+
+# stderr (tail)
+PASS __tests__/List.ts
+PASS __tests__/Map.ts
+PASS __tests__/updateIn.ts
+PASS __tests__/Set.ts
+PASS __tests__/merge.ts
+PASS __tests__/Record.ts
+PASS __tests__/slice.ts
+PASS __tests__/Stack.ts
+PASS __tests__/Conversion.ts
+PASS __tests__/Range.ts
+PASS __tests__/concat.ts
+PASS __tests__/issues.ts
+PASS __tests__/OrderedSet.ts
+PASS __tests__/getIn.ts
+PASS __tests__/Equality.ts
+PASS __tests__/Seq.ts
+PASS __tests__/OrderedMap.ts
+PASS __tests__/zip.ts
+PASS __tests__/flatten.ts
+PASS __tests__/transformerProtocol.ts
+PASS __tests__/minmax.ts
+PASS __tests__/ArraySeq.ts
+PASS __tests__/KeyedSeq.ts
+PASS __tests__/groupBy.ts
+PASS __tests__/partition.ts
+PASS __tests__/MultiRequire.js
+PASS __tests__/hasIn.ts
+PASS __tests__/count.ts
+PASS __tests__/Comparator.ts
+PASS __tests__/splice.ts
+PASS __tests__/fromJS.ts
+PASS __tests__/utils.js
+PASS __tests__/RecordJS.js
+PASS __tests__/sort.ts
+PASS __tests__/ObjectSeq.ts
+PASS __tests__/hash.ts
+PASS __tests__/ListJS.js
+PASS __tests__/Predicates.ts
+PASS __tests__/IndexedSeq.ts
+PASS __tests__/get.ts
+PASS __tests__/interpose.ts
+PASS __tests__/join.ts
+PASS __tests__/find.ts
+PASS __tests__/Repeat.ts
+
+Test Suites: 44 passed, 44 total
+Tests:       1 skipped, 683 passed, 684 total
+Snapshots:   3 passed, 3 total
+Time:        14.733 s
+Ran all test suites.
+Test results written to: ../out/jest.json
+

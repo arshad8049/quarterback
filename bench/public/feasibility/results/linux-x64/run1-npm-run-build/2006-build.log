@@ -1,0 +1,66 @@
+# exit 1 state execution_error
+# stdout (tail)
+
+> immutable@4.3.6 build
+> run-s build:*
+
+
+> immutable@4.3.6 build:clean
+> rimraf dist
+
+
+> immutable@4.3.6 build:dist
+> rollup -c ./resources/rollup-config.js
+
+
+> immutable@4.3.6 build:esm
+> rollup -c ./resources/rollup-config-es.js
+
+
+> immutable@4.3.6 build:copy
+> cpy ./type-definitions/immutable.* dist
+
+
+> immutable@4.3.6 build:prepare
+> ./resources/prepare-dist.sh
+
+
+> immutable@4.3.6 build:stats
+> node ./resources/dist-stats.mjs
+
+QB_FEAS_MEMORY_PEAK=290201600
+
+# stderr (tail)
+
+/scratch/src/Immutable.js → dist/immutable.js...
+(!) Circular dependencies
+src/Seq.js -> src/Collection.js -> src/Seq.js
+src/Map.js -> src/Operations.js -> src/Map.js
+src/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js
+...and 6 more
+created dist/immutable.js in 1.3s
+
+/scratch/src/Immutable.js → dist/immutable.es.js...
+(!) Circular dependencies
+src/Seq.js -> src/Collection.js -> src/Seq.js
+src/Map.js -> src/Operations.js -> src/Map.js
+src/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js
+...and 6 more
+created dist/immutable.es.js in 523ms
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo EAI_AGAIN bundlephobia.com
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:123:26) {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'bundlephobia.com'
+  }
+}
+
+Node.js v24.22.2
+ERROR: "build:stats" exited with 1.
+

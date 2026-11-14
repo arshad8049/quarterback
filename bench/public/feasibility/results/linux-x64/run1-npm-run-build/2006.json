@@ -1,0 +1,109 @@
+{
+  "schema": "qb-feasibility/1",
+  "task": "2006",
+  "task_id": "qbt_00b20b1b0285",
+  "instance": "immutable-js__immutable-js-2006",
+  "base": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+  "started": "2026-11-10T17:54:01.352Z",
+  "host": {
+    "platform": "linux/x64",
+    "docker": "28.0.4 x86_64 cgroup2 mem=16760344576"
+  },
+  "qb_source": "8cf32bbd6e4a2a8d1fdf33a53d847e37eae797df",
+  "commands": [
+    "git fetch --depth 1 https://github.com/immutable-js/immutable-js.git 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 && git checkout --detach FETCH_HEAD",
+    "QB prepareDeps: deps-plan.sh → npm ci --no-audit --no-fund --registry=https://registry.npmjs.org/ (DEPS proxy, registry.npmjs.org only) → deps-check.sh",
+    "probe: echo \"arch=$(uname -m) node=$(node -v) npm=$(npm -v)\"; node -p \"'jest='+require('/scratch/node_modules/jest/package.json').version\"; node -p \"'jest-cli-bin='+require('fs').realpathSync('/scratch/node_modules/.bin/jest')\"; node -e \"try{const m=require('/scratch/node_modules/microtime');console.log('microtime=loads now='+(typeof m.now()))}catch(e){console.log('microtime=FAILS '+e.message.split('\\n')[0])}\"; ls /scratch/node_modules/microtime/build/Release 2>/dev/null | head -3 | sed \"s/^/microtime-build:/\"; ls /scratch/node_modules/microtime/prebuilds 2>/dev/null | sed \"s/^/microtime-prebuilds:/\"; [ -e /scratch/node_modules/esbuild ] && (node /scratch/node_modules/esbuild/bin/esbuild --version 2>&1 | sed \"s/^/esbuild=/\") || echo esbuild=absent; ls /scratch/node_modules/@esbuild 2>/dev/null | sed \"s/^/esbuild-platform:/\"; command -v cc gcc g++ make python3 2>/dev/null | sed \"s/^/toolchain:/\"; echo toolchain-check-done",
+    "build: npm run build   (explicit pre-test step; same as the grader runs before Jest)"
+  ],
+  "stages": {
+    "seed": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 311
+    },
+    "deps": {
+      "status": "ready",
+      "reason": null,
+      "detail": null,
+      "wall_ms": 28844,
+      "plan": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 223
+      },
+      "install": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 15587
+      },
+      "check": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 139
+      },
+      "node_modules_kib": 693416
+    },
+    "base_prep": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 176
+    },
+    "probe": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 324,
+      "output": "arch=x86_64 node=v24.22.2 npm=11.19.1\njest=27.2.0\njest-cli-bin=/scratch/node_modules/jest/bin/jest.js\nmicrotime=loads now=number\nmicrotime-prebuilds:darwin-x64\nmicrotime-prebuilds:linux-arm\nmicrotime-prebuilds:linux-x64\nmicrotime-prebuilds:win32-x64\nesbuild=absent\ntoolchain-check-done\nQB_FEAS_MEMORY_PEAK=19415040\n"
+    },
+    "build": {
+      "state": "execution_error",
+      "reason": "exit 1",
+      "exit_code": 1,
+      "oom_killed": false,
+      "duration_ms": 3564,
+      "memory_peak_bytes": 290201600
+    }
+  },
+  "findings": {
+    "result": "build_failed",
+    "build_error": "\n/scratch/src/Immutable.js → dist/immutable.js...\n(!) Circular dependencies\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\ncreated dist/immutable.js in 1.3s\n\n/scratch/src/Immutable.js → dist/immutable.es.js...\n(!) Circular dependencies\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\ncreated dist/immutable.es.js in 523ms\nnode:internal/process/promises:394\n    triggerUncaughtException(err, true /* fromPromise */);\n    ^\n\n[TypeError: fetch failed] {\n  [cause]: Error: getaddrinfo EAI_AGAIN bundlephobia.com\n      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:123:26) {\n    errno: -3001,\n    code: 'EAI_AGAIN',\n    syscall: 'getaddrinfo',\n    hostname: 'bundlephobia.com'\n  }\n}\n\nNode.js v24.22.2\nERROR: \"build:stats\" exited with 1.\n"
+  },
+  "checkout": {
+    "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+    "tree": "9b55941fe4c925e04ddac89277b98192d7609bcb"
+  },
+  "run_id": "qb-feas2006-mwazom9c-a1aa",
+  "images": {
+    "tools": {
+      "ref": "sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db",
+      "id": "sha256:4865d422dd6e3686fb493e0249507de391096f8ad5e0be45e2902e8ccc3c19db amd64"
+    },
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:0070713b058152b9b4c36263fbd8ec9aac39c173a58293905777bbffd6a89894 amd64"
+    }
+  },
+  "limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "finished": "2026-11-10T17:54:39.703Z"
+}

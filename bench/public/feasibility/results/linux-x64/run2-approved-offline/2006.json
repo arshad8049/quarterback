@@ -1,0 +1,190 @@
+{
+  "schema": "qb-feasibility/1",
+  "task": "2006",
+  "task_id": "qbt_00b20b1b0285",
+  "instance": "immutable-js__immutable-js-2006",
+  "base": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+  "build_scripts": [
+    "build:clean",
+    "build:dist",
+    "build:esm",
+    "build:copy",
+    "build:prepare"
+  ],
+  "omitted": [
+    "build:stats"
+  ],
+  "label": "run2-approved-offline",
+  "build_mode": "approved-offline",
+  "started": "2026-11-10T18:57:58.511Z",
+  "host": {
+    "platform": "linux/x64",
+    "docker": "28.0.4 x86_64 cgroup2 mem=16760344576"
+  },
+  "qb_source": "baf8064995cb220e2c6799388b878560b10d605c",
+  "commands": [
+    "git fetch --depth 1 https://github.com/immutable-js/immutable-js.git 493afba6ec17d9c999dc5a15ac80c71c6bdba1c3 && git checkout --detach FETCH_HEAD",
+    "QB prepareDeps: deps-plan.sh → npm ci --no-audit --no-fund --registry=https://registry.npmjs.org/ (DEPS proxy, registry.npmjs.org only) → deps-check.sh",
+    "probe: echo \"arch=$(uname -m) node=$(node -v) npm=$(npm -v)\"; node -p \"'jest='+require('/scratch/node_modules/jest/package.json').version\"; node -p \"'jest-cli-bin='+require('fs').realpathSync('/scratch/node_modules/.bin/jest')\"; node -e \"try{const m=require('/scratch/node_modules/microtime');console.log('microtime=loads now='+(typeof m.now()))}catch(e){console.log('microtime=FAILS '+e.message.split('\\n')[0])}\"; ls /scratch/node_modules/microtime/build/Release 2>/dev/null | head -3 | sed \"s/^/microtime-build:/\"; ls /scratch/node_modules/microtime/prebuilds 2>/dev/null | sed \"s/^/microtime-prebuilds:/\"; if [ -e /scratch/node_modules/esbuild ]; then echo \"esbuild-bin-kind=$(head -c 4 /scratch/node_modules/esbuild/bin/esbuild | od -An -c | tr -d \" \" | head -c 12)\"; echo \"esbuild-exec=$(/scratch/node_modules/esbuild/bin/esbuild --version 2>&1 | head -1)\"; node -e \"console.log(\"esbuild-js-api=\"+require(\"/scratch/node_modules/esbuild\").version)\" 2>&1 | head -1; else echo esbuild=absent; fi; echo \"npm-ignore-scripts=$(npm config get ignore-scripts 2>/dev/null)\"; npm config ls -l 2>/dev/null | grep -iE \"script\" | sed \"s/^/npm-config:/\" | head -12; ls /scratch/node_modules/@esbuild 2>/dev/null | sed \"s/^/esbuild-platform:/\"; command -v cc gcc g++ make python3 2>/dev/null | sed \"s/^/toolchain:/\"; echo toolchain-check-done",
+    "build (approved offline, review 10544): npm run build:clean && npm run build:dist && npm run build:esm && npm run build:copy && npm run build:prepare  (omitted: build:stats)",
+    "enumerate: node_modules/.bin/jest --ci --listTests",
+    "jest: node_modules/.bin/jest --ci --runInBand --json --outputFile=/out/jest.json   (pinned local binary; no npx, no download fallback; repository tests at base only)"
+  ],
+  "stages": {
+    "seed": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 312
+    },
+    "deps": {
+      "status": "ready",
+      "reason": null,
+      "detail": null,
+      "wall_ms": 19016,
+      "plan": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 223
+      },
+      "install": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 15795
+      },
+      "check": {
+        "state": "completed",
+        "reason": "exit 0",
+        "exit_code": 0,
+        "oom_killed": false,
+        "duration_ms": 138
+      },
+      "node_modules_kib": 693416
+    },
+    "base_prep": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 163
+    },
+    "probe": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 528,
+      "output": "arch=x86_64 node=v24.22.2 npm=11.19.1\njest=27.2.0\njest-cli-bin=/scratch/node_modules/jest/bin/jest.js\nmicrotime=loads now=number\nmicrotime-prebuilds:darwin-x64\nmicrotime-prebuilds:linux-arm\nmicrotime-prebuilds:linux-x64\nmicrotime-prebuilds:win32-x64\nesbuild=absent\nnpm-ignore-scripts=false\nnpm-config:allow-scripts = [\"\"]\nnpm-config:allow-scripts-pending = false\nnpm-config:allow-scripts-pin = true\nnpm-config:dangerously-allow-all-scripts = false\nnpm-config:description = true\nnpm-config:foreground-scripts = false\nnpm-config:ignore-scripts = false\nnpm-config:script-shell = null\nnpm-config:strict-allow-scripts = false\nnpm-config:token-description = null\ntoolchain-check-done\nQB_FEAS_MEMORY_PEAK=23105536\n"
+    },
+    "build": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 3188,
+      "memory_peak_bytes": 254521344,
+      "dist_outputs": [
+        "4ace083580c1b77e 188839 dist/immutable.d.ts",
+        "d5bb7c6de913fa48 161281 dist/immutable.es.js",
+        "00c48f36b9f760d8 172881 dist/immutable.js",
+        "997046b23404e9fd 62767 dist/immutable.js.flow",
+        "87325af960ae4958 65337 dist/immutable.min.js",
+        "QB_FEAS_MEMORY_PEAK=254521344"
+      ]
+    },
+    "jest_list": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 656,
+      "test_files": 44,
+      "sample": [
+        "__tests__/List.ts",
+        "__tests__/Map.ts",
+        "__tests__/updateIn.ts",
+        "__tests__/Set.ts",
+        "__tests__/merge.ts"
+      ]
+    },
+    "jest": {
+      "state": "completed",
+      "reason": "exit 0",
+      "exit_code": 0,
+      "oom_killed": false,
+      "duration_ms": 14114,
+      "memory_peak_bytes": 632872960
+    }
+  },
+  "findings": {
+    "jest_report": {
+      "success": true,
+      "numTotalTestSuites": 44,
+      "numFailedTestSuites": 0,
+      "numRuntimeErrorTestSuites": 0,
+      "numTotalTests": 684,
+      "numPassedTests": 683,
+      "numFailedTests": 0,
+      "numPendingTests": 1,
+      "numTodoTests": 0,
+      "assertion_statuses": {
+        "passed": 683,
+        "pending": 1
+      },
+      "duplicate_identities": 1,
+      "snapshot": {
+        "unchecked": 0,
+        "filesRemoved": 0,
+        "failure": false
+      },
+      "exit_consistent": true,
+      "failed_suites": []
+    },
+    "result": "install+build+jest succeeded"
+  },
+  "checkout": {
+    "head": "493afba6ec17d9c999dc5a15ac80c71c6bdba1c3",
+    "tree": "9b55941fe4c925e04ddac89277b98192d7609bcb"
+  },
+  "run_id": "qb-feas2006-mwb1yv9p-eb89",
+  "images": {
+    "tools": {
+      "ref": "sha256:8bc3649b3e73645113bbed0f3cf6e91e1f1d2d4f0b8a6a5e7f26374c7914e22f",
+      "id": "sha256:8bc3649b3e73645113bbed0f3cf6e91e1f1d2d4f0b8a6a5e7f26374c7914e22f amd64"
+    },
+    "agent": {
+      "ref": "qb-sandbox-agent:c-4b166ca34296ddda",
+      "id": "sha256:d60753a9b3ac40c51a97995146d8a32ca670a12144d6cc02501ea67d99ae0c8c amd64"
+    }
+  },
+  "limits": {
+    "seed": 2952790016,
+    "deps": 6442450944,
+    "verify": 4294967296
+  },
+  "build_plan": {
+    "mode": "approved-offline (review 10544)",
+    "scripts": [
+      "build:clean",
+      "build:dist",
+      "build:esm",
+      "build:copy",
+      "build:prepare"
+    ],
+    "omitted": [
+      "build:stats"
+    ],
+    "guard": "package.json build:* order, build = run-s build:*, no pre/post build hooks"
+  },
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "finished": "2026-11-10T18:58:43.315Z"
+}

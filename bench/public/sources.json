@@ -1,0 +1,49 @@
+{
+  "schema": "qb-public-sources/1",
+  "pinned_at": "2026-11-10",
+  "note": "Immutable Hugging Face revisions. import.mjs refuses any file whose SHA-256 differs. Only files marked use=true are imported; the rest are hashed for provenance.",
+  "sources": [
+    {
+      "source": "swe-bench-pro-v2",
+      "hf_dataset": "ScaleAI/SWE-bench_Pro",
+      "revision": "2d52cb3df914a3fcf80c7f66738b3a88ae37fc50",
+      "license": "Harness and tooling MIT (scaleapi/SWE-bench_Pro-os). Task content derived from 11 upstream repositories under their own licences: not republished.",
+      "decision": "Proposed: V2 'default' config (642 tasks, 2026-09-22) only. Never mixed with v1 (731, the paper's release) or its published denominators. Awaiting Arshad's confirmation on KAN-110.",
+      "files": [
+        { "path": "README.md", "sha256": "243f51de326a4502f0e353eb3e25cb712c465e78d80e15cdaac4db70e5a9b83f", "bytes": 9812, "use": false },
+        { "path": "eval.yaml", "sha256": "ee254a61dc1778313087d49c2d74c0b4260443015fab8f9072d01d9ab2f2167c", "bytes": 546, "use": false },
+        { "path": "data/default/test-00000-of-00001.parquet", "config": "default", "split": "test", "rows": 642, "sha256": "1067f72c1f43bbc578276888625db3b836cebb535546c9eaf824c5d5dd104a7f", "bytes": 6511689, "use": true, "format": "parquet" },
+        { "path": "data/hard/test-00000-of-00001.parquet", "config": "hard", "split": "test", "rows": 51, "sha256": "abe9b2280ae470ae5742698979855e40ecc5c83c7aa6c679afb4ee964e951d3c", "bytes": 799741, "use": false },
+        { "path": "data/v1/test-00000-of-00001.parquet", "config": "v1", "split": "test", "rows": 731, "sha256": "c8cd7115496ad4e9a8b21d088cef576a65bf821bb542b24336f13f714cef13f8", "bytes": 7816820, "use": false }
+      ],
+      "js_filter": { "field": "repo_language", "values": ["js", "ts"] }
+    },
+    {
+      "source": "swe-bench-multilingual",
+      "hf_dataset": "SWE-bench/SWE-bench_Multilingual",
+      "revision": "846e647b9f33c0b51b739d005d13d85493c9af09",
+      "license": "MIT (dataset card). Task content derived from upstream repositories under their own licences: not republished.",
+      "files": [
+        { "path": "README.md", "sha256": "c8b96ca94b43344556c610bcc4e836ef6b5472e2e1f9ca561aebd5cc011e3a14", "bytes": 4306, "use": false },
+        { "path": "eval.yaml", "sha256": "4c7e76ef3d281eb01e006c5d01a6db049e82fdd60776f935e14f353288d657fc", "bytes": 521, "use": false },
+        { "path": "data/test-00000-of-00001.parquet", "config": "default", "split": "test", "rows": 300, "sha256": "92abca7cb527b41a9f66d03a26ce441ff7319e3a49f985998fd56be4bb9b08b2", "bytes": 1875846, "use": true, "format": "parquet" }
+      ],
+      "js_filter": {
+        "field": "repo",
+        "note": "The dataset has no language column. Languages per repository from the dataset card's table (JavaScript 26 / 3 repos, TypeScript 17 / 4 repos); counts reproduced by import.mjs.",
+        "values": { "preactjs/preact": "js", "axios/axios": "js", "mrdoob/three.js": "js", "babel/babel": "ts", "facebook/docusaurus": "ts", "vuejs/core": "ts", "immutable-js/immutable-js": "ts" }
+      }
+    },
+    {
+      "source": "swe-polybench",
+      "hf_dataset": "AmazonScience/SWE-PolyBench",
+      "revision": "d56445f9940eae4e9d2974ec66820c2f1d7754e6",
+      "license": "MIT (dataset card). Task content derived from upstream repositories under their own licences: not republished.",
+      "files": [
+        { "path": "README.md", "sha256": "3a9ffcfc3328b5d0c433a64747354734c680aabc6e6348476f58e733368e83e2", "bytes": 3652, "use": false },
+        { "path": "test.csv", "config": "full", "split": "test", "rows": 2110, "sha256": "17ad661b20e9af1e2067fbbc2e2658a21137d56693570d1d07f966d8bc0408b7", "bytes": 100439596, "use": true, "format": "csv" }
+      ],
+      "js_filter": { "field": "language", "values": ["JavaScript", "TypeScript"] }
+    }
+  ]
+}
