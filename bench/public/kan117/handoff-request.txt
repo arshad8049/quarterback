@@ -1,0 +1,1 @@
+KAN-117 handoff run request #1 (review 10609: narrow handoff; no model, no credential, no spend)
