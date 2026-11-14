@@ -4,7 +4,8 @@ KAN-111 (immutable-offline-v1): grade one run's test output with the PINNED SWE-
 (SWE-bench/SWE-bench @ 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e), plus additive strict checks and a
 mode-aware acceptance gate (reviews 10549, 10551). The official result is reported unchanged.
 
-usage: grade_report.py <instance_id> <test_output.txt> <required.json> <out.json> <mode: empty|gold>
+usage: grade_report.py <instance_id> <test_output.txt> <required.json> <out.json> <mode: empty|gold|candidate>
+  candidate (KAN-117 review 10607): no expected outcome; reports the actual result and whether the evidence is valid
   required.json = {"FAIL_TO_PASS": [...], "PASS_TO_PASS": [...]}  (from the grader vault; never agent-visible)
 exit: 0 = graded (accepted or not: read acceptance.accepted); 3 = infrastructure error (harness/API/log);
       2 = bad usage.
@@ -14,8 +15,8 @@ import re
 import sys
 from types import SimpleNamespace
 
-if len(sys.argv) != 6 or sys.argv[5] not in ("empty", "gold"):
-    print("usage: grade_report.py <instance_id> <log> <required.json> <out.json> <empty|gold>", file=sys.stderr)
+if len(sys.argv) != 6 or sys.argv[5] not in ("empty", "gold", "candidate"):
+    print("usage: grade_report.py <instance_id> <log> <required.json> <out.json> <empty|gold|candidate>", file=sys.stderr)
     sys.exit(2)
 instance_id, log_fp, req_fp, out_fp, mode = sys.argv[1:6]
 out = {"instance_id": instance_id, "mode": mode, "harness": "SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
@@ -101,6 +102,23 @@ for kind in (FAIL_TO_PASS, PASS_TO_PASS):
 # Structural only (every required identity has exactly one raw result line). NOT the acceptance decision.
 strict["structural_present_and_unique"] = all(r["occurrences"] == 1 for kind in (FAIL_TO_PASS, PASS_TO_PASS) for r in strict["required"][kind]["rows"])
 out["strict"] = strict
+
+# ── Candidate mode (KAN-117 10607): the actual result, NO expected outcome. Missing, ambiguous or unknown
+#    required results, or a failed log gate, make the evidence invalid (a harness outcome, not a model failure).
+if mode == "candidate":
+    off = out["official"] or {}
+    invalid = [] if off.get("log_gate") == "ok" else ["official log gate failed"]
+    for kind in (FAIL_TO_PASS, PASS_TO_PASS):
+        for r in strict["required"][kind]["rows"]:
+            if r["strict"] in ("missing", "ambiguous") or r["strict"].startswith("unknown:"):
+                invalid.append(f"{kind}[{r['index']}]: {r['strict']}")
+    out["result"] = {"mode": "candidate", "evidence_valid": not invalid, "invalid_reasons": invalid,
+                     "official_resolution": off.get("resolution"),
+                     "fail_to_pass": strict["required"][FAIL_TO_PASS]["counts"],
+                     "pass_to_pass": strict["required"][PASS_TO_PASS]["counts"]}
+    json.dump(out, open(out_fp, "w"), indent=2)
+    print(json.dumps({"mode": mode, "evidence_valid": not invalid, "official": off.get("resolution")}))
+    sys.exit(0)
 
 # ── Acceptance gate (mode-aware): official gate + resolution, and EACH required identity as expected ──
 reasons = []

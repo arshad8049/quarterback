@@ -1,0 +1,199 @@
+# KAN-117 stage B (review 10607): ONE no-model vertical slice for immutable-js 2005 (calibration-only).
+# QB's REAL runSandboxed path with the research Jest channel (baseline, scripted-empty, controller-applied gold,
+# agent-workspace probe), then the independent KAN-111 grader in candidate mode, outside the coding budget.
+# No model call, no credential, no secret, no sign-in, no spend. Results leave only through stage-b-sanitize.mjs.
+# Trigger: a push to kan117-stage-b that changes bench/public/kan117/run-request.txt.
+name: kan117-stage-b
+
+on:
+  push:
+    branches: [kan117-stage-b]
+    paths: [bench/public/kan117/run-request.txt]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kan117-stage-b
+  cancel-in-progress: false
+
+env:
+  SWEBENCH_REF: 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e
+  ARCHIVE_SHA256: d06181d5365b51fc7ff490171581b9ee87d77e19b3a739a8d574bf25d9ef9479
+  LOCK_SHA256: 3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba
+  GRADER: bench/public/grader/immutable-offline-v1
+  EV: bench/public/grader/immutable-offline-v1/lock-evidence/run-42906422892
+  WORK: ${{ github.workspace }}/kan117-work
+  PUB: ${{ github.workspace }}/kan117-publish
+  INST: ${{ github.workspace }}/kan117-install-record
+  QB_INTEGRATION: '0'
+
+jobs:
+  stage-b:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+
+      - name: Unit tests (regression, incl. KAN-117)
+        run: npm run test:ci
+
+      - name: Refuse unless the candidate-grade phase is approved in bench/public/kan117/approvals.json
+        run: |
+          set -euo pipefail
+          id=$(jq -r '.candidate_grade.approval_comment_id // empty' bench/public/kan117/approvals.json)
+          [[ "$id" =~ ^[0-9]+$ ]] || { echo "::error::candidate grading not approved"; exit 1; }
+          echo "CAND_APPROVAL=$id" >> "$GITHUB_ENV"
+
+      - name: Verify the persisted lock evidence (the six reviewed files, byte for byte)
+        run: |
+          set -euo pipefail
+          printf '%s\n' \
+            '3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba  requirements.lock' \
+            '0123302e17e1933d5c7e321734c47b25e0764ab4bb91b5fa1a941c74d98b2b32  dists.sha256' \
+            'a60f0de346e0783dc6645edeb537b24b0f5d35c9d01be7a19f6b129bf5f79bff  archive.sha256' \
+            '1a454284cf5fd8afef66e40a0e0d3581548c2504a938fbdfdea35c20f177705c  harness-files.sha256' \
+            '7195c125aa09cc048505378fbede55c127dc65b7797ab8b75d7ca5cc843cfcf7  env.txt' \
+            '24b24a510d29fdac8c7215faf93238ac41453332d472e91fdec85545af6a3f5e  build-notes.txt' \
+            > /tmp/ev.expected
+          ( cd "$EV" && sha256sum -c /tmp/ev.expected )
+          grep -q "$ARCHIVE_SHA256" "$EV/archive.sha256"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065       # v5
+        with: { python-version: '3.11.9' }
+
+      - name: Split the lock (81 PyPI wheels + the disclosed swebench source-build exception)
+        run: |
+          set -euo pipefail
+          mkdir -p "$WORK" "$INST"
+          python -I - "$EV/requirements.lock" "$EV/dists.sha256" "$WORK" <<'PY'
+          import re, sys
+          lock, dists, work = sys.argv[1:]
+          entries = re.findall(r"^([A-Za-z0-9_.\-]+)==(\S+) --hash=sha256:([0-9a-f]{64})$", open(lock).read(), re.M)
+          assert len(entries) == 82, f"expected 82 locked distributions, found {len(entries)}"
+          swe = [e for e in entries if e[0].lower() == "swebench"]; deps = [e for e in entries if e[0].lower() != "swebench"]
+          assert len(swe) == 1 and len(deps) == 81, (len(swe), len(deps))
+          assert any(n.lower() == "setuptools" for n, _, _ in deps), "setuptools (swebench's only build requirement) is not locked"
+          open(f"{work}/deps.lock", "w").write("".join(f"{n}=={v} --hash=sha256:{h}\n" for n, v, h in deps))
+          open(f"{work}/swebench.version", "w").write(swe[0][1] + "\n")
+          rows = [l.split() for l in open(dists).read().splitlines() if l.strip()]
+          keep = sorted(f"{h}  {f}" for h, f in rows if not f.lower().startswith("swebench-"))
+          assert len(keep) == 81, f"dists.sha256 has {len(keep)} non-swebench files, expected 81"
+          open(f"{work}/deps.dists.sha256", "w").write("\n".join(keep) + "\n")
+          PY
+
+      - name: Download the 81 locked wheels (hash-checked twice) and the source archive (hash-checked)
+        run: |
+          set -euo pipefail
+          python -m venv /tmp/kan111/swe
+          /tmp/kan111/swe/bin/pip install --disable-pip-version-check 'pip==24.3.1'
+          /tmp/kan111/swe/bin/pip download --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes -r "$WORK/deps.lock" -d "$WORK/wheels"
+          ( cd "$WORK/wheels" && sha256sum * | LC_ALL=C sort ) > "$WORK/got.sha256"
+          LC_ALL=C sort "$WORK/deps.dists.sha256" | diff - "$WORK/got.sha256"     # same files, same bytes as the lock run
+          curl -fsSL -o "$WORK/swebench.tar.gz" "https://github.com/SWE-bench/SWE-bench/archive/${SWEBENCH_REF}.tar.gz"
+          echo "$ARCHIVE_SHA256  $WORK/swebench.tar.gz" | sha256sum -c -
+          mkdir -p "$WORK/src" && tar -xzf "$WORK/swebench.tar.gz" -C "$WORK/src" --strip-components=1
+
+      - name: Install offline; build swebench offline from the verified source (source-build exception)
+        run: |
+          set -euo pipefail
+          P=/tmp/kan111/swe/bin
+          $P/pip install --disable-pip-version-check --no-index --find-links "$WORK/wheels" --require-hashes --no-deps -r "$WORK/deps.lock"
+          $P/pip wheel --disable-pip-version-check --no-index --no-deps --no-build-isolation --wheel-dir "$WORK/built" "$WORK/src"
+          ( cd "$WORK/built" && sha256sum swebench-*.whl ) | tee "$INST/swebench-rebuilt-wheel.sha256"
+          $P/pip install --disable-pip-version-check --no-index --no-deps "$WORK"/built/swebench-*.whl
+
+      - name: Verify the installed environment (pip check, versions, reviewed source hashes, parser smoke)
+        run: |
+          set -euo pipefail
+          P=/tmp/kan111/swe/bin
+          $P/pip check | tee "$INST/pip-check.txt"
+          $P/pip freeze --all | LC_ALL=C sort > "$INST/pip-freeze.txt"      # supporting evidence only (shows swebench @ file://)
+          # The decision (review 10561): installed distribution metadata == the lock, swebench from the rebuilt local wheel
+          $P/python -I "$GRADER/installed-set-check.py" "$EV/requirements.lock" "$INST/swebench-rebuilt-wheel.sha256" > "$INST/install-provenance.json"
+          cat "$INST/install-provenance.json"
+          d=$($P/python -I -c 'import os, swebench; print(os.path.dirname(swebench.__file__))')
+          ( cd "$d/.." && sha256sum swebench/harness/log_parsers/javascript.py swebench/harness/grading.py swebench/harness/run_evaluation.py ) | tee "$INST/installed-harness-files.sha256"
+          diff "$EV/harness-files.sha256" "$INST/installed-harness-files.sha256"
+          $P/python -I "$GRADER/harness-smoke.py" | tee "$INST/harness-smoke.txt"
+
+      - name: Rebuild the grader vault from the hash-verified dataset (network used here only)
+        run: cd bench && node public/import.mjs --download
+
+      - name: Task checkout at the pinned base only (shallow; no future history on the host either)
+        run: |
+          set -euo pipefail
+          mkdir -p "$WORK/repo" && cd "$WORK/repo"
+          git init -q && git fetch -q --depth 1 https://github.com/immutable-js/immutable-js 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = 77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6
+
+      - name: QB stage B (real runSandboxed; no model)
+        id: qb
+        continue-on-error: true
+        env: { KAN117_CI_RUN: '1' }
+        run: node bench/public/kan117/stage-b.mjs --repo="$WORK/repo" --store=bench/public/out --out="$WORK/qb"
+
+      - name: Independent grader, candidate mode (after capture; outside the coding budget; timed)
+        id: grade
+        if: ${{ !cancelled() && hashFiles('kan117-work/qb/candidate-gold.diff') != '' }}
+        continue-on-error: true
+        env:
+          SWEBENCH_PYTHON: /tmp/kan111/swe/bin/python
+          KAN117_CI_RUN: '1'
+        run: |
+          set -uo pipefail
+          rc=0
+          mkdir -p "$WORK/grade"
+          for label in empty gold; do
+            s=$(date +%s)
+            node "$GRADER/grade.mjs" --execute --approved-by="$CAND_APPROVAL" --variant=A1 --candidate="$WORK/qb/candidate-$label.diff" --task=2005 --label="$label" --out="$WORK/grade" || rc=$?
+            echo "grader_wall_s_$label=$(( $(date +%s) - s ))" | tee -a "$WORK/grade/wall.txt"
+          done
+          exit $rc
+
+      - name: Cleanup check (no QB or grader containers, networks or volumes left)
+        if: ${{ !cancelled() }}
+        run: |
+          set -uo pipefail
+          { echo "qb_containers=$(docker ps -aq --filter label=qb.run | wc -l)"; echo "qb_volumes=$(docker volume ls -q --filter label=qb.run | wc -l)";
+            echo "qb_networks=$(docker network ls -q --filter label=qb.run | wc -l)"; echo "grader_containers=$(docker ps -aq --filter name=kan111- | wc -l)";
+            echo "qb_claude_auth_volume=$(docker volume ls -q --filter name=^qb-claude-auth$ | wc -l)"; } | tee "$WORK/cleanup.txt"
+
+      - name: Sanitize (allowlist; required-test-name, diff and secret scan)
+        id: sanitize
+        if: ${{ !cancelled() && hashFiles('kan117-work/qb/stage-b-qb.json') != '' }}
+        run: |
+          set -euo pipefail
+          node bench/public/kan117/stage-b-sanitize.mjs "$WORK/qb" "$WORK/grade" bench/public/out "$PUB"
+          cp "$WORK/cleanup.txt" "$PUB/" ; cp "$WORK/grade/wall.txt" "$PUB/grader-wall.txt" 2>/dev/null || true
+          if grep -IEn '(ghp_|gho_|ghs_|ghu_|github_pat_|sk-ant-|diff --git)' "$PUB"/*.txt; then echo "::error::refused"; exit 1; fi
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && steps.sanitize.outcome == 'success' }}
+        with:
+          name: kan117-stage-b
+          path: |
+            ${{ env.PUB }}/results.json
+            ${{ env.PUB }}/sanitize-report.txt
+            ${{ env.PUB }}/cleanup.txt
+            ${{ env.PUB }}/grader-wall.txt
+            ${{ env.INST }}/install-provenance.json
+            ${{ env.INST }}/installed-harness-files.sha256
+            unit.tap
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Job status (red if QB or the grader did not complete)
+        if: ${{ !cancelled() && (steps.qb.outcome != 'success' || steps.grade.outcome != 'success') }}
+        run: echo "::error::qb=${{ steps.qb.outcome }} grade=${{ steps.grade.outcome }} (see results.json)"; exit 1

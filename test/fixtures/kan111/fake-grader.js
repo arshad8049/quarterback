@@ -6,5 +6,11 @@ const [, , , , out, mode] = process.argv.slice(1); // [script, instance, log, re
 const label = path.basename(path.dirname(out)).replace(/^\d+-/, '').replace(/-\d+$/, '');
 const g = (sc.grade && (sc.grade[label] || sc.grade.default)) || { exit: 0, accepted: true };
 if (g.exit) { process.stderr.write('fake grader crash'); process.exit(g.exit); }
+if (mode === 'candidate' && g.raw === undefined) {   // KAN-117: candidate mode reports a result, never an acceptance
+  fs.writeFileSync(out, JSON.stringify({ official: { log_gate: 'ok', resolution: g.resolution || 'RESOLVED_NO' }, strict: { raw_result_lines: 2 },
+    result: { mode, evidence_valid: g.valid !== false, invalid_reasons: g.valid === false ? ['FAIL_TO_PASS[0]: missing'] : [], official_resolution: g.resolution || 'RESOLVED_NO',
+      fail_to_pass: { failed: 1 }, pass_to_pass: { passed: 1 } } }));
+  process.stdout.write(JSON.stringify({ mode })); process.exit(0);
+}
 fs.writeFileSync(out, JSON.stringify(g.raw !== undefined ? g.raw : { official: { log_gate: 'ok', resolution: mode === 'empty' ? 'RESOLVED_NO' : 'RESOLVED_FULL' }, acceptance: { mode, accepted: g.accepted, reasons: g.accepted ? [] : ['fixture: not accepted'] } }));
 process.stdout.write(JSON.stringify({ accepted: g.accepted }));

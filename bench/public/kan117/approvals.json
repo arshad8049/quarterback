@@ -1,0 +1,4 @@
+{
+  "_comment": "KAN-117 phase approvals, quoting the reviewer's own Jira comment. candidate_grade: review 10607 approved implementing grade.mjs candidate mode and executing the no-model stage B package in CI. It authorizes nothing else (no model, credentials, spend or main merge).",
+  "candidate_grade": { "approval_comment_id": 10607, "task": "2005", "variant": "A1" }
+}

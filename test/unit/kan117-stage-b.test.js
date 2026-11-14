@@ -126,7 +126,7 @@ function fakeDocker(script) {
     calls, files, clock: () => now,
     runStage: async (name, args, opts) => {
       calls.push({ name, args, timeout: opts.waitTimeoutMs });
-      const r = script(name, args, opts) || {};
+      const r = script(name, args, opts, now) || {};
       now += r.ms || 1000;
       if (r.file) files.set(`${name}:${r.file.path}`, r.file.text);
       return { name, state: r.state || 'completed', exit_code: r.exit ?? 0, reason: r.reason || null, stdout: r.stdout || '', stderr: '', duration_ms: r.ms || 1000, oom_killed: false };
@@ -136,13 +136,13 @@ function fakeDocker(script) {
 }
 const WS = { runId: 'qb-test', mount: (n, ro) => ['-v', `${n}${ro ? ':ro' : ''}`] };
 const PROBE_OK = JSON.stringify({ node: 'v24.0.0', npm: '11.0.0', npm_ignore_scripts: 'false', ci: null, jest: '29.6.4', resolved: '/verify/src/Immutable.js' });
-const happy = (startMs = 0) => (name, args) => {
+const happy = (startMs = 0) => (name, args, _o, now = 0) => {
   if (name.endsWith('-verify-prep')) return { file: { path: '/out/verify-prep.json', text: '{"status":"ready","tree":"t","protected_modified":[]}' } };
   if (name.endsWith('-r-probe')) return { stdout: PROBE_OK };
   if (name.endsWith('-r-list')) return { stdout: list(FILES()) };
   if (name.endsWith('-r-test')) {
     const out = args.find((a) => a.startsWith('--outputFile=')).slice('--outputFile='.length);
-    return { file: { path: out, text: report(FILES(), { start: startMs }) } };
+    return { file: { path: out, text: report(FILES(), { start: now + startMs }) } };
   }
   return {};
 };
@@ -213,6 +213,24 @@ test('the customer CLI still refuses an unsupported runner; testPlan still says 
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kan117-'));
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ devDependencies: { jest: '29' }, scripts: { test: 'jest' } }));
   assert.strictEqual(require('../../context/test-plan').testPlan(dir).reason, 'unsupported_runner');
-  const { errors } = require('../../lib/run-options').validateRunOptions({ agent: 'manual', repo: dir }, 'x');
+  const { errors } = require('../../lib/run-options').validateRunOptions({ agent: 'claude-code', repo: dir }, 'x');
   assert.ok(errors.some((e) => /unsupported test runner: jest/.test(e)));
+});
+
+test('runSandboxed refuses a malformed research env before any Docker or stage work', async () => {
+  const { runSandboxed } = require('../../lib/sandbox/pipeline');
+  await assert.rejects(runSandboxed({ repoPath: '/nonexistent', researchEnv: { ...ENV, runner: 'mocha' } }), /task env/);
+});
+
+test('sanitizer: drops test/list console tails, identity lists, eval tails and plan text; scan refuses names, diffs, secrets', async () => {
+  const S = await import(path.join(ROOT, 'bench/public/kan117/stage-b-sanitize.mjs'));
+  const q = S.sanitizeQb({ runs: { gold: { verification: { steps: [{ name: 'test', stderr_tail: 'secret name' }, { name: 'build:dist', stderr_tail: 'ok' }], validation: { identities: [1], identity_set_sha256: 'h' } } } } });
+  assert.deepStrictEqual(q.runs.gold.verification.steps, [{ name: 'test' }, { name: 'build:dist', stderr_tail: 'ok' }]);
+  assert.deepStrictEqual(q.runs.gold.verification.validation, { identity_set_sha256: 'h' });
+  const g = S.sanitizeGrade({ plan: ['docker run x'], run: { steps: [{ step: 'eval', stdout_tail: 'names', stderr_tail: 'n' }], infra_detail: 'log' } });
+  assert.deepStrictEqual(g.run, { steps: [{ step: 'eval' }] }); assert.strictEqual(g.plan_commands, 1); assert.ok(!('plan' in g));
+  assert.deepStrictEqual(S.scan('{"a":"Map works"}', ['Map works']), ['required test name']);
+  assert.deepStrictEqual(S.scan('diff --git a/x b/x', []), ['diff text']);
+  assert.deepStrictEqual(S.scan('sk-ant-abc', []), ['secret pattern']);
+  assert.deepStrictEqual(S.scan('{"clean":true}', ['Map works']), []);
 });

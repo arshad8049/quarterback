@@ -2,6 +2,8 @@
 // KAN-111 exact offline grader, adaptation `immutable-offline-v1`, for immutable-js tasks 2005 and 2006.
 //   node public/grader/immutable-offline-v1/grade.mjs [--variant=A1] [--plan-out=<file>]   # PLAN ONLY (default): runs nothing
 //   node public/grader/immutable-offline-v1/grade.mjs --execute --approved-by=<KAN-111 review comment id> [--reps=3]
+//   node public/grader/immutable-offline-v1/grade.mjs --execute --approved-by=<KAN-117 id> --candidate=<candidate.diff> --task=2005 --label=<id>
+//     KAN-117 (10607) candidate mode: grade ONE arbitrary captured patch, record its hash and apply outcome, NO expected outcome
 // Replicates the pinned SWE-bench harness run path (SWE-bench @ 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e,
 // swebench/harness/run_evaluation.py) with disclosed differences: --network none, no added SYS_ADMIN,
 // variant A1 (build-gated, stats omitted) and a separately hashed test-boundary instrumentation line.
@@ -107,11 +109,22 @@ export function main() {
   const DOCKER = process.env.QB_KAN111_DOCKER || 'docker'; const PY = process.env.SWEBENCH_PYTHON || 'python3';
   const GRADER = process.env.QB_KAN111_GRADER || path.join(HERE, 'grade_report.py');
   const FIXTURE = process.env.QB_KAN111_FIXTURE ? JSON.parse(fs.readFileSync(process.env.QB_KAN111_FIXTURE, 'utf8')) : null;
+  // KAN-117 (10607): candidate mode has its own authorization (committed approvals + its own CI flag); CI=true alone is not enough
+  const CAND = arg('candidate'); const CAND_TASK = String(arg('task', '')); const CAND_LABEL = String(arg('label', ''));
+  if (CAND !== null) {
+    if (typeof CAND !== 'string' || !/^(2005|2006)$/.test(CAND_TASK) || !/^[a-z0-9][a-z0-9-]{0,40}$/.test(CAND_LABEL)) { console.error('refusing: --candidate=<file> needs --task=2005|2006 and --label=<lowercase id>'); return 2; }
+    if (EXECUTE && !FIXTURE) {
+      if (process.env.GITHUB_ACTIONS !== 'true' || process.env.KAN117_CI_RUN !== '1') { console.error('refusing: candidate grading only runs in the approved KAN-117 CI workflow (GITHUB_ACTIONS=true, KAN117_CI_RUN=1)'); return 2; }
+      let ap = null; try { ap = JSON.parse(fs.readFileSync(path.join(PUB, 'kan117', 'approvals.json'), 'utf8')).candidate_grade; } catch { ap = null; }
+      if (!ap || !/^[1-9]\d*$/.test(String(ap.approval_comment_id)) || String(ap.approval_comment_id) !== String(APPROVAL)) { console.error('refusing: --approved-by does not match bench/public/kan117/approvals.json candidate_grade'); return 2; }
+      if (VARIANT !== 'A1') { console.error('refusing: candidate grading runs variant A1 only'); return 2; }
+    }
+  }
   if (EXECUTE && !APPROVAL) { console.error('refusing to execute: --approved-by=<KAN-111 review comment id> is required (no grader run before review)'); return 2; }
   if (FIXTURE && APPROVAL !== 'FIXTURE') { console.error('refusing: QB_KAN111_FIXTURE is test-only and requires --approved-by=FIXTURE'); return 2; }
   if (!FIXTURE && APPROVAL === 'FIXTURE') { console.error('refusing: --approved-by=FIXTURE is only valid with QB_KAN111_FIXTURE'); return 2; }
   if (!/^[1-9]\d*$/.test(String(arg('reps', 3)))) { console.error('refusing: --reps must be a positive integer'); return 2; }
-  if (EXECUTE && !FIXTURE) {
+  if (EXECUTE && !FIXTURE && CAND === null) {
     // Real grading only on the reviewed CI route (review 10554): never from a laptop or a test run.
     if (process.env.GITHUB_ACTIONS !== 'true' || process.env.KAN111_CI_RUN !== '1') { console.error('refusing: real execution only runs in the approved CI workflow (GITHUB_ACTIONS=true, KAN111_CI_RUN=1)'); return 2; }
     if (REPS < 3) { console.error('refusing: approved validation needs --reps >= 3'); return 2; }
@@ -222,11 +235,19 @@ export function main() {
       if (EXECUTE) rec.final_tree = boundaryValues(fin.stdout, 'FINAL', 'boundary helper (final)');
       must('copy final manifest', ['docker', 'cp', `${name}:/tmp/qbx-final.txt`, path.join(EXECUTE ? dir : os.tmpdir(), 'final-tree.txt')]);
       if (EXECUTE) fs.writeFileSync(path.join(dir, 'required.json'), JSON.stringify(required));
-      const gmode = mode === 'empty' ? 'empty' : 'gold';
+      const gmode = mode === 'candidate' ? 'candidate' : (mode === 'empty' ? 'empty' : 'gold');
       const g = run([PY, GRADER, t.instance_id, path.join(dir, 'test_output.txt'), path.join(dir, 'required.json'), path.join(dir, 'grade.json'), gmode]);
       if (!EXECUTE) { rec.outcome = 'planned'; return rec; }
       if (g.status !== 0) throw new Infra(`grader exit ${g.status}`, g);
       let grade; try { grade = JSON.parse(fs.readFileSync(path.join(dir, 'grade.json'), 'utf8')); } catch (e) { throw new Infra('grader output unreadable', { stderr: e.message }); }
+      if (gmode === 'candidate') {
+        if (!grade.result || typeof grade.result.evidence_valid !== 'boolean') throw new Infra('grader output has no candidate result', { stderr: JSON.stringify(grade).slice(0, 400) });
+        rec.grade = { mode: 'candidate', evidence_valid: grade.result.evidence_valid, invalid_reasons: grade.result.invalid_reasons,
+          official: grade.result.official_resolution, log_gate: grade.official && grade.official.log_gate === 'ok' ? 'ok' : 'failed',
+          fail_to_pass: grade.result.fail_to_pass, pass_to_pass: grade.result.pass_to_pass, strict_raw_result_lines: grade.strict ? grade.strict.raw_result_lines : null };
+        rec.outcome = 'graded';
+        return rec;
+      }
       if (!grade.acceptance || typeof grade.acceptance.accepted !== 'boolean') throw new Infra('grader output has no acceptance decision', { stderr: JSON.stringify(grade).slice(0, 400) });
       rec.grade = { mode: gmode, accepted: grade.acceptance.accepted, reasons: grade.acceptance.reasons, official: grade.official && grade.official.resolution,
         log_gate: grade.official && grade.official.log_gate === 'ok' ? 'ok' : 'failed',
@@ -248,6 +269,28 @@ export function main() {
     wrapper_sha256: sha(fs.readFileSync(path.join(HERE, 'grade-wrapper.sh'))), runs: [] };
   const ctl = jl(path.join(store, 'controller', 'swe-bench-multilingual.jsonl')); const vault = jl(path.join(store, 'vault', 'swe-bench-multilingual.jsonl'));
   const arr = (x) => (Array.isArray(x) ? x : JSON.parse(x));
+  if (CAND !== null) {
+    const key = CAND_TASK; const t = tasks[key];
+    const c = t && ctl.get(t.task_id); const v = t && vault.get(t.task_id);
+    if (!c || !v || c.instance_id !== t.instance_id) throw new Error(`vault/controller row for ${key} missing or mismatched`);
+    if (sha(v.eval_script) !== t.eval_sha256) throw new Error(`official eval script hash changed for ${key}`);
+    const required = { FAIL_TO_PASS: arr(v.FAIL_TO_PASS), PASS_TO_PASS: arr(v.PASS_TO_PASS) };
+    const bytes = fs.readFileSync(CAND);
+    const cand = { file_sha256: sha(bytes), bytes: bytes.length, empty: bytes.length === 0 };
+    const pull = run(['docker', 'pull', t.image]);
+    const r = pull.status !== 0
+      ? { task: key, label: `candidate-${CAND_LABEL}`, outcome: 'infra_error', infra_step: 'pull image', infra_detail: (pull.stderr || '').slice(-600) }
+      : gradeOne({ key, t, official: v.eval_script, required, mode: 'candidate', label: `candidate-${CAND_LABEL}`, rep: 1, patchText: cand.empty ? null : bytes.toString('utf8') });
+    if (cand.empty) r.harness_submission = 'excluded: the pinned harness drops an empty model_patch before any container (counts as unresolved); graded here as the no-patch replay (base + official test patch)';
+    r.invalid_kind = r.outcome === 'infra_error' ? ({ 'base check': 'wrong_base', 'pull image': 'image_unavailable', 'read HEAD': 'wrong_base' }[r.infra_step] || 'harness_error')
+      : (r.outcome === 'graded' && !r.grade.evidence_valid ? 'invalid_evidence' : null);
+    const res = { schema: 'qb-kan117-candidate-grade/1', adaptation: all.adaptation, variant: VARIANT, approved_by: APPROVAL, execute: EXECUTE, fixture_mode: !!FIXTURE,
+      harness: all.harness, instrumentation_sha256: all.instrumentation_sha256, wrapper_sha256: all.wrapper_sha256,
+      task: key, task_id: t.task_id, image: t.image, label: CAND_LABEL, candidate: cand, expected_outcome: null, run: r, plan };
+    if (EXECUTE) { fs.mkdirSync(outDir, { recursive: true }); fs.writeFileSync(path.join(outDir, `candidate-${CAND_LABEL}.json`), JSON.stringify(res, null, 2)); }
+    console.log(JSON.stringify({ candidate: CAND_LABEL, outcome: r.outcome, invalid_kind: r.invalid_kind, official: r.grade ? r.grade.official : null, evidence_valid: r.grade ? r.grade.evidence_valid : null }));
+    return EXECUTE && r.invalid_kind ? 3 : 0;
+  }
   for (const [key, t] of Object.entries(tasks)) {
     const c = ctl.get(t.task_id); const v = vault.get(t.task_id);
     if (!c || !v || c.instance_id !== t.instance_id) throw new Error(`vault/controller row for ${key} missing or mismatched`);
