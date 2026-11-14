@@ -1,0 +1,143 @@
+{
+  "schema": "qb-kan117-counts/1",
+  "meaning": "Static classification under the EXISTING QB rules (qb_source). \"eligible\" = no recorded blocker; bounds are candidate upper bounds, not dynamically validated counts.",
+  "input": {
+    "schema": "qb-public-candidates/1",
+    "qb_source": {
+      "repo": "arshad8049/quarterback",
+      "commit": "784e721",
+      "runtime": "node:24-bookworm-slim",
+      "validated_runners": [
+        "node-test"
+      ]
+    },
+    "tasks": 1938,
+    "file": "bench/public/manifest/candidates.json",
+    "sha256": "ce244c6f38279e64e89c4d3d7cb359fdc580393c36c33ae1f01670791cbb5177"
+  },
+  "totals": {
+    "tasks": 1938,
+    "by_status": {
+      "incompatible": 1930,
+      "unknown": 8
+    },
+    "statically_eligible_existing_rules": 0
+  },
+  "by_source": {
+    "swe-bench-pro-v2": {
+      "total": 149,
+      "by_status": {
+        "incompatible": 149
+      },
+      "services": 68,
+      "pinned_digest": 149
+    },
+    "swe-bench-multilingual": {
+      "total": 43,
+      "by_status": {
+        "incompatible": 43
+      },
+      "services": 0,
+      "pinned_digest": 43
+    },
+    "swe-polybench": {
+      "total": 1746,
+      "by_status": {
+        "incompatible": 1738,
+        "unknown": 8
+      },
+      "services": 209,
+      "pinned_digest": 0
+    }
+  },
+  "by_runner": {
+    "jest": 307,
+    "mocha": 1386,
+    "unknown": 208,
+    "vitest": 5,
+    "karma": 17,
+    "mocha+tap": 6,
+    "qunit": 9
+  },
+  "by_source_runner": {
+    "swe-bench-pro-v2 | jest": 79,
+    "swe-bench-pro-v2 | mocha": 38,
+    "swe-bench-pro-v2 | unknown": 32,
+    "swe-bench-multilingual | jest": 12,
+    "swe-bench-multilingual | vitest": 5,
+    "swe-bench-multilingual | karma": 17,
+    "swe-bench-multilingual | mocha+tap": 6,
+    "swe-bench-multilingual | qunit": 3,
+    "swe-polybench | mocha": 1348,
+    "swe-polybench | jest": 216,
+    "swe-polybench | unknown": 176,
+    "swe-polybench | qunit": 6
+  },
+  "blocker_sets": {
+    "deps+runner": 1598,
+    "deps+no_test_script+runner": 27,
+    "no_root_package+no_test_script+runner+services": 38,
+    "deps+no_test_script+services": 28,
+    "deps+services": 2,
+    "deps": 20,
+    "runner": 16,
+    "deps+runner+services": 209
+  },
+  "bounds": {
+    "A_runner_and_or_deps_only": {
+      "allowed_blockers": [
+        "runner",
+        "deps"
+      ],
+      "total": 1634,
+      "by_source": {
+        "swe-bench-pro-v2": 54,
+        "swe-bench-multilingual": 43,
+        "swe-polybench": 1537
+      },
+      "by_runner": {
+        "jest": 280,
+        "unknown": 29,
+        "vitest": 5,
+        "karma": 17,
+        "mocha+tap": 6,
+        "qunit": 9,
+        "mocha": 1288
+      }
+    },
+    "B_plus_no_test_script": {
+      "allowed_blockers": [
+        "runner",
+        "deps",
+        "no_test_script"
+      ],
+      "total": 1661,
+      "by_source": {
+        "swe-bench-pro-v2": 81,
+        "swe-bench-multilingual": 43,
+        "swe-polybench": 1537
+      },
+      "by_runner": {
+        "jest": 307,
+        "unknown": 29,
+        "vitest": 5,
+        "karma": 17,
+        "mocha+tap": 6,
+        "qunit": 9,
+        "mocha": 1288
+      }
+    }
+  },
+  "pinned_image": {
+    "swe-bench-pro-v2 | jest | deps:blocked": 79,
+    "swe-bench-pro-v2 | unknown | deps:blocked": 2,
+    "swe-bench-multilingual | jest | deps:ready": 2,
+    "swe-bench-multilingual | vitest | deps:blocked": 5,
+    "swe-bench-multilingual | karma | deps:blocked": 17,
+    "swe-bench-multilingual | mocha+tap | deps:blocked": 3,
+    "swe-bench-multilingual | jest | deps:blocked": 10,
+    "swe-bench-multilingual | mocha+tap | deps:ready": 3,
+    "swe-bench-multilingual | qunit | deps:ready": 3
+  },
+  "unmapped_reasons": []
+}
