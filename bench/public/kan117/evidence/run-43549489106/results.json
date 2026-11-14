@@ -1,0 +1,1289 @@
+{
+  "schema": "qb-kan117-stage-b-results/1",
+  "qb": {
+    "schema": "qb-kan117-stage-b/1",
+    "approved_by": "KAN-117 10607",
+    "task_id": "qbt_9b9a5da937c9",
+    "exposure": "calibration",
+    "qb_commit": "96f8a5ad6b5da75db04e98152132fc4374f909a9",
+    "task_env_sha256": "5108ef35781f7e46e1486f8f3f7c99586152c2cfd9b4e12ee0ee49a010f1fad7",
+    "repo_head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+    "host": {
+      "runner": "GitHub Actions 1000001684",
+      "image": "ubuntu24",
+      "image_version": "20261111.127.1",
+      "node": "v22.23.4"
+    },
+    "images": {
+      "agent": {
+        "ref": "qb-sandbox-agent:c-6e9312968a31b7b8",
+        "id": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143",
+        "architecture": "amd64",
+        "repo_digests": []
+      },
+      "tools": {
+        "ref": "qb-sandbox-tools:c-fd0e995626307d89",
+        "id": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c",
+        "architecture": "amd64",
+        "repo_digests": []
+      },
+      "proxy": {
+        "ref": "qb-sandbox-proxy:c-0231de2fd8cc551f",
+        "id": "sha256:35071b5e2007b1493305fc43c0677da12d99f192f0cef70774d340876fb512a8",
+        "architecture": "amd64",
+        "repo_digests": []
+      },
+      "agent_base": {
+        "error": "image inspect node:24-bookworm-slim: Error response from daemon: No such image: node:24-bookworm-slim"
+      }
+    },
+    "image_launches": [
+      {
+        "container": "c659bf5c0ec5",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "046436dca928",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "965e70fdf45d",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "4016f72f2746",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "a6d812cc561d",
+        "image": "sha256:35071b5e2007b1493305fc43c0677da12d99f192f0cef70774d340876fb512a8"
+      },
+      {
+        "container": "553d5d84bc12",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "20e386e2879b",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "9c510ad78ca8",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "a0d3c245c93c",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "f413b5a7e2d0",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "be5747acb6d2",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "403967d45a8b",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "07733ef2dda4",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "92d21941a74c",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "fc85617fd5ab",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "173ae01b07ac",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "62f12c4e9dd7",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "b48eb15afd71",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "5599bcb75633",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "b23dbaba9f9d",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "8bd4d71a9bac",
+        "image": "sha256:35071b5e2007b1493305fc43c0677da12d99f192f0cef70774d340876fb512a8"
+      },
+      {
+        "container": "0c78c9c982d3",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "8e5fdf25bd99",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "6b216e4fecf1",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "fac9d3e80730",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "7229a6fcd2db",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "80349c08568e",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "a7c5df35a157",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "ac155445da8d",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "ab22fddff1ff",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "95240a910aab",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "65ed1db6c4e2",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "ffa86baf3fc8",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "2b0a156bc54d",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "354551daf139",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "dfb5dd1b4dc1",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "18a91be56a8f",
+        "image": "sha256:35071b5e2007b1493305fc43c0677da12d99f192f0cef70774d340876fb512a8"
+      },
+      {
+        "container": "6372d5469f8c",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "a9387d1c52de",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "cf3f7de64d97",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "d572ae756d3b",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "40e6998b4c9b",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "cfc0899a2aaa",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "e4826757b8f4",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "5f6738776e21",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "44595e39ea49",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "0f1a129dea39",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "aed4a407f171",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "08bd27813b64",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "5cc0d6c6aba2",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "3d3e2725edc2",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "c22c6436a7ba",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "ac94fff72dcd",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "2fdb301693d1",
+        "image": "sha256:35071b5e2007b1493305fc43c0677da12d99f192f0cef70774d340876fb512a8"
+      },
+      {
+        "container": "94daa227018e",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "652ac15a9831",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "074bc821679a",
+        "image": "sha256:35071b5e2007b1493305fc43c0677da12d99f192f0cef70774d340876fb512a8"
+      },
+      {
+        "container": "b2fd0462723e",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "87ee85b64c26",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "4906337084b6",
+        "image": "sha256:450a2705e09e433042ae8556a83f5ac341cafdd3f79d01c6b5eddc80b2d23b8c"
+      },
+      {
+        "container": "d528ad2dbf67",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "69fbbf1bb2b0",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "14d415156819",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "c91a62162391",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "f9e375c1825c",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "97d7b4c4ce04",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      },
+      {
+        "container": "9ab24516975f",
+        "image": "sha256:d8de9d096e29769e16c2001b98e22be2c84fa94bb1ce3278a6024fd8f7afe143"
+      }
+    ],
+    "baseline": {
+      "identity_set_sha256": "075ad1620d0bf9473de1f26cf67baf693b658ab5678e730636b18a9e50f877b6",
+      "counts": {
+        "total": 684,
+        "passed": 683,
+        "failed": 0,
+        "pending": 1,
+        "todo": 0,
+        "suites": 44
+      }
+    },
+    "runs": {
+      "baseline": {
+        "status": "no_change",
+        "reason": "no agent stage (grading)",
+        "wall_ms": 31434,
+        "credential_mode": null,
+        "admission": {
+          "memory_checked": true,
+          "peak": 9808065332,
+          "mem_available": 15107862528
+        },
+        "deps": {
+          "status": "ready",
+          "manifest_fp": "e861ac4f79d1c5c59006e377f7243042e61e81857c6ba746bddb6dac9bc83b9c",
+          "install_stderr_tail": "npm warn deprecated urix@0.1.0: Please see https://github.com/lydell/urix#deprecated\nnpm warn deprecated resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated\nnpm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:\nnpm warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)\nnpm warn install-scripts   microtime@3.0.0 (install: node-gyp-build)\nnpm warn install-scripts\nnpm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.\n"
+        },
+        "stages": {
+          "seed": {
+            "state": "completed",
+            "reason": "exit 0"
+          },
+          "agent": {
+            "state": "completed",
+            "reason": "no agent stage (grading)",
+            "exit_code": null,
+            "oom_killed": false,
+            "duration_ms": 0
+          }
+        },
+        "capture": {
+          "verdict": {
+            "state": "no_change"
+          },
+          "scan": {
+            "files": 227,
+            "bytes": 2430198
+          }
+        },
+        "verification": {
+          "mode": "research_jest",
+          "test_plan": {
+            "status": "run",
+            "runner": "jest",
+            "source": "research_env",
+            "task_id": "qbt_9b9a5da937c9"
+          },
+          "status": "ran",
+          "verdict": "passed",
+          "reasons": [],
+          "prep": {
+            "status": "ready",
+            "tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb",
+            "protected_modified": [],
+            "test_script_changed": false
+          },
+          "steps": [
+            {
+              "name": "verify-prep",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 117,
+              "reason": "exit 0",
+              "stderr_tail": "Updated 52 paths from 7cd8bc8\n"
+            },
+            {
+              "name": "probe",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 253,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:clean",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 200,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:dist",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 1199,
+              "reason": "exit 0",
+              "stderr_tail": "\u001b[36m\n\u001b[1m/verify/src/Immutable.js\u001b[22m → \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m...\u001b[39m\n\u001b[1m\u001b[33m(!) Circular dependencies\u001b[39m\u001b[22m\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\n\u001b[32mcreated \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m in \u001b[1m892ms\u001b[22m\u001b[39m\n"
+            },
+            {
+              "name": "build:types",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 285,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:prepare",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 198,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "list",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 357,
+              "reason": "exit 0"
+            },
+            {
+              "name": "test",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 6960,
+              "reason": "exit 0"
+            }
+          ],
+          "stage_ms": 14279,
+          "probe": {
+            "node": "v24.22.3",
+            "npm": "11.19.1",
+            "npm_ignore_scripts": "false",
+            "ci": null,
+            "jest": "29.6.4",
+            "resolved": "/verify/src/Immutable.js"
+          },
+          "validation": {
+            "verdict": "passed",
+            "reasons": [],
+            "counts": {
+              "total": 684,
+              "passed": 683,
+              "failed": 0,
+              "pending": 1,
+              "todo": 0,
+              "suites": 44
+            },
+            "identity_set_sha256": "075ad1620d0bf9473de1f26cf67baf693b658ab5678e730636b18a9e50f877b6",
+            "listed": 44,
+            "executed": 44
+          },
+          "report_path": "/out/qb-jest-4c94694fa12b5b81659bfc06644340e8.json"
+        },
+        "changes": []
+      },
+      "empty": {
+        "status": "no_change",
+        "reason": "no agent stage (grading)",
+        "wall_ms": 31102,
+        "credential_mode": null,
+        "admission": {
+          "memory_checked": true,
+          "peak": 9808065332,
+          "mem_available": 14629916672
+        },
+        "deps": {
+          "status": "ready",
+          "manifest_fp": "e861ac4f79d1c5c59006e377f7243042e61e81857c6ba746bddb6dac9bc83b9c",
+          "install_stderr_tail": "npm warn deprecated urix@0.1.0: Please see https://github.com/lydell/urix#deprecated\nnpm warn deprecated resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated\nnpm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:\nnpm warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)\nnpm warn install-scripts   microtime@3.0.0 (install: node-gyp-build)\nnpm warn install-scripts\nnpm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.\n"
+        },
+        "stages": {
+          "seed": {
+            "state": "completed",
+            "reason": "exit 0"
+          },
+          "agent": {
+            "state": "completed",
+            "reason": "no agent stage (grading)",
+            "exit_code": null,
+            "oom_killed": false,
+            "duration_ms": 0
+          }
+        },
+        "capture": {
+          "verdict": {
+            "state": "no_change"
+          },
+          "scan": {
+            "files": 227,
+            "bytes": 2430198
+          }
+        },
+        "verification": {
+          "mode": "research_jest",
+          "test_plan": {
+            "status": "run",
+            "runner": "jest",
+            "source": "research_env",
+            "task_id": "qbt_9b9a5da937c9"
+          },
+          "status": "ran",
+          "verdict": "passed",
+          "reasons": [],
+          "prep": {
+            "status": "ready",
+            "tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb",
+            "protected_modified": [],
+            "test_script_changed": false
+          },
+          "steps": [
+            {
+              "name": "verify-prep",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 115,
+              "reason": "exit 0",
+              "stderr_tail": "Updated 52 paths from 7cd8bc8\n"
+            },
+            {
+              "name": "probe",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 247,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:clean",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 198,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:dist",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 1189,
+              "reason": "exit 0",
+              "stderr_tail": "\u001b[36m\n\u001b[1m/verify/src/Immutable.js\u001b[22m → \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m...\u001b[39m\n\u001b[1m\u001b[33m(!) Circular dependencies\u001b[39m\u001b[22m\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\n\u001b[32mcreated \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m in \u001b[1m884ms\u001b[22m\u001b[39m\n"
+            },
+            {
+              "name": "build:types",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 280,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:prepare",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 204,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "list",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 356,
+              "reason": "exit 0"
+            },
+            {
+              "name": "test",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 6950,
+              "reason": "exit 0"
+            }
+          ],
+          "stage_ms": 14254,
+          "probe": {
+            "node": "v24.22.3",
+            "npm": "11.19.1",
+            "npm_ignore_scripts": "false",
+            "ci": null,
+            "jest": "29.6.4",
+            "resolved": "/verify/src/Immutable.js"
+          },
+          "validation": {
+            "verdict": "passed",
+            "reasons": [],
+            "counts": {
+              "total": 684,
+              "passed": 683,
+              "failed": 0,
+              "pending": 1,
+              "todo": 0,
+              "suites": 44
+            },
+            "identity_set_sha256": "075ad1620d0bf9473de1f26cf67baf693b658ab5678e730636b18a9e50f877b6",
+            "listed": 44,
+            "executed": 44
+          },
+          "report_path": "/out/qb-jest-fd09cb4584e4c965d00c4d3c2e55a90e.json"
+        },
+        "changes": []
+      },
+      "gold": {
+        "status": "completed",
+        "reason": "exit 0",
+        "wall_ms": 31936,
+        "credential_mode": null,
+        "admission": {
+          "memory_checked": true,
+          "peak": 9808065332,
+          "mem_available": 14647525376
+        },
+        "deps": {
+          "status": "ready",
+          "manifest_fp": "e861ac4f79d1c5c59006e377f7243042e61e81857c6ba746bddb6dac9bc83b9c",
+          "install_stderr_tail": "npm warn deprecated urix@0.1.0: Please see https://github.com/lydell/urix#deprecated\nnpm warn deprecated resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated\nnpm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:\nnpm warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)\nnpm warn install-scripts   microtime@3.0.0 (install: node-gyp-build)\nnpm warn install-scripts\nnpm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.\n"
+        },
+        "stages": {
+          "seed": {
+            "state": "completed",
+            "reason": "exit 0"
+          },
+          "agent": {
+            "state": "completed",
+            "reason": "exit 0",
+            "exit_code": 0,
+            "oom_killed": false,
+            "duration_ms": 86
+          }
+        },
+        "capture": {
+          "verdict": {
+            "state": "captured"
+          },
+          "scan": {
+            "files": 227,
+            "bytes": 2430408
+          }
+        },
+        "verification": {
+          "mode": "research_jest",
+          "test_plan": {
+            "status": "run",
+            "runner": "jest",
+            "source": "research_env",
+            "task_id": "qbt_9b9a5da937c9"
+          },
+          "status": "ran",
+          "verdict": "passed",
+          "reasons": [],
+          "prep": {
+            "status": "ready",
+            "tree": "832f861c50e79072bc2ebc21fafd06530313cafd",
+            "protected_modified": [],
+            "test_script_changed": false
+          },
+          "steps": [
+            {
+              "name": "verify-prep",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 118,
+              "reason": "exit 0",
+              "stderr_tail": "Updated 52 paths from 7cd8bc8\n"
+            },
+            {
+              "name": "probe",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 257,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:clean",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 201,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:dist",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 1199,
+              "reason": "exit 0",
+              "stderr_tail": "\u001b[36m\n\u001b[1m/verify/src/Immutable.js\u001b[22m → \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m...\u001b[39m\n\u001b[1m\u001b[33m(!) Circular dependencies\u001b[39m\u001b[22m\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\n\u001b[32mcreated \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m in \u001b[1m896ms\u001b[22m\u001b[39m\n"
+            },
+            {
+              "name": "build:types",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 301,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:prepare",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 206,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "list",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 359,
+              "reason": "exit 0"
+            },
+            {
+              "name": "test",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 6891,
+              "reason": "exit 0"
+            }
+          ],
+          "stage_ms": 14248,
+          "probe": {
+            "node": "v24.22.3",
+            "npm": "11.19.1",
+            "npm_ignore_scripts": "false",
+            "ci": null,
+            "jest": "29.6.4",
+            "resolved": "/verify/src/Immutable.js"
+          },
+          "validation": {
+            "verdict": "passed",
+            "reasons": [],
+            "counts": {
+              "total": 684,
+              "passed": 683,
+              "failed": 0,
+              "pending": 1,
+              "todo": 0,
+              "suites": 44
+            },
+            "identity_set_sha256": "075ad1620d0bf9473de1f26cf67baf693b658ab5678e730636b18a9e50f877b6",
+            "listed": 44,
+            "executed": 44
+          },
+          "report_path": "/out/qb-jest-8088d278087a31d740871fc8a6f50536.json"
+        },
+        "changes": [
+          {
+            "file": "CHANGELOG.md",
+            "status": "M",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "file": "src/CollectionImpl.js",
+            "status": "M",
+            "additions": 4,
+            "deletions": 2
+          }
+        ]
+      },
+      "workspace": {
+        "status": "no_change",
+        "reason": "exit 0",
+        "wall_ms": 35410,
+        "credential_mode": null,
+        "admission": {
+          "memory_checked": true,
+          "peak": 9808065332,
+          "mem_available": 14648643584
+        },
+        "deps": {
+          "status": "ready",
+          "manifest_fp": "e861ac4f79d1c5c59006e377f7243042e61e81857c6ba746bddb6dac9bc83b9c",
+          "install_stderr_tail": "npm warn deprecated urix@0.1.0: Please see https://github.com/lydell/urix#deprecated\nnpm warn deprecated resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated\nnpm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:\nnpm warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)\nnpm warn install-scripts   microtime@3.0.0 (install: node-gyp-build)\nnpm warn install-scripts\nnpm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.\n"
+        },
+        "stages": {
+          "seed": {
+            "state": "completed",
+            "reason": "exit 0"
+          },
+          "agent": {
+            "state": "completed",
+            "reason": "exit 0",
+            "exit_code": 0,
+            "oom_killed": false,
+            "duration_ms": 2870
+          }
+        },
+        "capture": {
+          "verdict": {
+            "state": "no_change"
+          },
+          "scan": {
+            "files": 227,
+            "bytes": 2430198
+          }
+        },
+        "verification": {
+          "mode": "research_jest",
+          "test_plan": {
+            "status": "run",
+            "runner": "jest",
+            "source": "research_env",
+            "task_id": "qbt_9b9a5da937c9"
+          },
+          "status": "ran",
+          "verdict": "passed",
+          "reasons": [],
+          "prep": {
+            "status": "ready",
+            "tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb",
+            "protected_modified": [],
+            "test_script_changed": false
+          },
+          "steps": [
+            {
+              "name": "verify-prep",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 115,
+              "reason": "exit 0",
+              "stderr_tail": "Updated 52 paths from 7cd8bc8\n"
+            },
+            {
+              "name": "probe",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 261,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:clean",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 196,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:dist",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 1185,
+              "reason": "exit 0",
+              "stderr_tail": "\u001b[36m\n\u001b[1m/verify/src/Immutable.js\u001b[22m → \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m...\u001b[39m\n\u001b[1m\u001b[33m(!) Circular dependencies\u001b[39m\u001b[22m\nsrc/Seq.js -> src/Collection.js -> src/Seq.js\nsrc/Map.js -> src/Operations.js -> src/Map.js\nsrc/OrderedMap.js -> src/Map.js -> src/Operations.js -> src/OrderedMap.js\n...and 6 more\n\u001b[32mcreated \u001b[1mdist/immutable.js, dist/immutable.min.js, dist/es\u001b[22m in \u001b[1m881ms\u001b[22m\u001b[39m\n"
+            },
+            {
+              "name": "build:types",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 290,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "build:prepare",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 201,
+              "reason": "exit 0",
+              "stderr_tail": ""
+            },
+            {
+              "name": "list",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 348,
+              "reason": "exit 0"
+            },
+            {
+              "name": "test",
+              "state": "completed",
+              "exit_code": 0,
+              "duration_ms": 6912,
+              "reason": "exit 0"
+            }
+          ],
+          "stage_ms": 14225,
+          "probe": {
+            "node": "v24.22.3",
+            "npm": "11.19.1",
+            "npm_ignore_scripts": "false",
+            "ci": null,
+            "jest": "29.6.4",
+            "resolved": "/verify/src/Immutable.js"
+          },
+          "validation": {
+            "verdict": "passed",
+            "reasons": [],
+            "counts": {
+              "total": 684,
+              "passed": 683,
+              "failed": 0,
+              "pending": 1,
+              "todo": 0,
+              "suites": 44
+            },
+            "identity_set_sha256": "075ad1620d0bf9473de1f26cf67baf693b658ab5678e730636b18a9e50f877b6",
+            "listed": 44,
+            "executed": 44
+          },
+          "report_path": "/out/qb-jest-c2e423af554d2495035a1512d056e947.json"
+        },
+        "agent_stdout_tail": "listed=44\nmap_suite_exit=0\nci=unset\n",
+        "changes": []
+      }
+    },
+    "candidates": {
+      "empty": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "candidate_tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb",
+        "base_tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb"
+      },
+      "gold": {
+        "sha256": "da007ce4454e2dc5a9fdc7d9e28ec5890ac2fd216fac95a96c2ab6863d801832",
+        "bytes": 1679,
+        "candidate_tree": "832f861c50e79072bc2ebc21fafd06530313cafd",
+        "base_tree": "7cd8bc84f3809af7afb30808040f4714c989ffeb"
+      }
+    },
+    "cleanup": {
+      "containers": 0,
+      "networks": 0,
+      "volumes": 0
+    },
+    "qb_claude_auth_volume_present": false,
+    "no_model": {
+      "agent_stage": "none (baseline, empty), applyPatch (gold), workspace jest probe (workspace)",
+      "model_calls": 0,
+      "credentials": "none"
+    }
+  },
+  "grades": {
+    "empty": {
+      "schema": "qb-kan117-candidate-grade/1",
+      "adaptation": "immutable-offline-v1",
+      "variant": "A1",
+      "approved_by": "10607",
+      "execute": true,
+      "fixture_mode": false,
+      "harness": "SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+      "instrumentation_sha256": "8a01d4d8967600f74a8d133d5677d38e45b11bd88d8a8692829919467aa9b375",
+      "wrapper_sha256": "9d50247191821a5eabdb52327de0c94ab04bd788b9786af1f3b2948b2d11d9aa",
+      "task": "2005",
+      "task_id": "qbt_9b9a5da937c9",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "label": "empty",
+      "candidate": {
+        "file_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "empty": true
+      },
+      "expected_outcome": null,
+      "run": {
+        "task": "2005",
+        "instance_id": "immutable-js__immutable-js-2005",
+        "mode": "candidate",
+        "label": "candidate-empty",
+        "rep": 1,
+        "variant": "A1",
+        "container": "kan111-2005-candidate-empty-1-b01356",
+        "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+        "network": "none",
+        "sys_admin": false,
+        "timeout_s": 1800,
+        "steps": [
+          {
+            "step": "create container",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "start container",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "read HEAD",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "base check",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy boundary helper",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "boundary helper (start)",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "diff before",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy eval script",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy wrapper",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "jq availability: command -v jq",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy tested-tree manifest",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "boundary helper (final)",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy final manifest",
+            "status": 0,
+            "signal": null
+          }
+        ],
+        "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+        "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+        "eval_kind": "A1 + test-boundary instrumentation",
+        "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+        "start_tree": {
+          "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+          "files": 391,
+          "marker_count": 0,
+          "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+        },
+        "patch_apply": {
+          "skipped": "empty candidate: base + official test patch only (harness --no-patch path)"
+        },
+        "diff_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wall_s": 21.654,
+        "eval_exit": 0,
+        "timed_out": false,
+        "log_diag": {
+          "jq_available": true,
+          "start_marker": true,
+          "end_marker": true,
+          "section_result_lines": 22,
+          "whole_log_result_lines": 22,
+          "command_not_found": false,
+          "jq_error": false,
+          "output_capture": "combined_in_container"
+        },
+        "wrapper_env": [
+          "CI=<unset>",
+          "node=v20.20.2 npm=10.8.2 arch=x86_64",
+          "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+        ],
+        "tested_tree": {
+          "sha256": "8f2adc80412f9a16498c74506e9d49608b295beb3ef530e2f7f89f77021bbd6d",
+          "files": 391,
+          "marker_count": 0,
+          "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+        },
+        "final_tree": {
+          "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+          "files": 391,
+          "marker_count": 0,
+          "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+        },
+        "grade": {
+          "mode": "candidate",
+          "evidence_valid": true,
+          "invalid_reasons": [],
+          "official": "RESOLVED_NO",
+          "log_gate": "ok",
+          "fail_to_pass": {
+            "failed": 2
+          },
+          "pass_to_pass": {
+            "passed": 20
+          },
+          "strict_raw_result_lines": 22
+        },
+        "outcome": "graded",
+        "harness_submission": "excluded: the pinned harness drops an empty model_patch before any container (counts as unresolved); graded here as the no-patch replay (base + official test patch)",
+        "invalid_kind": null
+      },
+      "plan_commands": 17,
+      "plan_sha256": "bad4740c640fb8e756f5da6bb36013536756e49d8673f4549702a09217cb89ed"
+    },
+    "gold": {
+      "schema": "qb-kan117-candidate-grade/1",
+      "adaptation": "immutable-offline-v1",
+      "variant": "A1",
+      "approved_by": "10607",
+      "execute": true,
+      "fixture_mode": false,
+      "harness": "SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+      "instrumentation_sha256": "8a01d4d8967600f74a8d133d5677d38e45b11bd88d8a8692829919467aa9b375",
+      "wrapper_sha256": "9d50247191821a5eabdb52327de0c94ab04bd788b9786af1f3b2948b2d11d9aa",
+      "task": "2005",
+      "task_id": "qbt_9b9a5da937c9",
+      "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+      "label": "gold",
+      "candidate": {
+        "file_sha256": "da007ce4454e2dc5a9fdc7d9e28ec5890ac2fd216fac95a96c2ab6863d801832",
+        "bytes": 1679,
+        "empty": false
+      },
+      "expected_outcome": null,
+      "run": {
+        "task": "2005",
+        "instance_id": "immutable-js__immutable-js-2005",
+        "mode": "candidate",
+        "label": "candidate-gold",
+        "rep": 1,
+        "variant": "A1",
+        "container": "kan111-2005-candidate-gold-1-3c0c5f",
+        "image": "swebench/sweb.eval.x86_64.immutable-js_1776_immutable-js-2005@sha256:d038a276cb975ddfbb1a6b13fe9c8260fb22a0145c8605bb2a477a4d75ee5549",
+        "network": "none",
+        "sys_admin": false,
+        "timeout_s": 1800,
+        "steps": [
+          {
+            "step": "create container",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "start container",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "read HEAD",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "base check",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy boundary helper",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "boundary helper (start)",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy patch",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "apply attempt 1: git apply --verbose",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "diff before",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy eval script",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy wrapper",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "jq availability: command -v jq",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy tested-tree manifest",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "boundary helper (final)",
+            "status": 0,
+            "signal": null
+          },
+          {
+            "step": "copy final manifest",
+            "status": 0,
+            "signal": null
+          }
+        ],
+        "eval_sha256": "1824ae95eed013464235d345cb0b8558aa2794b910a192d6537597695dd8309b",
+        "official_eval_sha256": "70da858d49b4dc2bb8f8223f44d409c4e52296d001a24396353cdaa021f66caa",
+        "eval_kind": "A1 + test-boundary instrumentation",
+        "head": "77434b3cbbc8ee21206f4cc6965e1c9b09cc92b6",
+        "start_tree": {
+          "sha256": "afe3072baedb795794a7e3cbbbaadf901b2f61eff5bc1a28b9138b437fba5ccb",
+          "files": 391,
+          "marker_count": 0,
+          "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+        },
+        "patch_sha256": "da007ce4454e2dc5a9fdc7d9e28ec5890ac2fd216fac95a96c2ab6863d801832",
+        "patch_bytes": 1679,
+        "patch_apply": {
+          "ok": true,
+          "via": "git apply --verbose"
+        },
+        "diff_before_sha256": "cef3bd623d7ee42a44e12ce007627be804c1de8b7eda3bb1a5ea68b0dc0c1a30",
+        "wall_s": 21.482,
+        "eval_exit": 0,
+        "timed_out": false,
+        "log_diag": {
+          "jq_available": true,
+          "start_marker": true,
+          "end_marker": true,
+          "section_result_lines": 22,
+          "whole_log_result_lines": 22,
+          "command_not_found": false,
+          "jq_error": false,
+          "output_capture": "combined_in_container"
+        },
+        "wrapper_env": [
+          "CI=<unset>",
+          "node=v20.20.2 npm=10.8.2 arch=x86_64",
+          "jest_resolves_immutable_to=/testbed/src/Immutable.js"
+        ],
+        "tested_tree": {
+          "sha256": "f66a85e48b1b7d45fa24f743462ab4ec2dde89bca3c8a6a36d75eb080e7612d6",
+          "files": 391,
+          "marker_count": 0,
+          "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+        },
+        "final_tree": {
+          "sha256": "c33a239f368c7292699a977c5bf7b121655950bc1d861efb88d79e99c40f8d41",
+          "files": 391,
+          "marker_count": 0,
+          "node_modules": "34a27b2283e827e674538c0a5d18f69300973310ebdefdf4870a3c39a803ad49"
+        },
+        "grade": {
+          "mode": "candidate",
+          "evidence_valid": true,
+          "invalid_reasons": [],
+          "official": "RESOLVED_FULL",
+          "log_gate": "ok",
+          "fail_to_pass": {
+            "passed": 2
+          },
+          "pass_to_pass": {
+            "passed": 20
+          },
+          "strict_raw_result_lines": 22
+        },
+        "outcome": "graded",
+        "invalid_kind": null
+      },
+      "plan_commands": 19,
+      "plan_sha256": "31b91ae05853df0576ca648d5d34a973f1fbe41bd4106ede58e44480811a96ab"
+    }
+  }
+}

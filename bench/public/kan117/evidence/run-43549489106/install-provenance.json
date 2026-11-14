@@ -1,0 +1,15 @@
+{
+  "installed_equals_lock": true,
+  "distributions": 82,
+  "excluded": [
+    "pip"
+  ],
+  "swebench": {
+    "version": "5.0.2",
+    "direct_url": "file:///home/runner/work/quarterback/quarterback/kan117-work/built/swebench-5.0.2-py3-none-any.whl",
+    "direct_url_sha256": "17681688a5f8ac0285ab976113e2c420242264c640e75ff0cfb30dc6f685283d",
+    "rebuilt_wheel": "swebench-5.0.2-py3-none-any.whl",
+    "rebuilt_wheel_sha256": "17681688a5f8ac0285ab976113e2c420242264c640e75ff0cfb30dc6f685283d"
+  },
+  "direct_references_other_than_swebench": 0
+}

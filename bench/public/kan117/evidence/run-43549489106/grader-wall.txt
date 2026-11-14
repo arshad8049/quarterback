@@ -1,0 +1,2 @@
+grader_wall_s_empty=79
+grader_wall_s_gold=58
