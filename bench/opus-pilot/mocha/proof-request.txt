@@ -1,1 +1,1 @@
-request 4: senior direction after 10624 — axios-5892 only: identify the six base failures exactly (--diagnose) before writing the exception list
+request 5: axios-5892 — exact base-failure identities from the validator + QB real classification (adapter) of every run; the --diagnose probe of request 4 captured nothing and is removed
