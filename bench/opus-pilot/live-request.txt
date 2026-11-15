@@ -1,2 +1,2 @@
-mode=dry-run-timeout task=axios-4738
-# request 2 (request 1 never started: workflow file rejected by GitHub for invalid with: mappings)
+mode=smoke
+# request 3: harmless smoke after owner route confirmation (2026-11-15); request 2 was the no-model dry run

@@ -41,7 +41,10 @@ test('the committed grader tasks file validates: A0, pinned digests, eval hashes
   const approvals = JSON.parse(fs.readFileSync(path.join(ROOT, 'bench/opus-pilot/approvals.json'), 'utf8'));
   assert.equal(approvals.calibration.tasks_file_sha256, tf.sha256);
   assert.equal(approvals.candidate_grade.tasks_file_sha256, tf.sha256);
-  assert.equal(approvals.auth_route, null, 'the live route is not confirmed by this commit');
+  // the owner's confirmation is pinned to the exact residual-risk statement he read
+  assert.equal(approvals.auth_route.route, 'subscription_token_env');
+  assert.equal(approvals.auth_route.residual_risk_sha256, sha(fs.readFileSync(path.join(ROOT, approvals.auth_route.residual_risk_file))));
+  assert.equal(approvals.auth_route.environment_checked.can_admins_bypass, false);
 });
 
 test('loadTasksFile refuses an unpinned image, a non-A0 variant, unsafe test paths and a missing parser', async () => {

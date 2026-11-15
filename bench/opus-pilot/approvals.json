@@ -1,6 +1,6 @@
 {
   "schema": "qb-arm-a-approvals/1",
-  "_comment": "Arm-A batch 1 (owner plan approval in chat 2026-11-14, recorded as KAN-111 10610). Calibration and candidate grading only: no model call. auth_route stays null until Arshad explicitly confirms the exact route and residual risk. Tasks file extended to all 21 reserves before any research trial (qualification run 2); the 8 earlier entries are unchanged.",
+  "_comment": "Arm-A batch 1 (owner plan approval in chat 2026-11-14, recorded as KAN-111 10610). Calibration and candidate grading: no model call. auth_route: Arshad confirmed in chat 2026-11-15 the exact route subscription_token_env and the residual risk in bench/opus-pilot/arm-a-residual-risk.md (sha256 below), paid overage off, and the opus-pilot-live environment created; protections read back from the GitHub API before this commit (required reviewer arshad8049, branch policy opus-arm-a only, admin bypass off). Applies ONLY to bench/opus-pilot/arm-a.mjs inside arm-a-live.yml; not a security boundary.",
   "calibration": {
     "approval_comment_id": 10610,
     "tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json",
@@ -12,5 +12,21 @@
     "tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json",
     "tasks_file_sha256": "508300d4d79523b183c3d159aa4d57367ba3d513140c57021606b8527e2bc93b"
   },
-  "auth_route": null
+  "auth_route": {
+    "route": "subscription_token_env",
+    "confirmed_by": "Arshad (owner, chat)",
+    "confirmed_at": "2026-11-15",
+    "residual_risk_file": "bench/opus-pilot/arm-a-residual-risk.md",
+    "residual_risk_sha256": "458020931a3b6d14d0eec002f41b26edc7c2d00147ca9008eaf19e8a6f9a5dab",
+    "overage": "off (owner statement)",
+    "environment_checked": {
+      "name": "opus-pilot-live",
+      "required_reviewer": "arshad8049",
+      "branch_policy": [
+        "opus-arm-a"
+      ],
+      "can_admins_bypass": false,
+      "checked_via": "GET /repos/arshad8049/quarterback/environments/opus-pilot-live (public API)"
+    }
+  }
 }
