@@ -96,6 +96,29 @@ const pick = (x) => {
   };
 };
 
+// review 10624 follow-up (senior, 2026-11-15): --diagnose = the SAME visible command on the BASE tree in the agent
+// workspace (network none, read-only node_modules), with Mocha's own JSON reporter, to identify each existing failure
+// exactly (visible file, full title, code, first 300 chars of the message). Visible repository tests only.
+const diag = [];
+if (process.argv.includes('--diagnose')) {
+  const { hardened } = require(path.join(ROOT, 'lib/sandbox/workspace.js'));
+  const argv = [...ENV.test_argv, '--reporter', 'json', '--reporter-option', 'output=/tmp/qbx-diag.json', ...ENV.test_files];
+  const q = (a) => `'${a.replace(/'/g, `'\\''`)}'`;
+  const probe = async (ws, _e, { waitTimeoutMs }) => D.runStage(`${ws.runId}-agent`, [
+    ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-v', `${ws.runId}-deps:/work/node_modules:ro`,
+    '-e', 'HOME=/tmp/home', '--tmpfs', '/tmp/home:rw,size=256m,uid=10001,gid=10001,mode=0700', '-w', '/work', '--entrypoint', 'sh', AGENT_IMAGE, '-c',
+    `${argv.map(q).join(' ')} >/dev/null 2>&1; echo "qbx_exit=$?" 1>&2; node -e 'const r=JSON.parse(require("fs").readFileSync("/tmp/qbx-diag.json","utf8"));for(const f of r.failures||[])console.error("QBDIAG "+JSON.stringify({file:String(f.file||"").replace(/^\/work\//,""),full_title:f.fullTitle,code:(f.err&&f.err.code)||null,message:String((f.err&&f.err.message)||"").slice(0,150)}))' 1>&2`,
+  ], { waitTimeoutMs });
+  const t0 = Date.now();
+  const r = await runSandboxed({ repoPath: repo, briefing: 'KAN-117 mocha diagnose (no model)', researchEnv: ENV, ...(ROOT_SCRIPTS ? { researchRootScripts: ROOT_SCRIPTS } : {}),
+    agentStage: probe, verify: false, requireMemoryCheck: true, researchDeadlineAtMs: t0 + TRIAL_TOTAL_MS });
+  for (const l of String(r.stderr_tail || (r.sandbox && r.sandbox.stages && r.sandbox.stages.agent && r.sandbox.stages.agent.stderr) || '').split('\n')) {
+    const m = /QBDIAG (\{.*\})$/.exec(l); if (!m) continue;
+    try { const d = JSON.parse(m[1]); diag.push({ ...d, id: sha(`${d.file}\0${d.full_title}`) }); } catch { /* skip */ }
+  }
+  if (!diag.length) diag.push({ error: 'no diagnostic lines captured', status: r.status, stderr_keys: Object.keys(r).filter((k) => /stderr/.test(k)) });
+}
+
 const runs = {};
 runs.baseline = await one('baseline', ENV, { noAgent: true });
 let baseline = null;
@@ -158,7 +181,7 @@ const out = {
   baseline: baseline && { base_verdict: baseline.base_verdict, identity_set_sha256: baseline.identity_set_sha256, counts: baseline.counts },
   runs: Object.fromEntries(Object.entries(runs).map(([k, v]) => [k, pick(v)])),
   fixtures: Object.fromEntries(Object.entries(fixtures).map(([k, v]) => [k, pick(v)])),
-  diagnosis, budgets: { internal_stage_cap_ms: ENV.internal_stage_cap_ms, trial_total_ms: TRIAL_TOTAL_MS, mocha_timeout_ms: Number(ENV.test_argv[ENV.test_argv.indexOf('--timeout') + 1]) },
+  diagnose_base_failures: diag, diagnosis, budgets: { internal_stage_cap_ms: ENV.internal_stage_cap_ms, trial_total_ms: TRIAL_TOTAL_MS, mocha_timeout_ms: Number(ENV.test_argv[ENV.test_argv.indexOf('--timeout') + 1]) },
   cleanup: { containers: await left('container'), networks: await left('network'), volumes: await left('volume') },
   no_model: { model_calls: 0, credentials: 'none', agent_stage: 'none (baseline, empty); applyPatch (gold, tamper, fixtures)' },
 };

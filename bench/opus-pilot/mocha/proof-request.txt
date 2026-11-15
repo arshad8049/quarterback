@@ -1,1 +1,1 @@
-request 3: review 10623 — axios-5892 (Mocha 10.0.0, ESM; researchEnv + researchRootScripts together), reporter v2 diagnosis for 4738/4731, complete-rewrite fixture
+request 4: senior direction after 10624 — axios-5892 only: identify the six base failures exactly (--diagnose) before writing the exception list

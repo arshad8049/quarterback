@@ -33,9 +33,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { task: axios-4738, base: 9bb016f95e6de871a44f3276fd06562704a0abb0, fixtures: '--fixtures', extra: '' }
-          - { task: axios-4731, base: c30252f685e8f4326722de84923fcbc8cf557f06, fixtures: '', extra: '' }
-          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json' }
+          # senior direction after 10624: axios-5892 only
+          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json --diagnose' }
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
         with: { persist-credentials: false }
@@ -87,7 +86,13 @@ jobs:
             const fl = (a) => (a || []).map((e) => `${e.file}:${(e.kinds || []).join("/") || "-"}${(e.codes || []).length ? "(" + e.codes.join("/") + ")" : ""}${e.base ? ":" + e.base.join("/") + ">" + e.gold.join("/") : ""}:touched=${e.touched_by_official_test_patch}`).join(",");
             const d0 = j.runs.baseline && j.runs.baseline.deps; const rs = d0 && d0.root_scripts;
             lines.push(`DIAG ${j.task} base_failures=[${fl(dg.base_failures)}] gold_flips=[${fl(dg.gold_flips)}] gold_missing=${dg.gold_missing} budgets=${JSON.stringify(j.budgets)} deps=${d0 ? d0.status + "/" + d0.check_state : "-"} root_rule=${rs ? rs.rule + ":" + JSON.stringify(rs.removed) + ":" + rs.original_package_json_sha256.slice(0, 12) + ">" + rs.install_manifest_sha256.slice(0, 12) : "none"}`);
-            for (const l of lines) console.log(`::notice title=kan117-mocha::${l}`);
+            // visible base failures, exactly (visible repository tests on the unchanged code); screened below
+            const bf = (j.diagnose_base_failures || []).map((d) => `id=${String(d.id || "").slice(0, 16)} file=${d.file} code=${d.code} title=${JSON.stringify(d.full_title)} message=${JSON.stringify(d.message)}`);
+            for (let i = 0; i < bf.length; i += 3) lines.push(`BASEFAIL ${j.task} ` + bf.slice(i, i + 3).join(" || "));
+            const store = require("fs").readFileSync("bench/public/out/vault/swe-bench-multilingual.jsonl", "utf8").trim().split("\n").map((x) => JSON.parse(x)).find((r) => r.task_id === j.task_id);
+            const req = [].concat(...["FAIL_TO_PASS", "PASS_TO_PASS"].map((k) => (Array.isArray(store[k]) ? store[k] : JSON.parse(store[k] || "[]"))));
+            for (let i = 0; i < lines.length; i++) if (req.some((n) => n && lines[i].includes(n))) lines[i] = lines[i].split(" title=")[0] + " <rest withheld: a line contains a grader-required name>";
+            for (const l of lines) console.log(`::notice title=kan117-mocha::${l.replace(/%/g, "%25").replace(/\r?\n/g, " ")}`);
           ' "$f"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         if: ${{ !cancelled() }}
