@@ -1,0 +1,30 @@
+{
+  "schema": "qb-arm-a-deviations/1",
+  "applies_to": "arm-A batch 1 (Claude-only exploratory; owner plan 2026-11-14)",
+  "frozen_settings_kept": {
+    "model": "claude-opus-5-5 (requested explicitly; served model observed per attempt)",
+    "claude_code_version": "2.1.322 (agent image pin)",
+    "permission_mode": "dontAsk + allowlist Read,Glob,Grep,Edit,Write,Bash,TodoWrite; WebFetch/WebSearch denied",
+    "output": "stream-json --verbose, --no-session-persistence, --strict-mcp-config",
+    "attempts": 1,
+    "coding_s": 1800,
+    "trial_total_s": 5400,
+    "outcomes_and_precedence": "KAN-112 amendment 1 (classifyTrial), billing evidence rules unchanged (missing = unknown)"
+  },
+  "deviations": [
+    { "what": "runner", "frozen": "bench/experiment-run.js runExperiment", "used": "bench/opus-pilot/arm-a.mjs + lib/pilot/arm-a.js runTrial",
+      "why": "dataset tasks have no QB task spec/oracle, which runExperiment and nativeArm require (QB-13 gate)",
+      "kept": "the same pilotTrial/pilotClassify/pilotRecord (exported from experiment-run.js, not copied), runAgentSandboxed preflight/sign-in/classifyAttempt, budget.startRun total deadline" },
+    { "what": "grader", "frozen": "QB's external grader (bench/grader.js) over QB hidden tests", "used": "the dataset's own hidden tests via the KAN-111 grader (variant A0, calibrated per task)",
+      "why": "the score must come from the dataset's published grading, independent of QB" },
+    { "what": "briefing", "frozen": "spec.prompt + NATIVE_NOTE (arm A)", "used": "agent-store problem_statement + NATIVE_NOTE",
+      "why": "the dataset's task text is the prompt; nothing else is added" },
+    { "what": "credential route", "frozen": "none approved (APPROVED_AUTH_ROUTES empty)", "used": "subscription_token_env, ONLY through the research driver's guard after the owner's explicit confirmation",
+      "why": "owner decision (KAN-113 route a); residual risk stated and accepted by the owner; not a security boundary" },
+    { "what": "Claude Code config dir", "frozen": "/cfg comes from the Mode S per-run volume", "used": "Mode K + a fresh, empty, per-run tmpfs at /cfg (arm-A route only)",
+      "why": "the root filesystem is read-only; no stored credential is copied" },
+    { "what": "sign-in adapter", "frozen": "fake only (tests)", "used": "a no-network configuration check per attempt",
+      "why": "establishes configuration only; authentication is established by the smoke's served model and billing evidence" }
+  ],
+  "not_a_comparison": "no QB arm, no frozen QB checklists: exploratory, not part of any untouched paired evaluation"
+}
