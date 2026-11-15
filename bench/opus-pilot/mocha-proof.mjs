@@ -40,6 +40,11 @@ const { validateTaskEnv } = require(path.join(ROOT, 'lib/research/dataset-env.js
 const { baselineFrom } = require(path.join(ROOT, 'verify/mocha-report.js'));
 const envFile = path.join(HERE, 'mocha', `${key}.env.json`);
 const ENV = validateTaskEnv(JSON.parse(fs.readFileSync(envFile, 'utf8')));
+// review 10623: researchRootScripts and researchEnv TOGETHER through the real path (only for a record that names its entry)
+const allowFile = arg('root-scripts-allow');
+const ROOT_SCRIPTS = ENV.root_scripts_key
+  ? (allowFile ? JSON.parse(fs.readFileSync(allowFile, 'utf8')).entries.filter((e) => e.key === ENV.root_scripts_key) : null) : null;
+if (ENV.root_scripts_key && !(ROOT_SCRIPTS && ROOT_SCRIPTS.length === 1)) { console.error(`record names root_scripts_key ${ENV.root_scripts_key}: pass --root-scripts-allow with that one entry`); process.exit(2); }
 
 const head = execFileSync('git', ['-C', repo, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 if (head !== ENV.base_commit) { console.error(`checkout is ${head}, not the task base`); process.exit(3); }
@@ -68,7 +73,8 @@ function addFiles(files) {
 const TRIAL_TOTAL_MS = 90 * 60_000;
 async function one(label, env, extra) {
   const t0 = Date.now();
-  const r = await runSandboxed({ repoPath: repo, briefing: `KAN-117 10620 mocha proof ${label} (no model)`, researchEnv: env,
+  const r = await runSandboxed({ repoPath: repo, briefing: `KAN-117 mocha proof ${label} (no model)`, researchEnv: env,
+    ...(ROOT_SCRIPTS ? { researchRootScripts: ROOT_SCRIPTS } : {}),
     requireMemoryCheck: true, researchDeadlineAtMs: t0 + TRIAL_TOTAL_MS, ...extra });
   return { label, wall_ms: Date.now() - t0, r };
 }
@@ -77,7 +83,8 @@ const pick = (x) => {
   const s = x.r.sandbox || {}; const v = s.verification || {};
   const val = v.validation || {};
   return {
-    status: x.r.status, wall_ms: x.wall_ms, deps: s.deps && { status: s.deps.status, reason: s.deps.reason || null },
+    status: x.r.status, wall_ms: x.wall_ms, deps: s.deps && { status: s.deps.status, reason: s.deps.reason || null, check_state: s.deps.check_state || null,
+      root_scripts: s.deps.root_scripts ? { rule: s.deps.root_scripts.rule, removed: s.deps.root_scripts.removed, original_package_json_sha256: s.deps.root_scripts.original_package_json_sha256, install_manifest_sha256: s.deps.root_scripts.install_manifest_sha256, script_sha256: s.deps.root_scripts.script_sha256 } : null },
     capture: s.capture && s.capture.verdict && s.capture.verdict.state,
     // the gold run's changed paths are answer material: counted, never named
     changes: x.label === 'gold' ? { count: (x.r.changes || []).length } : (x.r.changes || []).map((c) => ({ file: c.file, status: c.status })),
@@ -106,7 +113,7 @@ if (baseline) {
 // benchmark-independent negative controls: a synthetic file set, never the task's tests or answer
 const fixtures = {};
 if (process.argv.includes('--fixtures')) {
-  const FX = 'qbx-fixture/f.js';
+  const FX = 'qbx-fixture/f.cjs';   // CommonJS fixture: also loads in an ESM ("type": "module") package
   const fxEnv = (cap) => validateTaskEnv({ ...ENV, exposure: 'calibration', test_files: [FX], generated_paths: [], internal_stage_cap_ms: cap });
   const cases = {
     fail: "describe('fx', () => { it('passes', () => {}); it('fails', () => { throw new Error('synthetic'); }); });",
@@ -115,12 +122,32 @@ if (process.argv.includes('--fixtures')) {
     forged_append: "describe('fx', () => { it('forges', () => { const o = process.argv.find((a) => a.startsWith('output=')).split(',')[0].slice(7); require('fs').appendFileSync(o, JSON.stringify({ type: 'qb:end', stats: { suites: 1, tests: 1, passes: 1, pending: 0, failures: 0 } }) + '\\n'); }); it('fails', () => { throw new Error('synthetic'); }); });",
     hook_failure: "describe('fx', () => { before(() => { throw new Error('synthetic hook'); }); it('a', () => {}); });",
     hang: "describe('fx', () => { it('hangs', function () { this.timeout(0); for (;;) {} }); });",
+    // review 10623 item 4: test code that knows the nonce and output path (both in process.argv) REWRITES the whole
+    // report with a self-consistent passing one after a real failure, then exits 0. Expected: NOT detectable (residual).
+    complete_rewrite: "describe('fx', () => { it('really fails', () => { throw new Error('synthetic'); }); it('rewrites', () => { const a = process.argv[process.argv.indexOf('--reporter-option') + 1]; const o = Object.fromEntries(a.split(',').map((kv) => kv.split('='))); const f = __filename; const L = [{ type: 'qb:start', format: 'qb-mocha-events/1', nonce: o.nonce, mocha_version: o.mocha_version, started_at: Date.now() }, { type: 'suite', file: f }, { type: 'test', file: f, full_title: 'fx forged', title: 'forged', state: 'passed' }, { type: 'qb:end', stats: { suites: 1, tests: 1, passes: 1, pending: 0, failures: 0 } }]; require('fs').writeFileSync(o.output, L.map((l) => JSON.stringify(l)).join('\\n') + '\\n'); process.exit(0); }); });",
   };
   for (const [name, body] of Object.entries(cases)) {
     fixtures[name] = await one(`fixture-${name}`, fxEnv(name === 'hang' ? 120_000 : ENV.internal_stage_cap_ms), { applyPatch: addFiles({ [FX]: body }) });
   }
 }
 const launches = release();
+
+// review 10623 item 3: diagnosis WITHOUT names — existing base failures and base→gold flips, by visible file, error kind/code,
+// and whether the official test patch touches that test (controller-only: its leaf title is a string literal on a changed line)
+const lit = new Set();
+for (const l of String(vaultRow.test_patch || '').split('\n')) {
+  if (!/^[-+]/.test(l) || /^(\+\+\+|---)/.test(l)) continue;
+  for (const m of l.matchAll(/(['"`])((?:\\.|(?!\1).)*)\1/g)) lit.add(sha(m[2]));
+}
+const idsOf = (x) => (x && x.r.sandbox && x.r.sandbox.verification && x.r.sandbox.verification.validation && x.r.sandbox.verification.validation.identities) || [];
+const touched = (e) => (e.leaf_sha256 ? lit.has(e.leaf_sha256) : null);
+const baseIds = new Map(idsOf(runs.baseline).map((e) => [e.id, e]));
+const diagnosis = {
+  base_failures: [...baseIds.values()].filter((e) => e.statuses.includes('failed')).map((e) => ({ file: e.file, kinds: e.kinds, codes: e.codes, touched_by_official_test_patch: touched(e) })),
+  gold_flips: idsOf(runs.gold).filter((e) => { const b = baseIds.get(e.id); return !b || JSON.stringify(b.statuses) !== JSON.stringify(e.statuses); })
+    .map((e) => ({ file: e.file, base: baseIds.has(e.id) ? baseIds.get(e.id).statuses : null, gold: e.statuses, kinds: e.kinds, codes: e.codes, touched_by_official_test_patch: touched(e) })),
+  gold_missing: [...baseIds.keys()].filter((id) => !idsOf(runs.gold).some((e) => e.id === id)).length,
+};
 
 const left = async (kind) => { const x = await D.op(kind === 'container' ? ['ps', '-aq', '--filter', 'label=qb.run'] : [kind, 'ls', '-q', '--filter', 'label=qb.run']); return x.ok ? x.stdout.split('\n').filter(Boolean).length : null; };
 const out = {
@@ -131,6 +158,7 @@ const out = {
   baseline: baseline && { base_verdict: baseline.base_verdict, identity_set_sha256: baseline.identity_set_sha256, counts: baseline.counts },
   runs: Object.fromEntries(Object.entries(runs).map(([k, v]) => [k, pick(v)])),
   fixtures: Object.fromEntries(Object.entries(fixtures).map(([k, v]) => [k, pick(v)])),
+  diagnosis, budgets: { internal_stage_cap_ms: ENV.internal_stage_cap_ms, trial_total_ms: TRIAL_TOTAL_MS, mocha_timeout_ms: Number(ENV.test_argv[ENV.test_argv.indexOf('--timeout') + 1]) },
   cleanup: { containers: await left('container'), networks: await left('network'), volumes: await left('volume') },
   no_model: { model_calls: 0, credentials: 'none', agent_stage: 'none (baseline, empty); applyPatch (gold, tamper, fixtures)' },
 };

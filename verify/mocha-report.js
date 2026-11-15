@@ -73,10 +73,13 @@ function validateMochaRun(o) {
       if (!f || typeof e.full_title !== 'string' || !STATES.has(e.state)) { reasons.push('malformed_report'); return out; }
       tally[e.state] += 1;
       const id = hash(`${f}\0${e.full_title}`);
-      const x = byId.get(id) || { id, count: 0, statuses: [] };
-      x.count += 1; x.statuses.push(e.state); byId.set(id, x);
+      const x = byId.get(id) || { id, file: f, leaf_sha256: typeof e.title === 'string' ? hash(e.title) : null, count: 0, statuses: [], kinds: [], codes: [] };
+      x.count += 1; x.statuses.push(e.state);
+      if (e.state === 'failed') { x.kinds.push(typeof e.error_kind === 'string' ? e.error_kind : 'unknown'); if (typeof e.error_code === 'string') x.codes.push(e.error_code); }
+      byId.set(id, x);
     } else if (e.type === 'hook_fail') {
       hooks += 1;
+      out.hook_kinds = [...(out.hook_kinds || []), typeof e.error_kind === 'string' ? e.error_kind : 'unknown'];
     } else { reasons.push('malformed_report'); return out; }
   }
   const s = end.stats || {};
@@ -89,7 +92,7 @@ function validateMochaRun(o) {
   if (hooks > 0) reasons.push('hook_failure');
   const want = [...new Set(o.files || [])].sort(); const got = [...executed].sort();
   if (JSON.stringify(want) !== JSON.stringify(got)) reasons.push('discovery_mismatch');
-  out.identities = [...byId.values()].map((e) => ({ ...e, statuses: e.statuses.sort() })).sort((a, b) => (a.id < b.id ? -1 : 1));
+  out.identities = [...byId.values()].map((e) => ({ ...e, statuses: e.statuses.sort(), kinds: e.kinds.sort(), codes: e.codes.sort() })).sort((a, b) => (a.id < b.id ? -1 : 1));
   out.identity_set_sha256 = hash(JSON.stringify(out.identities));
 
   const failures = tally.failed + hooks;

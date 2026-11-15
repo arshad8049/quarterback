@@ -33,8 +33,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { task: axios-4738, base: 9bb016f95e6de871a44f3276fd06562704a0abb0, fixtures: '--fixtures' }
-          - { task: axios-4731, base: c30252f685e8f4326722de84923fcbc8cf557f06, fixtures: '' }
+          - { task: axios-4738, base: 9bb016f95e6de871a44f3276fd06562704a0abb0, fixtures: '--fixtures', extra: '' }
+          - { task: axios-4731, base: c30252f685e8f4326722de84923fcbc8cf557f06, fixtures: '', extra: '' }
+          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json' }
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
         with: { persist-credentials: false }
@@ -68,7 +69,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$OUT"   # run 43749074683: tee opened $OUT/summary.txt before the script created $OUT (step failed after the proof completed)
-          node bench/opus-pilot/mocha-proof.mjs --task="${{ matrix.task }}" --repo="$WORK/repo" --store=bench/public/out --out="$OUT" --images="$IMG" ${{ matrix.fixtures }} | tee "$OUT/summary.txt"
+          node bench/opus-pilot/mocha-proof.mjs --task="${{ matrix.task }}" --repo="$WORK/repo" --store=bench/public/out --out="$OUT" --images="$IMG" ${{ matrix.fixtures }} ${{ matrix.extra }} | tee "$OUT/summary.txt"
       - name: Public notice (verdicts, reasons and counts only)
         if: ${{ !cancelled() }}
         run: |
@@ -82,6 +83,10 @@ jobs:
             // GitHub keeps 10 annotations per step: one line per group
             lines.push(`RUNS ${j.task} ` + Object.entries(j.runs).map(([k, x]) => `${k}=${v(x)}`).join(" ; "));
             if (Object.keys(j.fixtures).length) lines.push(`FIXTURES ${j.task} ` + Object.entries(j.fixtures).map(([k, x]) => `${k}=${v(x)}`).join(" ; "));
+            const dg = j.diagnosis || {};
+            const fl = (a) => (a || []).map((e) => `${e.file}:${(e.kinds || []).join("/") || "-"}${(e.codes || []).length ? "(" + e.codes.join("/") + ")" : ""}${e.base ? ":" + e.base.join("/") + ">" + e.gold.join("/") : ""}:touched=${e.touched_by_official_test_patch}`).join(",");
+            const d0 = j.runs.baseline && j.runs.baseline.deps; const rs = d0 && d0.root_scripts;
+            lines.push(`DIAG ${j.task} base_failures=[${fl(dg.base_failures)}] gold_flips=[${fl(dg.gold_flips)}] gold_missing=${dg.gold_missing} budgets=${JSON.stringify(j.budgets)} deps=${d0 ? d0.status + "/" + d0.check_state : "-"} root_rule=${rs ? rs.rule + ":" + JSON.stringify(rs.removed) + ":" + rs.original_package_json_sha256.slice(0, 12) + ">" + rs.install_manifest_sha256.slice(0, 12) : "none"}`);
             for (const l of lines) console.log(`::notice title=kan117-mocha::${l}`);
           ' "$f"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
