@@ -32,7 +32,7 @@ test('the committed grader tasks file validates: A0, pinned digests, eval hashes
   const G = await imp('bench/public/grader/immutable-offline-v1/grade.mjs');
   const f = path.join(ROOT, 'bench/opus-pilot/arm-a-grader-tasks.json');
   const tf = G.loadTasksFile(f);
-  assert.equal(Object.keys(tf.tasks).length, 8);
+  assert.equal(Object.keys(tf.tasks).length, 26, '5 selected + all 21 reserves');
   for (const t of Object.values(tf.tasks)) {
     assert.equal(t.variant, 'A0');
     assert.ok(['parse_log_tap', 'parse_log_karma'].includes(t.log_parser), t.log_parser);

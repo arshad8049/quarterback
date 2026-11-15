@@ -115,6 +115,265 @@
       "repo": "axios/axios",
       "log_parser": "parse_log_tap",
       "role": "reserve 3"
+    },
+    "preact-3567": {
+      "task_id": "qbt_86a5bc6d4004",
+      "instance_id": "preactjs__preact-3567",
+      "base": "c77e6284c199761d59467d8cc596a2f03540e72c",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3567@sha256:f72773f4981392fcacacd9bb69081592afd5dd7223caf84677f12aa6bd79fe1a",
+      "eval_sha256": "174bc972e727e2be812640b3e7d957ceaeaf314cb87616b984e29d7cf7ad883e",
+      "test_files": [
+        "hooks/test/browser/useEffect.test.js",
+        "hooks/test/browser/useLayoutEffect.test.js",
+        "hooks/test/browser/useMemo.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 4"
+    },
+    "preact-3062": {
+      "task_id": "qbt_b39623bc278c",
+      "instance_id": "preactjs__preact-3062",
+      "base": "7556b61bd0d9f72bbd906c3abaebf2b1c9aeacbf",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3062@sha256:325a6d8088c712e381ab230a69c3100bc02cc5e84036bbfb7614f5e81eb44c8a",
+      "eval_sha256": "33a128ab29012925dda027f44dfe71b7d44db675ca26ddeadbeefe09208c57bd",
+      "test_files": [
+        "test/browser/render.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 5"
+    },
+    "preact-3454": {
+      "task_id": "qbt_0fef7f32bf88",
+      "instance_id": "preactjs__preact-3454",
+      "base": "00c8d1ff1498084c15408cf0014d4c7facdb5dd7",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3454@sha256:76750a54c17dcc292e7b129af32b70578f2c3b2e48dab82065489e994ba0b03b",
+      "eval_sha256": "1234cfd340f882dda96560ee8158a666b192ff773f6ddda6b0c999d1da171003",
+      "test_files": [
+        "test/browser/svg.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 6"
+    },
+    "axios-5085": {
+      "task_id": "qbt_50364155b8a0",
+      "instance_id": "axios__axios-5085",
+      "base": "85740c3e7a1fa48346dfcbd4497f463ccb1c1b05",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5085@sha256:d0a38e17c8f11e41c3d71b46c532db321f732a27e80d57c798e38913da195def",
+      "eval_sha256": "5a61d4d31cbe754b3e55fb0b39dc979b32d985379da4564c9c682733b896751b",
+      "test_files": [
+        "test/unit/core/AxiosHeaders.js",
+        "test/unit/regression/bugs.js"
+      ],
+      "variant": "A0",
+      "repo": "axios/axios",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 7"
+    },
+    "threejs-25687": {
+      "task_id": "qbt_5808ab3322ae",
+      "instance_id": "mrdoob__three.js-25687",
+      "base": "114134e195a451fdbaa8d2e9492d869d5c853814",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-25687@sha256:3cc22c9a6b7e49f24741b904a7fe44a6f35a9f8f2e1151bbe7ce85e6ddf5a39f",
+      "eval_sha256": "319302bc55186405a06d1a38d9622814fa00847c0e1da8a5475e51907d5fcafd",
+      "test_files": [
+        "test/unit/src/core/Object3D.tests.js"
+      ],
+      "variant": "A0",
+      "repo": "mrdoob/three.js",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 8"
+    },
+    "preact-3763": {
+      "task_id": "qbt_cebc89839d51",
+      "instance_id": "preactjs__preact-3763",
+      "base": "e968a5a4000dfa9bec7e8d7b26543b23def6d29d",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3763@sha256:40ec5e3e9ab1f9390a1e0537800f4378d5a7f3f36d5d63098b58539b10f87d5c",
+      "eval_sha256": "400e3c6064ac3f90fbb7233566f62c7e9fd9ef37745aa201e35435b38e068ff0",
+      "test_files": [
+        "test/browser/lifecycles/componentDidMount.test.js",
+        "test/browser/lifecycles/lifecycle.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 9"
+    },
+    "preact-4436": {
+      "task_id": "qbt_47d9778e832a",
+      "instance_id": "preactjs__preact-4436",
+      "base": "db0f4f2e7a2338ea40050f623f05505a798fc1a4",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4436@sha256:e128a63fb93027d117b05545e2e4df002eb6ab601e4abbb3f62f697d876ce91f",
+      "eval_sha256": "983aaae123eacb9e98ef958bf31ab83e4c55d9c2a9911237bfb904392b656461",
+      "test_files": [
+        "test/browser/refs.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 10"
+    },
+    "preact-4316": {
+      "task_id": "qbt_36a83a7d8af3",
+      "instance_id": "preactjs__preact-4316",
+      "base": "b820d8b73eade8bc5b3fbf7e5fe0dd5150de80e2",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4316@sha256:85212a9b88597718785e82267af9215fbf1071aa6cd2234e705bae2193485994",
+      "eval_sha256": "81f5f81f067a9dd284d0b94737ba3e1eede2326bacec97823092d0442e99a38a",
+      "test_files": [
+        "test/browser/events.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 11"
+    },
+    "threejs-26589": {
+      "task_id": "qbt_7168a117b480",
+      "instance_id": "mrdoob__three.js-26589",
+      "base": "8d9f8d50b923d5f8a673590ae138bc5d86a3a256",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-26589@sha256:02e669aad72f545274413e17f9001103c99f6aacc99c7fe8544341222e48cce3",
+      "eval_sha256": "9913c8d7a212be9d825243ef69d19d5252f88d8900f987fe530c09a9f1a51c77",
+      "test_files": [
+        "test/unit/src/objects/Line.tests.js",
+        "test/unit/src/objects/Mesh.tests.js",
+        "test/unit/src/objects/Points.tests.js"
+      ],
+      "variant": "A0",
+      "repo": "mrdoob/three.js",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 12"
+    },
+    "axios-6539": {
+      "task_id": "qbt_d65b6ee370a0",
+      "instance_id": "axios__axios-6539",
+      "base": "c6cce43cd94489f655f4488c5a50ecaf781c94f2",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-6539@sha256:a0bfe8bcd541c85cce28fc1f21c58b26d53a1cf1ea482b9b253ee80f3440d5cb",
+      "eval_sha256": "cefe7415262ff30625ffbc633253ad4aadfdce55a377bfd31c634fd21bab10b9",
+      "test_files": [
+        "test/specs/helpers/isAbsoluteURL.spec.js"
+      ],
+      "variant": "A0",
+      "repo": "axios/axios",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 13"
+    },
+    "preact-3739": {
+      "task_id": "qbt_70dfdaf51e11",
+      "instance_id": "preactjs__preact-3739",
+      "base": "2cafedee2ddf7c73795e887ef1970df4be2bca90",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3739@sha256:f7c7eb09966b118bc0bcc2cd3cfefbc40d75c3e14e022450a6a3b2f2c06e5170",
+      "eval_sha256": "554978939cb4ebc1f63874831423712f7d82084003709145b76b0336abbe95fe",
+      "test_files": [
+        "hooks/test/browser/errorBoundary.test.js",
+        "hooks/test/browser/useState.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 14"
+    },
+    "preact-4152": {
+      "task_id": "qbt_0895d85f2b60",
+      "instance_id": "preactjs__preact-4152",
+      "base": "9c5a82efcc3dcbd0035c694817a3022d81264687",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4152@sha256:b421912ab8a495594d471e2670efcb8883a04e34ab0c130c0ae5b8e17e6b3d9d",
+      "eval_sha256": "5c4621fc588cb4fdd02d9b9b48976eacacfc7b9f8a176ee18e3f2d558b705ca3",
+      "test_files": [
+        "test/browser/components.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 15"
+    },
+    "preact-2927": {
+      "task_id": "qbt_25652be28e11",
+      "instance_id": "preactjs__preact-2927",
+      "base": "ee76c1eb169897412501d86fbe40122b34cd2e8d",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2927@sha256:351126e9fc2d80d463faf409cc7fd9e007deef44c9246cd52b95d1096626308c",
+      "eval_sha256": "fd6248d69dbb257b7067ce32ac695f5af1f9f5aeaa6741a9e61c9ea6ee3a6a0f",
+      "test_files": [
+        "test/browser/render.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 16"
+    },
+    "preact-4182": {
+      "task_id": "qbt_6b63bede3ae8",
+      "instance_id": "preactjs__preact-4182",
+      "base": "66cb6a78776b263a2fe4d1283426e699961095d2",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4182@sha256:19f3f1ebb548e5e0c319d961b73190e78cca782c5bd91035d6cb0ad5c7a02d9e",
+      "eval_sha256": "133174fa4e8d69ff344bc44996acd3372cb4034d21b2325e611e0908da531094",
+      "test_files": [
+        "hooks/test/browser/errorBoundary.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 17"
+    },
+    "preact-3689": {
+      "task_id": "qbt_9971e70528bf",
+      "instance_id": "preactjs__preact-3689",
+      "base": "9457b221fdacd1052ffdb385918e1bab4b10e833",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3689@sha256:f2731d45b5f0416c2251bfe7d3127eed58abf2d55a4fba2f149ec3ddf203458c",
+      "eval_sha256": "a78bdf96ba28b0e0338e5d9cc14cefa110162634a505823a26407b731c32f602",
+      "test_files": [
+        "hooks/test/browser/errorBoundary.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 18"
+    },
+    "preact-3010": {
+      "task_id": "qbt_cb8a80d7ff50",
+      "instance_id": "preactjs__preact-3010",
+      "base": "c12331064f4ea967641cd5e419204422af050fbb",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3010@sha256:e8aa1e355221d42235e7beb1d83c902b1ca9f40112af090d4d87e60b3f69366d",
+      "eval_sha256": "780234fa6df8a36ad52542c3a1195eaf7ed17ba29ad976b8c5e9a62e28277464",
+      "test_files": [
+        "test/browser/render.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 19"
+    },
+    "axios-4731": {
+      "task_id": "qbt_c53e87497508",
+      "instance_id": "axios__axios-4731",
+      "base": "c30252f685e8f4326722de84923fcbc8cf557f06",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-4731@sha256:e75f3f2f1e91fbd09a00bd14a4c807dab210d58a5d7395b595cf65314d092bb1",
+      "eval_sha256": "db3825aac1e6df4b410fd824efbac5339cc8be86d4702e448d310c7a4a677482",
+      "test_files": [
+        "test/unit/adapters/http.js"
+      ],
+      "variant": "A0",
+      "repo": "axios/axios",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 20"
+    },
+    "preact-3562": {
+      "task_id": "qbt_91216e8196cb",
+      "instance_id": "preactjs__preact-3562",
+      "base": "0b9a9275b47e446106e6e97c78011896f7db2a61",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3562@sha256:97b558985eb5688efafd8f2d7c99a4e290856af429f79163415a10ffd1798eda",
+      "eval_sha256": "6c926557459543b544084565a73e7cf2ced6f8ebaa682996ea256a00beec77b2",
+      "test_files": [
+        "compat/test/browser/render.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "reserve 21"
     }
   }
 }

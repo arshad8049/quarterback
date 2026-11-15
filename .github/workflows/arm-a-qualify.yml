@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        task: [preact-2757, preact-3345, preact-4245, threejs-27395, preact-2896, axios-5892, axios-4738, axios-5316]
+        task: [preact-3567, preact-3062, preact-3454, axios-5085, threejs-25687, preact-3763, preact-4436, preact-4316, threejs-26589, axios-6539, preact-3739, preact-4152, preact-2927, preact-4182, preact-3689, preact-3010, axios-4731, preact-3562]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
         with: { persist-credentials: false }
@@ -154,9 +154,14 @@ jobs:
         env: { ARM_A_CI_RUN: '1' }
         run: node bench/opus-pilot/arm-a-qualify.mjs --task="${{ matrix.task }}" --repo="$WORK/repo" --store=bench/public/out --images="$IMG" --out="$WORK/q"
 
-      - name: KAN-111 calibration (A0; 3x empty, 3x gold, isolation controls)
-        id: calib
+      - name: Setup outcome
+        id: ok
         if: ${{ !cancelled() }}
+        run: echo "setup=$(node -e "try{process.stdout.write(String(require(process.argv[1]).qualified_setup))}catch{process.stdout.write('missing')}" "$WORK/q/qualify-${{ matrix.task }}.json")" >> "$GITHUB_OUTPUT"
+
+      - name: KAN-111 calibration (A0; 3x empty, 3x gold, isolation controls; only when setup passed)
+        id: calib
+        if: ${{ !cancelled() && steps.ok.outputs.setup == 'pending_calibration' }}
         continue-on-error: true
         env:
           SWEBENCH_PYTHON: /tmp/kan111/swe/bin/python

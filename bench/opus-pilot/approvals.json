@@ -1,7 +1,16 @@
 {
   "schema": "qb-arm-a-approvals/1",
-  "_comment": "Arm-A batch 1 (owner plan approval in chat 2026-11-14, recorded as KAN-111 10610). Calibration and candidate grading only: no model call. auth_route stays null until Arshad explicitly confirms the exact route and residual risk.",
-  "calibration": { "approval_comment_id": 10610, "tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json", "tasks_file_sha256": "56f7c7e391bf52f57de37574c63d8b3ed2e3fb75af713a7ae98fa2e9779d11c0" },
-  "candidate_grade": { "approval_comment_id": 10610, "variant": "A0", "tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json", "tasks_file_sha256": "56f7c7e391bf52f57de37574c63d8b3ed2e3fb75af713a7ae98fa2e9779d11c0" },
+  "_comment": "Arm-A batch 1 (owner plan approval in chat 2026-11-14, recorded as KAN-111 10610). Calibration and candidate grading only: no model call. auth_route stays null until Arshad explicitly confirms the exact route and residual risk. Tasks file extended to all 21 reserves before any research trial (qualification run 2); the 8 earlier entries are unchanged.",
+  "calibration": {
+    "approval_comment_id": 10610,
+    "tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json",
+    "tasks_file_sha256": "508300d4d79523b183c3d159aa4d57367ba3d513140c57021606b8527e2bc93b"
+  },
+  "candidate_grade": {
+    "approval_comment_id": 10610,
+    "variant": "A0",
+    "tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json",
+    "tasks_file_sha256": "508300d4d79523b183c3d159aa4d57367ba3d513140c57021606b8527e2bc93b"
+  },
   "auth_route": null
 }
