@@ -1,0 +1,13 @@
+{
+  "schema": "qb-root-scripts-allow/1",
+  "approved_by": "KAN-117 review 10620 (slice B: opt-in for reviewed, pinned Axios bases only; unknown combinations refuse)",
+  "rule": "deps-root-scripts-v1",
+  "entries": [
+    { "key": "axios-5892", "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b", "base_tree": "d37c27531ee7d744f25932ad0cb20ecabbf202ff",
+      "package_json_sha256": "c53ddecc6479a5b90a045c11ea827b9eae50d3170d36e2dd5ca2de40841fb621", "removed": ["prepare"], "rule": "deps-root-scripts-v1",
+      "script_reviewed": "prepare = husky install && npm run prepare:hooks (git hooks only; prepare:hooks = npx husky set .husky/commit-msg ...)" },
+    { "key": "axios-6539", "base_commit": "c6cce43cd94489f655f4488c5a50ecaf781c94f2", "base_tree": "17157af95707b0d13e24f0e53162460c9162199a",
+      "package_json_sha256": "16a1091526be45f9cc6b5858d1e59719d0f0ad005a96cb79cebc084201bb4038", "removed": ["prepare"], "rule": "deps-root-scripts-v1",
+      "script_reviewed": "prepare = husky install && npm run prepare:hooks (git hooks only; prepare:hooks = npx husky set .husky/commit-msg ...)" }
+  ]
+}
