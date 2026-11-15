@@ -34,7 +34,7 @@ jobs:
       matrix:
         include:
           # senior direction after 10624: axios-5892 only
-          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json --probe-grep="supports http with nodejs should support max content length"' }
+          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json --defect=bench/opus-pilot/mocha/fixture-5892-broken-maxcontentlength.diff' }
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
         with: { persist-credentials: false }
@@ -77,7 +77,7 @@ jobs:
           [ -f "$f" ] || { echo "::error::no proof record"; exit 1; }
           node -e '
             const j = require(process.argv[1]);
-            const v = (x) => x ? `${x.status}|${x.verification.verdict}|${(x.verification.reasons||[]).join("+")}|n=${x.verification.counts ? x.verification.counts.total : "-"}|p=${x.verification.counts ? x.verification.counts.passed : "-"}|f=${x.verification.counts ? x.verification.counts.failed : "-"}|files=${x.verification.files_executed}/${x.verification.files_expected}|ids=${(x.verification.identity_set_sha256||"-").slice(0,12)}|prep_mod=${x.verification.prep ? (x.verification.prep.protected_modified||[]).length : "-"}|qb=${x.verification.qb ? [x.verification.qb.as_recorded, x.verification.qb.if_approved].map((q) => q ? `${q.outcome}:${q.reason}:${q.trust}:reg${q.regressions}/chg${q.changed}/exc${q.excepted}:${q.verdict_input.state}` : "-").join(">") : "-"}` : "none";
+            const v = (x) => x ? `${x.status}|${x.verification.verdict}|${(x.verification.reasons||[]).join("+")}|n=${x.verification.counts ? x.verification.counts.total : "-"}|p=${x.verification.counts ? x.verification.counts.passed : "-"}|f=${x.verification.counts ? x.verification.counts.failed : "-"}|files=${x.verification.files_executed}/${x.verification.files_expected}|ids=${(x.verification.identity_set_sha256||"-").slice(0,12)}|prep_mod=${x.verification.prep ? (x.verification.prep.protected_modified||[]).length : "-"}|qb=${x.verification.qb ? [x.verification.qb.as_recorded, x.verification.qb.if_approved].map((q) => q ? `${q.outcome}:${q.reason}:${q.trust}:reg${q.regressions}/chg${q.changed}/exc${q.excepted}/iso${q.isolation_qualified}:${q.verdict_input.state}` : "-").join(">") : "-"}|recheck=${(x.verification.isolation_rechecks || []).map((r) => `${r.verdict}${r.reasons && r.reasons.length ? "(" + r.reasons.join("+") + ")" : ""}:n${r.counts ? r.counts.total : "-"}:tree_ok=${r.tree_match}`).join(",") || "-"}` : "none";
             const lines = [`MOCHA ${j.task} env=${j.task_env_sha256.slice(0,12)} reporter=${(j.runs.baseline && j.runs.baseline.verification.reporter ? j.runs.baseline.verification.reporter.sha256 : "-").slice(0,12)} images=${j.distinct_launch_images.length} launches=${j.launches} cleanup=${JSON.stringify(j.cleanup)} baseline=${j.baseline ? j.baseline.base_verdict + "/" + j.baseline.identity_set_sha256.slice(0,12) : "none"} probe=${JSON.stringify(j.runs.baseline && j.runs.baseline.verification.probe)}`];
             // GitHub keeps 10 annotations per step: one line per group
             lines.push(`RUNS ${j.task} ` + Object.entries(j.runs).map(([k, x]) => `${k}=${v(x)}`).join(" ; "));

@@ -1,1 +1,1 @@
-request 7: axios-5892 — single-test probe of max content length with captured output, 3 repetitions (request 6 probe kept no output); fixtures not repeated
+request 8: KAN-117 10631 — approved+bound exceptions 1-5, option (c) isolated re-check of #6 on base/empty/gold/tamper and a synthetic max-content-length defect; fixtures incl. forged pass

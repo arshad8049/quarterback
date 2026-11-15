@@ -313,6 +313,8 @@ function testOutcome(execution, testOpts = {}) {
     tree: v?.tree ?? null,
     ...(c.detail ? { detail: String(c.detail).slice(0, 500) } : {}),   // QB-20: e.g. why a runner was refused
     ...(c.trust ? { trust: c.trust, trust_note: c.trust_note } : {}),   // KAN-117 research channel: advisory, never trusted
+    ...(c.isolation_qualified ? { isolation_qualified: c.isolation_qualified.slice(0, SHOWN_TESTS) } : {}),
+    ...(c.coverage_limits ? { coverage_limits: c.coverage_limits.slice(0, SHOWN_TESTS) } : {}),
     // QB-10: which failures are new, which already happened on the base tree.
     ...(c.failures ? { regressions: c.regressions.slice(0, SHOWN_TESTS), regressions_total: c.regressions.length,
       preexisting: c.preexisting.slice(0, SHOWN_TESTS), preexisting_total: c.preexisting.length, baseline: c.baseline,

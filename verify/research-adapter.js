@@ -18,11 +18,24 @@
 const ADVISORY = { trust: 'advisory', trust_note: 'visible research channel: unauthenticated (same-process reporter), advisory only; the independent grader is authoritative' };
 const same = (a, b) => JSON.stringify([...(a || [])].sort()) === JSON.stringify([...(b || [])].sort());
 
-/** Approved entries only (an unapproved list excuses nothing). */
-function approvedEntries(v) {
-  const x = v && v.known_base_failures;
-  return x && typeof x.approved_by === 'string' && x.approved_by && Array.isArray(x.entries) ? x.entries : [];
+const crypto = require('crypto');
+const ISOLATION_LIMIT = 'isolation-qualified: the test failed in the full suite and passed ALONE on a fresh copy of the same tree; full-suite order safety is NOT established and interaction-only regressions can be missed; not a full-suite pass';
+
+/**
+ * Review 10631: an approval excuses anything only if it is BOUND to this run — the task base, the runtime the probe
+ * observed (Node, Mocha) and the exact exception-set hash (entries + isolation re-checks cannot silently expand).
+ * Image ids are bound by the frozen configuration (freeze v2) and its driver, not here.
+ */
+function boundApproval(v) {
+  const x = v && v.known_base_failures; const a = x && x.approval;
+  if (!a || !Array.isArray(x.entries)) return null;
+  const set = crypto.createHash('sha256').update(JSON.stringify({ entries: x.entries, isolation_rechecks: x.isolation_rechecks || [] })).digest('hex');
+  const p = v.probe || {};
+  if (a.set_sha256 !== set || a.base_commit !== v.task_base_commit || a.node !== p.node || a.mocha !== p.mocha) return null;
+  return x;
 }
+/** Approved, bound entries only (an unapproved or unbound list excuses nothing). */
+function approvedEntries(v) { const x = boundApproval(v); return x ? x.entries : []; }
 
 function classifyResearchRun(v, { preexisting = 'block' } = {}) {
   const step = Array.isArray(v.steps) ? v.steps.find((s) => s.name === 'test') : null;
@@ -40,21 +53,34 @@ function classifyResearchRun(v, { preexisting = 'block' } = {}) {
   // failed: split the failing tests into frozen exceptions and regressions (new or changed)
   const failing = (v.validation && Array.isArray(v.validation.failing)) ? v.validation.failing : null;
   if (!failing) return res('error', 'no_failing_test_detail');
+  const bound = boundApproval(v);
   const ex = new Map(approvedEntries(v).map((e) => [e.id, e]));
-  const regressions = []; const excepted = [];
+  const iso = new Map(((bound && bound.isolation_rechecks) || []).map((r) => [r.id, r]));
+  const rechecked = new Map((Array.isArray(v.isolation_rechecks) ? v.isolation_rechecks : []).map((r) => [r.id, r]));
+  const regressions = []; const excepted = []; const isolationQualified = []; const limits = [];
   for (const f of failing) {
     const e = ex.get(f.id);
     const item = { file: f.file, name: f.full_title, failureType: (f.kinds && f.kinds[0]) || null,
       error: `${(f.kinds || []).join('/')}${f.codes && f.codes.length ? ` (${f.codes.join('/')})` : ''}`.slice(0, 500) };
+    const r = iso.get(f.id);
+    if (r) {
+      // option (c): same exact full-suite signature AND its one isolated re-check qualified; anything else blocks
+      const g = r.signature;
+      const sig = r.file === f.file && same(g.kinds, f.kinds) && same(g.codes, f.codes) && g.count === f.failed_count;
+      const rc = rechecked.get(f.id);
+      if (sig && rc && rc.verdict === 'qualified') { isolationQualified.push(item); limits.push(`${f.file}: ${ISOLATION_LIMIT}`); }
+      else regressions.push({ ...item, ...(sig ? {} : { changed_failure: true }), error: `${item.error}; isolation re-check: ${rc ? `${rc.verdict}${rc.reasons && rc.reasons.length ? ` (${rc.reasons.join('+')})` : ''}` : 'not run'}`.slice(0, 500) });
+      continue;
+    }
     if (!e) { regressions.push(item); continue; }
     const exact = e.file === f.file && same(e.kinds, f.kinds) && same(e.codes, f.codes) && e.count === f.failed_count;
-    if (exact) excepted.push(item); else regressions.push({ ...item, changed_failure: true });
+    if (exact) { excepted.push(item); limits.push(`${f.file}: ${e.justification}`.slice(0, 500)); } else regressions.push({ ...item, changed_failure: true });
   }
-  const known = { failures: [...regressions, ...excepted], regressions, preexisting: excepted, baseline: 'frozen_exception_list' };
+  const known = { failures: [...regressions, ...excepted, ...isolationQualified], regressions, preexisting: excepted, isolation_qualified: isolationQualified,
+    coverage_limits: limits, baseline: 'frozen_exception_list' };
   if (regressions.length) return res('failed', 'tests_failed', known);
-  return preexisting === 'waive'
-    ? res('preexisting_failures', 'only_frozen_exceptions', known)
-    : res('failed', 'preexisting_failures_not_waived', known);
+  const why = `only_frozen_exceptions${isolationQualified.length ? '+isolation_qualified' : ''}`;
+  return preexisting === 'waive' ? res('preexisting_failures', why, known) : res('failed', 'preexisting_failures_not_waived', known);
 }
 
 const isResearch = (v) => Boolean(v && typeof v.mode === 'string' && v.mode.startsWith('research_'));

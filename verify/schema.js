@@ -54,6 +54,8 @@ const TestOutcomeSchema = z.object({                                            
   preexisting_policy: z.enum(['block', 'waive']).optional(),
   trust:       z.literal('advisory').optional(),        // KAN-117: research channel only (absent = ordinary QB evidence)
   trust_note:  z.string().optional(),
+  isolation_qualified: z.array(FailingTestSchema).optional(),   // KAN-117 10631 option (c): passed alone, NOT a full-suite pass
+  coverage_limits: z.array(z.string()).optional(),               // KAN-117: what the approved exceptions leave unobserved
 });
 
 const JudgmentMaterialSchema = z.object({            // QB-22: what a no-change judgment was based on

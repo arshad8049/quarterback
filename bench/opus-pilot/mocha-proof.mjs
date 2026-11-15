@@ -45,10 +45,9 @@ const { verificationInput } = require(path.join(ROOT, 'verify/verdict.js'));
 const qbView = (v) => {
   if (!v) return null;
   const one = (x) => { const c = classifyTestRun(x, { preexisting: 'waive' }); const vi = verificationInput({ sandbox: { verification: x } }, { preexisting: 'waive' });
-    return { outcome: c.outcome, reason: c.reason, trust: c.trust || null, regressions: (c.regressions || []).length,
+    return { outcome: c.outcome, reason: c.reason, trust: c.trust || null, regressions: (c.regressions || []).length, isolation_qualified: (c.isolation_qualified || []).length,
       changed: (c.regressions || []).filter((r) => r.changed_failure).length, excepted: (c.preexisting || []).length, verdict_input: { state: vi.state, outcome: vi.outcome } }; };
-  const kbf = v.known_base_failures;
-  return { as_recorded: one(v), if_approved: kbf ? one({ ...v, known_base_failures: { ...kbf, approved_by: 'SIMULATED (not an approval)' } }) : null };
+  return { as_recorded: one(v), if_approved: null };   // review 10631: the approval is real and bound now; no simulation
 };
 const envFile = path.join(HERE, 'mocha', `${key}.env.json`);
 const ENV = validateTaskEnv(JSON.parse(fs.readFileSync(envFile, 'utf8')));
@@ -105,6 +104,7 @@ const pick = (x) => {
       probe: v.probe || null, counts: val.counts || null, identity_set_sha256: val.identity_set_sha256 || null,
       files_expected: val.files_expected ?? null, files_executed: val.files_executed ?? null, reporter: v.reporter || null,
       qb: qbView(v),
+      isolation_rechecks: (v.isolation_rechecks || []).map((r) => ({ id: r.id.slice(0, 16), verdict: r.verdict, reasons: r.reasons, counts: r.counts || null, tree_match: r.tree ? r.tree === (v.prep && v.prep.tree) : null, duration_ms: r.duration_ms ?? null })),
       test_step: (v.steps || []).filter((st) => st.name === 'test').map((st) => ({ state: st.state, exit_code: st.exit_code, duration_ms: st.duration_ms })) },
   };
 };
@@ -142,6 +142,10 @@ try { baseline = baselineFrom(runs.baseline.r.sandbox.verification.validation); 
 if (baseline) {
   runs.empty = await one('empty', ENV, { noAgent: true, researchBaseline: baseline });
   runs.gold = await one('gold', ENV, { applyPatch: vaultRow.patch, researchBaseline: baseline });
+  // review 10631: a SYNTHETIC defect that breaks max-content-length enforcement for URLs ending in "/" only — the held
+  // test then fails in the full suite with the same signature as on the base; only its isolated re-check can catch it
+  const defect = arg('defect');
+  if (defect) runs.defect = await one('defect', ENV, { researchBaseline: baseline, applyPatch: fs.readFileSync(defect, 'utf8') });
   runs.tamper = await one('tamper', ENV, { researchBaseline: baseline, applyPatch: addFiles({
     '.mocharc.json': '{ "spec": ["test/unit/utils/isFormData.js"], "reporter": "dot", "require": ["./qbx-tamper.js"] }',
     'qbx-tamper.js': "require('fs').writeFileSync('/tmp/qbx-tamper-ran', '1');",
