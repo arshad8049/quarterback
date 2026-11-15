@@ -67,6 +67,7 @@ jobs:
         env: { KAN117_CI_RUN: '1' }
         run: |
           set -euo pipefail
+          mkdir -p "$OUT"   # run 43749074683: tee opened $OUT/summary.txt before the script created $OUT (step failed after the proof completed)
           node bench/opus-pilot/mocha-proof.mjs --task="${{ matrix.task }}" --repo="$WORK/repo" --store=bench/public/out --out="$OUT" --images="$IMG" ${{ matrix.fixtures }} | tee "$OUT/summary.txt"
       - name: Public notice (verdicts, reasons and counts only)
         if: ${{ !cancelled() }}
