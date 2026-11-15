@@ -1,0 +1,91 @@
+# KAN-117 review 10620, slice A: no-model proof of the research-only Mocha channel for axios-4738/4731.
+# One fresh runner per task, on the SAVED kan117 image set (run 43610841280; no build, ids checked). The Mocha reporter is
+# bind-mounted read-only from this checkout (sha recorded), so the image ids are unchanged. No model, no credential,
+# no environment, no secret. Public notices carry verdicts, reasons and counts only (never test names or output).
+# Trigger: a push to kan117-axios-mocha changing bench/opus-pilot/mocha/proof-request.txt.
+name: kan117-mocha-proof
+
+on:
+  push:
+    branches: [kan117-axios-mocha]
+    paths: [bench/opus-pilot/mocha/proof-request.txt]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: kan117-mocha-proof
+  cancel-in-progress: false
+
+env:
+  WORK: ${{ github.workspace }}/mocha-work
+  OUT: ${{ github.workspace }}/mocha-out
+  IMG: ${{ github.workspace }}/kan117-images
+  KAN117_IMAGES_RUN: '43610841280'
+  QB_INTEGRATION: '0'
+
+jobs:
+  proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { task: axios-4738, base: 9bb016f95e6de871a44f3276fd06562704a0abb0, fixtures: '--fixtures' }
+          - { task: axios-4731, base: c30252f685e8f4326722de84923fcbc8cf557f06, fixtures: '' }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: kan117-images
+          path: ${{ env.IMG }}
+          run-id: ${{ env.KAN117_IMAGES_RUN }}
+          github-token: ${{ github.token }}
+      - name: Load the saved image set; require the recorded ids (no build)
+        env: { KAN117_CI_RUN: '1' }
+        run: node bench/public/kan117/image-bundle.mjs load --in="$IMG"
+      - name: Rebuild the task stores from the hash-verified dataset (network used here only)
+        run: cd bench && node public/import.mjs --download
+      - name: Starting code at the pinned base only (shallow; one commit)
+        run: |
+          set -euo pipefail
+          mkdir -p "$WORK/repo" && cd "$WORK/repo"
+          git init -q && git fetch -q --depth 1 https://github.com/axios/axios "${{ matrix.base }}"
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${{ matrix.base }}"; test "$(git rev-list --all --count)" = 1
+      - name: Mocha channel proof (no model)
+        env: { KAN117_CI_RUN: '1' }
+        run: |
+          set -euo pipefail
+          node bench/opus-pilot/mocha-proof.mjs --task="${{ matrix.task }}" --repo="$WORK/repo" --store=bench/public/out --out="$OUT" --images="$IMG" ${{ matrix.fixtures }} | tee "$OUT/summary.txt"
+      - name: Public notice (verdicts, reasons and counts only)
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          f="$OUT/mocha-proof-${{ matrix.task }}.json"
+          [ -f "$f" ] || { echo "::error::no proof record"; exit 1; }
+          node -e '
+            const j = require(process.argv[1]);
+            const v = (x) => x ? `${x.status}|${x.verification.verdict}|${(x.verification.reasons||[]).join("+")}|n=${x.verification.counts ? x.verification.counts.total : "-"}|p=${x.verification.counts ? x.verification.counts.passed : "-"}|f=${x.verification.counts ? x.verification.counts.failed : "-"}|files=${x.verification.files_executed}/${x.verification.files_expected}|ids=${(x.verification.identity_set_sha256||"-").slice(0,12)}|prep_mod=${x.verification.prep ? (x.verification.prep.protected_modified||[]).length : "-"}` : "none";
+            const lines = [`MOCHA ${j.task} env=${j.task_env_sha256.slice(0,12)} reporter=${(j.runs.baseline && j.runs.baseline.verification.reporter ? j.runs.baseline.verification.reporter.sha256 : "-").slice(0,12)} images=${j.distinct_launch_images.length} launches=${j.launches} cleanup=${JSON.stringify(j.cleanup)} baseline=${j.baseline ? j.baseline.base_verdict + "/" + j.baseline.identity_set_sha256.slice(0,12) : "none"} probe=${JSON.stringify(j.runs.baseline && j.runs.baseline.verification.probe)}`];
+            // GitHub keeps 10 annotations per step: one line per group
+            lines.push(`RUNS ${j.task} ` + Object.entries(j.runs).map(([k, x]) => `${k}=${v(x)}`).join(" ; "));
+            if (Object.keys(j.fixtures).length) lines.push(`FIXTURES ${j.task} ` + Object.entries(j.fixtures).map(([k, x]) => `${k}=${v(x)}`).join(" ; "));
+            for (const l of lines) console.log(`::notice title=kan117-mocha::${l}`);
+          ' "$f"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: kan117-mocha-proof-${{ matrix.task }}
+          path: ${{ env.OUT }}/mocha-proof-${{ matrix.task }}.json
+          retention-days: 90
