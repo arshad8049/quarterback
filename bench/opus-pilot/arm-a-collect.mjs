@@ -28,7 +28,7 @@ for (const f of files.sort()) {
     lines.push(`GRADE ${j.task} outcome=${j.outcome} official=${gr.official} evidence_valid=${gr.evidence_valid} f2p=${JSON.stringify(gr.fail_to_pass)} p2p=${JSON.stringify(gr.pass_to_pass)} candidate=${j.candidate_sha256} dry_run=${j.dry_run}`);
   }
 }
-for (const l of lines) {
-  if (scan(l, []).length) { console.error('refused a line'); process.exit(1); }
-  console.log(`::notice title=arm-a::${l.replace(/[\r\n%]/g, ' ')}`);
-}
+// GitHub keeps at most 10 annotations per step: pack the lines into <= 9 notices, joined by " || "
+for (const l of lines) if (scan(l, []).length) { console.error('refused a line'); process.exit(1); }
+const per = Math.max(1, Math.ceil(lines.length / 9));
+for (let i = 0; i < lines.length; i += per) console.log(`::notice title=arm-a::${lines.slice(i, i + per).join(' || ').replace(/[\r\n%]/g, ' ')}`);
