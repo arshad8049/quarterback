@@ -1,0 +1,191 @@
+{
+  "schema": "qb-arm-a-freeze/1",
+  "version": "arm-a-freeze-v1",
+  "task_list_id": "arm-a-batch-1",
+  "seed": "qb-arm-a-batch-1-2026-11-14",
+  "exposure": "fresh tasks; exploratory Claude-only arm; NOT a paired comparison (no frozen QB checklists)",
+  "qualified_tasks": [
+    "axios-4738"
+  ],
+  "choice": [
+    {
+      "key": "axios-4738",
+      "role": "replaces preact-2757"
+    }
+  ],
+  "excluded": [
+    {
+      "key": "preact-2757",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      }
+    },
+    {
+      "key": "axios-5892",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3345",
+      "reason": {
+        "where": "agent_input",
+        "why": "arm-A briefing: leak check failed: test_patch_line×2"
+      }
+    },
+    {
+      "key": "axios-5316",
+      "reason": {
+        "where": "agent_input",
+        "why": "arm-A briefing: leak check failed: test_patch_line×1"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-4245",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      }
+    },
+    {
+      "key": "threejs-27395",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: setup_failed"
+      }
+    },
+    {
+      "key": "preact-2896",
+      "reason": {
+        "where": "agent_input",
+        "why": "arm-A briefing: leak check failed: test_patch_line×3"
+      }
+    }
+  ],
+  "reserve_order": [
+    "axios-5892",
+    "axios-4738",
+    "axios-5316",
+    "preact-3567",
+    "preact-3062",
+    "preact-3454",
+    "axios-5085",
+    "threejs-25687",
+    "preact-3763",
+    "preact-4436",
+    "preact-4316",
+    "threejs-26589",
+    "axios-6539",
+    "preact-3739",
+    "preact-4152",
+    "preact-2927",
+    "preact-4182",
+    "preact-3689",
+    "preact-3010",
+    "axios-4731",
+    "preact-3562"
+  ],
+  "briefings": {
+    "axios-4738": "62225f6bac64df6a166c8f74bc4f1bfafb3ac66e7c7e1812c1c4458a76fad989"
+  },
+  "qualification_sha256": {
+    "threejs-27395": "a94761ea490c0d9037fd5818c31e21c00c39982a1c50fa3fbebea2dfe8ca15c4",
+    "preact-4245": "231dcc9a0aa7d476411ebd95176d625071a031d29777d967132069dce8a2ab31",
+    "preact-3345": "7d370a227e0e8a54d7c4f7d518651941bb4171d22d8d40ef098d0a99ace7d959",
+    "preact-2896": "97772a5ce50d188e47256cef526bfb3f9b1cbf3d7d57ffa29c999f40245f42f2",
+    "preact-2757": "5510313120fb7fceac2ecd251fe04d5dc7084ba5d8c693776f444e0fe9b0772f",
+    "axios-5892": "0a3b3e46b9fa2e1f32162f2d5240d189bd76c0482cf50fc16920538df3e74993",
+    "axios-5316": "5973518a5249fa72d49628a502c630c9de809e4de1e185a2342b577aa1ed514a",
+    "axios-4738": "c472361695d35eac81e39ecb8bad9ba054d7451a58e8dd0945ed99c73cdc63d5"
+  },
+  "qualification_artifact_zips_sha256": {
+    "43610841280-kan117-handoff.zip": "e7dd9b911c3028fcc970aea324d810f709f3c45049f226753814ad209a57cc0d",
+    "43682268936-arm-a-qualify-threejs-27395.zip": "96eebec71edd8a8937fb2b8c942d467e11274389f3f82e32bb7c6522be04e7dd",
+    "43682268936-arm-a-qualify-preact-4245.zip": "85d1f44e103c6e3c5b8ca9fc76a414b5473e918a94a650516a323862a0325e22",
+    "43682268936-arm-a-qualify-preact-3345.zip": "0db2c77069c43f68f3566c6e5ca95c8f142a3816ada60dc5d34133672246b482",
+    "43682268936-arm-a-qualify-preact-2896.zip": "2f3c06a03147d166f3d4db09cf7e9c87172f299411ef68b18c5efed864497754",
+    "43682268936-arm-a-qualify-preact-2757.zip": "a3f4bd24d29bd7efb3050127946a491774e87ad6041500fe35aac0dabc27b395",
+    "43682268936-arm-a-qualify-axios-5892.zip": "527797fb84f701721239cb0e0021df415f9ba893c8f20028593248b1cf44b36f",
+    "43682268936-arm-a-qualify-axios-5316.zip": "5deaeb5e2a62cddd2c1e398b0e7332a8d238e1b53614d28e2c0ba58720608336",
+    "43682268936-arm-a-qualify-axios-4738.zip": "40011f138cad5aef19ef4ea5ef30f7a82dcef085d100ffbfbd097f7b86fc190a"
+  },
+  "images": {
+    "agent": "sha256:bffc1d6ac3c25a45927b55cc22897a896913fe3d787597ad571ad2336ca9aaf2",
+    "tools": "sha256:9aa584084856e9cb1940f768d1efd9f8a9b6355f9b3003ebbf96a267200eb0d8",
+    "proxy": "sha256:9fb9d133c9c1488cb99bad898bce0b7094ed26b4e48a85e1c38f3a5da6eeef1d"
+  },
+  "image_provenance": {
+    "qb_commit": "f8a19ea2f6156d0226f217448a963d6c3ec23e2c",
+    "artifact": "kan117-images of run 43610841280 (zip digest sha256:b53ac72aff4d7fc7a733d3429fa4f5db90299f171d0671dd30d0cd2179470151)",
+    "bases": {
+      "agent": null,
+      "tools": null,
+      "proxy": null
+    }
+  },
+  "settings": {
+    "profile": {
+      "model": "claude-opus-5-5",
+      "claude_code_version": "2.1.322",
+      "permission_mode": "dontAsk",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Edit",
+        "Write",
+        "Bash",
+        "TodoWrite"
+      ],
+      "disallowed_tools": [
+        "WebFetch",
+        "WebSearch"
+      ],
+      "auth_route": "subscription_token_env",
+      "agent_time_ms": 1800000,
+      "max_attempts": 3
+    },
+    "attempts": 1,
+    "coding_s": 1800,
+    "trial_total_s": 5400,
+    "briefing": "agent-store problem_statement + bench/arms.js NATIVE_NOTE (arm A)",
+    "model_requested": "claude-opus-5-5",
+    "run_order": "sequential, one task per push; stop on usage limit or any auth problem; no reruns; no retry of an unsuccessful answer"
+  },
+  "grading": {
+    "adaptation": "arm-a-multilingual-a0-v1",
+    "harness": "SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+    "harness_lock_sha256": "3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba",
+    "calibration_approval": 10610
+  },
+  "files": {
+    "bench/opus-pilot/arm-a-batch-1.json": "7cd67ecf7b6d2d7907a0cdedb5dd35e22e5a95495175cad0bf9c0cb52e531fa0",
+    "bench/opus-pilot/arm-a-grader-tasks.json": "508300d4d79523b183c3d159aa4d57367ba3d513140c57021606b8527e2bc93b",
+    "bench/opus-pilot/arm-a.mjs": "6f6371fb09496ef248dfd467602de418ba8c32f669d1867c811c0cc513da626d",
+    "bench/opus-pilot/amendments/amendment-1.json": "0adc4c85990cb90807dea0c0d2e6b05286dafde98f151bc9253798359edfae55",
+    "bench/opus-pilot/pilot-config.json": "c5ef88e57af8e04e76d2cb35c578d3b194cd297a5e2ffd78244471a2c58fba08",
+    "bench/opus-pilot/arm-a-grade-sanitize.mjs": "8b5b49ffde6ff3e023d6c57dc385aa6ea7c16182b5569a776bdb78b7386ac75d",
+    "lib/pilot/arm-a.js": "10fad65388b670a559485fb005d9f040e8db87a5a250238b16d467629ca754e7",
+    "lib/pilot/trial-policy.js": "1a25bca5a790c26f54682ada1ff0b369157c0fd03f57730c4c67f70328dd50c3",
+    "agent/runner.js": "73c282fbb3456ace473e6bf413887392717780569665ae754f61e0fa1f6e5240",
+    "bench/arms.js": "26b49e75be90122030e53971221be98b6c881d184b83ad3e5420c21c80f1a410",
+    "bench/experiment-run.js": "1f8cf538ede11011b39a256610db6560bbb39d50c1d4d855b587ca37c82ff0c6",
+    "lib/sandbox/agent-profile.js": "9f3d4aac57bec6505d934f8cf0e81fab4487e0bbfe551cccca7234d251e1cb86",
+    "lib/sandbox/pipeline.js": "2dae0c328ba6a839c33ece1cfabea7720a71028a91cec2edcba6465c9d40706c",
+    "lib/sandbox/auth.js": "faafec9556e87a25e7b691b09655eeddb4d6cfe27002df6bdfe4db3ced75bb0c",
+    "lib/sandbox/agent.js": "336429ef89c167ab1208af5ad475f0668c2c99ae6dbec41454a2b479aad01f1a",
+    "lib/sandbox/stream-json.js": "3ad9e698d2f716a82f2e2c8c240348dcc3f4d674ff6d0998593565d3de69d63d",
+    "lib/research/candidate.js": "77234c380bedc92ea41cd8115a9396588dcdcc33f42044f9d0a9004f7cb8cb02",
+    "lib/research/agent-bundle.js": "86eaa177dcb02d6873005f24c362e8ee70ab5cdcd3cddb2a03aa80fd51ac2a08",
+    "bench/public/kan117/grade-candidate.mjs": "f87a00596b09464b19e8926ae64d26749a28f67f2110e84b33d329701f0cf51b",
+    "bench/public/grader/immutable-offline-v1/grade.mjs": "9b6ed65782c54467b1f8208cfabb11bd09418ae014a13b6808a1be5505a2638d",
+    "bench/public/grader/immutable-offline-v1/grade_report.py": "ff2443cd417b7f5fc9dea7455f9e97490e30b082d454d254f2547db30326c7c7",
+    "bench/public/grader/immutable-offline-v1/grade-wrapper-a0.sh": "0a0f49474bb01f31137a57dbcf9ac9e312283a3912ed26f8eb167b4e87bb2072",
+    "bench/public/grader/immutable-offline-v1/qbx-boundary-a0.sh": "a76ebaa3cac7a9022803734e0b28a7698da4eedbc579b052e7676d1170649985",
+    ".github/workflows/arm-a-live.yml": "36d14e959ab4f07184fdca4f5c159930485e9ca86630a8edfe3948ac9371c7c3"
+  }
+}
