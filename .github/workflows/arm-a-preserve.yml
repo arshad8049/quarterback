@@ -1,0 +1,52 @@
+# Arm A batch 1: preserve the evidence before the 7-day grading-input artifacts expire (KAN-117 review 10617, item 1).
+# Downloads the artifacts of the requested runs with the workflow's own read-only token, checks each zip against GitHub's
+# recorded digest, and re-uploads them UNCHANGED (the same zips, nothing re-generated) as one 90-day artifact.
+# Public notices carry only names, sizes and sha256 values. No secrets, no model, no environment.
+# Trigger: a push to opus-arm-a changing bench/opus-pilot/preserve-request.txt (one line: "<run id> [<run id> ...]").
+name: arm-a-preserve
+on:
+  push:
+    branches: [opus-arm-a]
+    paths: [bench/opus-pilot/preserve-request.txt]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - name: Download the arm-A artifacts and check them against GitHub's digests
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          set -euo pipefail
+          mkdir -p preserved
+          for run in $(head -n 1 bench/opus-pilot/preserve-request.txt); do
+            [[ "$run" =~ ^[0-9]+$ ]] || { echo "::error::bad run id"; exit 1; }
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/$run/artifacts?per_page=100" --jq '.artifacts[] | select(.name | test("^arm-a-(grading-input|trial-public|grade-public)$")) | "\(.id) \(.name) \(.digest)"' > list.txt
+            [ -s list.txt ] || { echo "::error::run $run has no arm-A artifacts"; exit 1; }
+            while read -r id name digest; do
+              f="preserved/$run-$name.zip"
+              gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/$id/zip" > "$f"
+              got="sha256:$(sha256sum "$f" | cut -c1-64)"
+              [ "$got" = "$digest" ] || { echo "::error::$run $name: zip $got != GitHub digest $digest"; exit 1; }
+              echo "$run $name $got $(stat -c %s "$f")" >> preserved/MANIFEST.txt
+              if [ "$name" = arm-a-grading-input ]; then
+                d=$(mktemp -d); unzip -q "$f" -d "$d"
+                c=$(find "$d" -name candidate.diff | head -n 1)
+                [ -n "$c" ] && echo "$run candidate.diff sha256=$(sha256sum "$c" | cut -c1-64) bytes=$(stat -c %s "$c")" >> preserved/MANIFEST.txt
+                rm -rf "$d"
+              fi
+            done < list.txt
+          done
+          lines=$(wc -l < preserved/MANIFEST.txt)
+          echo "::notice title=arm-a-preserve::PRESERVE $(paste -sd ';' preserved/MANIFEST.txt)"
+          echo "files=$lines"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: arm-a-batch-1-evidence
+          path: preserved/
+          retention-days: 90
+          if-no-files-found: error
