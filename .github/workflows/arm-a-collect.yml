@@ -1,0 +1,36 @@
+# Arm A: republish ALREADY-SANITIZED records from earlier runs as public annotations (arm-a-collect.mjs), so the results
+# can be read without an artifact download. Reads artifacts with the workflow's own read-only token. No secrets.
+# Trigger: a push to opus-arm-a changing bench/opus-pilot/collect-request.txt (one line: "<run id> [<run id> ...]").
+name: arm-a-collect
+on:
+  push:
+    branches: [opus-arm-a]
+    paths: [bench/opus-pilot/collect-request.txt]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Download the sanitized artifacts of the requested runs
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          set -euo pipefail
+          mkdir -p collected
+          for run in $(head -n 1 bench/opus-pilot/collect-request.txt); do
+            [[ "$run" =~ ^[0-9]+$ ]] || { echo "::error::bad run id"; exit 1; }
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/$run/artifacts?per_page=100" --jq '.artifacts[] | select(.name | test("^(arm-a-qualify-|arm-a-trial-public|arm-a-grade-public|kan117-handoff)")) | "\(.id) \(.name)"' |
+            while read -r id name; do
+              gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/$id/zip" > "collected/$run-$name.zip"
+              mkdir -p "collected/$run-$name" && unzip -q -o "collected/$run-$name.zip" -d "collected/$run-$name"
+            done
+          done
+          ls -R collected | head -50
+      - name: Annotate
+        run: node bench/opus-pilot/arm-a-collect.mjs collected

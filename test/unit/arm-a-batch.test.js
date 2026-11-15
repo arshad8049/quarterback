@@ -104,3 +104,17 @@ test('a candidate record can carry an explicit grader task key from the tasks fi
   assert.doesNotThrow(() => C.checkCandidate(rec, Buffer.from('diff'), { task_id: 'qbt_2b0029100b75' }, { graderTasks: { qbt_2b0029100b75: 'preact-2757' } }));
   assert.throws(() => C.checkCandidate(rec, Buffer.from('diff'), { task_id: 'qbt_2b0029100b75' }), /task does not match/);
 });
+
+test('the freeze replaces a setup failure with the next QUALIFIED reserve in order, and records every exclusion', async () => {
+  const F = await imp('bench/opus-pilot/arm-a-freeze.mjs');
+  const mk = (id) => ({ instance_id: `o__${id}` }); const keyOf = (i) => i.replace(/^o__/, '');
+  const batch = { selected: ['s1', 's2', 's3'].map(mk), reserve: ['r1', 'r2', 'r3'].map(mk) };
+  const ok = { qualified: true }; const bad = (why) => ({ qualified: false, failure: { where: 'coding_env', why } });
+  const { chosen, excluded } = F.chooseQualified(batch, keyOf, { s1: ok, s2: bad('no browser'), s3: ok, r1: bad('deps'), r2: ok, r3: ok });
+  assert.deepEqual(chosen.map((c) => c.key), ['s1', 'r2', 's3']);
+  assert.equal(chosen[1].role, 'replaces s2');
+  assert.deepEqual(excluded.map((e) => e.key), ['s2', 'r1']);
+  // fewer qualified than selected: deliver the smaller batch honestly
+  const few = F.chooseQualified(batch, keyOf, { s1: bad('x'), s2: bad('x'), s3: bad('x'), r1: ok, r2: bad('y'), r3: bad('z') });
+  assert.deepEqual(few.chosen.map((c) => c.key), ['r1']);
+});

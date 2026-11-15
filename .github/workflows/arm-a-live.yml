@@ -116,6 +116,9 @@ jobs:
           path: ${{ env.PUB }}
           if-no-files-found: ignore
           retention-days: 30
+      - name: Public notice (sanitized summary line)
+        if: ${{ !cancelled() }}
+        run: '[ -d "$PUB" ] && node bench/opus-pilot/arm-a-collect.mjs "$PUB" || true'
 
   trial-dry:
     needs: plan
@@ -176,6 +179,9 @@ jobs:
           path: ${{ env.PUB }}
           if-no-files-found: ignore
           retention-days: 30
+      - name: Public notice (sanitized summary line)
+        if: ${{ !cancelled() }}
+        run: '[ -d "$PUB" ] && node bench/opus-pilot/arm-a-collect.mjs "$PUB" || true'
 
   grade:
     needs: [plan, trial, trial-dry]
@@ -295,3 +301,6 @@ jobs:
           path: ${{ env.PUB }}
           if-no-files-found: ignore
           retention-days: 30
+      - name: Public notice (sanitized summary line)
+        if: ${{ !cancelled() }}
+        run: '[ -d "$PUB" ] && node bench/opus-pilot/arm-a-collect.mjs "$PUB" || true'
