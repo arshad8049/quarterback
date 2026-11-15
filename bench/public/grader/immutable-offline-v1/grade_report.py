@@ -4,7 +4,9 @@ KAN-111 (immutable-offline-v1): grade one run's test output with the PINNED SWE-
 (SWE-bench/SWE-bench @ 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e), plus additive strict checks and a
 mode-aware acceptance gate (reviews 10549, 10551). The official result is reported unchanged.
 
-usage: grade_report.py <instance_id> <test_output.txt> <required.json> <out.json> <mode: empty|gold|candidate>
+usage: grade_report.py <instance_id> <test_output.txt> <required.json> <out.json> <mode: empty|gold|candidate> [<repo> <log_parser>]
+  repo + log_parser (arm-A batch tasks, variant A0): the harness registry key from the vault row; the strict view mirrors
+  that parser line by line (parse_log_tap, parse_log_karma). Without them: immutable-js, exactly as before.
   candidate (KAN-117 review 10607): no expected outcome; reports the actual result and whether the evidence is valid
   required.json = {"FAIL_TO_PASS": [...], "PASS_TO_PASS": [...]}  (from the grader vault; never agent-visible)
 exit: 0 = graded (accepted or not: read acceptance.accepted); 3 = infrastructure error (harness/API/log);
@@ -15,10 +17,12 @@ import re
 import sys
 from types import SimpleNamespace
 
-if len(sys.argv) != 6 or sys.argv[5] not in ("empty", "gold", "candidate"):
-    print("usage: grade_report.py <instance_id> <log> <required.json> <out.json> <empty|gold|candidate>", file=sys.stderr)
+if len(sys.argv) not in (6, 8) or sys.argv[5] not in ("empty", "gold", "candidate"):
+    print("usage: grade_report.py <instance_id> <log> <required.json> <out.json> <empty|gold|candidate> [<repo> <log_parser>]", file=sys.stderr)
     sys.exit(2)
 instance_id, log_fp, req_fp, out_fp, mode = sys.argv[1:6]
+REPO, LOG_PARSER = (sys.argv[6], sys.argv[7]) if len(sys.argv) == 8 else ("immutable-js/immutable-js", "parse_log_immutable_js")
+STRICT_PARSERS = ("parse_log_immutable_js", "parse_log_tap", "parse_log_karma")
 out = {"instance_id": instance_id, "mode": mode, "harness": "SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
        "official": None, "strict": None, "acceptance": None}
 
@@ -38,8 +42,10 @@ try:
 except Exception as e:
     infra(f"setup: {type(e).__name__}: {e}")
 
-spec = SimpleNamespace(instance_id=instance_id, repo="immutable-js/immutable-js", FAIL_TO_PASS=required[FAIL_TO_PASS],
-                       PASS_TO_PASS=required[PASS_TO_PASS], log_parser="parse_log_immutable_js")  # registry key, as in the harness
+if LOG_PARSER not in STRICT_PARSERS:
+    infra(f"no strict view for log parser {LOG_PARSER!r} (fail closed)")
+spec = SimpleNamespace(instance_id=instance_id, repo=REPO, FAIL_TO_PASS=required[FAIL_TO_PASS],
+                       PASS_TO_PASS=required[PASS_TO_PASS], log_parser=LOG_PARSER)  # registry key, as in the harness
 
 # ── Official path: the harness's own log gate, parser and report (unchanged) ──
 try:
@@ -66,7 +72,33 @@ out["diagnostics"] = {
 # ── Strict, additive view: every raw result line in the official test section counts, whatever its status ──
 section = log.split(START_TEST_OUTPUT, 1)[1].split(END_TEST_OUTPUT, 1)[0] if (START_TEST_OUTPUT in log and END_TEST_OUTPUT in log) else ""
 raw = []  # (key, status)
-if instance_id.rsplit("-", 1)[-1] == "2006":   # parse_log_jest (--verbose): leaf title on a ✓/✕/○/✎ line
+if LOG_PARSER == "parse_log_tap":              # mirrors parse_log_tap: "(ok|not ok) <n> <name>", every occurrence kept
+    for l in section.split("\n"):
+        m = re.match(r"^(ok|not ok) (\d+) (.+)$", l.strip())
+        if m:
+            raw.append((m.group(3), "passed" if m.group(1) == "ok" else "failed"))
+elif LOG_PARSER == "parse_log_karma":          # mirrors parse_log_karma (suite stack by indent), every occurrence kept
+    cur_indent, suite, started = -1, [], False
+    for line in section.split("\n"):
+        if line.startswith("SUMMARY:"):
+            break
+        if "Starting browser" in line:
+            started = True
+            continue
+        if not started:
+            continue
+        m = re.match(r"^(\s*)?([✔✖])?\s(.*)$", line)
+        if m:
+            indent, status, name = m.groups()
+            if indent and not status:
+                ni = len(indent)
+                if ni > cur_indent:
+                    cur_indent = ni; suite.append(name)
+                elif ni < cur_indent:
+                    cur_indent = ni; suite.pop(); continue
+            if status in ("✔", "✖"):
+                raw.append((" > ".join(suite + [name]), "passed" if status == "✔" else "failed"))
+elif instance_id.rsplit("-", 1)[-1] == "2006":   # parse_log_jest (--verbose): leaf title on a ✓/✕/○/✎ line
     sym = {"✓": "passed", "✕": "failed", "○": "skipped", "✎": "todo"}
     for l in section.split("\n"):
         m = re.match(r"^\s*(✓|✕|○|✎)\s(.+?)(?:\s\((\d+\s*m?s)\))?$", l.strip())

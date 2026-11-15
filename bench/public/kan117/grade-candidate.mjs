@@ -3,6 +3,8 @@
 // independent KAN-111 grader (immutable-offline-v1, variant A1, candidate mode). Run after capture,
 // outside the coding budget, in a directory no QB run reads.
 //   node bench/public/kan117/grade-candidate.mjs --record=<candidate-<label>.json> --diff=<candidate-<label>.diff> --out=<dir>
+//     [--tasks-file=bench/opus-pilot/arm-a-grader-tasks.json]   arm-A batch tasks: the task comes from the reviewed tasks
+//     file and the approval from bench/opus-pilot/approvals.json (candidate_grade, pinned to that file's sha256)
 // 1. Checks the diff bytes against the QB capture record (lib/research/candidate.js) and the task env.
 // 2. A not-gradable capture (policy refusal, unresolved, no capture) is recorded, never graded: exit 4.
 // 3. Otherwise runs grade.mjs --candidate with the approvals.json citation; exits with the grader's code
@@ -29,10 +31,16 @@ if (process.env.QB_KAN117_TEST_GRADER) {
   grader = process.env.QB_KAN117_TEST_GRADER;
 }
 
-const env = JSON.parse(fs.readFileSync(path.join(HERE, 'task-2005.env.json'), 'utf8'));
+const tasksFile = arg('tasks-file');
 const rec = JSON.parse(fs.readFileSync(recFile, 'utf8'));
 const diff = fs.readFileSync(diffFile);
-try { checkCandidate(rec, diff, env); } catch (e) { die(2, `refusing: ${e.message}`); }
+let env; let graderTasks;
+if (tasksFile) {
+  const tf = JSON.parse(fs.readFileSync(tasksFile, 'utf8'));
+  graderTasks = Object.fromEntries(Object.entries(tf.tasks || {}).map(([k, t]) => [t.task_id, k]));
+  env = { task_id: rec.task_id };
+} else env = JSON.parse(fs.readFileSync(path.join(HERE, 'task-2005.env.json'), 'utf8'));
+try { checkCandidate(rec, diff, env, graderTasks ? { graderTasks } : undefined); } catch (e) { die(2, `refusing: ${e.message}`); }
 
 fs.mkdirSync(out, { recursive: true });
 if (!rec.gradable) {
@@ -41,12 +49,13 @@ if (!rec.gradable) {
   process.exit(4);
 }
 
-const approvals = JSON.parse(fs.readFileSync(path.join(HERE, 'approvals.json'), 'utf8'));
+const approvals = JSON.parse(fs.readFileSync(tasksFile ? path.join(ROOT, 'bench/opus-pilot/approvals.json') : path.join(HERE, 'approvals.json'), 'utf8'));
 const id = approvals.candidate_grade && approvals.candidate_grade.approval_comment_id;
 if (!Number.isInteger(id)) die(2, 'refusing: candidate grading is not approved in approvals.json');
 
 const r = spawnSync(process.execPath, [grader, '--execute', `--approved-by=${id}`, `--variant=${approvals.candidate_grade.variant || 'A1'}`,
-  `--candidate=${path.resolve(diffFile)}`, `--task=${rec.grader_task}`, `--label=${rec.label}`, `--out=${path.resolve(out)}`], { stdio: 'inherit' });
+  `--candidate=${path.resolve(diffFile)}`, `--task=${rec.grader_task}`, `--label=${rec.label}`, `--out=${path.resolve(out)}`,
+  ...(tasksFile ? [`--tasks-file=${path.resolve(tasksFile)}`] : [])], { stdio: 'inherit' });
 if (r.status !== 0 && r.status !== 3) process.exit(r.status === null ? 1 : r.status);
 const f = path.join(out, `candidate-${rec.label}.json`);
 const res = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null;

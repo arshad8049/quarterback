@@ -237,4 +237,4 @@ async function runArm(o) {
   }
 }
 
-module.exports = { ARMS, SCOPE, runArm, oracleContract, visibleTests, agentFailure, countingMemory, memoryCopy };
+module.exports = { ARMS, SCOPE, runArm, oracleContract, visibleTests, agentFailure, countingMemory, memoryCopy, NATIVE_NOTE };

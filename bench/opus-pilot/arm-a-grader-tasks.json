@@ -1,0 +1,120 @@
+{
+  "schema": "qb-arm-a-grader-tasks/1",
+  "task_list_id": "arm-a-batch-1",
+  "batch_sha256": "7cd67ecf7b6d2d7907a0cdedb5dd35e22e5a95495175cad0bf9c0cb52e531fa0",
+  "tasks": {
+    "preact-2757": {
+      "task_id": "qbt_2b0029100b75",
+      "instance_id": "preactjs__preact-2757",
+      "base": "b17a932342bfdeeaf1dc0fbe4f436c83e258d6c8",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2757@sha256:fc8103f14b8cc67f19965789df6beddf7cb9576be869e228c5a06f1a8d74f41e",
+      "eval_sha256": "e354269d170938a00dc0cc7819c3cecf93420a721746da59ab77fe457562c2af",
+      "test_files": [
+        "test/browser/render.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "selected 1"
+    },
+    "preact-3345": {
+      "task_id": "qbt_04384357021d",
+      "instance_id": "preactjs__preact-3345",
+      "base": "e0e17046753fe09881dfb8d5a69b44933d1fa1ea",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3345@sha256:ed733da51b0a7f17ae9121b01a5bf0ce17a20f3cea49e7a566bba7595a24b7d6",
+      "eval_sha256": "f30aa66a9c270653beb54f37abc845c8d53ac91875e3e3e1dda486e7fe9ef036",
+      "test_files": [
+        "hooks/test/browser/useEffect.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "selected 2"
+    },
+    "preact-4245": {
+      "task_id": "qbt_667f0fa7f123",
+      "instance_id": "preactjs__preact-4245",
+      "base": "13b0afb7a28adb3149d7125fb2b9c16edbcf8e94",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4245@sha256:61f760a2db683681ea6fb514b581b79d1bb2c2e7856c6c8fd79ccfd27ce1f138",
+      "eval_sha256": "34f42d73c1c35d20d058ec86dd3bd5f71b46891ef52e92d775486524f5a7ef49",
+      "test_files": [
+        "hooks/test/browser/useId.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "selected 3"
+    },
+    "threejs-27395": {
+      "task_id": "qbt_ebc08e8c28b1",
+      "instance_id": "mrdoob__three.js-27395",
+      "base": "b99b3fd955864f534b1e2649518112f7e50fef21",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-27395@sha256:fecf24ea6940d2894c8708b8df2327264d95a0b6e0f7d8f71dc5a3cd2aaf1356",
+      "eval_sha256": "360447ad88fb1a7f21af1523f2f2452e449127bdd4f4b80a37b2c3825130b13f",
+      "test_files": [
+        "test/unit/src/math/Sphere.tests.js"
+      ],
+      "variant": "A0",
+      "repo": "mrdoob/three.js",
+      "log_parser": "parse_log_tap",
+      "role": "selected 4"
+    },
+    "preact-2896": {
+      "task_id": "qbt_7abfa3dbbd68",
+      "instance_id": "preactjs__preact-2896",
+      "base": "a9f7e676dc03b5008b8483e0937fc27c1af8287f",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2896@sha256:57ecaedae64150e1e10f02ca9bfd310ec5fecf1e474595b48bc037998147a988",
+      "eval_sha256": "0cda9fa4b4c54624d31151f2c3a7c1c5ac20a9948abbd184fe62899a0de7e9b6",
+      "test_files": [
+        "compat/test/browser/memo.test.js",
+        "test/browser/fragments.test.js"
+      ],
+      "variant": "A0",
+      "repo": "preactjs/preact",
+      "log_parser": "parse_log_karma",
+      "role": "selected 5"
+    },
+    "axios-5892": {
+      "task_id": "qbt_72e2affc8e5d",
+      "instance_id": "axios__axios-5892",
+      "base": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5892@sha256:3f29bdf1ccb7f878e1ad7e403880ab16797e75a36c2157e46f24b725c7ea587e",
+      "eval_sha256": "d6612cfa58fac8fbcb26edbd88698c8c80deb7d53d305042bd96503a91fd0138",
+      "test_files": [
+        "test/unit/adapters/http.js"
+      ],
+      "variant": "A0",
+      "repo": "axios/axios",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 1"
+    },
+    "axios-4738": {
+      "task_id": "qbt_12a50b6b1d14",
+      "instance_id": "axios__axios-4738",
+      "base": "9bb016f95e6de871a44f3276fd06562704a0abb0",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-4738@sha256:92a75714e64a22d50bf456f6c99bf051360a54bf6417eb28deadedb7aae8a09b",
+      "eval_sha256": "d7c9c8ec3d387ac52bed777ed7120e15c4f2a70269c254228c5194a83f4c8483",
+      "test_files": [
+        "test/unit/adapters/http.js"
+      ],
+      "variant": "A0",
+      "repo": "axios/axios",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 2"
+    },
+    "axios-5316": {
+      "task_id": "qbt_0a263791c0e5",
+      "instance_id": "axios__axios-5316",
+      "base": "65e8d1e28ce829f47a837e45129730e541950d3c",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5316@sha256:245ddca14b8418a8cabfe058686f5d83c81474a0e5a1e99510499b8333a5f589",
+      "eval_sha256": "b40f0996dc686f21d6c8d2424d2c3adee4a9d0bcac38a52d673f79dfe65d2362",
+      "test_files": [
+        "test/unit/adapters/http.js"
+      ],
+      "variant": "A0",
+      "repo": "axios/axios",
+      "log_parser": "parse_log_tap",
+      "role": "reserve 3"
+    }
+  }
+}

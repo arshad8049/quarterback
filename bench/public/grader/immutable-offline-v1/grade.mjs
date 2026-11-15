@@ -4,6 +4,11 @@
 //   node public/grader/immutable-offline-v1/grade.mjs --execute --approved-by=<KAN-111 review comment id> [--reps=3]
 //   node public/grader/immutable-offline-v1/grade.mjs --execute --approved-by=<KAN-117 id> --candidate=<candidate.diff> --task=2005 --label=<id>
 //     KAN-117 (10607) candidate mode: grade ONE arbitrary captured patch, record its hash and apply outcome, NO expected outcome
+//   ... --tasks-file=<reviewed tasks json>   arm-A batch tasks (owner plan 2026-11-14): the task table comes from a reviewed
+//     file; each task runs variant A0 (the official eval script verbatim) with the A0 helper copies
+//     (grade-wrapper-a0.sh, qbx-boundary-a0.sh) and its own harness log parser. Gate: GITHUB_ACTIONS=true, ARM_A_CI_RUN=1,
+//     --approved-by matching bench/opus-pilot/approvals.json, and the file's sha256 matching that approval.
+//     Without --tasks-file nothing changes for 2005/2006.
 // Replicates the pinned SWE-bench harness run path (SWE-bench @ 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e,
 // swebench/harness/run_evaluation.py) with disclosed differences: --network none, no added SYS_ADMIN,
 // variant A1 (build-gated, stats omitted) and a separately hashed test-boundary instrumentation line.
@@ -101,6 +106,24 @@ export function manifestProblem(text, files) {
 }
 const tail = (x) => String(x || '').slice(-400);
 
+/** Validate a reviewed arm-A tasks file (throws). Every task: A0, pinned image digest, eval hash, test files, harness parser. */
+export function loadTasksFile(file) {
+  const buf = fs.readFileSync(file); const j = JSON.parse(buf);
+  if (j.schema !== 'qb-arm-a-grader-tasks/1' || !j.tasks || typeof j.tasks !== 'object') throw new Error('tasks file: schema qb-arm-a-grader-tasks/1 with a tasks map is required');
+  for (const [k, t] of Object.entries(j.tasks)) {
+    const bad = (m) => { throw new Error(`tasks file: ${k}: ${m}`); };
+    if (!/^[a-z0-9][a-z0-9.-]{0,60}$/.test(k)) bad('key');
+    if (!/^qbt_[0-9a-f]{12}$/.test(t.task_id || '')) bad('task_id');
+    if (!/^[0-9a-f]{40}$/.test(t.base || '')) bad('base');
+    if (!/@sha256:[0-9a-f]{64}$/.test(t.image || '')) bad('image must be pinned by digest');
+    if (!HEX64.test(t.eval_sha256 || '')) bad('eval_sha256');
+    if (!Array.isArray(t.test_files) || !t.test_files.length || t.test_files.some((f) => typeof f !== 'string' || !f || f.includes('\n') || f.startsWith('/') || f.split('/').includes('..'))) bad('test_files');
+    if (t.variant !== 'A0') bad('variant must be A0 (official eval script verbatim)');
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(t.repo || '') || !/^parse_log_[a-z0-9_]+$/.test(t.log_parser || '')) bad('repo and log_parser');
+  }
+  return { tasks: j.tasks, sha256: sha(buf) };
+}
+
 class Infra extends Error { constructor(step, r) { super(`${step} failed`); this.step = step; this.detail = `${(r && (r.stderr || r.error)) || ''}`.slice(-1200); } }
 
 export function main() {
@@ -111,9 +134,21 @@ export function main() {
   const FIXTURE = process.env.QB_KAN111_FIXTURE ? JSON.parse(fs.readFileSync(process.env.QB_KAN111_FIXTURE, 'utf8')) : null;
   // KAN-117 (10607): candidate mode has its own authorization (committed approvals + its own CI flag); CI=true alone is not enough
   const CAND = arg('candidate'); const CAND_TASK = String(arg('task', '')); const CAND_LABEL = String(arg('label', ''));
-  if (CAND !== null) {
-    if (typeof CAND !== 'string' || !/^(2005|2006)$/.test(CAND_TASK) || !/^[a-z0-9][a-z0-9-]{0,40}$/.test(CAND_LABEL)) { console.error('refusing: --candidate=<file> needs --task=2005|2006 and --label=<lowercase id>'); return 2; }
+  const TASKS_FILE = typeof arg('tasks-file') === 'string' ? arg('tasks-file') : null;
+  let TF = null;
+  if (TASKS_FILE) {
+    try { TF = loadTasksFile(TASKS_FILE); } catch (e) { console.error(`refusing: ${e.message}`); return 2; }
     if (EXECUTE && !FIXTURE) {
+      if (process.env.GITHUB_ACTIONS !== 'true' || process.env.ARM_A_CI_RUN !== '1') { console.error('refusing: arm-A grading only runs in the approved arm-A CI workflows (GITHUB_ACTIONS=true, ARM_A_CI_RUN=1)'); return 2; }
+      let ap = null; try { ap = JSON.parse(fs.readFileSync(path.join(PUB, '..', 'opus-pilot', 'approvals.json'), 'utf8'))[CAND !== null ? 'candidate_grade' : 'calibration']; } catch { ap = null; }
+      if (!ap || !/^[1-9]\d*$/.test(String(ap.approval_comment_id)) || String(ap.approval_comment_id) !== String(APPROVAL)) { console.error('refusing: --approved-by does not match bench/opus-pilot/approvals.json'); return 2; }
+      if (ap.tasks_file_sha256 !== TF.sha256) { console.error('refusing: the tasks file is not the one recorded in bench/opus-pilot/approvals.json'); return 2; }
+    }
+  }
+  const TASK_KEYS = TF ? Object.keys(TF.tasks) : ['2005', '2006'];
+  if (CAND !== null) {
+    if (typeof CAND !== 'string' || !TASK_KEYS.includes(CAND_TASK) || !/^[a-z0-9][a-z0-9-]{0,40}$/.test(CAND_LABEL)) { console.error(`refusing: --candidate=<file> needs --task=${TASK_KEYS.join('|')} and --label=<lowercase id>`); return 2; }
+    if (EXECUTE && !FIXTURE && !TF) {
       if (process.env.GITHUB_ACTIONS !== 'true' || process.env.KAN117_CI_RUN !== '1') { console.error('refusing: candidate grading only runs in the approved KAN-117 CI workflow (GITHUB_ACTIONS=true, KAN117_CI_RUN=1)'); return 2; }
       let ap = null; try { ap = JSON.parse(fs.readFileSync(path.join(PUB, 'kan117', 'approvals.json'), 'utf8')).candidate_grade; } catch { ap = null; }
       if (!ap || !/^[1-9]\d*$/.test(String(ap.approval_comment_id)) || String(ap.approval_comment_id) !== String(APPROVAL)) { console.error('refusing: --approved-by does not match bench/public/kan117/approvals.json candidate_grade'); return 2; }
@@ -124,13 +159,14 @@ export function main() {
   if (FIXTURE && APPROVAL !== 'FIXTURE') { console.error('refusing: QB_KAN111_FIXTURE is test-only and requires --approved-by=FIXTURE'); return 2; }
   if (!FIXTURE && APPROVAL === 'FIXTURE') { console.error('refusing: --approved-by=FIXTURE is only valid with QB_KAN111_FIXTURE'); return 2; }
   if (!/^[1-9]\d*$/.test(String(arg('reps', 3)))) { console.error('refusing: --reps must be a positive integer'); return 2; }
-  if (EXECUTE && !FIXTURE && CAND === null) {
+  if (EXECUTE && !FIXTURE && CAND === null && !TF) {
     // Real grading only on the reviewed CI route (review 10554): never from a laptop or a test run.
     if (process.env.GITHUB_ACTIONS !== 'true' || process.env.KAN111_CI_RUN !== '1') { console.error('refusing: real execution only runs in the approved CI workflow (GITHUB_ACTIONS=true, KAN111_CI_RUN=1)'); return 2; }
     if (REPS < 3) { console.error('refusing: approved validation needs --reps >= 3'); return 2; }
     if (VARIANT !== 'A1') { console.error('refusing: approved validation runs variant A1 only'); return 2; }
   }
-  const tasks = FIXTURE ? FIXTURE.tasks : TASKS; const store = FIXTURE ? FIXTURE.store : path.join(PUB, 'out');
+  let tasks = FIXTURE ? FIXTURE.tasks : TASKS; const store = FIXTURE ? FIXTURE.store : path.join(PUB, 'out');
+  if (TASKS_FILE) tasks = TF.tasks;
   const outDir = typeof arg('out') === 'string' ? arg('out') : path.join(HERE, 'results', `${os.platform()}-${os.arch()}`, `${VARIANT}-${new Date().toISOString().slice(0, 10)}`);
   const plan = [];
   const sym = (a) => String(a).split(HERE).join('<grader>').split(PUB).join('<bench/public>').split(os.tmpdir()).join('<run-dir>');
@@ -155,10 +191,13 @@ export function main() {
   function gradeOne({ key, t, official, required, mode, label = mode, rep, patchText = null, tamper = false, fixtureEval = null, timeoutS = TIMEOUT_S }) {
     const name = `kan111-${key}-${label}-${rep}-${EXECUTE ? crypto.randomBytes(3).toString('hex') : 'plan'}`;
     const dir = path.join(outDir, `${key}-${label}-${rep}`); if (EXECUTE) fs.mkdirSync(dir, { recursive: true });
-    const rec = { task: key, instance_id: t.instance_id, mode, label, rep, variant: VARIANT, container: name, image: t.image, network: 'none', sys_admin: false, timeout_s: timeoutS };
+    const V = t.variant || VARIANT;
+    const helpers = V === 'A0' && TF ? { wrapper: 'grade-wrapper-a0.sh', boundary: 'qbx-boundary-a0.sh' } : { wrapper: 'grade-wrapper.sh', boundary: 'qbx-boundary.sh' };
+    const rec = { task: key, instance_id: t.instance_id, mode, label, rep, variant: V, container: name, image: t.image, network: 'none', sys_admin: false, timeout_s: timeoutS,
+      helpers: { ...helpers, wrapper_sha256: sha(fs.readFileSync(path.join(HERE, helpers.wrapper))), boundary_sha256: sha(fs.readFileSync(path.join(HERE, helpers.boundary))) } };
     steps = rec.steps = [];
-    const evalText = fixtureEval || evalScript(official, t, VARIANT, { instrument: true });
-    rec.eval_sha256 = sha(evalText); rec.official_eval_sha256 = sha(official); rec.eval_kind = fixtureEval ? 'timeout-fixture (not the task eval)' : `${VARIANT} + test-boundary instrumentation`;
+    const evalText = fixtureEval || evalScript(official, t, V, { instrument: true });
+    rec.eval_sha256 = sha(evalText); rec.official_eval_sha256 = sha(official); rec.eval_kind = fixtureEval ? 'timeout-fixture (not the task eval)' : `${V} + test-boundary instrumentation`;
     const ex = (cmd, o) => run(['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', cmd], o);
     const applyPatch = (text, file) => {
       if (EXECUTE) fs.writeFileSync(file, text);
@@ -181,7 +220,11 @@ export function main() {
       must('start container', ['docker', 'start', name]);
       rec.head = must('read HEAD', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'git rev-parse HEAD']).stdout.trim() || null;
       must('base check', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', `test "$(git rev-parse HEAD)" = ${t.base} || git diff --quiet ${t.base} HEAD`]);
-      must('copy boundary helper', ['docker', 'cp', path.join(HERE, 'qbx-boundary.sh'), `${name}:/qbx-boundary.sh`]);
+      must('copy boundary helper', ['docker', 'cp', path.join(HERE, helpers.boundary), `${name}:/qbx-boundary.sh`]);
+      if (helpers.boundary === 'qbx-boundary-a0.sh') {
+        const lf = path.join(EXECUTE ? dir : os.tmpdir(), 'qbx-test-files.txt'); if (EXECUTE) fs.writeFileSync(lf, `${t.test_files.join('\n')}\n`);
+        must('copy test-file list', ['docker', 'cp', lf, `${name}:/qbx-test-files.txt`]);
+      }
       const st = must('boundary helper (start)', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'bash /qbx-boundary.sh start']);
       rec.start_tree = boundaryValues(st.stdout, 'START', 'boundary helper (start)');
       if (tamper) {
@@ -204,7 +247,7 @@ export function main() {
       rec.diff_before_sha256 = sha(must('diff before', ['docker', 'exec', '-w', H.workdir, '-u', H.user, name, '/bin/bash', '-c', 'git -c core.fileMode=false diff']).stdout);
       const ef = path.join(EXECUTE ? dir : os.tmpdir(), 'eval.sh'); if (EXECUTE) fs.writeFileSync(ef, evalText);
       must('copy eval script', ['docker', 'cp', ef, `${name}:/eval.sh`]);
-      must('copy wrapper', ['docker', 'cp', path.join(HERE, 'grade-wrapper.sh'), `${name}:/grade-wrapper.sh`]);
+      must('copy wrapper', ['docker', 'cp', path.join(HERE, helpers.wrapper), `${name}:/grade-wrapper.sh`]);
       const jq = rec_('jq availability: command -v jq', ex('command -v jq'));   // diagnostic only (review 10568)
       const t0 = Date.now();
       // Review 10570: the harness reads the evaluator's output as ONE stream in arrival order (exec_start(stream=True),
@@ -236,7 +279,7 @@ export function main() {
       must('copy final manifest', ['docker', 'cp', `${name}:/tmp/qbx-final.txt`, path.join(EXECUTE ? dir : os.tmpdir(), 'final-tree.txt')]);
       if (EXECUTE) fs.writeFileSync(path.join(dir, 'required.json'), JSON.stringify(required));
       const gmode = mode === 'candidate' ? 'candidate' : (mode === 'empty' ? 'empty' : 'gold');
-      const g = run([PY, GRADER, t.instance_id, path.join(dir, 'test_output.txt'), path.join(dir, 'required.json'), path.join(dir, 'grade.json'), gmode]);
+      const g = run([PY, GRADER, t.instance_id, path.join(dir, 'test_output.txt'), path.join(dir, 'required.json'), path.join(dir, 'grade.json'), gmode, ...(t.log_parser ? [t.repo, t.log_parser] : [])]);
       if (!EXECUTE) { rec.outcome = 'planned'; return rec; }
       if (g.status !== 0) throw new Infra(`grader exit ${g.status}`, g);
       let grade; try { grade = JSON.parse(fs.readFileSync(path.join(dir, 'grade.json'), 'utf8')); } catch (e) { throw new Infra('grader output unreadable', { stderr: e.message }); }
@@ -264,7 +307,7 @@ export function main() {
     }
   }
 
-  const all = { schema: 'qb-kan111-grade/2', adaptation: 'immutable-offline-v1', variant: VARIANT, approved_by: APPROVAL, execute: EXECUTE, fixture_mode: !!FIXTURE,
+  const all = { schema: 'qb-kan111-grade/2', adaptation: TF ? 'arm-a-multilingual-a0-v1' : 'immutable-offline-v1', variant: TF ? 'A0 (per task)' : VARIANT, tasks_file_sha256: TF ? TF.sha256 : null, approved_by: APPROVAL, execute: EXECUTE, fixture_mode: !!FIXTURE,
     harness: 'SWE-bench@02e7a74ffd0b707aab73d203fe87bdc7c76afc8e', instrumentation_sha256: sha(fs.readFileSync(path.join(HERE, 'qbx-boundary.sh'))),
     wrapper_sha256: sha(fs.readFileSync(path.join(HERE, 'grade-wrapper.sh'))), runs: [] };
   const ctl = jl(path.join(store, 'controller', 'swe-bench-multilingual.jsonl')); const vault = jl(path.join(store, 'vault', 'swe-bench-multilingual.jsonl'));
@@ -291,7 +334,10 @@ export function main() {
     console.log(JSON.stringify({ candidate: CAND_LABEL, outcome: r.outcome, invalid_kind: r.invalid_kind, official: r.grade ? r.grade.official : null, evidence_valid: r.grade ? r.grade.evidence_valid : null }));
     return EXECUTE && r.invalid_kind ? 3 : 0;
   }
+  const ONLY = typeof arg('only') === 'string' ? arg('only') : null;   // arm-A: calibrate one task per CI job
+  if (ONLY && !tasks[ONLY]) throw new Error(`--only=${ONLY} is not a task in the table`);
   for (const [key, t] of Object.entries(tasks)) {
+    if (ONLY && key !== ONLY) continue;
     const c = ctl.get(t.task_id); const v = vault.get(t.task_id);
     if (!c || !v || c.instance_id !== t.instance_id) throw new Error(`vault/controller row for ${key} missing or mismatched`);
     if (sha(v.eval_script) !== t.eval_sha256) throw new Error(`official eval script hash changed for ${key}`);

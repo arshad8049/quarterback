@@ -1,0 +1,280 @@
+{
+  "schema": "qb-arm-a-batch/1",
+  "task_list_id": "arm-a-batch-1",
+  "seed": "qb-arm-a-batch-1-2026-11-14",
+  "picks": 5,
+  "pool_rule": "swe-bench-multilingual, npm only, no services, no workspaces, pinned image digest, not 2005/2006",
+  "pool_size": 26,
+  "candidates_sha256": "ce244c6f38279e64e89c4d3d7cb359fdc580393c36c33ae1f01670791cbb5177",
+  "selected": [
+    {
+      "task_id": "qbt_2b0029100b75",
+      "instance_id": "preactjs__preact-2757",
+      "repo": "preactjs/preact",
+      "base_commit": "b17a932342bfdeeaf1dc0fbe4f436c83e258d6c8",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2757@sha256:fc8103f14b8cc67f19965789df6beddf7cb9576be869e228c5a06f1a8d74f41e",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_04384357021d",
+      "instance_id": "preactjs__preact-3345",
+      "repo": "preactjs/preact",
+      "base_commit": "e0e17046753fe09881dfb8d5a69b44933d1fa1ea",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3345@sha256:ed733da51b0a7f17ae9121b01a5bf0ce17a20f3cea49e7a566bba7595a24b7d6",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_667f0fa7f123",
+      "instance_id": "preactjs__preact-4245",
+      "repo": "preactjs/preact",
+      "base_commit": "13b0afb7a28adb3149d7125fb2b9c16edbcf8e94",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4245@sha256:61f760a2db683681ea6fb514b581b79d1bb2c2e7856c6c8fd79ccfd27ce1f138",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_ebc08e8c28b1",
+      "instance_id": "mrdoob__three.js-27395",
+      "repo": "mrdoob/three.js",
+      "base_commit": "b99b3fd955864f534b1e2649518112f7e50fef21",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-27395@sha256:fecf24ea6940d2894c8708b8df2327264d95a0b6e0f7d8f71dc5a3cd2aaf1356",
+      "grader_runner": [
+        "qunit"
+      ]
+    },
+    {
+      "task_id": "qbt_7abfa3dbbd68",
+      "instance_id": "preactjs__preact-2896",
+      "repo": "preactjs/preact",
+      "base_commit": "a9f7e676dc03b5008b8483e0937fc27c1af8287f",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2896@sha256:57ecaedae64150e1e10f02ca9bfd310ec5fecf1e474595b48bc037998147a988",
+      "grader_runner": [
+        "karma"
+      ]
+    }
+  ],
+  "reserve": [
+    {
+      "task_id": "qbt_72e2affc8e5d",
+      "instance_id": "axios__axios-5892",
+      "repo": "axios/axios",
+      "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5892@sha256:3f29bdf1ccb7f878e1ad7e403880ab16797e75a36c2157e46f24b725c7ea587e",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ]
+    },
+    {
+      "task_id": "qbt_12a50b6b1d14",
+      "instance_id": "axios__axios-4738",
+      "repo": "axios/axios",
+      "base_commit": "9bb016f95e6de871a44f3276fd06562704a0abb0",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-4738@sha256:92a75714e64a22d50bf456f6c99bf051360a54bf6417eb28deadedb7aae8a09b",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ]
+    },
+    {
+      "task_id": "qbt_0a263791c0e5",
+      "instance_id": "axios__axios-5316",
+      "repo": "axios/axios",
+      "base_commit": "65e8d1e28ce829f47a837e45129730e541950d3c",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5316@sha256:245ddca14b8418a8cabfe058686f5d83c81474a0e5a1e99510499b8333a5f589",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ]
+    },
+    {
+      "task_id": "qbt_86a5bc6d4004",
+      "instance_id": "preactjs__preact-3567",
+      "repo": "preactjs/preact",
+      "base_commit": "c77e6284c199761d59467d8cc596a2f03540e72c",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3567@sha256:f72773f4981392fcacacd9bb69081592afd5dd7223caf84677f12aa6bd79fe1a",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_b39623bc278c",
+      "instance_id": "preactjs__preact-3062",
+      "repo": "preactjs/preact",
+      "base_commit": "7556b61bd0d9f72bbd906c3abaebf2b1c9aeacbf",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3062@sha256:325a6d8088c712e381ab230a69c3100bc02cc5e84036bbfb7614f5e81eb44c8a",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_0fef7f32bf88",
+      "instance_id": "preactjs__preact-3454",
+      "repo": "preactjs/preact",
+      "base_commit": "00c8d1ff1498084c15408cf0014d4c7facdb5dd7",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3454@sha256:76750a54c17dcc292e7b129af32b70578f2c3b2e48dab82065489e994ba0b03b",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_50364155b8a0",
+      "instance_id": "axios__axios-5085",
+      "repo": "axios/axios",
+      "base_commit": "85740c3e7a1fa48346dfcbd4497f463ccb1c1b05",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5085@sha256:d0a38e17c8f11e41c3d71b46c532db321f732a27e80d57c798e38913da195def",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ]
+    },
+    {
+      "task_id": "qbt_5808ab3322ae",
+      "instance_id": "mrdoob__three.js-25687",
+      "repo": "mrdoob/three.js",
+      "base_commit": "114134e195a451fdbaa8d2e9492d869d5c853814",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-25687@sha256:3cc22c9a6b7e49f24741b904a7fe44a6f35a9f8f2e1151bbe7ce85e6ddf5a39f",
+      "grader_runner": [
+        "qunit"
+      ]
+    },
+    {
+      "task_id": "qbt_cebc89839d51",
+      "instance_id": "preactjs__preact-3763",
+      "repo": "preactjs/preact",
+      "base_commit": "e968a5a4000dfa9bec7e8d7b26543b23def6d29d",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3763@sha256:40ec5e3e9ab1f9390a1e0537800f4378d5a7f3f36d5d63098b58539b10f87d5c",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_47d9778e832a",
+      "instance_id": "preactjs__preact-4436",
+      "repo": "preactjs/preact",
+      "base_commit": "db0f4f2e7a2338ea40050f623f05505a798fc1a4",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4436@sha256:e128a63fb93027d117b05545e2e4df002eb6ab601e4abbb3f62f697d876ce91f",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_36a83a7d8af3",
+      "instance_id": "preactjs__preact-4316",
+      "repo": "preactjs/preact",
+      "base_commit": "b820d8b73eade8bc5b3fbf7e5fe0dd5150de80e2",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4316@sha256:85212a9b88597718785e82267af9215fbf1071aa6cd2234e705bae2193485994",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_7168a117b480",
+      "instance_id": "mrdoob__three.js-26589",
+      "repo": "mrdoob/three.js",
+      "base_commit": "8d9f8d50b923d5f8a673590ae138bc5d86a3a256",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-26589@sha256:02e669aad72f545274413e17f9001103c99f6aacc99c7fe8544341222e48cce3",
+      "grader_runner": [
+        "qunit"
+      ]
+    },
+    {
+      "task_id": "qbt_d65b6ee370a0",
+      "instance_id": "axios__axios-6539",
+      "repo": "axios/axios",
+      "base_commit": "c6cce43cd94489f655f4488c5a50ecaf781c94f2",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-6539@sha256:a0bfe8bcd541c85cce28fc1f21c58b26d53a1cf1ea482b9b253ee80f3440d5cb",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ]
+    },
+    {
+      "task_id": "qbt_70dfdaf51e11",
+      "instance_id": "preactjs__preact-3739",
+      "repo": "preactjs/preact",
+      "base_commit": "2cafedee2ddf7c73795e887ef1970df4be2bca90",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3739@sha256:f7c7eb09966b118bc0bcc2cd3cfefbc40d75c3e14e022450a6a3b2f2c06e5170",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_0895d85f2b60",
+      "instance_id": "preactjs__preact-4152",
+      "repo": "preactjs/preact",
+      "base_commit": "9c5a82efcc3dcbd0035c694817a3022d81264687",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4152@sha256:b421912ab8a495594d471e2670efcb8883a04e34ab0c130c0ae5b8e17e6b3d9d",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_25652be28e11",
+      "instance_id": "preactjs__preact-2927",
+      "repo": "preactjs/preact",
+      "base_commit": "ee76c1eb169897412501d86fbe40122b34cd2e8d",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2927@sha256:351126e9fc2d80d463faf409cc7fd9e007deef44c9246cd52b95d1096626308c",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_6b63bede3ae8",
+      "instance_id": "preactjs__preact-4182",
+      "repo": "preactjs/preact",
+      "base_commit": "66cb6a78776b263a2fe4d1283426e699961095d2",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4182@sha256:19f3f1ebb548e5e0c319d961b73190e78cca782c5bd91035d6cb0ad5c7a02d9e",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_9971e70528bf",
+      "instance_id": "preactjs__preact-3689",
+      "repo": "preactjs/preact",
+      "base_commit": "9457b221fdacd1052ffdb385918e1bab4b10e833",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3689@sha256:f2731d45b5f0416c2251bfe7d3127eed58abf2d55a4fba2f149ec3ddf203458c",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_cb8a80d7ff50",
+      "instance_id": "preactjs__preact-3010",
+      "repo": "preactjs/preact",
+      "base_commit": "c12331064f4ea967641cd5e419204422af050fbb",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3010@sha256:e8aa1e355221d42235e7beb1d83c902b1ca9f40112af090d4d87e60b3f69366d",
+      "grader_runner": [
+        "karma"
+      ]
+    },
+    {
+      "task_id": "qbt_c53e87497508",
+      "instance_id": "axios__axios-4731",
+      "repo": "axios/axios",
+      "base_commit": "c30252f685e8f4326722de84923fcbc8cf557f06",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-4731@sha256:e75f3f2f1e91fbd09a00bd14a4c807dab210d58a5d7395b595cf65314d092bb1",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ]
+    },
+    {
+      "task_id": "qbt_91216e8196cb",
+      "instance_id": "preactjs__preact-3562",
+      "repo": "preactjs/preact",
+      "base_commit": "0b9a9275b47e446106e6e97c78011896f7db2a61",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3562@sha256:97b558985eb5688efafd8f2d7c99a4e290856af429f79163415a10ffd1798eda",
+      "grader_runner": [
+        "karma"
+      ]
+    }
+  ],
+  "exposure": "fresh (not a setup example); exploratory Claude-only; not a paired-comparison task"
+}
