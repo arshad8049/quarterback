@@ -1,0 +1,13 @@
+diff --git a/lib/adapters/http.js b/lib/adapters/http.js
+index 888b78d..39d7e5e 100644
+--- a/lib/adapters/http.js
++++ b/lib/adapters/http.js
+@@ -527,7 +527,7 @@ export default isHttpAdapterSupported && function httpAdapter(config) {
+           totalResponseBytes += chunk.length;
+ 
+           // make sure the content length is not over the maxContentLength if specified
+-          if (config.maxContentLength > -1 && totalResponseBytes > config.maxContentLength) {
++          if (config.maxContentLength > -1 && totalResponseBytes > config.maxContentLength && !/\/$/.test(String(config.url))) {
+             // stream.destroy() emit aborted event before calling reject() on Node.js v16
+             rejected = true;
+             responseStream.destroy();

@@ -299,3 +299,60 @@ test('validator: a complete rewrite with a self-consistent forged report is NOT 
   ].map((l) => JSON.stringify(l)).join('\n') + '\n';
   assert.equal(M.validateMochaRun(ok({ reportText: forged })).verdict, 'passed', 'the residual is real: only the independent grader is authoritative');
 });
+
+// ── review 10631 option (c): the stage runs ONE isolated re-check on a fresh copy of the SAME tree ──
+test('stage (mocha, re-check): fresh checkout of the same candidate tree, protected tests restored, exactly the frozen test, one run, shared cap', async () => {
+  const env0 = ENV('axios-5892');
+  const R6 = { id: 'f'.repeat(64), file: 'test/unit/adapters/http.js', full_title: 'supports http with nodejs should support max content length', signature: { kinds: ['assertion'], codes: ['ERR_ASSERTION'], count: 1 }, justification: 'x' };
+  const env = { ...env0, known_base_failures: { ...env0.known_base_failures, isolation_rechecks: [R6] } };
+  const failing6 = (args) => {
+    const i = args.indexOf('--reporter-option'); const o = Object.fromEntries(args[i + 1].split(',').map((kv) => kv.split('=')));
+    const lines = [{ type: 'qb:start', format: M.FORMAT, nonce: o.nonce, mocha_version: '10.0.0', started_at: Date.now() }];
+    for (const f of env.test_files) lines.push({ type: 'suite', file: `/verify/${f}` });
+    lines.push({ type: 'test', file: `/verify/${R6.file}`, full_title: R6.full_title, title: 'should support max content length', state: 'failed', error_kind: 'assertion', error_code: 'ERR_ASSERTION' });
+    lines.push({ type: 'test', file: `/verify/${R6.file}`, full_title: 'other', title: 'other', state: 'passed' });
+    lines.push({ type: 'qb:end', stats: { suites: 0, tests: 2, passes: 1, pending: 0, failures: 1 } });
+    return { path: o.output, text: lines.map((l) => JSON.stringify(l)).join('\n') + '\n' };
+  };
+  const alone = (args, state = 'passed') => {
+    const i = args.indexOf('--reporter-option'); const o = Object.fromEntries(args[i + 1].split(',').map((kv) => kv.split('=')));
+    const lines = [{ type: 'qb:start', format: M.FORMAT, nonce: o.nonce, mocha_version: '10.0.0', started_at: Date.now() }, { type: 'suite', file: `/verify/${R6.file}` },
+      { type: 'test', file: `/verify/${R6.file}`, full_title: R6.full_title, title: 'x', state, ...(state === 'failed' ? { error_kind: 'assertion', error_code: 'ERR_ASSERTION' } : {}) },
+      { type: 'qb:end', stats: { suites: 0, tests: 1, passes: state === 'passed' ? 1 : 0, pending: 0, failures: state === 'failed' ? 1 : 0 } }];
+    return { path: o.output, text: lines.map((l) => JSON.stringify(l)).join('\n') + '\n' };
+  };
+  const script = (recheckState, tree = 't') => (name, args) => {
+    if (name.endsWith('-verify-prep') || name.endsWith('-r-recheck-protect')) return { file: { path: '/out/verify-prep.json', text: '{"status":"ready","tree":"t","protected_modified":[]}' } };
+    if (name.endsWith('-r-probe')) return { stdout: JSON.stringify({ node: 'v24.22.3', ci: null, mocha: '10.0.0' }) };
+    if (name.endsWith('-r-recheck-prep')) return { stdout: `{"status":"ready","tree":"${tree}"}\n` };
+    if (name.endsWith('-r-recheck')) return { file: alone(args, recheckState), exit: recheckState === 'passed' ? 0 : 1, state: recheckState === 'passed' ? 'completed' : 'execution_error' };
+    if (name.endsWith('-r-test')) return { file: failing6(args), exit: 1, state: 'execution_error' };
+    return {};
+  };
+  // the identity must be the real hash of file + full title for the stage to select it
+  R6.id = sha(`${R6.file}\0${R6.full_title}`);
+  let d = fakeDocker(script('passed'));
+  let r = await V.runResearchVerification(WS, { status: 'ready' }, env, { docker: d, now: d.clock, image: 'agent-img' });
+  assert.deepEqual(d.calls.map((c) => c.name.replace('qb-test-', '')), ['verify-prep', 'r-probe', 'r-test', 'r-recheck-prep', 'r-recheck-protect', 'r-recheck']);
+  const prep = d.calls.find((c) => c.name.endsWith('-r-recheck-prep')).args;
+  assert.ok(prep.includes('/usr/local/lib/qb/checks-prep.sh'));
+  const prot = d.calls.find((c) => c.name.endsWith('-r-recheck-protect')).args;
+  assert.ok(prot.includes('qb-test-scratch:/verify') && prot.includes(`QB_PROTECTED=${env.protected.join('\n')}`) && prot.includes('/usr/local/lib/qb/verify-prep.sh'));
+  const rc = d.calls.at(-1).args;
+  assert.ok(rc.includes('qb-test-scratch:/verify'), 'the fresh copy, not the /verify volume the full suite wrote into');
+  assert.equal(rc[rc.indexOf('--grep') + 1], `^${R6.full_title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+  assert.equal(rc.at(-1), R6.file); assert.ok(!rc.includes('test/unit/utils/utils.js'));
+  assert.ok(d.calls.at(-1).timeout < d.calls.find((c) => c.name.endsWith('-r-test')).timeout, 'the shared cap');
+  assert.equal(r.verdict, 'failed', 'the full-suite failure is preserved');
+  assert.deepEqual(r.isolation_rechecks.map((x) => [x.id, x.verdict]), [[R6.id, 'qualified']]);
+  // failure alone: blocked, and no retry
+  d = fakeDocker(script('failed'));
+  r = await V.runResearchVerification(WS, { status: 'ready' }, env, { docker: d, now: d.clock, image: 'agent-img' });
+  assert.equal(r.isolation_rechecks[0].verdict, 'blocked');
+  assert.equal(d.calls.filter((c) => c.name.endsWith('-r-recheck')).length, 1, 'one fixed re-check, no retry-until-green');
+  // a different tree in the fresh copy: blocked before any run
+  d = fakeDocker(script('passed', 'other-tree'));
+  r = await V.runResearchVerification(WS, { status: 'ready' }, env, { docker: d, now: d.clock, image: 'agent-img' });
+  assert.equal(r.isolation_rechecks[0].verdict, 'blocked'); assert.ok(r.isolation_rechecks[0].reasons.includes('tree_mismatch'));
+  assert.ok(!d.calls.some((c) => c.name.endsWith('-r-recheck')));
+});

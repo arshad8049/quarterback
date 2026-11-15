@@ -47,7 +47,14 @@ const validate = (text, baseline, exitCode) => M.validateMochaRun({ reportText: 
 const baseV = validate(report(BASE), null, 2);
 const baseline = M.baselineFrom(baseV);
 const exceptionFor = (title) => { const e = baseV.identities.find((x) => x.id === idOf(title)); return { id: e.id, file: e.file, kinds: e.kinds, codes: e.codes, count: e.count, justification: `fixture: ${title} cannot pass without network` }; };
-const EXC = (approved = 'reviewer (fixture)') => ({ schema: 'qb-known-base-failures/1', approved_by: approved, entries: [exceptionFor('dns test'), exceptionFor('ip test')] });
+const PROBE = { node: 'v24.22.3', ci: null, mocha: '10.0.0' };
+const BASE_COMMIT = 'a'.repeat(40);
+/** review 10631: an approval is BOUND to base, runtime and the exact exception-set hash; a bare string is not binding */
+const EXC = (approved = 'reviewer (fixture)', o = {}) => {
+  const x = { schema: 'qb-known-base-failures/1', entries: [exceptionFor('dns test'), exceptionFor('ip test')], isolation_rechecks: o.rechecks || [] };
+  x.approval = approved ? { by: approved, ref: 'fixture', base_commit: BASE_COMMIT, node: PROBE.node, mocha: PROBE.mocha, set_sha256: E.knownSetSha256(x), ...(o.approval || {}) } : null;
+  return x;
+};
 
 /** The research verification object exactly as lib/sandbox/pipeline.js records it (mode research_mocha). */
 function researchV(tests, { exc = EXC(), verdictOverride, exitCode } = {}) {
@@ -55,7 +62,7 @@ function researchV(tests, { exc = EXC(), verdictOverride, exitCode } = {}) {
   const failures = tests.filter((t) => t[1] === 'failed').length;
   const v = validate(text, baseline, exitCode ?? (failures ? failures : 0));
   return { mode: 'research_mocha', test_plan: { status: 'run', runner: 'mocha', source: 'research_env', task_id: 'qbt_000000000001' },
-    status: 'ran', verdict: verdictOverride || v.verdict, reasons: v.reasons, validation: v, known_base_failures: exc,
+    status: 'ran', verdict: verdictOverride || v.verdict, reasons: v.reasons, validation: v, known_base_failures: exc, probe: PROBE, task_base_commit: BASE_COMMIT,
     steps: [{ name: 'test', state: failures ? 'execution_error' : 'completed', exit_code: exitCode ?? failures, duration_ms: 10 }] };
 }
 
@@ -82,6 +89,8 @@ test('exception entries must be exact (identity, file, kinds, codes, count) and 
     ['no codes', { ...ok, entries: [{ ...ok.entries[0], codes: undefined }] }],
     ['no justification', { ...ok, entries: [{ ...ok.entries[0], justification: '' }] }],
     ['duplicate', { ...ok, entries: [ok.entries[0], ok.entries[0]] }],
+    ['bare approver string', { ...ok, approval: undefined, approved_by: 'someone' }],
+    ['approval without binding', { ...ok, approval: { by: 'x' } }],
   ]) assert.throws(() => E.validateKnownBaseFailures(bad), /known base failures/, why);
 });
 
@@ -141,7 +150,7 @@ test('the complete-rewrite forgery (a self-consistent passing report) can reach 
     ...BASE.map(([t]) => ({ type: 'test', file: F, full_title: t, title: t, state: t === 'skipped' ? 'pending' : 'passed' })),
     { type: 'qb:end', stats: { suites: 1, tests: 5, passes: 4, pending: 1, failures: 0 } }].map((l) => JSON.stringify(l)).join('\n') + '\n';
   const v = validate(forged, null, 0);
-  const r = await verdictFor({ mode: 'research_mocha', status: 'ran', verdict: v.verdict, reasons: v.reasons, validation: v, known_base_failures: EXC(), steps: [] });
+  const r = await verdictFor({ mode: 'research_mocha', status: 'ran', verdict: v.verdict, reasons: v.reasons, validation: v, known_base_failures: EXC(), probe: PROBE, task_base_commit: BASE_COMMIT, steps: [] });
   assert.equal(r.test_outcome.outcome, 'passed');
   assert.equal(r.test_outcome.trust, 'advisory');
   assert.notEqual(r.test_outcome.trust, 'trusted');
@@ -153,4 +162,61 @@ test('ordinary customer runs (no research mode) are classified exactly as before
   const c = classifyTestRun({ status: 'ran', state: 'completed', exit_code: 0, report: REPORT });
   assert.equal(c.outcome, 'passed'); assert.equal(c.runner, 'node-test');
   assert.equal(c.trust, undefined);
+});
+
+// ── review 10631: binding ──
+test('an approval excuses nothing unless base, runtime and the exception-set hash all match (entries cannot silently expand)', async () => {
+  assert.equal((await verdictFor(researchV(BASE))).verdict, 'pass', 'bound and matching');
+  for (const [why, exc] of [
+    ['other base', EXC('r', { approval: { base_commit: 'b'.repeat(40) } })],
+    ['other node', EXC('r', { approval: { node: 'v22.0.0' } })],
+    ['other mocha', EXC('r', { approval: { mocha: '10.1.0' } })],
+    ['expanded after approval', (() => { const x = EXC(); x.entries.push({ ...x.entries[0], id: 'c'.repeat(64) }); return x; })()],
+  ]) {
+    const r = await verdictFor(researchV(BASE, { exc }));
+    assert.equal(r.verdict, 'fail', why);
+    assert.match(r.test_outcome.reason, /tests_failed/);
+  }
+});
+
+test('approved exceptions are listed with their coverage limits in the report (failures and limitations stay visible)', async () => {
+  const r = await verdictFor(researchV(BASE));
+  assert.equal(r.test_outcome.preexisting.length, 2);
+  assert.ok(r.test_outcome.coverage_limits.some((l) => /cannot pass without network/.test(l)));
+});
+
+// ── review 10631 option (c): isolated re-check ──
+const H6 = 'max content';
+const BASE6 = [...BASE, [H6, 'failed', assertion()]];
+const baseV6 = validate(report(BASE6), null, 3);
+const recheckFor = () => { const e = baseV6.identities.find((x) => x.id === idOf(H6)); return { id: e.id, file: e.file, full_title: H6, signature: { kinds: e.kinds, codes: e.codes, count: e.count }, justification: 'fixture: passes alone, fails in suite' }; };
+function v6(tests, recheck, { exc } = {}) {
+  const x = exc || EXC('r', { rechecks: [recheckFor()] });
+  const text = report(tests); const nf = tests.filter((t) => t[1] === 'failed').length;
+  const v = validate(text, M.baselineFrom(baseV6), nf);
+  return { mode: 'research_mocha', test_plan: { runner: 'mocha' }, status: 'ran', verdict: v.verdict, reasons: v.reasons, validation: v, known_base_failures: x,
+    probe: PROBE, task_base_commit: BASE_COMMIT, steps: [{ name: 'test', exit_code: nf }], ...(recheck === undefined ? {} : { isolation_rechecks: recheck ? [{ id: idOf(H6), ...recheck }] : [] }) };
+}
+test('(c) the held test, failing with its exact full-suite signature, is isolation-qualified ONLY when its single isolated re-check qualified', async () => {
+  const r = await verdictFor(v6(BASE6, { verdict: 'qualified', reasons: [], executed: 1, tree_match: true }));
+  assert.equal(r.test_outcome.outcome, 'preexisting_failures');
+  assert.match(r.test_outcome.reason, /isolation_qualified/);
+  assert.equal(r.test_outcome.isolation_qualified.length, 1);
+  assert.equal(r.test_outcome.isolation_qualified[0].name, H6);
+  assert.ok(r.test_outcome.coverage_limits.some((l) => /order safety/.test(l)), 'isolated success does not establish full-suite order safety');
+  assert.equal(r.test_outcome.trust, 'advisory');
+  assert.equal(hintsFor(r, H6).length, 0);
+});
+test('(c) a blocked, missing or wrong re-check, or a different full-suite signature, keeps the held test BLOCKING', async () => {
+  for (const [why, v] of [
+    ['re-check failed', v6(BASE6, { verdict: 'blocked', reasons: ['failed'], executed: 1, tree_match: true })],
+    ['re-check missing', v6(BASE6, undefined)],
+    ['re-check empty', v6(BASE6, null)],
+    ['different signature', v6([...BASE, [H6, 'failed', refused()]], { verdict: 'qualified', reasons: [], executed: 1, tree_match: true })],
+    ['re-check not approved', v6(BASE6, { verdict: 'qualified', reasons: [], executed: 1, tree_match: true }, { exc: (() => { const x = EXC('r', { rechecks: [recheckFor()] }); x.approval = null; return x; })() })],
+  ]) {
+    const r = await verdictFor(v);
+    assert.equal(r.verdict, 'fail', why);
+    assert.equal(hintsFor(r, H6).length, 1, `${why}: a repair hint for the blocking test`);
+  }
 });
