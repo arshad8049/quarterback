@@ -1,2 +1,2 @@
-43683856507
-# request 2 (all 18; notices packed)
+43735919809 43737510500 43739715148
+# request 3: smoke + both tasks (adds USAGE lines for the efficiency comparison)
