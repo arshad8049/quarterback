@@ -31,6 +31,6 @@ jobs:
               mkdir -p "collected/$run-$name" && unzip -q -o "collected/$run-$name.zip" -d "collected/$run-$name"
             done
           done
-          ls -R collected | head -50
+          for z in collected/*.zip; do echo "::notice title=arm-a-zip::ZIP $(basename "$z") sha256=$(sha256sum "$z" | cut -c1-64) bytes=$(stat -c %s "$z")"; done
       - name: Annotate
         run: node bench/opus-pilot/arm-a-collect.mjs collected
