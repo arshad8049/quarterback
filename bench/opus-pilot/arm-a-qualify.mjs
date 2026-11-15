@@ -23,6 +23,9 @@ const arg = (k) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`))
 if (process.env.GITHUB_ACTIONS !== 'true' || process.env.ARM_A_CI_RUN !== '1') { console.error('refusing: CI only'); process.exit(2); }
 for (const k of Object.keys(process.env)) if (/^(ANTHROPIC_|CLAUDE_CODE_OAUTH|CLAUDE_API)/.test(k)) { console.error(`refusing: credential-like variable ${k} is set`); process.exit(2); }
 const key = arg('task'); const repo = arg('repo'); const store = arg('store'); const imagesDir = arg('images'); const outDir = arg('out');
+// KAN-117 10620 slice B (research only): reviewed deps-root-scripts-v1 entries; without this flag nothing changes
+const allowFile = arg('root-scripts-allow');
+const rootScripts = allowFile ? JSON.parse(fs.readFileSync(allowFile, 'utf8')).entries : null;
 if (!key || !repo || !store || !imagesDir || !outDir) { console.error('usage: arm-a-qualify.mjs --task= --repo= --store= --images= --out='); process.exit(2); }
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -79,6 +82,8 @@ if (rec.qualified_setup !== false) {
       'echo "tap_ok=$(grep -cE "^ok [0-9]+ " /tmp/qbx-test.log) tap_not_ok=$(grep -cE "^not ok [0-9]+ " /tmp/qbx-test.log)" 1>&2',
       'echo "karma_pass=$(grep -c "✔" /tmp/qbx-test.log) karma_fail=$(grep -c "✖" /tmp/qbx-test.log) karma_browser_started=$(grep -c "Starting browser" /tmp/qbx-test.log)" 1>&2',
       'echo "missing_browser=$(grep -ciE "no binary for|cannot start chrome|failed to launch|chrome_bin" /tmp/qbx-test.log) missing_module=$(grep -ciE "cannot find module|command not found|ERR_MODULE_NOT_FOUND" /tmp/qbx-test.log)" 1>&2',
+      // 10620 slice B: the installed tree vs the PINNED lockfile (counts only): npm ci must have used the locked graph
+      'node -e \'const fs=require("fs");const l=JSON.parse(fs.readFileSync("package-lock.json","utf8"));let n=0,ok=0,miss=0,bad=0,opt=0;for(const [k,v] of Object.entries(l.packages||{})){if(!k)continue;n++;let p;try{p=JSON.parse(fs.readFileSync(k+"/package.json","utf8"))}catch{if(v.optional){opt++;continue}miss++;continue}if(p.version===v.version)ok++;else bad++}console.error("lock_pkgs="+n+" lock_match="+ok+" lock_missing="+miss+" lock_mismatch="+bad+" lock_optional_absent="+opt)\' 1>&2 || echo "lock_check=failed" 1>&2',
     ].join('\n');
     const r = await D.runStage(`${ws.runId}-agent`, [
       ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-v', `${ws.runId}-deps:/work/node_modules:ro`,
@@ -91,6 +96,7 @@ if (rec.qualified_setup !== false) {
   };
   const t0 = Date.now();
   const r = await runSandboxed({ repoPath: repo, briefing: b.briefing, agentStage: stage, verify: false, requireMemoryCheck: true,
+    ...(rootScripts ? { researchRootScripts: rootScripts } : {}),
     deadlines: { agent: 15 * 60_000 } });
   const launches = release();
   const n = (k) => (probe && /^\d+$/.test(probe[k] || '') ? Number(probe[k]) : null);
@@ -108,6 +114,14 @@ if (rec.qualified_setup !== false) {
   else if (!probe || probe.test_exit === undefined) fail('coding_env', `the workspace probe did not complete (${r.status})`);
   else if (!ran) fail('coding_env', `the task's test command produced no test results (exit ${probe.test_exit}${n('missing_browser') ? ', no usable browser' : ''}${n('missing_module') ? ', missing module/command' : ''})`);
   else if (!rec.agent_input.stdin_matches || rec.agent_input.workspace_commits !== 1 || rec.agent_input.workspace_remotes !== 0) fail('agent_input', 'the agent stage did not receive exactly the briefing in a one-commit workspace without remotes');
+  rec.coding_env.dependency_graph = { lock_pkgs: n('lock_pkgs'), lock_match: n('lock_match'), lock_missing: n('lock_missing'), lock_mismatch: n('lock_mismatch'), lock_optional_absent: n('lock_optional_absent') };
+  rec.coding_env.root_scripts = (r.sandbox && r.sandbox.deps && r.sandbox.deps.root_scripts) || null;
+  rec.coding_env.deps_check = r.sandbox && r.sandbox.deps && r.sandbox.deps.stages && r.sandbox.deps.stages.check ? r.sandbox.deps.stages.check.state : null;
+  if (rootScripts && rec.qualified_setup !== false) {
+    const g = rec.coding_env.dependency_graph;
+    if (!rec.coding_env.root_scripts) fail('coding_env', 'deps-root-scripts-v1 was not applied');
+    else if (!(g.lock_pkgs > 0) || g.lock_missing !== 0 || g.lock_mismatch !== 0) fail('coding_env', 'the installed tree differs from the pinned lockfile');
+  }
   rec.coding_env.existing_failures = (rec.coding_env.results.tap_not_ok || 0) + (rec.coding_env.results.karma_fail || 0);
 }
 
