@@ -302,4 +302,4 @@ function agentProfileFromManifest(m) {
   return p && typeof p === 'object' ? p : null;
 }
 
-module.exports = { runExperiment, taskEntries, armDefinitions, trialUsage, parseShard, taskShards, configPaths, agentProfileFromManifest };
+module.exports = { runExperiment, taskEntries, armDefinitions, trialUsage, parseShard, taskShards, configPaths, agentProfileFromManifest, pilotTrial, pilotClassify, pilotRecord };

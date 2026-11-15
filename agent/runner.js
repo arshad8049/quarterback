@@ -75,8 +75,16 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
   if (profile) {
     const P = require('../lib/sandbox/agent-profile');
     const { CLAUDE_VERSION } = require('../lib/sandbox/agent');
-    const approved = options.runSandboxed && Array.isArray(options.approvedAuthRoutes) ? options.approvedAuthRoutes : P.APPROVED_AUTH_ROUTES;
-    const errs = P.checkProfile(profile, { imagePin: CLAUDE_VERSION, approved });
+    let approved = options.runSandboxed && Array.isArray(options.approvedAuthRoutes) ? options.approvedAuthRoutes : P.APPROVED_AUTH_ROUTES;
+    // Arm-A research route (owner plan 2026-11-14): only through lib/pilot/arm-a.js's guard (the research driver,
+    // the protected live workflow, the owner's recorded confirmation). APPROVED_AUTH_ROUTES itself stays empty.
+    const routeErrs = [];
+    if (!options.runSandboxed && options.armAResearchRoute === true) {
+      const A = require('../lib/pilot/arm-a');
+      const probs = A.liveRouteProblems(process.env, process.argv[1]);
+      if (probs.length) routeErrs.push(...probs.map((x) => `arm-A route: ${x}`)); else approved = [A.ROUTE];
+    }
+    const errs = [...routeErrs, ...P.checkProfile(profile, { imagePin: CLAUDE_VERSION, approved })];
     // KAN-113 10600: qualification-only options and an overridden (e.g. fake) agent image are never allowed live
     for (const k of ['noCredentials', 'qualificationOnly', 'allowSynthetic']) if (options[k] !== undefined) errs.push(`${k} is qualification-only and refused for pilot runs`);
     const { AGENT_IMAGE } = require('../lib/sandbox/agent');
@@ -104,6 +112,7 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
   const r = await run({
     repoPath, briefing,
     ...(profile ? { requireMemoryCheck: true, agentArgs: require('../lib/sandbox/agent-profile').buildAgentArgs(profile), agentStdoutMaxBytes: require('../lib/sandbox/agent-profile').AGENT_STDOUT_MAX_BYTES } : {}),
+    ...(profile && options.armAResearchRoute === true ? { agentConfigTmpfs: true } : {}),
     deadlines: options.timeoutMs ? { agent: options.timeoutMs } : undefined,
     snapshotPaths: options.snapshotPaths,
     checks: options.checks,
