@@ -1,1 +1,1 @@
-request 6: axios-5892 — frozen exception list (5 proposed, approved_by null; 1 held) through the adapter on every run, + single-test probe of the unexplained max-content-length failure
+request 7: axios-5892 — single-test probe of max content length with captured output, 3 repetitions (request 6 probe kept no output); fixtures not repeated

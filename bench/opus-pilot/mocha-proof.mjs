@@ -119,13 +119,16 @@ if (grepTitle) {
   const argv = [...ENV.test_argv, '--reporter', 'spec', '--grep', `^${esc}$`, ...ENV.test_files];
   const stage = async (ws, _e, { waitTimeoutMs }) => D.runStage(`${ws.runId}-agent`, [
     ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-v', `${ws.runId}-deps:/work/node_modules:ro`,
-    '-e', 'HOME=/tmp/home', '--tmpfs', '/tmp/home:rw,size=256m,uid=10001,gid=10001,mode=0700', '-w', '/work', '--entrypoint', argv[0], AGENT_IMAGE, ...argv.slice(1),
+    // run 43761598428: the spec output went to stdout, which the pipeline does not keep — send it to stderr, run it 3 times
+    // (isolation and repeatability), and print Mocha's own pass/fail counts so "0 tests matched" cannot look like a pass
+    '-e', 'HOME=/tmp/home', '--tmpfs', '/tmp/home:rw,size=256m,uid=10001,gid=10001,mode=0700', '-w', '/work', '--entrypoint', 'sh', AGENT_IMAGE, '-c',
+    `for i in 1 2 3; do "$@" 2>&1 | tail -c 380 | tr '\\n' ' ' 1>&2; echo " qbx_rep=$i" 1>&2; done`, 'sh', ...argv,
   ], { waitTimeoutMs });
   const t0 = Date.now();
   const r = await runSandboxed({ repoPath: repo, briefing: 'KAN-117 probe-grep (no model)', researchEnv: ENV, ...(ROOT_SCRIPTS ? { researchRootScripts: ROOT_SCRIPTS } : {}),
     agentStage: stage, verify: false, requireMemoryCheck: true, researchDeadlineAtMs: t0 + TRIAL_TOTAL_MS });
   const ag = r.sandbox && r.sandbox.stages && r.sandbox.stages.agent;
-  grepProbe = { title: grepTitle, status: r.status, exit_code: r.exit_code ?? (ag && ag.exit_code), stdout_tail: String((ag && ag.stdout) || r.stdout_tail || '').slice(-1200), stderr_tail: String(r.stderr_tail || (ag && ag.stderr) || '').slice(-600) };
+  grepProbe = { title: grepTitle, status: r.status, exit_code: r.exit_code ?? (ag && ag.exit_code), stderr_tail: String(r.stderr_tail || (ag && ag.stderr) || '').slice(-1400) };
 }
 
 const runs = {};

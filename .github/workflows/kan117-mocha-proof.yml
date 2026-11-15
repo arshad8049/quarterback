@@ -34,7 +34,7 @@ jobs:
       matrix:
         include:
           # senior direction after 10624: axios-5892 only
-          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json --probe-grep="supports http with nodejs should support max content length"' }
+          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json --probe-grep="supports http with nodejs should support max content length"' }
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
         with: { persist-credentials: false }
