@@ -1,2 +1,2 @@
-mode=task task=axios-4738
-# request 4: first qualified task (smoke run 43735919809 acceptable: served claude-opus-5-5, api_key_source none, overage false)
+mode=task task=axios-4731
+# request 5: task 2 of 2 (axios-4738 run 43737510500: execution_verified, graded RESOLVED_FULL, evidence valid; no execution or evidence problem)
