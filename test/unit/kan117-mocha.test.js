@@ -243,3 +243,57 @@ test('stage (mocha): a report under a different nonce or a missing report is nev
   r = await V.runResearchVerification(WS, { status: 'ready' }, env, { docker: d, now: d.clock, image: 'i' });
   assert.equal(r.verdict, 'error'); assert.ok(r.reasons.includes('no_report'));
 });
+
+// ── review 10623: axios-5892 (Mocha 10.0.0, ESM) + diagnosis fields ──
+test('axios-5892 record: exact Mocha 10.0.0, mocha.js bin, 8 explicit files, pinned root-scripts entry, disclosed omissions', () => {
+  const e = ENV('axios-5892');
+  assert.doesNotThrow(() => E.validateTaskEnv(e));
+  assert.equal(e.mocha_version, '10.0.0');
+  assert.equal(e.probe.expect.mocha, '10.0.0');
+  assert.equal(e.test_argv[1], 'node_modules/mocha/bin/mocha.js');
+  assert.equal(e.test_files.length, 8);
+  assert.equal(e.root_scripts_key, 'axios-5892');
+  assert.equal(e.exposure, 'research', 'fresh here = no live model outcome yet; calibration staff have seen gold');
+  assert.throws(() => E.validateTaskEnv({ ...e, mocha_version: '^10.0.0' }), /task env/);
+  assert.throws(() => E.validateTaskEnv({ ...e, test_argv: ['node', 'node_modules/mocha/bin/_mocha', '--no-config', '--no-package'] }), /task env/);
+});
+
+test('stage (mocha 10): another Mocha 10 release at runtime is refused before any test (exact version, not the major)', async () => {
+  const env = ENV('axios-5892');
+  for (const v of ['10.1.0', '10.0.1']) {
+    const d = fakeDocker(happy(env, { probe: JSON.stringify({ node: 'v24', ci: null, mocha: v }) }));
+    const r = await V.runResearchVerification(WS, { status: 'ready' }, env, { docker: d, now: d.clock, image: 'i' });
+    assert.equal(r.verdict, 'error'); assert.ok(r.reasons.includes('probe_mismatch'), v);
+    assert.ok(!d.calls.some((c) => c.name.endsWith('-r-test')));
+  }
+  assert.ok(M.validateMochaRun(ok({ mochaVersion: '10.0.0' })).reasons.includes('mocha_version_mismatch'), 'a report from 8.4.0 is refused for a 10.0.0 record');
+});
+
+test('reporter v2: failed tests and hooks carry an error KIND and code, never the message; the leaf title is hashed by the validator', () => {
+  const { text } = fakeRun((r, T) => {
+    r.emit('start'); r.emit('suite', { file: F });
+    const t1 = { ...T(F, 'suite a fails'), title: 'a fails' };
+    r.emit('fail', t1, Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:1 secret-ish detail'), { code: 'ECONNREFUSED' })); r.stats.failures++; r.stats.tests++;
+    const t2 = { ...T(F, 'suite b fails'), title: 'b fails' };
+    const ae = new Error('expected 1 to equal 2'); ae.name = 'AssertionError'; r.emit('fail', t2, ae); r.stats.failures++; r.stats.tests++;
+    r.emit('end');
+  });
+  assert.ok(!text.includes('secret-ish') && !text.includes('expected 1 to equal 2'), 'no error message text in the report');
+  const tests = text.trim().split('\n').map(JSON.parse).filter((l) => l.type === 'test');
+  assert.deepEqual(tests.map((l) => [l.error_kind, l.error_code]), [['network', 'ECONNREFUSED'], ['assertion', null]]);
+  const v = M.validateMochaRun(ok({ reportText: text, exitCode: 2 }));
+  assert.equal(v.verdict, 'failed');
+  const ids = v.identities;
+  assert.ok(ids.some((x) => x.leaf_sha256 === sha('a fails') && x.kinds.includes('network')));
+  assert.ok(!JSON.stringify(v).includes('a fails'));
+});
+
+test('validator: a complete rewrite with a self-consistent forged report is NOT detectable by the validator (stated residual)', () => {
+  // what test code that knows the nonce/output path (both in process.argv) could write after a real failure
+  const forged = [
+    { type: 'qb:start', format: M.FORMAT, nonce: 'n0nce', mocha_version: '8.4.0', started_at: Date.now() },
+    { type: 'suite', file: F }, { type: 'test', file: F, full_title: 'x', title: 'x', state: 'passed' },
+    { type: 'qb:end', stats: { suites: 1, tests: 1, passes: 1, pending: 0, failures: 0 } },
+  ].map((l) => JSON.stringify(l)).join('\n') + '\n';
+  assert.equal(M.validateMochaRun(ok({ reportText: forged })).verdict, 'passed', 'the residual is real: only the independent grader is authoritative');
+});
