@@ -52,6 +52,8 @@ const TestOutcomeSchema = z.object({                                            
   preexisting_total: z.number().int().nonnegative().optional(),
   baseline:    z.string().optional(),
   preexisting_policy: z.enum(['block', 'waive']).optional(),
+  trust:       z.literal('advisory').optional(),        // KAN-117: research channel only (absent = ordinary QB evidence)
+  trust_note:  z.string().optional(),
 });
 
 const JudgmentMaterialSchema = z.object({            // QB-22: what a no-change judgment was based on

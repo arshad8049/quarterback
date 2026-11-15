@@ -115,9 +115,13 @@ function aggregateCore({ hasDiff, criteriaResults, testResults, executionStatus 
 function verificationInput(execution, testOpts = {}) {
   const v = execution?.sandbox?.verification || null;
   const c = classifyTestRun(v, testOpts);
+  // KAN-117 (research only): the research channel has no container state of its own; a classified result is "completed"
+  // (its outcome decides), anything else stays unresolved. The advisory trust label is passed through.
+  const research = Boolean(v && typeof v.mode === 'string' && v.mode.startsWith('research_'));
+  const state = research ? (['passed', 'failed', 'preexisting_failures'].includes(c.outcome) ? 'completed' : 'error') : (v ? v.state ?? null : null);
   return {
-    status: v ? v.status : 'not_run', reason: v ? v.reason ?? null : 'no_test_evidence', state: v ? v.state ?? null : null,
-    exit_code: c.exit_code, outcome: c.outcome, outcome_reason: c.reason,
+    status: v ? v.status : 'not_run', reason: v ? v.reason ?? null : 'no_test_evidence', state,
+    exit_code: c.exit_code, outcome: c.outcome, outcome_reason: c.reason, ...(c.trust ? { trust: c.trust } : {}),
   };
 }
 

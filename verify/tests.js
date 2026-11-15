@@ -135,6 +135,8 @@ const sameFailure = (a, b) => a.failureType === b.failureType && runRootless(a.e
  *             counts: object|null, exit_code: number|null }}
  */
 function classifyTestRun(v, { preexisting: preexistingPolicy = 'block' } = {}) {
+  // KAN-117 (research only): the visible research channel has its own advisory mapping; customer runs never carry a research mode
+  if (v && typeof v.mode === 'string' && v.mode.startsWith('research_')) return require('./research-adapter').classifyResearchRun(v, { preexisting: preexistingPolicy });
   const exit_code = v && Number.isInteger(v.exit_code) ? v.exit_code : null;
   const res = (outcome, reason, extra = {}) => ({ outcome, reason, runner: null, counts: null, exit_code, ...extra });
 

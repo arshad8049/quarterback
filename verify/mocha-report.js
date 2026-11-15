@@ -62,6 +62,7 @@ function validateMochaRun(o) {
   const tally = { passed: 0, failed: 0, pending: 0 };
   let hooks = 0;
   const byId = new Map();
+  const titles = new Map();   // visible full titles of FAILING tests only: for QB repair hints, never for public records
   const executed = new Set();
   for (const e of ev.slice(1, -1)) {
     if (e.type === 'suite') {
@@ -73,6 +74,7 @@ function validateMochaRun(o) {
       if (!f || typeof e.full_title !== 'string' || !STATES.has(e.state)) { reasons.push('malformed_report'); return out; }
       tally[e.state] += 1;
       const id = hash(`${f}\0${e.full_title}`);
+      if (e.state === 'failed' && !titles.has(id)) titles.set(id, e.full_title);
       const x = byId.get(id) || { id, file: f, leaf_sha256: typeof e.title === 'string' ? hash(e.title) : null, count: 0, statuses: [], kinds: [], codes: [] };
       x.count += 1; x.statuses.push(e.state);
       if (e.state === 'failed') { x.kinds.push(typeof e.error_kind === 'string' ? e.error_kind : 'unknown'); if (typeof e.error_code === 'string') x.codes.push(e.error_code); }
@@ -94,6 +96,8 @@ function validateMochaRun(o) {
   if (JSON.stringify(want) !== JSON.stringify(got)) reasons.push('discovery_mismatch');
   out.identities = [...byId.values()].map((e) => ({ ...e, statuses: e.statuses.sort(), kinds: e.kinds.sort(), codes: e.codes.sort() })).sort((a, b) => (a.id < b.id ? -1 : 1));
   out.identity_set_sha256 = hash(JSON.stringify(out.identities));
+  out.failing = out.identities.filter((e) => e.statuses.includes('failed'))
+    .map((e) => ({ id: e.id, file: e.file, full_title: titles.get(e.id) || null, kinds: e.kinds, codes: e.codes, failed_count: e.statuses.filter((x) => x === 'failed').length }));
 
   const failures = tally.failed + hooks;
   if (!Number.isInteger(o.exitCode) || (failures > 0 ? o.exitCode === 0 : o.exitCode !== 0)) reasons.push('exit_contradicts_report');

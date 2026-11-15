@@ -285,7 +285,9 @@ test('reporter v2: failed tests and hooks carry an error KIND and code, never th
   assert.equal(v.verdict, 'failed');
   const ids = v.identities;
   assert.ok(ids.some((x) => x.leaf_sha256 === sha('a fails') && x.kinds.includes('network')));
-  assert.ok(!JSON.stringify(v).includes('a fails'));
+  assert.ok(!JSON.stringify(v.identities).includes('a fails'), 'identities (what public records carry) have no names');
+  // failing visible titles live ONLY in v.failing, for QB repair hints; proof/public records never copy it
+  assert.deepEqual(v.failing.map((f) => f.full_title).sort(), ['suite a fails', 'suite b fails']);
 });
 
 test('validator: a complete rewrite with a self-consistent forged report is NOT detectable by the validator (stated residual)', () => {
