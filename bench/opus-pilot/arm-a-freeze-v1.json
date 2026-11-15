@@ -5,12 +5,17 @@
   "seed": "qb-arm-a-batch-1-2026-11-14",
   "exposure": "fresh tasks; exploratory Claude-only arm; NOT a paired comparison (no frozen QB checklists)",
   "qualified_tasks": [
-    "axios-4738"
+    "axios-4738",
+    "axios-4731"
   ],
   "choice": [
     {
       "key": "axios-4738",
       "role": "replaces preact-2757"
+    },
+    {
+      "key": "axios-4731",
+      "role": "replaces preact-3345"
     }
   ],
   "excluded": [
@@ -45,11 +50,147 @@
       "reserve": true
     },
     {
+      "key": "preact-3567",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3062",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3454",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "axios-5085",
+      "reason": {
+        "where": "calibration",
+        "why": "KAN-111 calibration expectations not met"
+      },
+      "reserve": true
+    },
+    {
+      "key": "threejs-25687",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: setup_failed"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3763",
+      "reason": {
+        "where": "agent_input",
+        "why": "arm-A briefing: leak check failed: test_patch_line×1"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-4436",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-4316",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "threejs-26589",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: setup_failed"
+      },
+      "reserve": true
+    },
+    {
+      "key": "axios-6539",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3739",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-4152",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-2927",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-4182",
+      "reason": {
+        "where": "agent_input",
+        "why": "arm-A briefing: leak check failed: test_patch_line×7"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3689",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
+      "key": "preact-3010",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
+    },
+    {
       "key": "preact-4245",
       "reason": {
         "where": "coding_env",
         "why": "QB deps stage: blocked setup_unsupported_project"
       }
+    },
+    {
+      "key": "preact-3562",
+      "reason": {
+        "where": "coding_env",
+        "why": "QB deps stage: blocked setup_unsupported_project"
+      },
+      "reserve": true
     },
     {
       "key": "threejs-27395",
@@ -90,7 +231,8 @@
     "preact-3562"
   ],
   "briefings": {
-    "axios-4738": "62225f6bac64df6a166c8f74bc4f1bfafb3ac66e7c7e1812c1c4458a76fad989"
+    "axios-4738": "62225f6bac64df6a166c8f74bc4f1bfafb3ac66e7c7e1812c1c4458a76fad989",
+    "axios-4731": "c466df55f8165cc875a517e24bb34e708dc8cd603b5d879469db4c7874b413a7"
   },
   "qualification_sha256": {
     "threejs-27395": "a94761ea490c0d9037fd5818c31e21c00c39982a1c50fa3fbebea2dfe8ca15c4",
@@ -100,7 +242,25 @@
     "preact-2757": "5510313120fb7fceac2ecd251fe04d5dc7084ba5d8c693776f444e0fe9b0772f",
     "axios-5892": "0a3b3e46b9fa2e1f32162f2d5240d189bd76c0482cf50fc16920538df3e74993",
     "axios-5316": "5973518a5249fa72d49628a502c630c9de809e4de1e185a2342b577aa1ed514a",
-    "axios-4738": "c472361695d35eac81e39ecb8bad9ba054d7451a58e8dd0945ed99c73cdc63d5"
+    "axios-4738": "c472361695d35eac81e39ecb8bad9ba054d7451a58e8dd0945ed99c73cdc63d5",
+    "threejs-25687": "0677c6de63f2421bf080ce2510ce0c8f252ba39781dc1183ba83246344056fa2",
+    "threejs-26589": "f1afeeb1d2e65089aec2533f402989dd03df8987b98395f23c710840469b70b1",
+    "preact-4316": "7927fb76f873a8592abc1e4470061663b38f214d5a96b65869c9554b5a719785",
+    "preact-4436": "f7595edb285b39b1f9161298f49e150a376db70d8db4560cf72c527daee1c99c",
+    "preact-4152": "dc0fbfdc4e718c8a57c32793ada1b540593aded36d52b46d42129bab50a1746d",
+    "preact-4182": "a4d293edb4c9acbcefb5ffdfe55c249d4682f5a27538b15bb4c434bbfed46e5c",
+    "preact-3739": "3129e6119d5659fc794982eae9012bfc2bc602ff7a55c7351b08dd2fa2f6725f",
+    "preact-3763": "334ea36ffca2002a4a0139ac95c97a642c24a4117c174f6d97bbfe37f7267598",
+    "preact-3567": "13cf1d1f70eb2c4b87e792e90aafe6ef3d3cdc718a0f61716bac23ebd3092c57",
+    "preact-3689": "621a3032d7eebf77f5a85776a30814c5550c381e22e20b18d1bb3c25fbfef6ef",
+    "preact-3454": "f90cde32bc5f9305d0e99de7a80ad44045f8dde4b95e9a4aa5546e8f75343b7c",
+    "preact-3562": "38af8f9c27d03fb0be38b573c3dcdb3be3973c5e8aac1b9065478b5967a18081",
+    "preact-3010": "b1cad1875e697f0cff44d1441688a69661f20abf7f660cfb079281a2c2372c54",
+    "preact-3062": "8334984364b8755ddd6876a50b6ff2ceb5b647acfe677eb4defe96a0a71a2010",
+    "axios-6539": "4f7297401cb7c9be44334145f60894630b6578187f44c32cae8f04a197dd3913",
+    "preact-2927": "c5bdc4dd168c5d3a1f84fd4d793113b7dd4e15f136f9478ac206c0bbf2b625b5",
+    "axios-4731": "895ec57ef4df423ea8fbc35f9dadfa3a9febc9ab29a964d92322386bc111e2b2",
+    "axios-5085": "a1af6efbbf7be952de8f70abf18ab1247111fb297d5c4d4e932f8c0487c68613"
   },
   "qualification_artifact_zips_sha256": {
     "43610841280-kan117-handoff.zip": "e7dd9b911c3028fcc970aea324d810f709f3c45049f226753814ad209a57cc0d",
@@ -111,7 +271,17 @@
     "43682268936-arm-a-qualify-preact-2757.zip": "a3f4bd24d29bd7efb3050127946a491774e87ad6041500fe35aac0dabc27b395",
     "43682268936-arm-a-qualify-axios-5892.zip": "527797fb84f701721239cb0e0021df415f9ba893c8f20028593248b1cf44b36f",
     "43682268936-arm-a-qualify-axios-5316.zip": "5deaeb5e2a62cddd2c1e398b0e7332a8d238e1b53614d28e2c0ba58720608336",
-    "43682268936-arm-a-qualify-axios-4738.zip": "40011f138cad5aef19ef4ea5ef30f7a82dcef085d100ffbfbd097f7b86fc190a"
+    "43682268936-arm-a-qualify-axios-4738.zip": "40011f138cad5aef19ef4ea5ef30f7a82dcef085d100ffbfbd097f7b86fc190a",
+    "43683856507-arm-a-qualify-preact-3689.zip": "47d42e311ed254e9234645313898a6f93ff9380f307b43f063e7e64caf4aadaf",
+    "43683856507-arm-a-qualify-preact-3567.zip": "a389f87cccd563f125bfff915aa8ef7d251f3e23046d48bd6924313cff754fc3",
+    "43683856507-arm-a-qualify-preact-3562.zip": "4df3189e4546519d278e6e2f060ffe49c443b4a6c64e7b796cf8ac213acb2375",
+    "43683856507-arm-a-qualify-preact-3454.zip": "35f6a6d8a34b767fa6b4adb08bd7db20fdb23f6dea81f8ba9661710d7cc0d61e",
+    "43683856507-arm-a-qualify-preact-3062.zip": "2de39c8875f1931589e675e476d383748fd456df5de9d55d8e2af8006161fb73",
+    "43683856507-arm-a-qualify-preact-3010.zip": "0bbec47fa85288e7176e35450626a8b60dd992935887981c24f26f2684d548c9",
+    "43683856507-arm-a-qualify-preact-2927.zip": "3b8491e3e9386ef56e51bed942c533a517b027e500257c50ac6db140c29efb7a",
+    "43683856507-arm-a-qualify-axios-6539.zip": "e61af5dbcba15bc46878fb3d7dbc83eb2fbe75092b073562e9331d9468ce0456",
+    "43683856507-arm-a-qualify-axios-5085.zip": "8eab19c5c6534b75d3d064995eb0514d4b1163da2a7f39f904cab62b48c28fee",
+    "43683856507-arm-a-qualify-axios-4731.zip": "5f6a9d794159eee9245bf4c46f6d69e894635e927252ba5d584275b3f56c0358"
   },
   "images": {
     "agent": "sha256:bffc1d6ac3c25a45927b55cc22897a896913fe3d787597ad571ad2336ca9aaf2",
