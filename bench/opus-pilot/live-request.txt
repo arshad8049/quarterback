@@ -1,2 +1,2 @@
-mode=smoke
-# request 3: harmless smoke after owner route confirmation (2026-11-15); request 2 was the no-model dry run
+mode=task task=axios-4738
+# request 4: first qualified task (smoke run 43735919809 acceptable: served claude-opus-5-5, api_key_source none, overage false)
