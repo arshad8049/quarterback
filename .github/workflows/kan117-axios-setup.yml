@@ -189,7 +189,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           set -euo pipefail
-          node bench/opus-pilot/arm-a-qualify-sanitize.mjs "${{ matrix.task }}" "$WORK/q" bench/public/out "$PUB"
+          node bench/opus-pilot/arm-a-qualify-sanitize.mjs "${{ matrix.task }}" "$WORK/q" "$WORK/calib" bench/public/out "$PUB"
           cp "$WORK/cleanup.txt" "$PUB/cleanup-${{ matrix.task }}.txt"
           if grep -IEn '(ghp_|gho_|ghs_|ghu_|github_pat_|sk-ant-|diff --git)' "$PUB"/*; then echo "::error::refused"; exit 1; fi
 

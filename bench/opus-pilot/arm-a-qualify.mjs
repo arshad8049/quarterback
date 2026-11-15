@@ -116,7 +116,7 @@ if (rec.qualified_setup !== false) {
   else if (!rec.agent_input.stdin_matches || rec.agent_input.workspace_commits !== 1 || rec.agent_input.workspace_remotes !== 0) fail('agent_input', 'the agent stage did not receive exactly the briefing in a one-commit workspace without remotes');
   rec.coding_env.dependency_graph = { lock_pkgs: n('lock_pkgs'), lock_match: n('lock_match'), lock_missing: n('lock_missing'), lock_mismatch: n('lock_mismatch'), lock_optional_absent: n('lock_optional_absent') };
   rec.coding_env.root_scripts = (r.sandbox && r.sandbox.deps && r.sandbox.deps.root_scripts) || null;
-  rec.coding_env.deps_check = r.sandbox && r.sandbox.deps && r.sandbox.deps.stages && r.sandbox.deps.stages.check ? r.sandbox.deps.stages.check.state : null;
+  rec.coding_env.deps_check = (r.sandbox && r.sandbox.deps && r.sandbox.deps.check_state) || null;
   if (rootScripts && rec.qualified_setup !== false) {
     const g = rec.coding_env.dependency_graph;
     if (!rec.coding_env.root_scripts) fail('coding_env', 'deps-root-scripts-v1 was not applied');

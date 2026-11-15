@@ -1,1 +1,1 @@
-request 1: slice B setup qualification + calibration (axios-5892, axios-6539) with deps-root-scripts-v1
+request 2: rerun after two recording bugs in run 43749903398 (Sanitize step lost the calibration dir argument; pipeline did not record the applied root-scripts rule). Install and lockfile graph were already ok on both.
