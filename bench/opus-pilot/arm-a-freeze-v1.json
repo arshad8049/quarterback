@@ -186,6 +186,6 @@
     "bench/public/grader/immutable-offline-v1/grade_report.py": "ff2443cd417b7f5fc9dea7455f9e97490e30b082d454d254f2547db30326c7c7",
     "bench/public/grader/immutable-offline-v1/grade-wrapper-a0.sh": "0a0f49474bb01f31137a57dbcf9ac9e312283a3912ed26f8eb167b4e87bb2072",
     "bench/public/grader/immutable-offline-v1/qbx-boundary-a0.sh": "a76ebaa3cac7a9022803734e0b28a7698da4eedbc579b052e7676d1170649985",
-    ".github/workflows/arm-a-live.yml": "36d14e959ab4f07184fdca4f5c159930485e9ca86630a8edfe3948ac9371c7c3"
+    ".github/workflows/arm-a-live.yml": "52fdad73ab49e6b5d63e15825caad998644f9a61fc7407b762aa9bb2051d40a6"
   }
 }

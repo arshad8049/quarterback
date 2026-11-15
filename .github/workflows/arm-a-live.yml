@@ -60,9 +60,9 @@ jobs:
     environment: opus-pilot-live
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
-        with: {{ persist-credentials: false }}
+        with: { persist-credentials: false }
       - uses: actions/setup-node@v4
-        with: {{ node-version: 22 }}
+        with: { node-version: 22 }
       - name: Install QB
         run: |
           set -euo pipefail
@@ -127,9 +127,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
-        with: {{ persist-credentials: false }}
+        with: { persist-credentials: false }
       - uses: actions/setup-node@v4
-        with: {{ node-version: 22 }}
+        with: { node-version: 22 }
       - name: Install QB
         run: |
           set -euo pipefail
@@ -190,9 +190,9 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
-        with: {{ persist-credentials: false }}
+        with: { persist-credentials: false }
       - uses: actions/setup-node@v4
-        with: {{ node-version: 22 }}
+        with: { node-version: 22 }
       - name: Install QB
         run: |
           set -euo pipefail
