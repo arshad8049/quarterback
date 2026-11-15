@@ -109,6 +109,25 @@ const pick = (x) => {
   };
 };
 
+// --probe-grep=<exact title>: ONE visible test on the BASE tree in the agent workspace (network none, read-only node_modules),
+// spec reporter, last 1,200 characters of its output — to justify (or not) a single exception. Visible tests only.
+let grepProbe = null;
+const grepTitle = arg('probe-grep');
+if (grepTitle) {
+  const { hardened } = require(path.join(ROOT, 'lib/sandbox/workspace.js'));
+  const esc = grepTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const argv = [...ENV.test_argv, '--reporter', 'spec', '--grep', `^${esc}$`, ...ENV.test_files];
+  const stage = async (ws, _e, { waitTimeoutMs }) => D.runStage(`${ws.runId}-agent`, [
+    ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-v', `${ws.runId}-deps:/work/node_modules:ro`,
+    '-e', 'HOME=/tmp/home', '--tmpfs', '/tmp/home:rw,size=256m,uid=10001,gid=10001,mode=0700', '-w', '/work', '--entrypoint', argv[0], AGENT_IMAGE, ...argv.slice(1),
+  ], { waitTimeoutMs });
+  const t0 = Date.now();
+  const r = await runSandboxed({ repoPath: repo, briefing: 'KAN-117 probe-grep (no model)', researchEnv: ENV, ...(ROOT_SCRIPTS ? { researchRootScripts: ROOT_SCRIPTS } : {}),
+    agentStage: stage, verify: false, requireMemoryCheck: true, researchDeadlineAtMs: t0 + TRIAL_TOTAL_MS });
+  const ag = r.sandbox && r.sandbox.stages && r.sandbox.stages.agent;
+  grepProbe = { title: grepTitle, status: r.status, exit_code: r.exit_code ?? (ag && ag.exit_code), stdout_tail: String((ag && ag.stdout) || r.stdout_tail || '').slice(-1200), stderr_tail: String(r.stderr_tail || (ag && ag.stderr) || '').slice(-600) };
+}
+
 const runs = {};
 runs.baseline = await one('baseline', ENV, { noAgent: true });
 // the EXACT base failures (visible repository tests on the unchanged code), from the channel's own validator: the
@@ -175,7 +194,7 @@ const out = {
   baseline: baseline && { base_verdict: baseline.base_verdict, identity_set_sha256: baseline.identity_set_sha256, counts: baseline.counts },
   runs: Object.fromEntries(Object.entries(runs).map(([k, v]) => [k, pick(v)])),
   fixtures: Object.fromEntries(Object.entries(fixtures).map(([k, v]) => [k, pick(v)])),
-  base_failing: baseFailing, diagnosis, budgets: { internal_stage_cap_ms: ENV.internal_stage_cap_ms, trial_total_ms: TRIAL_TOTAL_MS, mocha_timeout_ms: Number(ENV.test_argv[ENV.test_argv.indexOf('--timeout') + 1]) },
+  base_failing: baseFailing, grep_probe: grepProbe, diagnosis, budgets: { internal_stage_cap_ms: ENV.internal_stage_cap_ms, trial_total_ms: TRIAL_TOTAL_MS, mocha_timeout_ms: Number(ENV.test_argv[ENV.test_argv.indexOf('--timeout') + 1]) },
   cleanup: { containers: await left('container'), networks: await left('network'), volumes: await left('volume') },
   no_model: { model_calls: 0, credentials: 'none', agent_stage: 'none (baseline, empty); applyPatch (gold, tamper, fixtures)' },
 };

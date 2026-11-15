@@ -1,1 +1,1 @@
-request 5: axios-5892 — exact base-failure identities from the validator + QB real classification (adapter) of every run; the --diagnose probe of request 4 captured nothing and is removed
+request 6: axios-5892 — frozen exception list (5 proposed, approved_by null; 1 held) through the adapter on every run, + single-test probe of the unexplained max-content-length failure

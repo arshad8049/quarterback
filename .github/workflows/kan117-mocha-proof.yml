@@ -34,7 +34,7 @@ jobs:
       matrix:
         include:
           # senior direction after 10624: axios-5892 only
-          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json' }
+          - { task: axios-5892, base: ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b, fixtures: '--fixtures', extra: '--root-scripts-allow=bench/opus-pilot/mocha/root-scripts-allow.json --probe-grep="supports http with nodejs should support max content length"' }
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
         with: { persist-credentials: false }
@@ -88,6 +88,7 @@ jobs:
             lines.push(`DIAG ${j.task} base_failures=[${fl(dg.base_failures)}] gold_flips=[${fl(dg.gold_flips)}] gold_missing=${dg.gold_missing} budgets=${JSON.stringify(j.budgets)} deps=${d0 ? d0.status + "/" + d0.check_state : "-"} root_rule=${rs ? rs.rule + ":" + JSON.stringify(rs.removed) + ":" + rs.original_package_json_sha256.slice(0, 12) + ">" + rs.install_manifest_sha256.slice(0, 12) : "none"}`);
             // visible base failures, exactly (visible repository tests on the unchanged code); screened below
             const bf = (j.base_failing || []).map((d) => `id=${d.id} file=${d.file} kinds=${(d.kinds || []).join("/")} codes=${(d.codes || []).join("/")} count=${d.failed_count} title=${JSON.stringify(d.full_title)}`);
+            if (j.grep_probe) lines.push(`PROBE ${j.task} ${JSON.stringify(j.grep_probe)}`);
             for (let i = 0; i < bf.length; i += 2) lines.push(`BASEFAIL ${j.task} ` + bf.slice(i, i + 2).join(" || "));
             const store = require("fs").readFileSync("bench/public/out/vault/swe-bench-multilingual.jsonl", "utf8").trim().split("\n").map((x) => JSON.parse(x)).find((r) => r.task_id === j.task_id);
             const req = [].concat(...["FAIL_TO_PASS", "PASS_TO_PASS"].map((k) => (Array.isArray(store[k]) ? store[k] : JSON.parse(store[k] || "[]"))));
