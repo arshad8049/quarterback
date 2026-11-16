@@ -1,0 +1,90 @@
+{
+  "schema": "qb-preservation-map-draft/1",
+  "status": "DRAFT: for senior review; not approved; P-7 check CHK-AC4-HEAD-204 does not exist yet (fresh clean author, F2)",
+  "source": "identities from the visible base test file (KAN-117 10653, run 43955588753); no hidden tests, no gold",
+  "map": {
+    "schema": "qb-preservation-map/1",
+    "ac_id": "AC-4",
+    "file": "test/unit/adapters/http.js",
+    "clauses": [
+      {
+        "id": "P-1",
+        "clause": "lowercase gzip responses still decompress (incl. no content-length, chunked, empty bodies)",
+        "tests": [
+          "2cccb266bb9ed7d44c1edc31c7e602ebe5915ddcfd71cc8d25f42f3d32164bae",
+          "60b28bcefda66fe0d2df4406f99f8effdc91f953738f5230c78ea8429a59cc35",
+          "7366a5b349ba45cd199b7d43bd532503b80028e84861819f499e9a170162b8db",
+          "e842e7c4667999852461a6943996c2ce44d1dc01b7af428a59f2788588a0acab",
+          "39280992d7bb8e3f1ae1b47c8d90e610fe8509b52dff552af4295028e49a5f00",
+          "98513e23363383f2b8122bc27f805d8e793a092d2bdb3aa5b908e50fae56ddcf"
+        ],
+        "checks": []
+      },
+      {
+        "id": "P-2",
+        "clause": "lowercase compress responses still decompress",
+        "tests": [
+          "aaf18b3eead135bcfe139bf81b7ce501a041b4e6cfbad4cf3c4d29841b3b1342",
+          "8411975b9d09ab073a4f7a3a300dba55555eb17551e223eed43e03b38770f18e",
+          "83e8d42be8f3cebc49dca44d401fa8325dd6c7f126266e5414844f060ba33ee0",
+          "a049a5821edcf7585f3474ba2e7a690d03a1bc3dd532b967a02aacb9830c835a",
+          "6d91a4958072f8c2435713c5fdb43b97aa781634a26b9ab5d6a6247e81d78182"
+        ],
+        "checks": []
+      },
+      {
+        "id": "P-3",
+        "clause": "lowercase deflate responses still decompress",
+        "tests": [
+          "2c63140de089c9a94fc64d83dc07237c57cc2b428badd4d23b120cace08edf43",
+          "21414f2091d6a3be571c22d14c21a72aea913db591070ca827787fcaeca1eba8",
+          "5912e63716692405968f8f3663d14aad8d7667a89d3df6f3e5861039fec28525",
+          "d5a684adcfb0de546c067f188daf4d01b23b48dddfd71ec98d75d66fb9cd9a30",
+          "f46fee0101fb61c4b28db0034f8268d005bc3cc5ed4ae009fa64bfdc9f2043ba"
+        ],
+        "checks": []
+      },
+      {
+        "id": "P-4",
+        "clause": "lowercase deflate-raw responses still decompress",
+        "tests": [
+          "95fa499c5bab0ec1e39ca182c35ffd577c64663c3da1bd0daa17f9b735448351",
+          "e55ce69913bed3038f0e40667d9f3e3942667ccb5a1e4e0746cb47f766a13249",
+          "3c71249a3ccbee925a21b5c744add202d663b90133ba859d61ecdc7c127a1676",
+          "df29cb11e47ff94f229b626554b13f87d9b208cf6e52e0a3741c3313b304701d",
+          "cacdba32d6aee7ddc1ec1dc6f2e125aa745a97baa54800f0d33ff1bd5be98bbb"
+        ],
+        "checks": []
+      },
+      {
+        "id": "P-5",
+        "clause": "lowercase br responses still decompress",
+        "tests": [
+          "230cc8d2f8fdf6f460527e7d3b3469713a0a01ac9e8dc1795f93a78f733e03af",
+          "7ac8f505d007bc967f7cd5a99831621f7c5f013898746c381ca0db68e82209d4",
+          "1b0bc11afa5fd21afee23bdc10971da3e9e2ee4195ec237b0caa7502b12e10f8",
+          "0db401d2e8f391061b3473a495d774a24a68f9ff1cfea39fa742f94288c1aa3c",
+          "2c0806f967e90d8a693f8f2e29f7160cc99b68c1d13fd1ae18029589d11e5781"
+        ],
+        "checks": []
+      },
+      {
+        "id": "P-6",
+        "clause": "decompress: false still returns the raw compressed bytes",
+        "tests": [
+          "083ad46efd12e3f7aba02ca5cfa16f426915418d3977302a5359b66524a97aeb"
+        ],
+        "checks": []
+      },
+      {
+        "id": "P-7",
+        "clause": "HEAD/204 responses with a content-encoding header still succeed",
+        "tests": [],
+        "checks": [
+          "CHK-AC4-HEAD-204"
+        ]
+      }
+    ]
+  },
+  "sha256": "d35c38b11754c90d77738d6c9323b3653e081017943b7d0c6ec1e8941b62e0f2"
+}

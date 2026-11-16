@@ -8,6 +8,8 @@ const { checkSetHash } = require('./checks/registry');
 const { evaluatePolicy } = require('./policy');
 const { buildEvidence, candidateFiles, manifestEntry } = require('./evidence');
 const { decidePreservation } = require('./preservation');
+const { decideMappedPreservation } = require('./research-preservation');
+const { isResearch: isResearchVerification } = require('./research-adapter');
 const { openCache } = require('./judge-cache');
 const { VerificationReportSchema } = require('./schema');
 const { contractState, stateReason, contractHash, approvalState } = require('../intent/contract-state');
@@ -103,7 +105,7 @@ async function verify(contract, context, execution, options = {}) {
     const judged = new Map(criteriaResults.map(r => [r.id, r]));
     const classified = classifyTestRun(execution?.sandbox?.verification || null, testOptions(contract));
     criteriaResults = allCriteria.map(ac => judged.get(ac.id)
-      || (ac.preserves ? preservationResult(ac, classified, checkEval) : criterionFromChecks(ac, checkEval)));
+      || (ac.preserves ? preservationResult(ac, classified, checkEval, { verification: execution?.sandbox?.verification || null, maps: options.preservationMaps, checks: contract.checks }) : criterionFromChecks(ac, checkEval)));
   }
 
   // ── Verdict ──────────────────────────────────────────────────────────────
@@ -236,8 +238,11 @@ function criterionFromChecks(ac, ev) {
 }
 
 /** QB-15: the named tests decide; checks bound to the criterion (interfaces) must also pass. */
-function preservationResult(ac, classified, ev) {
-  const t = decidePreservation(ac, classified);
+function preservationResult(ac, classified, ev, research = {}) {
+  // KAN-117 (research only): clause-level evidence map of exact test identities; ordinary runs keep the file-level rule
+  const t = isResearchVerification(research.verification)
+    ? decideMappedPreservation(ac, research.verification, classified, ev, research.maps, research.checks)
+    : decidePreservation(ac, classified);
   if (!ev.requested.some(c => c.ac_id === ac.id)) return t;
   const k = criterionFromChecks(ac, ev);
   const met = t.met === false || k.met === false ? false : t.met === true && k.met === true ? true : null;

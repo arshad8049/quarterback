@@ -4,7 +4,7 @@ const CriterionResultSchema = z.object({
   id:        z.string(),
   criterion: z.string(),
   met:       z.boolean().nullable(),
-  method:    z.enum(['deterministic', 'llm', 'test-runner', 'no-diff', 'not-run', 'llm-vote-3', 'llm-vote-5', 'check', 'no-check']),
+  method:    z.enum(['deterministic', 'llm', 'test-runner', 'no-diff', 'not-run', 'llm-vote-3', 'llm-vote-5', 'check', 'no-check', 'test-identity-map']),
   evidence:  z.string(),
   votes:     z.array(z.boolean().nullable()).optional(),
   repair:    z.string().nullable().optional(),
@@ -16,6 +16,11 @@ const CriterionResultSchema = z.object({
   judgment_cache:   z.enum(['hit', 'miss', 'wait_timeout', 'cancelled']).optional(),                              // QB-15
   evidence_ids:     z.array(z.string()).optional(),                                  // QB-11: what the judgment was based on
   evidence_missing: z.array(z.object({ what: z.string(), reason: z.string() })).optional(),
+  // KAN-117 (research only): clause-level preservation from a reviewer-approved map of exact test identities
+  map_sha256:       z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  clauses:          z.array(z.object({ id: z.string(), clause: z.string(), met: z.boolean().nullable(),
+    tests: z.array(z.object({ id: z.string(), status: z.enum(['passed', 'failed', 'missing', 'excluded', 'invalid']) })),
+    checks: z.array(z.object({ id: z.string(), status: z.string() })) })).optional(),
 });
 
 const EvidenceItemSchema = z.object({                                                  // QB-11 manifest (no contents)
