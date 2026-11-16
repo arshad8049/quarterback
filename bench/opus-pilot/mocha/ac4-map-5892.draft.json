@@ -1,6 +1,6 @@
 {
   "schema": "qb-preservation-map-draft/1",
-  "status": "DRAFT: for senior review; not approved; P-7 checks CHK-AC4-HEAD and CHK-AC4-204 do not exist yet (fresh clean author, F2 packet v4)",
+  "status": "APPROVED for the bounded no-model replay (AI senior review, KAN-117 10657); inner map unchanged; approved hash = sha256(JSON.stringify(map))",
   "source": "identities from the visible base test file (KAN-117 10653, run 43955588753); no hidden tests, no gold",
   "map": {
     "schema": "qb-preservation-map/1",
