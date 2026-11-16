@@ -1,0 +1,28 @@
+{
+  "schema": "qb-contract-packet/1",
+  "task": "axios-5892",
+  "task_id": "qbt_72e2affc8e5d",
+  "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+  "built_from_qb_commit": "3263098019b3d676d3931c3c687ca527710ca52f",
+  "approved_by": "KAN-117 review 10635 step 1",
+  "contents_rule": "task text + pinned repo/visible tests + contract/check schema docs + generic constraints only",
+  "excluded": [
+    "hidden tests",
+    "gold patch",
+    "candidate solutions",
+    "KAN-117 diagnostic thread",
+    "exception list and rationale",
+    "grading outcomes"
+  ],
+  "leak_check": "passed (QB lib/research/agent-bundle.js leakCheck: hidden test names, gold-patch lines, test-patch lines; counts only)",
+  "files": {
+    "TASK.md": "02ef022a366475f1263094c2f6742974cbf025210ee61bb846a7cc24324cc1ae",
+    "REPOSITORY.md": "e6ee986594c0c5a92d2e60f1d4a8b8c5852d97ecd7d42ef92b231550c1f2cc40",
+    "CONSTRAINTS.md": "eaac116d1b815c33c55b3c45fbcb4e8efd057a2af7d80e385a1c4e68e90685a2",
+    "CHECKS.md": "0ac57927775bc0c6abd1f404a46b1f9f94e22b061802b08bd68d3d5a2a7063f6",
+    "CONTRACT_SCHEMA.md": "0930d40eea1d60e6bc71ae14b2afce663c7910ebee0212aa1c4b5d2aa07fb72a",
+    "AUTHOR_INSTRUCTIONS.md": "279182fd30b02ff3c712c1764828c6ced1d45e678c96d0154dddcca8f59ea95f",
+    "EXPOSURE.md": "60a0ded229baf335081b8488478372a840716241bc5ad8b038a041fc46f28579"
+  },
+  "packet_sha256": "70e46f932c00001b50b9740896085e7e0e3b0042d8944e09550c02a87b1d12cb"
+}
