@@ -1,0 +1,13 @@
+{
+  "schema": "qb-contract-freeze/1",
+  "task": "axios-5892",
+  "rule": "KAN-117 review 10635 step 2: the clean-authored contract is frozen (hash recorded) BEFORE any controller reading, validation or evaluation against gold/hidden material",
+  "packet_sha256": "70e46f932c00001b50b9740896085e7e0e3b0042d8944e09550c02a87b1d12cb",
+  "packet_files_unchanged": true,
+  "author": "fresh Claude Code session started by the owner in the packet folder only, web tools disabled (claude --disallowedTools \"WebFetch,WebSearch\"); see EXPOSURE.md",
+  "contract_json_sha256": "cbac3e770ad13f39d2e85d3a7f5e8c92d66425c37a612c45a4291d1e74acf438",
+  "exposure_md_sha256": "92a761c74f188c4e7039891b5aa70fe23b1a48eeffd4189fbcf5627501e248c6",
+  "frozen_at_utc": "2026-11-16T00:16:00Z",
+  "file_location": "outside the repository (contains quotes of dataset task text): <owner Desktop>/millionaire/qb-contract-packet-5892/",
+  "status": "ready for review (author); not approved; not yet validated or evaluated by the controller"
+}
