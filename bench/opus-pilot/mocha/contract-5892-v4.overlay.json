@@ -1,0 +1,424 @@
+{
+  "id": "qb-contract-axios-5892",
+  "status": "ready_for_review",
+  "approval": null,
+  "created_at": "2026-11-15T00:00:00Z",
+  "raw_request": {
+    "$from": "agent_store.problem_statement",
+    "transform": "trim"
+  },
+  "repo_path": "axios",
+  "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+  "goal": "In the Node http adapter (lib/adapters/http.js), match the response Content-Encoding value case-insensitively, so a compressed response whose Content-Encoding is written in non-lowercase letters (e.g. 'GZIP', 'Gzip', 'GZip') is decompressed transparently, as the lowercase forms already are.",
+  "required_behavior": [
+    "When config.decompress is not false, a response with Content-Encoding 'GZIP', 'Gzip' or 'GZip' (any letter case of a supported encoding) and a gzip-compressed body resolves with the decompressed body, the same as for 'gzip'.",
+    "Case-insensitive matching covers every encoding the adapter already decompresses: gzip, x-gzip, compress, x-compress, deflate and br (br only where zlib supports Brotli).",
+    "When the adapter decompresses a body sent with a non-lowercase Content-Encoding, it removes content-encoding from the response headers, as it already does for the lowercase forms.",
+    "Existing behaviour is kept: lowercase encodings still decompress, decompress: false still returns the raw compressed body, HEAD and 204 responses are still handled without error, and unknown encodings are still passed through untouched."
+  ],
+  "constraints": [
+    "Do not change package.json or package-lock.json (no new dependencies).",
+    "Do not edit built or generated output (dist/**) or the type definitions (index.d.ts, index.d.cts).",
+    "Change only the Node http adapter, lib helpers it uses, and the unit tests."
+  ],
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "protected_paths",
+          "ref": "package.json"
+        },
+        {
+          "kind": "protected_paths",
+          "ref": "package-lock.json"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "protected_paths",
+          "ref": "dist/**"
+        },
+        {
+          "kind": "protected_paths",
+          "ref": "index.d.ts"
+        },
+        {
+          "kind": "protected_paths",
+          "ref": "index.d.cts"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "quote": {
+        "$span": [
+          0,
+          66
+        ]
+      }
+    },
+    {
+      "id": "R-2",
+      "quote": {
+        "$span": [
+          89,
+          92
+        ]
+      }
+    },
+    {
+      "id": "R-3",
+      "quote": {
+        "$span": [
+          252,
+          104
+        ]
+      }
+    },
+    {
+      "id": "R-4",
+      "quote": {
+        "$span": [
+          357,
+          54
+        ]
+      }
+    },
+    {
+      "id": "R-5",
+      "quote": {
+        "$span": [
+          432,
+          100
+        ]
+      }
+    },
+    {
+      "id": "R-6",
+      "quote": {
+        "$span": [
+          635,
+          21
+        ]
+      }
+    },
+    {
+      "id": "R-7",
+      "quote": {
+        "$span": [
+          67,
+          20
+        ]
+      },
+      "disposition": "context",
+      "reason": "Issue-template section heading; not a requirement."
+    },
+    {
+      "id": "R-8",
+      "quote": {
+        "$span": [
+          182,
+          69
+        ]
+      },
+      "disposition": "context",
+      "reason": "The reporter's example source of a GZIP response. Checks run offline and cannot reach that host; the behaviour it illustrates is covered by AC-1 (R-3)."
+    },
+    {
+      "id": "R-9",
+      "quote": {
+        "$span": [
+          414,
+          16
+        ]
+      },
+      "disposition": "context",
+      "reason": "Issue-template section heading; the reproduction text itself is R-5."
+    },
+    {
+      "id": "R-10",
+      "quote": {
+        "$span": [
+          534,
+          31
+        ]
+      },
+      "disposition": "context",
+      "reason": "Template section left empty by the reporter; no code given."
+    },
+    {
+      "id": "R-11",
+      "quote": {
+        "$span": [
+          567,
+          36
+        ]
+      },
+      "disposition": "context",
+      "reason": "Template section left empty; the expected behaviour is inferred from R-3/R-4 (decompress regardless of letter case)."
+    },
+    {
+      "id": "R-12",
+      "quote": {
+        "$span": [
+          605,
+          24
+        ]
+      },
+      "disposition": "context",
+      "reason": "Environment note: the version where the bug was seen; it matches the pinned base (package.json version 1.5.0)."
+    },
+    {
+      "id": "R-13",
+      "quote": {
+        "$span": [
+          631,
+          19
+        ]
+      },
+      "disposition": "context",
+      "reason": "Template heading of the field whose value R-6 quotes; this entry only adds the heading marks to the traced span."
+    },
+    {
+      "id": "R-14",
+      "quote": {
+        "$span": [
+          658,
+          19
+        ]
+      },
+      "disposition": "context",
+      "reason": "Environment note; ignored because the reported adapter is http (Node) and the browser xhr adapter does not decompress itself (ambiguity_flags[5])."
+    },
+    {
+      "id": "R-15",
+      "quote": {
+        "$span": [
+          679,
+          34
+        ]
+      },
+      "disposition": "context",
+      "reason": "Template section left empty."
+    },
+    {
+      "id": "R-16",
+      "quote": {
+        "$span": [
+          715,
+          23
+        ]
+      },
+      "disposition": "context",
+      "reason": "Environment note; QB runs Node 24 (CONSTRAINTS.md) and the behaviour does not depend on the Node version."
+    },
+    {
+      "id": "R-17",
+      "quote": {
+        "$span": [
+          740,
+          14
+        ]
+      },
+      "disposition": "context",
+      "reason": "Environment note; the behaviour is not OS-specific."
+    },
+    {
+      "id": "R-18",
+      "quote": {
+        "$span": [
+          756,
+          46
+        ]
+      },
+      "disposition": "context",
+      "reason": "Template section left empty."
+    },
+    {
+      "id": "R-19",
+      "quote": {
+        "$span": [
+          804,
+          49
+        ]
+      },
+      "disposition": "context",
+      "reason": "Template section left empty."
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-2",
+        "R-3",
+        "R-5",
+        "R-6"
+      ],
+      "criterion": "http adapter: with default config (decompress not false), a GET whose response has Content-Encoding 'GZIP' and a gzip-compressed body 'str' resolves with data === 'str'; the same holds for 'Gzip' and 'GZip'. Checked by scenario CHK-AC1-MIXED-CASE-GZIP, which supplies the response through config.transport (see ambiguity_flags[0])."
+    },
+    {
+      "id": "AC-2",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ],
+      "criterion": "http adapter: non-lowercase forms of the other supported encodings are also decompressed: 'DEFLATE' (zlib-wrapped and raw deflate bodies), 'X-GZIP', 'COMPRESS' and, where zlib.createBrotliDecompress exists, 'BR'; each resolves with the original body. Checked by scenario CHK-AC2-MIXED-CASE-OTHER (see ambiguity_flags[0])."
+    },
+    {
+      "id": "AC-3",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-4"
+      ],
+      "criterion": "http adapter: after decompressing a response sent with Content-Encoding 'GZIP', response.headers has no content-encoding entry, matching the existing behaviour for 'gzip'. Checked by scenario CHK-AC3-HEADER-REMOVED (see ambiguity_flags[0]); this criterion is an inference from existing lowercase behaviour (see ambiguity_flags[2])."
+    },
+    {
+      "id": "AC-4",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ],
+      "preserves": {
+        "tests": [
+          "test/unit/adapters/http.js"
+        ]
+      },
+      "criterion": "Preservation: lowercase gzip/compress/deflate/deflate-raw/br responses still decompress (with and without content-length, chunked, empty bodies); decompress: false still returns the raw compressed bytes; HEAD/204 with a content-encoding header still succeed. Evidence is the visible mocha suite test/unit/adapters/http.js (named in preserves; not a qb-checks adapter), plus scenario checks CHK-AC4-HEAD (HEAD response with a content-encoding header) and CHK-AC4-204 (204 response with a content-encoding header), which add to that evidence and do not replace it."
+    },
+    {
+      "id": "AC-5",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "criterion": "Preservation guard only (does not test the case-insensitivity behaviour): lib/adapters/http.js still imports without error and its default export is a function (the http adapter) under Node."
+    }
+  ],
+  "checks": [
+    {
+      "id": "CHK-HTTP-ADAPTER-LOADS",
+      "ac_id": "AC-5",
+      "adapter": "module_exports",
+      "plan_item": 1,
+      "params": {
+        "module": "lib/adapters/http.js",
+        "export": "default",
+        "type": "function"
+      }
+    },
+    {
+      "id": "CHK-AC1-MIXED-CASE-GZIP",
+      "ac_id": "AC-1",
+      "adapter": "scenario",
+      "plan_item": 0,
+      "params": {
+        "source": "module.exports = async ({ require, assert }) => {\n  const axios = require('./lib/axios.js').default;\n  const zlib = require('zlib');\n  const { PassThrough } = require('stream');\n  const { EventEmitter } = require('events');\n  const fetchWith = (encoding, body, extra) => {\n    const transport = { request(options, onResponse) {\n      const req = new EventEmitter();\n      req.destroyed = false;\n      req.setTimeout = () => req;\n      req.destroy = () => { req.destroyed = true; return req; };\n      req.write = () => true;\n      req.end = () => {\n        const res = new PassThrough();\n        res.statusCode = 200; res.statusMessage = 'OK';\n        res.headers = { 'content-type': 'text/plain', 'content-encoding': encoding };\n        setImmediate(() => { onResponse(res); res.end(body); });\n      };\n      return req;\n    } };\n    return axios.get('http://qb.invalid/', Object.assign({ adapter: 'http', transport, responseType: 'text', timeout: 0 }, extra));\n  };\n  const body = zlib.gzipSync(Buffer.from('str'));\n  for (const enc of ['GZIP', 'Gzip', 'GZip']) {\n    const res = await fetchWith(enc, body);\n    assert.strictEqual(res.data, 'str', `Content-Encoding ${enc}: body was not decompressed`);\n  }\n};\n"
+      }
+    },
+    {
+      "id": "CHK-AC2-MIXED-CASE-OTHER",
+      "ac_id": "AC-2",
+      "adapter": "scenario",
+      "plan_item": 0,
+      "params": {
+        "source": "module.exports = async ({ require, assert }) => {\n  const axios = require('./lib/axios.js').default;\n  const zlib = require('zlib');\n  const { PassThrough } = require('stream');\n  const { EventEmitter } = require('events');\n  const fetchWith = (encoding, body, extra) => {\n    const transport = { request(options, onResponse) {\n      const req = new EventEmitter();\n      req.destroyed = false;\n      req.setTimeout = () => req;\n      req.destroy = () => { req.destroyed = true; return req; };\n      req.write = () => true;\n      req.end = () => {\n        const res = new PassThrough();\n        res.statusCode = 200; res.statusMessage = 'OK';\n        res.headers = { 'content-type': 'text/plain', 'content-encoding': encoding };\n        setImmediate(() => { onResponse(res); res.end(body); });\n      };\n      return req;\n    } };\n    return axios.get('http://qb.invalid/', Object.assign({ adapter: 'http', transport, responseType: 'text', timeout: 0 }, extra));\n  };\n  const text = 'qb mixed-case encoding body';\n  const src = Buffer.from(text);\n  const cases = [\n    ['DEFLATE', zlib.deflateSync(src)],\n    ['DEFLATE', zlib.deflateRawSync(src)],\n    ['X-GZIP', zlib.gzipSync(src)],\n    ['COMPRESS', zlib.gzipSync(src)],\n  ];\n  if (typeof zlib.createBrotliDecompress === 'function') cases.push(['BR', zlib.brotliCompressSync(src)]);\n  for (const [enc, body] of cases) {\n    const res = await fetchWith(enc, body);\n    assert.strictEqual(res.data, text, `Content-Encoding ${enc}: body was not decompressed`);\n  }\n};\n"
+      }
+    },
+    {
+      "id": "CHK-AC3-HEADER-REMOVED",
+      "ac_id": "AC-3",
+      "adapter": "scenario",
+      "plan_item": 0,
+      "params": {
+        "source": "module.exports = async ({ require, assert }) => {\n  const axios = require('./lib/axios.js').default;\n  const zlib = require('zlib');\n  const { PassThrough } = require('stream');\n  const { EventEmitter } = require('events');\n  const fetchWith = (encoding, body, extra) => {\n    const transport = { request(options, onResponse) {\n      const req = new EventEmitter();\n      req.destroyed = false;\n      req.setTimeout = () => req;\n      req.destroy = () => { req.destroyed = true; return req; };\n      req.write = () => true;\n      req.end = () => {\n        const res = new PassThrough();\n        res.statusCode = 200; res.statusMessage = 'OK';\n        res.headers = { 'content-type': 'text/plain', 'content-encoding': encoding };\n        setImmediate(() => { onResponse(res); res.end(body); });\n      };\n      return req;\n    } };\n    return axios.get('http://qb.invalid/', Object.assign({ adapter: 'http', transport, responseType: 'text', timeout: 0 }, extra));\n  };\n  const body = zlib.gzipSync(Buffer.from('str'));\n  const lower = await fetchWith('gzip', body);\n  assert.strictEqual(lower.headers['content-encoding'], undefined, 'baseline: lowercase gzip header should be removed');\n  const res = await fetchWith('GZIP', body);\n  assert.strictEqual(res.data, 'str', 'Content-Encoding GZIP: body was not decompressed');\n  assert.strictEqual(res.headers['content-encoding'], undefined, 'content-encoding header still present after decompressing GZIP');\n};\n"
+      }
+    },
+    {
+      "id": "CHK-AC4-HEAD",
+      "ac_id": "AC-4",
+      "adapter": "scenario",
+      "params": {
+        "source": "module.exports = async ({ require, assert }) => {\n  // AC-4 / HEAD: a response to a HEAD request that carries a content-encoding header and no body.\n  // \"Still succeed\", as decided from the base code (lib/adapters/http.js, the\n  // `method === 'HEAD' || res.statusCode === 204` branch before the encoding switch):\n  //   - the request resolves (no rejection, no zlib/brotli error from decoding an absent body),\n  //   - with status 200 and empty data (''),\n  //   - and the content-encoding header is removed from response.headers, whatever its value,\n  //     because no body was decoded (the base removes it \"not to confuse downstream operations\").\n  // Encodings cover lowercase and non-lowercase supported values plus an unknown one; the unknown\n  // value is only removed by the HEAD/204 branch, so dropping that branch makes this throw.\n  const axios = require('./lib/axios.js').default;\n  const { PassThrough } = require('stream');\n  const { EventEmitter } = require('events');\n  const send = (encoding) => {\n    let seenMethod;\n    const transport = { request(options, onResponse) {\n      seenMethod = options.method;\n      const req = new EventEmitter();\n      req.destroyed = false;\n      req.setTimeout = () => req;\n      req.destroy = () => { req.destroyed = true; return req; };\n      req.write = () => true;\n      req.end = () => {\n        const res = new PassThrough();\n        res.statusCode = 200; res.statusMessage = 'OK';\n        res.headers = { 'content-type': 'text/plain', 'content-encoding': encoding };\n        setImmediate(() => { onResponse(res); res.end(); });\n      };\n      return req;\n    } };\n    return axios.head('http://qb.invalid/', { adapter: 'http', transport, responseType: 'text', timeout: 0 })\n      .then((r) => { assert.strictEqual(seenMethod, 'HEAD', 'stub did not see a HEAD request'); return r; });\n  };\n  const encodings = ['gzip', 'GZIP', 'deflate', 'br', 'x-qb-unknown'];\n  for (const enc of encodings) {\n    let res;\n    try { res = await send(enc); } catch (err) {\n      throw new assert.AssertionError({ message: `HEAD with Content-Encoding ${enc} rejected: ${err && err.message}` });\n    }\n    assert.strictEqual(res.status, 200, `HEAD with Content-Encoding ${enc}: unexpected status`);\n    assert.ok(res.data === '' || res.data === undefined, `HEAD with Content-Encoding ${enc}: expected no body, got ${JSON.stringify(res.data)}`);\n    assert.strictEqual(res.headers['content-encoding'], undefined, `HEAD with Content-Encoding ${enc}: content-encoding header was not removed`);\n  }\n};\n"
+      }
+    },
+    {
+      "id": "CHK-AC4-204",
+      "ac_id": "AC-4",
+      "adapter": "scenario",
+      "params": {
+        "source": "module.exports = async ({ require, assert }) => {\n  // AC-4 / 204: a 204 (No Content) response to a GET that carries a content-encoding header (and no body).\n  // \"Still succeed\", as decided from the base code (lib/adapters/http.js, the\n  // `method === 'HEAD' || res.statusCode === 204` branch before the encoding switch):\n  //   - the request resolves (no rejection, no zlib/brotli error from decoding an absent body),\n  //   - with status 204 and empty data (''),\n  //   - and the content-encoding header is removed from response.headers, whatever its value,\n  //     because no body was decoded (the base removes it \"not to confuse downstream operations\").\n  // Encodings cover lowercase and non-lowercase supported values plus an unknown one; the unknown\n  // value is only removed by the HEAD/204 branch, so dropping that branch makes this throw.\n  const axios = require('./lib/axios.js').default;\n  const { PassThrough } = require('stream');\n  const { EventEmitter } = require('events');\n  const send = (encoding) => {\n    let seenMethod;\n    const transport = { request(options, onResponse) {\n      seenMethod = options.method;\n      const req = new EventEmitter();\n      req.destroyed = false;\n      req.setTimeout = () => req;\n      req.destroy = () => { req.destroyed = true; return req; };\n      req.write = () => true;\n      req.end = () => {\n        const res = new PassThrough();\n        res.statusCode = 204; res.statusMessage = 'No Content';\n        res.headers = { 'content-type': 'text/plain', 'content-encoding': encoding };\n        setImmediate(() => { onResponse(res); res.end(); });\n      };\n      return req;\n    } };\n    return axios.get('http://qb.invalid/', { adapter: 'http', transport, responseType: 'text', timeout: 0 })\n      .then((r) => { assert.strictEqual(seenMethod, 'GET', 'stub did not see a GET request'); return r; });\n  };\n  const encodings = ['gzip', 'GZIP', 'deflate', 'br', 'x-qb-unknown'];\n  for (const enc of encodings) {\n    let res;\n    try { res = await send(enc); } catch (err) {\n      throw new assert.AssertionError({ message: `204 with Content-Encoding ${enc} rejected: ${err && err.message}` });\n    }\n    assert.strictEqual(res.status, 204, `204 with Content-Encoding ${enc}: unexpected status`);\n    assert.ok(res.data === '' || res.data === undefined, `204 with Content-Encoding ${enc}: expected no body, got ${JSON.stringify(res.data)}`);\n    assert.strictEqual(res.headers['content-encoding'], undefined, `204 with Content-Encoding ${enc}: content-encoding header was not removed`);\n  }\n};\n"
+      }
+    }
+  ],
+  "verification_plan": [
+    "AC-1..AC-3: run scenario checks CHK-AC1-MIXED-CASE-GZIP, CHK-AC2-MIXED-CASE-OTHER and CHK-AC3-HEADER-REMOVED (qb-checks/3). Each calls axios.get with adapter 'http' and an in-process config.transport stub that answers with the chosen Content-Encoding and a compressed body (no network).",
+    "Run executable check CHK-HTTP-ADAPTER-LOADS (AC-5).",
+    "Run the visible mocha files listed in REPOSITORY.md (node node_modules/mocha/bin/mocha.js --no-config --no-package --timeout 30000 --exit ...), in particular test/unit/adapters/http.js, as evidence for AC-4 and for the agent's own added mixed-case tests."
+  ],
+  "scope": {
+    "allowed_changes": [
+      "lib/adapters/http.js",
+      "lib/helpers/*.js",
+      "lib/utils.js",
+      "test/unit/**"
+    ],
+    "protected_paths": [
+      "package.json",
+      "package-lock.json",
+      "dist/**",
+      "index.d.ts",
+      "index.d.cts",
+      "lib/env/data.js"
+    ]
+  },
+  "relevant_context": [
+    "lib/adapters/http.js:467-501: `if (config.decompress !== false && res.headers['content-encoding'])` then `switch (res.headers['content-encoding'])` with case-sensitive cases 'gzip', 'x-gzip', 'compress', 'x-compress', 'deflate', 'br'; any other spelling (e.g. 'GZIP') falls through and the body is returned compressed.",
+    "Node lowercases header names (res.headers['content-encoding']) but not header values, which is the root cause.",
+    "lib/adapters/http.js:148: the adapter is the default export, `isHttpAdapterSupported && function httpAdapter(config)`; the switch is inside its response handler closure, not a separately exported function.",
+    "test/unit/adapters/http.js:514-585: the 'algorithms' suite starts a local server with startHTTPServer and sets Content-Encoding per type; it is the natural place for mixed-case tests.",
+    "lib/core/AxiosHeaders.js: normalizes header names, not values."
+  ],
+  "ambiguity_flags": [
+    "Checkable only through a scenario (qb-checks/3). The behaviour lives in the response handler of the http adapter (lib/adapters/http.js default export), so it needs an HTTP response with a chosen Content-Encoding and a compressed body. The data adapters cannot pass a transport function, and scenarios may not use http/net. So each scenario loads ./lib/axios.js and passes config.transport: an in-process stub whose request() returns an EventEmitter request and answers with a PassThrough response (statusCode 200, lowercase header names as Node gives them, the chosen content-encoding value). This runs the adapter's real decompression path, but not a real socket. config.transport is an existing public option of the http adapter. On the base commit each scenario fails (the body stays compressed). The author also ran a control on the base with the same scenarios using lowercase spellings, and they passed; that control is not a solution. Risk: the scenario requires the ES module graph of lib/axios.js, which itself imports http, https and follow-redirects. It loaded with require on the author's local Node v20.20.2 (QB uses Node 24, not tried). If QB's runner forbids those built-ins transitively, or cannot load the graph, the checks will error and AC-1..AC-3 stay unresolved; report that rather than work around it. No check is tied to a specific helper name, since the task does not name one.",
+    "Which encodings are in scope: the issue names only gzip spellings ('Gzip', 'GZIP', 'GZip') but says 'header value should be case-insensitive'. AC-2 extends the matching to every encoding the adapter already supports; a reviewer may narrow it to gzip only.",
+    "AC-3 (header removed after decompression) is inferred from the adapter's existing lowercase behaviour, not stated in the issue.",
+    "Out of scope and unspecified: surrounding whitespace (' gzip '), and multiple or stacked encodings ('gzip, br'). The contract neither requires nor forbids handling them.",
+    "Should the Content-Encoding value in response.headers keep its original case when decompress is false or the encoding is unknown? Assumed: unchanged (left as the server sent it).",
+    "The issue's 'Browser: chrome' field is ignored: the reported adapter is http (Node), and the browser xhr adapter does not decompress itself.",
+    "The constraint_policy entry shape is not given in the packet (schema has z.array(z.unknown())); the shape used here ({constraint, enforced_by:{kind, ref}}) should be checked against intent/contract-state.js by the reviewer."
+  ],
+  "clarifying_question": null,
+  "format_repair": {
+    "by": "controller (answer-exposed junior), FORMAT ONLY, KAN-117 decision 10638 (ii)",
+    "of_contract_sha256": "cbac3e770ad13f39d2e85d3a7f5e8c92d66425c37a612c45a4291d1e74acf438",
+    "changes": [
+      "constraint_policy[*].enforced_by: object {kind, ref:[...]} -> array [{kind, ref}] with the same kinds and paths",
+      "AC-4.preserves: {what, evidence} -> {tests:[\"test/unit/adapters/http.js\"]}, the file the author named as evidence",
+      "AC-5.preserves removed: it named no test; QB preserves interfaces with a check bound to the criterion, which AC-5 already has (CHK-HTTP-ADAPTER-LOADS). OPEN QUESTION to the clean author: confirm, or name test files instead."
+    ],
+    "unchanged": "requirements, acceptance criteria text and kinds, checks, scope, ambiguity flags, verification plan"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "qb-contract-freeze/1",
+  "version": "contract-5892-v4",
+  "frozen_at_utc": "2026-11-16T22:27:30.342Z",
+  "task": "axios-5892",
+  "packet": {
+    "version": 4,
+    "packet_sha256": "27441f0be660d5f36e79e6a333ff20bc6736fb7578f6c94cd15fc4fdd77661cc",
+    "manifest": "bench/opus-pilot/mocha/contract-packet-5892-v4.manifest.json"
+  },
+  "author": "fresh Claude Code session (claude-opus-5-5), launched by the owner from the packet folder with the locked flags; exposure declared none (EXPOSURE.md)",
+  "transcript_sha256": "af1eaa7f951807dff3459b331a76197396f1e2145e224b2838dd1848b40e0f21",
+  "contract_sha256": "eaf531ccbfc2f4844e14771c9455a8369342a008e63246e349bbff1e1f32560c",
+  "previous_contract_sha256": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+  "diff_vs_previous": {
+    "changed": [
+      "AC-4.criterion (last sentence only: describes the evidence)"
+    ],
+    "added_checks": [
+      "CHK-AC4-HEAD",
+      "CHK-AC4-204"
+    ],
+    "unchanged": "every other requirement, criterion, check (incl. the 3 approved scenario sources + CHK-HTTP-ADAPTER-LOADS), scope, flags: byte-identical"
+  },
+  "scenario_sources_sha256": {
+    "CHK-AC1-MIXED-CASE-GZIP": "841dd6118bdccf7160ce6ed80814eba8b319d894de9d920a4bf2e1502e37c733",
+    "CHK-AC2-MIXED-CASE-OTHER": "44223cac680d759bfcdbe521e57c4327259a7bd5fb19e1a06f87378500051133",
+    "CHK-AC3-HEADER-REMOVED": "d6b3d4c00c8f5d5f5caced039e37b07dd2dfb06773a8876e89264c9dd04924a5",
+    "CHK-AC4-HEAD": "b667d944b5fa623af42dd8eaf2d42241333c9f3f0c5e4f38cbf74cc2c02aac24",
+    "CHK-AC4-204": "cf48dc8b052f1efd94f8f7c4b0f43e6a6f09e95a906c0d60b915b316f35972ff"
+  },
+  "controller_validation": {
+    "schema": "ok",
+    "traceability_errors": 0,
+    "policy_errors": 0,
+    "preservation_errors": 0,
+    "checks_accepted": "6/6 (structural; the 2 new sources await review)",
+    "state_with_controller_ops": "finalized"
+  },
+  "audit": {
+    "transcript_tool_calls": 11,
+    "flags_reviewed": [
+      "excluded marker gold: MANIFEST.json exclusion list (benign)",
+      "http:// : the stub URL qb.invalid inside the scenario source; stub transport, no socket (benign)",
+      "../ paths: .qbtmp/../axios resolves inside the packet (benign)"
+    ],
+    "loaded_at_start": "owner global CLAUDE.md (graphify note only); empty auto-memory; no MCP tool used; WebFetch/WebSearch disallowed"
+  },
+  "author_disclosed": "ran the 2 new scenarios locally (Node v20.20.2, not QB Node 24) on the base and on 3 throwaway mutants of lib/ (HEAD/204 branch removed / HEAD only / 204 only): pass on base; fail as expected on each mutant; no solution used",
+  "ac4_map": {
+    "file": "bench/opus-pilot/mocha/ac4-map-5892.draft.json",
+    "sha256": "114ab44fd081a78c1d5fe98172194fde3d77a881de0152ab3104154ec3c0d961",
+    "accepted_by_F1_against_this_contract": true
+  },
+  "overlay": "bench/opus-pilot/mocha/contract-5892-v4.overlay.json",
+  "status": "ready for review; NOT approved"
+}
