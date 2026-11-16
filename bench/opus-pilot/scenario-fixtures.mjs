@@ -124,7 +124,8 @@ const assertions = {
   base_matches_expected: Object.entries(expected).every(([id, s]) => st(runs.base, id) && st(runs.base, id).status === s),
   defect_fails_pass_check: st(runs.defect, 'SC-PASS') && st(runs.defect, 'SC-PASS').status === 'fail',
   hang_ended_by_runner_timeout: ['SC-HANG', 'SC-SPIN'].every((id) => { const x = st(runs.base, id); return x && /timed out after \d+ ms/.test(x.detail) && x.duration_ms >= 9_000 && x.duration_ms < 20_000; }),
-  results_validated_fail_closed: runs.base.results_valid && runs.defect.results_valid,
+  // review 10642: this only says both runs produced VALID result records; malformed-result refusal is tested elsewhere
+  results_records_valid: runs.base.results_valid && runs.defect.results_valid,
   runner_is_mounted_research_runner: runs.base.runner && runs.base.runner.sha256 === runner.sha256 && runs.base.runner.path === runner.path,
 };
 const out = {
