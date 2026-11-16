@@ -52,7 +52,7 @@ files['CONSTRAINTS.md'] = [
 ].join('\n');
 const doc = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 files['CHECKS.md'] = `# QB executable checks: registry and documentation\n\n## docs/verify/executable-checks.md\n\n${doc('docs/verify/executable-checks.md')}\n\n## verify/checks/registry.js (the adapter registry, source)\n\n\`\`\`js\n${doc('verify/checks/registry.js')}\n\`\`\`\n`;
-files['CONTRACT_SCHEMA.md'] = `# QB task contract: schema and an example\n\n## intent/schema.js\n\n\`\`\`js\n${doc('intent/schema.js')}\n\`\`\`\n\n## docs/verify/scope-policy.md\n\n${doc('docs/verify/scope-policy.md')}\n\n## docs/verify/test-oracle.md\n\n${doc('docs/verify/test-oracle.md')}\n\n## Example contract (docs/demo/clamp-contract.json; an unrelated toy task)\n\n\`\`\`json\n${doc('docs/demo/clamp-contract.json')}\`\`\`\n`;
+files['CONTRACT_SCHEMA.md'] = `# QB task contract: schema and an example\n\n## intent/schema.js\n\n\`\`\`js\n${doc('intent/schema.js')}\n\`\`\`\n\n## docs/verify/scope-policy.md\n\n${doc('docs/verify/scope-policy.md')}\n\n## docs/verify/test-oracle.md\n\n${doc('docs/verify/test-oracle.md')}\n\n## verify/policy.js (how constraint_policy and scope are validated and enforced; source)\n\n\`\`\`js\n${doc('verify/policy.js')}\n\`\`\`\n\n## verify/preservation.js (the exact \`preserves\` format; source)\n\n\`\`\`js\n${doc('verify/preservation.js')}\n\`\`\`\n\n## Example contract (docs/demo/clamp-contract.json; an unrelated toy task)\n\n\`\`\`json\n${doc('docs/demo/clamp-contract.json')}\`\`\`\n`;
 files['AUTHOR_INSTRUCTIONS.md'] = [
   '# Instructions for the contract author', '',
   'You are writing QB\'s **task contract** for the task in TASK.md, from the material in this folder only.', '',
@@ -61,6 +61,9 @@ files['AUTHOR_INSTRUCTIONS.md'] = [
   '3. For each behavioural criterion, write executable `checks` using ONLY the adapters in CHECKS.md, against the repository at the base commit. Where a requirement cannot be expressed with these adapters, say so in `ambiguity_flags` (or as a non_behavioral criterion with a reason); never write a check that does not test the stated behaviour.',
   '4. Set `scope.allowed_changes` / `scope.protected_paths` from what the task needs (CONTRACT_SCHEMA.md, scope policy).',
   '5. Save the contract as `contract.json`, fill in EXPOSURE.md, and mark the contract **ready for review** (not approved). Do not run or tune it against any solution.', '',
+  ...(arg('revise') ? ['## Revision task (packet v2)', '',
+    'A previous contract for this task, written by another fresh author from packet v1, is in `previous-contract.json`. QB\'s validators rejected it ONLY for format: `constraint_policy` entries and `preserves` values did not use the formats now documented in CONTRACT_SCHEMA.md (verify/policy.js, verify/preservation.js), which packet v1 did not include.',
+    'Revise **only those two formats** so the contract validates. Do not change the requirements, acceptance criteria, checks, scope or ambiguity flags otherwise. If a correct format is impossible without changing meaning, leave it and explain in EXPOSURE.md.', ''] : []),
 ].join('\n');
 files['EXPOSURE.md'] = [
   '# Author exposure declaration (fill in)', '',
@@ -84,11 +87,13 @@ for (const [f, t] of Object.entries(files)) {
 if (Object.keys(leaks).length) { console.error(`refused: packet leak check found hidden material: ${JSON.stringify(leaks)}`); process.exit(4); }
 
 fs.mkdirSync(out, { recursive: true });
-const manifest = { schema: 'qb-contract-packet/1', task: ENV.key, task_id: ENV.task_id, base_commit: ENV.base_commit, built_from_qb_commit: null,
+const VERSION = arg('version') || '1';
+const manifest = { schema: 'qb-contract-packet/1', packet_version: VERSION, task: ENV.key, task_id: ENV.task_id, base_commit: ENV.base_commit, built_from_qb_commit: null,
   approved_by: 'KAN-117 review 10635 step 1', contents_rule: 'task text + pinned repo/visible tests + contract/check schema docs + generic constraints only',
   excluded: ['hidden tests', 'gold patch', 'candidate solutions', 'KAN-117 diagnostic thread', 'exception list and rationale', 'grading outcomes'],
   leak_check: 'passed (QB lib/research/agent-bundle.js leakCheck: hidden test names, gold-patch lines, test-patch lines; counts only)',
   files: {} };
+if (arg('revise')) files['previous-contract.json'] = fs.readFileSync(arg('revise'), 'utf8');
 for (const [f, t] of Object.entries(files)) { fs.writeFileSync(path.join(out, f), t); manifest.files[f] = sha(t); }
 try { manifest.built_from_qb_commit = (await import('node:child_process')).execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* none */ }
 manifest.packet_sha256 = sha(JSON.stringify(manifest.files));
