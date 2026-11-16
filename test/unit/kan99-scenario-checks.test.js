@@ -103,22 +103,24 @@ describe('contracts: model output cannot carry a scenario; a reviewed contract f
     assert.deepEqual(c.checks, []);
     assert.match(c.checks_rejected[0].reason, /scenario/);
   });
-  test('a human-reviewed contract file keeps it', () => {
+  // KAN-117 10640: on the research branch the contract-file and oracle entry points are NOT enabled globally; a scenario
+  // runs only through the explicit research reviewed path (lib/research/reviewed-checks.js, tested in kan117-scenario-research)
+  test('a contract file REJECTS it (no global entry point; research reviewed path only)', () => {
     const { loadContractFile } = require('../../intent/contract-file');
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kan99c-'));
     try {
       const f = path.join(dir, 'contract.json');
       fs.writeFileSync(f, JSON.stringify(RAW));
       const { contract } = loadContractFile(f, 'Send falsy JSON payloads');
-      assert.deepEqual(contract.checks.map((c) => c.adapter), ['scenario']);
-      assert.equal(contract.checks_registry, 'qb-checks/3');
+      assert.deepEqual(contract.checks, []);
+      assert.match(contract.checks_rejected[0].reason, /human-reviewed/);
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   });
-  test('the benchmark oracle contract (human-approved spec) keeps it', () => {
+  test('the benchmark oracle contract REJECTS it too (no global entry point)', () => {
     const { oracleContract } = require('../../bench/arms');
     const c = oracleContract({ prompt: 'Send falsy JSON payloads', requirement: 'r',
       oracle: { approved_by: 'owner', acceptance_criteria: ACS, checks: [scenario()] } });
-    assert.deepEqual(c.checks.map((x) => x.adapter), ['scenario']);
+    assert.deepEqual(c.checks, []);
   });
 });
 
