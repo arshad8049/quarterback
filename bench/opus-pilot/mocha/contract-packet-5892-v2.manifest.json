@@ -4,7 +4,7 @@
   "task": "axios-5892",
   "task_id": "qbt_72e2affc8e5d",
   "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
-  "built_from_qb_commit": "26e9bf2682fd31f80fdb22e3d1f3486560c7d189",
+  "built_from_qb_commit": "28fedf70c28c4e19eddc061be19ec526c3c05e0f",
   "approved_by": "KAN-117 review 10635 step 1",
   "contents_rule": "task text + pinned repo/visible tests + contract/check schema docs + generic constraints only",
   "excluded": [
@@ -21,10 +21,14 @@
     "REPOSITORY.md": "e6ee986594c0c5a92d2e60f1d4a8b8c5852d97ecd7d42ef92b231550c1f2cc40",
     "CONSTRAINTS.md": "eaac116d1b815c33c55b3c45fbcb4e8efd057a2af7d80e385a1c4e68e90685a2",
     "CHECKS.md": "0ac57927775bc0c6abd1f404a46b1f9f94e22b061802b08bd68d3d5a2a7063f6",
-    "CONTRACT_SCHEMA.md": "f0a1f401cb58d065f8001d68361d515bf45ab7b40e45f04a97df447bc9e6d0c6",
-    "AUTHOR_INSTRUCTIONS.md": "e0487c6128f22328fb5de49d188a2909d88935da8802a1bc42fb05bc50191b28",
+    "CONTRACT_SCHEMA.md": "f276cd2ae44f3a6c62cf06f29621d8bbd82a2abfdb4935e6e809cbc23cd47ede",
+    "AUTHOR_INSTRUCTIONS.md": "162bf727cf427ad7a2da24d4763efe20daa4ca09c09af6210e0e7dd43b676326",
     "EXPOSURE.md": "60a0ded229baf335081b8488478372a840716241bc5ad8b038a041fc46f28579",
-    "previous-contract.json": "cbac3e770ad13f39d2e85d3a7f5e8c92d66425c37a612c45a4291d1e74acf438"
+    "previous-contract.json": "4310fa8fe2f70bd5e3f99dd092ba08f711ac8e5b9f990726dfab1e11568427d3",
+    "validators/requirements.cjs": "ac9aeb4b5a75dde07e47ff74035eef0fe08928091a6c233dbfde7a9974941a68",
+    "validators/policy.cjs": "f19b5bc523420fa877bdb9597f1c4de2dbc1faeb61e02cb3dfb5f7c8748eeff4",
+    "validators/preservation.cjs": "777479df26328bd081d5a2d63525626db758596f215b0aa9b0a1439b4a062147",
+    "validate.cjs": "acfbc8894a6e918f6a93af178f90c1175cdca337c137819c9ae43d3397a2b8fa"
   },
-  "packet_sha256": "c6781531cd4e881de6a493fcf5e848bd7cbfa071efad3c14037b709fc8ca85a9"
+  "packet_sha256": "06879b5abe373521fa91f33db14a6dc1cc8103f4dc96df250675baebf2030eba"
 }

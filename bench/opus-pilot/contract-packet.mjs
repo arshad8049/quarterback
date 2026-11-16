@@ -52,18 +52,22 @@ files['CONSTRAINTS.md'] = [
 ].join('\n');
 const doc = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 files['CHECKS.md'] = `# QB executable checks: registry and documentation\n\n## docs/verify/executable-checks.md\n\n${doc('docs/verify/executable-checks.md')}\n\n## verify/checks/registry.js (the adapter registry, source)\n\n\`\`\`js\n${doc('verify/checks/registry.js')}\n\`\`\`\n`;
-files['CONTRACT_SCHEMA.md'] = `# QB task contract: schema and an example\n\n## intent/schema.js\n\n\`\`\`js\n${doc('intent/schema.js')}\n\`\`\`\n\n## docs/verify/scope-policy.md\n\n${doc('docs/verify/scope-policy.md')}\n\n## docs/verify/test-oracle.md\n\n${doc('docs/verify/test-oracle.md')}\n\n## verify/policy.js (how constraint_policy and scope are validated and enforced; source)\n\n\`\`\`js\n${doc('verify/policy.js')}\n\`\`\`\n\n## verify/preservation.js (the exact \`preserves\` format; source)\n\n\`\`\`js\n${doc('verify/preservation.js')}\n\`\`\`\n\n## Example contract (docs/demo/clamp-contract.json; an unrelated toy task)\n\n\`\`\`json\n${doc('docs/demo/clamp-contract.json')}\`\`\`\n`;
+files['CONTRACT_SCHEMA.md'] = `# QB task contract: schema and an example\n\n## intent/schema.js\n\n\`\`\`js\n${doc('intent/schema.js')}\n\`\`\`\n\n## docs/verify/scope-policy.md\n\n${doc('docs/verify/scope-policy.md')}\n\n## docs/verify/test-oracle.md\n\n${doc('docs/verify/test-oracle.md')}\n\n## intent/requirements.js (traceability: every part of the request must be quoted; source)\n\n\`\`\`js\n${doc('intent/requirements.js')}\n\`\`\`\n\n## verify/policy.js (how constraint_policy and scope are validated and enforced; source)\n\n\`\`\`js\n${doc('verify/policy.js')}\n\`\`\`\n\n## verify/preservation.js (the exact \`preserves\` format; source)\n\n\`\`\`js\n${doc('verify/preservation.js')}\n\`\`\`\n\n## Example contract (docs/demo/clamp-contract.json; an unrelated toy task)\n\n\`\`\`json\n${doc('docs/demo/clamp-contract.json')}\`\`\`\n`;
 files['AUTHOR_INSTRUCTIONS.md'] = [
   '# Instructions for the contract author', '',
   'You are writing QB\'s **task contract** for the task in TASK.md, from the material in this folder only.', '',
   '1. **Use only** this folder and the pinned starting repository (REPOSITORY.md). **Do not** search the web, open the upstream repository\'s later commits, pull requests, issues or releases, or any benchmark/dataset site. Do not look for an existing fix or its tests.',
   '2. Quote each requirement from TASK.md (`requirements`: id + exact quote). Write `acceptance_criteria` that trace to those requirements (`requirement_ids`).',
-  '3. For each behavioural criterion, write executable `checks` using ONLY the adapters in CHECKS.md, against the repository at the base commit. Where a requirement cannot be expressed with these adapters, say so in `ambiguity_flags` (or as a non_behavioral criterion with a reason); never write a check that does not test the stated behaviour.',
+  '3. For each behavioural criterion, write executable `checks` using ONLY the adapters in CHECKS.md, against the repository at the base commit. A behavioural requirement that these adapters cannot express **stays `kind: "behavioral"` with no check** (explicitly unresolved) and is explained in `ambiguity_flags`. Never mark it non_behavioral, never make it advisory, and never write a check that does not test the stated behaviour.',
   '4. Set `scope.allowed_changes` / `scope.protected_paths` from what the task needs (CONTRACT_SCHEMA.md, scope policy).',
-  '5. Save the contract as `contract.json`, fill in EXPOSURE.md, and mark the contract **ready for review** (not approved). Do not run or tune it against any solution.', '',
+  '5. Every part of TASK.md must lie inside some requirement `quote` (QB traceability, CONTRACT_SCHEMA.md: intent/requirements.js). Text that is not a requirement (issue-template headings, environment notes) still needs a requirement entry quoting it, with `disposition: "context"` and a `reason`.',
+  '6. Validate before you finish: `node validate.cjs contract.json` (no dependencies; runs QB\'s traceability, constraint_policy/scope and preservation validators, copied unchanged into validators/). It must print `OK`. The controller runs the full schema and check-registry validators after your contract is frozen.',
+  '7. Save the contract as `contract.json`, fill in EXPOSURE.md, and mark the contract **ready for review** (not approved). Do not run or tune it against any solution.', '',
   ...(arg('revise') ? ['## Revision task (packet v2)', '',
-    'A previous contract for this task, written by another fresh author from packet v1, is in `previous-contract.json`. QB\'s validators rejected it ONLY for format: `constraint_policy` entries and `preserves` values did not use the formats now documented in CONTRACT_SCHEMA.md (verify/policy.js, verify/preservation.js), which packet v1 did not include.',
-    'Revise **only those two formats** so the contract validates. Do not change the requirements, acceptance criteria, checks, scope or ambiguity flags otherwise. If a correct format is impossible without changing meaning, leave it and explain in EXPOSURE.md.', ''] : []),
+    '`previous-contract.json` is the contract another fresh author wrote from packet v1, after a disclosed FORMAT-ONLY repair by the (answer-exposed) controller; its `format_repair` field lists exactly what changed. Two questions remain that only an author may answer:',
+    '- **Q1 (traceability):** `node validate.cjs previous-contract.json` lists TASK.md text that no requirement quotes. For each span, add a requirement quoting it: a real requirement (then cover it with a criterion), or `disposition: "context"` with a reason.',
+    '- **Q2 (AC-5):** the controller removed AC-5\'s descriptive `preserves` (it named no test file); AC-5 is decided by its bound check. Confirm, or instead name the test files it preserves.',
+    'Change nothing else. Write the result as contract.json.', ''] : []),
 ].join('\n');
 files['EXPOSURE.md'] = [
   '# Author exposure declaration (fill in)', '',
@@ -94,7 +98,17 @@ const manifest = { schema: 'qb-contract-packet/1', packet_version: VERSION, task
   leak_check: 'passed (QB lib/research/agent-bundle.js leakCheck: hidden test names, gold-patch lines, test-patch lines; counts only)',
   files: {} };
 if (arg('revise')) files['previous-contract.json'] = fs.readFileSync(arg('revise'), 'utf8');
-for (const [f, t] of Object.entries(files)) { fs.writeFileSync(path.join(out, f), t); manifest.files[f] = sha(t); }
+// runnable local validation (review 10638): QB's dependency-free validators copied UNCHANGED, plus a tiny runner
+for (const [dst, src] of [['validators/requirements.cjs', 'intent/requirements.js'], ['validators/policy.cjs', 'verify/policy.js'], ['validators/preservation.cjs', 'verify/preservation.js']]) files[dst] = doc(src);
+files['validate.cjs'] = [
+  "// Runs QB's traceability, constraint_policy/scope and preservation validators (copied unchanged) on a contract file.",
+  "const fs = require('fs'); const c = JSON.parse(fs.readFileSync(process.argv[2] || 'contract.json', 'utf8'));",
+  "const errs = [...require('./validators/requirements.cjs').validateTraceability(c).errors, ...require('./validators/policy.cjs').policyErrors(c), ...require('./validators/preservation.cjs').preservationErrors(c)];",
+  "const unchecked = (c.acceptance_criteria || []).filter((a) => a.kind === 'behavioral' && !a.preserves && !(c.checks || []).some((k) => k.ac_id === a.id)).map((a) => a.id);",
+  "for (const e of errs) console.log('ERROR ' + e);",
+  "if (unchecked.length) console.log('NOTE behavioural criteria with no executable check (they stay unresolved): ' + unchecked.join(', '));",
+  "console.log(errs.length ? errs.length + ' error(s)' : 'OK');", ''].join('\n');
+for (const [f, t] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(out, f)), { recursive: true }); fs.writeFileSync(path.join(out, f), t); manifest.files[f] = sha(t); }
 try { manifest.built_from_qb_commit = (await import('node:child_process')).execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* none */ }
 manifest.packet_sha256 = sha(JSON.stringify(manifest.files));
 const mtext = `${JSON.stringify(manifest, null, 2)}\n`;
