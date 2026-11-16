@@ -1,0 +1,92 @@
+{
+  "schema": "qb-replay-freeze/1",
+  "version": "replay-5892-v2",
+  "task": "axios-5892",
+  "frozen_before_reference_comparison": true,
+  "approved_by": "KAN-117 10656 package approved by the owner in chat 2026-11-17",
+  "contract_sha256": "eaf531ccbfc2f4844e14771c9455a8369342a008e63246e349bbff1e1f32560c",
+  "check_sources_sha256": {
+    "CHK-AC1-MIXED-CASE-GZIP": "841dd6118bdccf7160ce6ed80814eba8b319d894de9d920a4bf2e1502e37c733",
+    "CHK-AC2-MIXED-CASE-OTHER": "44223cac680d759bfcdbe521e57c4327259a7bd5fb19e1a06f87378500051133",
+    "CHK-AC3-HEADER-REMOVED": "d6b3d4c00c8f5d5f5caced039e37b07dd2dfb06773a8876e89264c9dd04924a5",
+    "CHK-AC4-HEAD": "b667d944b5fa623af42dd8eaf2d42241333c9f3f0c5e4f38cbf74cc2c02aac24",
+    "CHK-AC4-204": "cf48dc8b052f1efd94f8f7c4b0f43e6a6f09e95a906c0d60b915b316f35972ff"
+  },
+  "research_check_runner": {
+    "host_file": "sandbox/research/qb-check-runner.mjs",
+    "path": "/opt/qb-research/qb-check-runner.mjs",
+    "mount": "read-only bind mount",
+    "sha256": "ee1cf5555ba045e3c109b36e5e0dc6fd7d1444420f8865cd5a7d1b33142f61c3"
+  },
+  "mocha_reporter_sha256": "8f5d5afb66fcd8d6ead0be5e224e62cf92f741f1f4a6e9bc4b73f7cfb8ee2ce3",
+  "images": {
+    "agent": "sha256:bffc1d6ac3c25a45927b55cc22897a896913fe3d787597ad571ad2336ca9aaf2",
+    "tools": "sha256:9aa584084856e9cb1940f768d1efd9f8a9b6355f9b3003ebbf96a267200eb0d8",
+    "proxy": "sha256:9fb9d133c9c1488cb99bad898bce0b7094ed26b4e48a85e1c38f3a5da6eeef1d"
+  },
+  "node": "v24.22.3",
+  "mocha": "10.0.0",
+  "exceptions": {
+    "set_sha256": "c4dda80fd2ffebaa35b0e2942e7da2094ea57cc951aad949b51262e01ad8c4af",
+    "entries": 5,
+    "isolation_rechecks": 1,
+    "approval_ref": "KAN-117 comment 10631"
+  },
+  "deadlines": {
+    "trial_total_ms": 5400000,
+    "internal_stage_cap_ms": 600000,
+    "mocha_per_test_timeout_ms": 30000,
+    "check_timeout_ms": 10000
+  },
+  "operations_config": {
+    "test_policy": {
+      "preexisting_failures": "waive"
+    }
+  },
+  "runs": [
+    "base: no agent (unchanged code)",
+    "gold: controller-applied correct reference (applyPatch seam)"
+  ],
+  "controls": [
+    "valid evidence as recorded",
+    "malformed: dropped result, unknown status, hash mismatch, incomplete, missing",
+    "AC-4 evidence tampering on the gold verification: mapped test missing, mapped test failed, prep tree mismatch, other base, mapped file not restored"
+  ],
+  "files": {
+    "bench/opus-pilot/replay-5892-v2.mjs": "838d72d2842d9ae1c6f7ecff3eb4b577562a4f095480a0883a9ea97aa71e1d9f",
+    "bench/opus-pilot/mocha/contract-5892-v4.overlay.json": "45881c536ac6946998836d8811966627563810fbeaac22163e4574b189d58393",
+    "bench/opus-pilot/mocha/contract-5892-v4.review.json": "2f9bb208feceb5b7f4a0ba36bf691f1fc09855454c1155ca1cd05cc6a562466f",
+    "bench/opus-pilot/mocha/axios-5892.env.json": "5f2c02852633eee5911f0013d1f00678edf84697bf782c70fc2cbafbcfadfd63",
+    "bench/opus-pilot/mocha/root-scripts-allow.json": "f94421d0f5b0f762dc98284fe24b6d1f61a945fda57d14f2a413041ff83ce798",
+    "lib/research/contract-overlay.js": "5b73ec35903c36e8634cdef49023061ff7e9d1eebd37e72ef61964915173780b",
+    "lib/research/reviewed-checks.js": "e4a0547c0677191fd7c072ec4711e643931de8c9a0937c3f8aec16939db1316a",
+    "lib/research/verify-stage.js": "1c2c4fc70e1f998c48ebc12193a94b400af94b7aa9f8b0afd69d08e41eb592ad",
+    "lib/research/dataset-env.js": "92482a31541c1a39a3a9d4577a6c9737dc3ad3f2e3708d3bc71b79bc174688fd",
+    "lib/research/root-scripts.js": "76448b35f75da2c76c0a7c0ff141b10ad92d2b70a896ab87d25c19f6016906b7",
+    "verify/research-adapter.js": "e83a02045a141b8a8336d5ff236e22b66ab24aafa32b8fb29bb0008eb4c38d2e",
+    "verify/mocha-report.js": "9ae56885efde1174f3b107610f10d7fa9a38546bc70cb52f5b1a17834cca0196",
+    "verify/tests.js": "252ce696d8ee77f1a86f26f67605a7d4083a258aa60875663a1f3307208469f6",
+    "verify/verdict.js": "5c25b7ec025a360488eeeb07961e09700f17886217b0a4d8a94d7eb330fe9fa7",
+    "verify/verifier.js": "d17b578631bb968ad26467990cb530c18bfdb0f9f908b8e5a520edf7fd5d6a3b",
+    "verify/schema.js": "cc426a00a320160af7a03fd268506fd9a04369d58e8a88a2fa5aca9b35ef36c4",
+    "verify/preservation.js": "777479df26328bd081d5a2d63525626db758596f215b0aa9b0a1439b4a062147",
+    "verify/checks/registry.js": "a4a28e0ace85e38a4479b242747cce02a7bae362f7d8c890a66b2799ca285efa",
+    "verify/checks/results.js": "8874b1a5628a70b2593e1c39873f1d70bfb52f9ccc7e93dd9230ecc547c91c74",
+    "lib/sandbox/pipeline.js": "b17e6f6936aa8687556d4f0d36ccb20abce52d739ca80a3bc02849cc189e4afe",
+    "lib/sandbox/stages.js": "80d2f00d7bbedbbdf4c921994837a8a34ebffd57ff9f56d732092ee09069a85e",
+    "agent/runner.js": "73c282fbb3456ace473e6bf413887392717780569665ae754f61e0fa1f6e5240",
+    "intent/contract-state.js": "b38b52b8a303aaaa73d86bcb581f052bc5111a7fffbc130e1d17893b8c82ac78",
+    "sandbox/research/qb-check-runner.mjs": "ee1cf5555ba045e3c109b36e5e0dc6fd7d1444420f8865cd5a7d1b33142f61c3",
+    "sandbox/research/qb-mocha-reporter.cjs": "8f5d5afb66fcd8d6ead0be5e224e62cf92f741f1f4a6e9bc4b73f7cfb8ee2ce3",
+    "sandbox/research/deps-root-scripts.sh": "97acfc7c14ff345ff6d2a443744efd7a35a01be72e41e7414c634e2e5768b638",
+    ".github/workflows/kan117-replay-5892-v2.yml": "2f9b8d7268e9c869ded050b43a6c440df2f89ebb19a36758dea036004930afbe",
+    "verify/research-preservation.js": "0a7028aa77c6b7bd513702176661aed0427b95eef45d3aca4ab5ec63e663fbe9"
+  },
+  "frozen_at_utc": "2026-11-16T22:49:06.544Z",
+  "ac4_map_sha256": "114ab44fd081a78c1d5fe98172194fde3d77a881de0152ab3104154ec3c0d961",
+  "expected": {
+    "base": "fail (AC-1/2/3 false)",
+    "gold": "eligible for pass only if all 27 mapped tests + CHK-AC4-HEAD + CHK-AC4-204 pass",
+    "malformed": "never pass; AC-4 never met from tampered evidence; a failed mapped test fails AC-4"
+  }
+}

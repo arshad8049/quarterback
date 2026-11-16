@@ -1,0 +1,85 @@
+# KAN-117 review 10650: bounded NO-MODEL offline replay of axios-5892 through QB's real execute() + verify() (base and
+# the correct reference), research-Mocha path, frozen config replay-5892-v1. No model, credential, environment or secret.
+# Trigger: a push to kan117-axios-mocha changing bench/opus-pilot/mocha/replay-v2-request.txt.
+name: kan117-replay-5892-v2
+
+on:
+  push:
+    branches: [kan117-axios-mocha]
+    paths: [bench/opus-pilot/mocha/replay-v2-request.txt]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: kan117-replay-5892-v2
+  cancel-in-progress: false
+
+env:
+  WORK: ${{ github.workspace }}/mocha-work
+  OUT: ${{ github.workspace }}/mocha-out
+  IMG: ${{ github.workspace }}/kan117-images
+  KAN117_IMAGES_RUN: '43610841280'
+  QB_INTEGRATION: '0'
+
+jobs:
+  proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: kan117-images
+          path: ${{ env.IMG }}
+          run-id: ${{ env.KAN117_IMAGES_RUN }}
+          github-token: ${{ github.token }}
+      - name: Load the saved image set; require the recorded ids (no build)
+        env: { KAN117_CI_RUN: '1' }
+        run: node bench/public/kan117/image-bundle.mjs load --in="$IMG"
+      - name: Rebuild the task stores from the hash-verified dataset (network used here only)
+        run: cd bench && node public/import.mjs --download
+      - name: Starting code at the pinned base only (shallow; one commit)
+        run: |
+          set -euo pipefail
+          mkdir -p "$WORK/repo" && cd "$WORK/repo"
+          git init -q && git fetch -q --depth 1 https://github.com/axios/axios ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b; test "$(git rev-list --all --count)" = 1
+      - name: Offline replay (no model)
+        env: { KAN117_CI_RUN: '1' }
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          node bench/opus-pilot/replay-5892-v2.mjs --repo="$WORK/repo" --store=bench/public/out --images="$IMG" --out="$OUT" | tee "$OUT/summary.txt"
+      - name: Public notice (statuses and hashes only)
+        if: ${{ !cancelled() }}
+        run: |
+          node -e '
+            const j = require(process.argv[1]);
+            const run = (k, r) => `${k}: exec=${r.exec_status} verdict=${r.qb.verdict} visible=${r.visible.verdict}(${r.visible.counts ? r.visible.counts.passed + "/" + r.visible.counts.total : "-"}) recheck=${r.visible.isolation_rechecks.map((x) => x.verdict).join(",") || "-"} test_outcome=${r.qb.test_outcome.outcome}:${r.qb.test_outcome.reason}:${r.qb.test_outcome.trust} checks=${r.checks.state}${r.checks.error ? "(" + r.checks.error + ")" : ""}[${(r.checks.results || []).map((c) => c.id.replace("CHK-", "") + "=" + c.status + "(" + c.duration_ms + "ms)").join(",")}] tree_bound=${r.checks.tree_bound_to_candidate} criteria=${r.qb.criteria.map((c) => c.id + ":" + c.met).join(",")} ac4=${JSON.stringify((r.qb.criteria.find((c) => c.id === "AC-4") || {}).clauses || null)} binding=${JSON.stringify(r.binding)} wall=${r.wall_ms}ms`;
+            const L = [
+              `REPLAY contract=${j.contract_sha256.slice(0, 12)} review=${j.review_sha256.slice(0, 12)} node=${j.environment.node_in_agent_image} runner=${j.environment.research_check_runner.sha256.slice(0, 12)} images=${j.environment.distinct_launch_images.length} launches=${j.environment.launches} cleanup=${JSON.stringify(j.cleanup)}`,
+              `RUN ${run("base", j.runs.base)}`,
+              `RUN ${run("gold", j.runs.gold)}`,
+              `CONTROLS ${Object.entries(j.controls).map(([k, c]) => k + "=" + c.verdict + "[" + Object.entries(c.met).map(([a, m]) => a + ":" + m).join(",") + "]").join(" ; ")}`,
+              `SEPARATION ${JSON.stringify(j.separation)}`,
+              `DETAIL ${["base", "gold"].map((k) => k + ": " + (j.runs[k].checks.results || []).map((c) => c.id + " " + c.status + " " + c.detail).join(" | ")).join(" || ").replace(/%/g, "%25").slice(0, 3500)}`,
+            ];
+            for (const l of L) console.log(`::notice title=kan117-replay::${l}`);
+          ' "$OUT/replay-5892.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: kan117-replay-5892-v2
+          path: ${{ env.OUT }}/replay-5892.json
+          retention-days: 90
