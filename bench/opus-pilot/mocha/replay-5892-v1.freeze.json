@@ -1,0 +1,81 @@
+{
+  "schema": "qb-replay-freeze/1",
+  "version": "replay-5892-v1",
+  "task": "axios-5892",
+  "frozen_before_reference_comparison": true,
+  "approved_by": "KAN-117 10650",
+  "contract_sha256": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+  "check_sources_sha256": {
+    "CHK-AC1-MIXED-CASE-GZIP": "841dd6118bdccf7160ce6ed80814eba8b319d894de9d920a4bf2e1502e37c733",
+    "CHK-AC2-MIXED-CASE-OTHER": "44223cac680d759bfcdbe521e57c4327259a7bd5fb19e1a06f87378500051133",
+    "CHK-AC3-HEADER-REMOVED": "d6b3d4c00c8f5d5f5caced039e37b07dd2dfb06773a8876e89264c9dd04924a5"
+  },
+  "research_check_runner": {
+    "host_file": "sandbox/research/qb-check-runner.mjs",
+    "path": "/opt/qb-research/qb-check-runner.mjs",
+    "mount": "read-only bind mount",
+    "sha256": "ee1cf5555ba045e3c109b36e5e0dc6fd7d1444420f8865cd5a7d1b33142f61c3"
+  },
+  "mocha_reporter_sha256": "8f5d5afb66fcd8d6ead0be5e224e62cf92f741f1f4a6e9bc4b73f7cfb8ee2ce3",
+  "images": {
+    "agent": "sha256:bffc1d6ac3c25a45927b55cc22897a896913fe3d787597ad571ad2336ca9aaf2",
+    "tools": "sha256:9aa584084856e9cb1940f768d1efd9f8a9b6355f9b3003ebbf96a267200eb0d8",
+    "proxy": "sha256:9fb9d133c9c1488cb99bad898bce0b7094ed26b4e48a85e1c38f3a5da6eeef1d"
+  },
+  "node": "v24.22.3",
+  "mocha": "10.0.0",
+  "exceptions": {
+    "set_sha256": "c4dda80fd2ffebaa35b0e2942e7da2094ea57cc951aad949b51262e01ad8c4af",
+    "entries": 5,
+    "isolation_rechecks": 1,
+    "approval_ref": "KAN-117 comment 10631"
+  },
+  "deadlines": {
+    "trial_total_ms": 5400000,
+    "internal_stage_cap_ms": 600000,
+    "mocha_per_test_timeout_ms": 30000,
+    "check_timeout_ms": 10000
+  },
+  "operations_config": {
+    "test_policy": {
+      "preexisting_failures": "waive"
+    }
+  },
+  "runs": [
+    "base: no agent (unchanged code)",
+    "gold: controller-applied correct reference (applyPatch seam)"
+  ],
+  "controls": [
+    "valid evidence as recorded",
+    "malformed: dropped result, unknown status, hash mismatch, incomplete, missing"
+  ],
+  "files": {
+    "bench/opus-pilot/replay-5892.mjs": "bc5ee9f11eb64cda57d3fe4fc4f8bf6401acb45963f69a9973c982292d3dd1c2",
+    "bench/opus-pilot/mocha/contract-5892-v3.overlay.json": "0ab963c1a88de2031dcaa72f5a59d73e9cd7da7ee7a61bb687c8b4ad7423b77c",
+    "bench/opus-pilot/mocha/contract-5892-v3.review.json": "c2a95af5d51ba8ec553d584c4322897b820ac935901ad6f478eea7546a9122ee",
+    "bench/opus-pilot/mocha/axios-5892.env.json": "5f2c02852633eee5911f0013d1f00678edf84697bf782c70fc2cbafbcfadfd63",
+    "bench/opus-pilot/mocha/root-scripts-allow.json": "f94421d0f5b0f762dc98284fe24b6d1f61a945fda57d14f2a413041ff83ce798",
+    "lib/research/contract-overlay.js": "5b73ec35903c36e8634cdef49023061ff7e9d1eebd37e72ef61964915173780b",
+    "lib/research/reviewed-checks.js": "e4a0547c0677191fd7c072ec4711e643931de8c9a0937c3f8aec16939db1316a",
+    "lib/research/verify-stage.js": "1c2c4fc70e1f998c48ebc12193a94b400af94b7aa9f8b0afd69d08e41eb592ad",
+    "lib/research/dataset-env.js": "92482a31541c1a39a3a9d4577a6c9737dc3ad3f2e3708d3bc71b79bc174688fd",
+    "lib/research/root-scripts.js": "76448b35f75da2c76c0a7c0ff141b10ad92d2b70a896ab87d25c19f6016906b7",
+    "verify/research-adapter.js": "e83a02045a141b8a8336d5ff236e22b66ab24aafa32b8fb29bb0008eb4c38d2e",
+    "verify/mocha-report.js": "9ae56885efde1174f3b107610f10d7fa9a38546bc70cb52f5b1a17834cca0196",
+    "verify/tests.js": "252ce696d8ee77f1a86f26f67605a7d4083a258aa60875663a1f3307208469f6",
+    "verify/verdict.js": "5c25b7ec025a360488eeeb07961e09700f17886217b0a4d8a94d7eb330fe9fa7",
+    "verify/verifier.js": "4065b4553f48997927e23be2ff964e887711e3b0370d4979126ef912ad164c59",
+    "verify/schema.js": "2d9a9371ea3bc1900962a2bd42eaef5eac6708e3847a1b91d88a564a2f346cdc",
+    "verify/preservation.js": "777479df26328bd081d5a2d63525626db758596f215b0aa9b0a1439b4a062147",
+    "verify/checks/registry.js": "a4a28e0ace85e38a4479b242747cce02a7bae362f7d8c890a66b2799ca285efa",
+    "verify/checks/results.js": "8874b1a5628a70b2593e1c39873f1d70bfb52f9ccc7e93dd9230ecc547c91c74",
+    "lib/sandbox/pipeline.js": "af66a7c4d958000fefb2882b1527a7f5ed7d0c3b264407a43f5d5375caa4f1b6",
+    "lib/sandbox/stages.js": "80d2f00d7bbedbbdf4c921994837a8a34ebffd57ff9f56d732092ee09069a85e",
+    "agent/runner.js": "73c282fbb3456ace473e6bf413887392717780569665ae754f61e0fa1f6e5240",
+    "intent/contract-state.js": "b38b52b8a303aaaa73d86bcb581f052bc5111a7fffbc130e1d17893b8c82ac78",
+    "sandbox/research/qb-check-runner.mjs": "ee1cf5555ba045e3c109b36e5e0dc6fd7d1444420f8865cd5a7d1b33142f61c3",
+    "sandbox/research/qb-mocha-reporter.cjs": "8f5d5afb66fcd8d6ead0be5e224e62cf92f741f1f4a6e9bc4b73f7cfb8ee2ce3",
+    "sandbox/research/deps-root-scripts.sh": "97acfc7c14ff345ff6d2a443744efd7a35a01be72e41e7414c634e2e5768b638",
+    ".github/workflows/kan117-replay-5892.yml": "1394e14c5e39508b8deed8fc1ed1355c6f105c5b149e5d65b2da8c6b045dfa59"
+  }
+}

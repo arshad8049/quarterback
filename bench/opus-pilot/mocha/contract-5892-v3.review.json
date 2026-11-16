@@ -1,0 +1,26 @@
+{
+  "schema": "qb-contract-review/1",
+  "task": "axios-5892",
+  "appends_to": ["bench/opus-pilot/mocha/contract-5892-v3.freeze.json", "bench/opus-pilot/mocha/contract-5892-v3.validation.json"],
+  "contract_sha256": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+  "reviewer": "AI senior reviewer (KAN-117 comment 10650). NOT independent human sign-off; if the protocol requires a literal human approval, the owner provides it separately.",
+  "scope": "bounded NO-MODEL offline replay only",
+  "reviewed_scenarios": [
+    { "check_id": "CHK-AC1-MIXED-CASE-GZIP", "source_sha256": "841dd6118bdccf7160ce6ed80814eba8b319d894de9d920a4bf2e1502e37c733", "reviewed_by": "AI senior reviewer", "ref": "KAN-117 comment 10650" },
+    { "check_id": "CHK-AC2-MIXED-CASE-OTHER", "source_sha256": "44223cac680d759bfcdbe521e57c4327259a7bd5fb19e1a06f87378500051133", "reviewed_by": "AI senior reviewer", "ref": "KAN-117 comment 10650" },
+    { "check_id": "CHK-AC3-HEADER-REMOVED", "source_sha256": "d6b3d4c00c8f5d5f5caced039e37b07dd2dfb06773a8876e89264c9dd04924a5", "reviewed_by": "AI senior reviewer", "ref": "KAN-117 comment 10650" }
+  ],
+  "decisions": {
+    "AC-2": "retained as a required, explicitly disclosed interpretation of R-4 (case-insensitive header value) applied to the encodings the pinned base already supports; NOT new encodings, whitespace normalisation or stacked encodings. Coverage limit: samples uppercase variants; does not exercise X-COMPRESS; not exhaustive.",
+    "AC-3": "retained: a disclosed base-derived regression requirement (the base removes content-encoding when it decompresses), not a verbatim issue requirement.",
+    "AC-4": "option (b): stays unresolved for this replay; expected ceiling PARTIAL. Not removed, not waived, no byFile support built now. Option (a) not approved.",
+    "AC-5": "Q2 resolved by the reviewer: the module_exports check covers the narrow load/default-export claim; the descriptive preserves object was not needed. Not attributed to the author as confirmation.",
+    "ambiguity_flag_6": "stale (says constraint_policy shape unverified); superseded by the appended validation record (policy 0 errors). Left unchanged in the contract."
+  },
+  "operations_config_attached_by_controller": {
+    "test_policy": { "preexisting_failures": "waive" },
+    "why": "10635: operations/waiver configuration is attached by the controller after authoring; it lets the frozen, approved, exact-match exception list (axios-5892 env record) apply. It changes no criterion, check or requirement.",
+    "approval_via": "research-replay (KAN-117 10650)"
+  },
+  "overlay": "bench/opus-pilot/mocha/contract-5892-v3.overlay.json: the contract with raw_request and requirement quotes replaced by references/spans into the dataset agent store; the replay rebuilds it and refuses unless it hashes to contract_sha256. Two short phrases (about six words each) quoted by the author inside its own goal and ambiguity flag 1 remain in the overlay."
+}
