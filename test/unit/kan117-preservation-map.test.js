@@ -27,7 +27,8 @@ const CHECKS = validateResearchChecks(RAW, AC, { reviewed: [S1, S2].map((s, i) =
 const H = checkSetHash(CHECKS);
 const contract = approve({ id: 'c', goal: 'Set a to 2', acceptance_criteria: AC, clarifying_question: null, checks: CHECKS, checks_registry: 'qb-checks/3',
   scope: { allowed_changes: ['src/**'] }, test_policy: { preexisting_failures: 'waive' } }, { via: 'test' });
-const MAP = { schema: 'qb-preservation-map/1', ac_id: 'AC-2', file: FILE, clauses: [
+const BASE = 'b'.repeat(40);
+const MAP = { schema: 'qb-preservation-map/1', ac_id: 'AC-2', file: FILE, base_commit: BASE, clauses: [
   { id: 'P-1', clause: 'a and b still work', tests: [T1, T2], checks: [] },
   { id: 'P-2', clause: 'HEAD still works', tests: [], checks: ['SC-2'] },
 ] };
@@ -36,7 +37,8 @@ const ident = (i, statuses, extra = {}) => ({ id: i, file: FILE, count: statuses
 const ver = (identities, o = {}) => {
   const failing = identities.filter((e) => e.statuses.includes('failed')).map((e) => ({ id: e.id, file: e.file, full_title: 'x', kinds: e.kinds, codes: e.codes, failed_count: 1 }));
   return { mode: 'research_mocha', test_plan: { runner: 'mocha' }, status: 'ran', verdict: failing.length ? 'failed' : 'passed', reasons: [],
-    validation: { counts: { total: identities.length, passed: identities.length - failing.length, failed: failing.length }, identities, failing }, steps: [{ name: 'test', exit_code: failing.length ? 1 : 0 }], ...o };
+    validation: { counts: { total: identities.length, passed: identities.length - failing.length, failed: failing.length }, identities, failing }, steps: [{ name: 'test', exit_code: failing.length ? 1 : 0 }],
+    prep: { status: 'ready', tree: 't', protected_modified: [] }, task_base_commit: BASE, protected: [':(glob)test/**', 'gulpfile.js'], ...o };
 };
 const res = (i, status = 'pass') => ({ id: i, ac_id: i === 'SC-1' ? 'AC-1' : 'AC-2', adapter: 'scenario', status, detail: status });
 const doc = (results) => JSON.stringify({ format: 'qb-check-results/1', complete: true, check_set_hash: H, results });
@@ -105,4 +107,22 @@ test('a map is rejected (criterion unresolved) unless approved by exact hash, co
 test('ordinary (non-research) runs ignore the map and keep the file-level rule', async () => {
   const { ac } = await run({ status: 'ran', exit_code: 0, verdict: 'passed' });
   assert.notEqual(ac.method, 'test-identity-map');
+});
+
+test('mapped results must come from THIS candidate and the frozen (base-restored) test definitions, not merely matching names', async () => {
+  const cases = {
+    'tests ran on another tree than the candidate': ver(ALL, { prep: { status: 'ready', tree: 'other', protected_modified: [] } }),
+    'no verify-prep record (protected tests not restored)': ver(ALL, { prep: undefined }),
+    'verify-prep not ready': ver(ALL, { prep: { status: 'dependency_change_required', tree: 't' } }),
+    'a different task base': ver(ALL, { task_base_commit: 'c'.repeat(40) }),
+    'the mapped file is not restored from the base': ver(ALL, { protected: ['gulpfile.js'] }),
+    'no protected list': ver(ALL, { protected: undefined }),
+  };
+  for (const [why, v] of Object.entries(cases)) {
+    const { r, ac } = await run(v);
+    assert.equal(ac.met, null, `${why}: ${ac.evidence}`);
+    assert.notEqual(r.verdict, 'pass', why);
+  }
+  // the candidate editing the mapped test file is restored before the run: names match AND definitions are the base's
+  assert.equal((await run(ver(ALL, { prep: { status: 'ready', tree: 't', protected_modified: [FILE] } }))).ac.met, true);
 });

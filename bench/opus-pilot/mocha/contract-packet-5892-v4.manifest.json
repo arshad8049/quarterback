@@ -1,0 +1,45 @@
+{
+  "schema": "qb-contract-packet/1",
+  "packet_version": "4",
+  "task": "axios-5892",
+  "task_id": "qbt_72e2affc8e5d",
+  "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+  "built_from_qb_commit": "74adb8f195129db8571ee939befdc2d2fc7218df",
+  "approved_by": "KAN-117 senior decision after 10654 (prepare the F2 packet: HEAD and 204 separately)",
+  "contents_rule": "task text + pinned repo/visible tests + contract/check schema docs + generic constraints only",
+  "excluded": [
+    "hidden tests",
+    "gold patch",
+    "candidate solutions",
+    "KAN-117 diagnostic thread",
+    "exception list and rationale",
+    "grading outcomes"
+  ],
+  "leak_check": "passed (QB lib/research/agent-bundle.js leakCheck: hidden test names, gold-patch lines, test-patch lines; counts only)",
+  "files": {
+    "TASK.md": "02ef022a366475f1263094c2f6742974cbf025210ee61bb846a7cc24324cc1ae",
+    "REPOSITORY.md": "d492f598924c44ade5d4e08788c0609648b0a1e75efaf7691bd608dc43820ce4",
+    "CONSTRAINTS.md": "eaac116d1b815c33c55b3c45fbcb4e8efd057a2af7d80e385a1c4e68e90685a2",
+    "CHECKS.md": "e7ca9a4a5a0478600e699d6d9b2ed5e55d003cf1326ca5ccd433f4590f690d9c",
+    "RESEARCH_SCENARIOS.md": "e0b4694cc1d4d8ef798f2a986ee0bb695bfec73b9852aea0654d37619c6b2b10",
+    "CONTRACT_SCHEMA.md": "f276cd2ae44f3a6c62cf06f29621d8bbd82a2abfdb4935e6e809cbc23cd47ede",
+    "AUTHOR_INSTRUCTIONS.md": "466d68680181c2f75b603a25fe02b9aae83030dcd0945457ec5b853ec68b844a",
+    "EXPOSURE.md": "60a0ded229baf335081b8488478372a840716241bc5ad8b038a041fc46f28579",
+    "previous-contract.json": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+    "validators/requirements.cjs": "ac9aeb4b5a75dde07e47ff74035eef0fe08928091a6c233dbfde7a9974941a68",
+    "validators/policy.cjs": "f19b5bc523420fa877bdb9597f1c4de2dbc1faeb61e02cb3dfb5f7c8748eeff4",
+    "validators/preservation.cjs": "777479df26328bd081d5a2d63525626db758596f215b0aa9b0a1439b4a062147",
+    "validate.cjs": "acfbc8894a6e918f6a93af178f90c1175cdca337c137819c9ae43d3397a2b8fa"
+  },
+  "base_checkout": {
+    "dir": "axios",
+    "commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+    "tree": "d37c27531ee7d744f25932ad0cb20ecabbf202ff",
+    "commits": 1,
+    "remotes": 0,
+    "dependencies": "npm ci --omit=dev --ignore-scripts (runtime only; dev tooling and lifecycle scripts skipped)",
+    "node_modules_top_level_entries": 38,
+    "node_modules_package_json_sha256": "9191cb0eaf2a7620326686adaff150f23dc64ebbdbee3465c636a303cb467bef"
+  },
+  "packet_sha256": "27441f0be660d5f36e79e6a333ff20bc6736fb7578f6c94cd15fc4fdd77661cc"
+}

@@ -74,7 +74,15 @@ files['AUTHOR_INSTRUCTIONS.md'] = [
   '5. Every part of TASK.md must lie inside some requirement `quote` (QB traceability, CONTRACT_SCHEMA.md: intent/requirements.js). Text that is not a requirement (issue-template headings, environment notes) still needs a requirement entry quoting it, with `disposition: "context"` and a `reason`.',
   '6. Validate before you finish: `node validate.cjs contract.json` (no dependencies; runs QB\'s traceability, constraint_policy/scope and preservation validators, copied unchanged into validators/). It must print `OK`. This helper is PARTIAL: it does not run the contract schema, the check registry (including scenario review) or the full contract state. The controller runs all of those after your contract is frozen and reports any failure back to you.',
   '7. Save the contract as `contract.json`, fill in EXPOSURE.md, and mark the contract **ready for review** (not approved). Do not run or tune it against any solution.', '',
-  ...(arg('revise') ? ['## Revision task (packet v2)', '',
+  ...(arg('revise') && Number(arg('version') || '1') >= 4 ? ['## Revision task (packet v4)', '',
+    '`previous-contract.json` is the current contract for this task, written by another fresh author from an earlier packet. One criterion still lacks executable evidence for part of what it claims:',
+    '- **Q4 (AC-4, HEAD and 204):** AC-4 says, among other things, that responses to a **HEAD** request and **204** responses that carry a content-encoding header still succeed. No existing visible test exercises either case. Write **two separate** `scenario` checks bound to AC-4 (RESEARCH_SCENARIOS.md), from TASK.md and the base repository\'s public behaviour only:',
+    '  - `CHK-AC4-HEAD`: a response to a HEAD request that carries a content-encoding header (and therefore no body);',
+    '  - `CHK-AC4-204`: a 204 (No Content) response that carries a content-encoding header.',
+    '  Each must pass when the behaviour is preserved and throw when it is not. Decide from the base code what "still succeed" means for each and say it in the check\'s own comments. If a case cannot be expressed by a scenario, do not fake it: leave it out and explain why in `ambiguity_flags`.',
+    '- AC-4\'s other evidence (the existing visible tests named in its `preserves`) stays; the new checks add to it and never replace it. You may update only the last sentence of AC-4\'s `criterion` (which describes its evidence) to mention the new checks; keep its meaning, `kind`, `requirement_ids` and `preserves` unchanged.',
+    'Change nothing else: every other requirement, criterion, check (including its exact `params.source`), scope and flag stays byte-for-byte as in previous-contract.json. Write the result as contract.json.', ''] : []),
+  ...(arg('revise') && Number(arg('version') || '1') < 4 ? ['## Revision task (packet v2)', '',
     '`previous-contract.json` is the contract another fresh author wrote from packet v1, after a disclosed FORMAT-ONLY repair by the (answer-exposed) controller; its `format_repair` field lists exactly what changed. Two questions remain that only an author may answer:',
     '- **Q1 (traceability):** `node validate.cjs previous-contract.json` lists TASK.md text that no requirement quotes. For each span, add a requirement quoting it: a real requirement (then cover it with a criterion), or `disposition: "context"` with a reason.',
     '- **Q2 (AC-5):** the controller removed AC-5\'s descriptive `preserves` (it named no test file); AC-5 is decided by its bound check. Confirm, or instead name the test files it preserves.',
@@ -92,6 +100,7 @@ files['EXPOSURE.md'] = [
   '',
 ].join('\n');
 
+if (arg('revise')) files['previous-contract.json'] = fs.readFileSync(arg('revise'), 'utf8');
 // leak check over every file (counts only): hidden test names, gold-patch lines, test-patch lines
 const { leakCheck } = require(path.join(ROOT, 'lib/research/agent-bundle.js'));
 const leaks = {};
@@ -105,11 +114,10 @@ if (Object.keys(leaks).length) { console.error(`refused: packet leak check found
 fs.mkdirSync(out, { recursive: true });
 const VERSION = arg('version') || '1';
 const manifest = { schema: 'qb-contract-packet/1', packet_version: VERSION, task: ENV.key, task_id: ENV.task_id, base_commit: ENV.base_commit, built_from_qb_commit: null,
-  approved_by: 'KAN-117 review 10635 step 1', contents_rule: 'task text + pinned repo/visible tests + contract/check schema docs + generic constraints only',
+  approved_by: Number(arg('version') || '1') >= 4 ? 'KAN-117 senior decision after 10654 (prepare the F2 packet: HEAD and 204 separately)' : 'KAN-117 review 10635 step 1', contents_rule: 'task text + pinned repo/visible tests + contract/check schema docs + generic constraints only',
   excluded: ['hidden tests', 'gold patch', 'candidate solutions', 'KAN-117 diagnostic thread', 'exception list and rationale', 'grading outcomes'],
   leak_check: 'passed (QB lib/research/agent-bundle.js leakCheck: hidden test names, gold-patch lines, test-patch lines; counts only)',
   files: {} };
-if (arg('revise')) files['previous-contract.json'] = fs.readFileSync(arg('revise'), 'utf8');
 // runnable local validation (review 10638): QB's dependency-free validators copied UNCHANGED, plus a tiny runner
 for (const [dst, src] of [['validators/requirements.cjs', 'intent/requirements.js'], ['validators/policy.cjs', 'verify/policy.js'], ['validators/preservation.cjs', 'verify/preservation.js']]) files[dst] = doc(src);
 files['validate.cjs'] = [

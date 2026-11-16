@@ -1,11 +1,12 @@
 {
   "schema": "qb-preservation-map-draft/1",
-  "status": "DRAFT: for senior review; not approved; P-7 check CHK-AC4-HEAD-204 does not exist yet (fresh clean author, F2)",
+  "status": "DRAFT: for senior review; not approved; P-7 checks CHK-AC4-HEAD and CHK-AC4-204 do not exist yet (fresh clean author, F2 packet v4)",
   "source": "identities from the visible base test file (KAN-117 10653, run 43955588753); no hidden tests, no gold",
   "map": {
     "schema": "qb-preservation-map/1",
     "ac_id": "AC-4",
     "file": "test/unit/adapters/http.js",
+    "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
     "clauses": [
       {
         "id": "P-1",
@@ -81,10 +82,11 @@
         "clause": "HEAD/204 responses with a content-encoding header still succeed",
         "tests": [],
         "checks": [
-          "CHK-AC4-HEAD-204"
+          "CHK-AC4-HEAD",
+          "CHK-AC4-204"
         ]
       }
     ]
   },
-  "sha256": "d35c38b11754c90d77738d6c9323b3653e081017943b7d0c6ec1e8941b62e0f2"
+  "sha256": "114ab44fd081a78c1d5fe98172194fde3d77a881de0152ab3104154ec3c0d961"
 }

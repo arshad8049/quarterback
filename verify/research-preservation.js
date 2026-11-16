@@ -12,11 +12,25 @@
  * Criterion:        any clause false → false; every clause true → true; else null (unresolved).
  * The map must name at least one existing test and cover every check bound to the criterion, so a passing check alone can
  * never satisfy it. Unusable channel evidence (error, drift, no identities) leaves everything unresolved.
+ * Binding (senior, after 10654): the mapped results count only if they belong to THIS candidate and the FROZEN test
+ * definitions — the tests ran on the candidate's tree (verify-prep tree === execution.candidate_tree), the run's task base
+ * is the map's base_commit, and the mapped file lies under the env record's protected patterns, which verify-prep restores
+ * from that base before the run (any candidate edit to it is undone). Matching names alone never suffice.
  * Ordinary customer runs never reach this file.
  */
 const crypto = require('crypto');
 
 const HEX = /^[0-9a-f]{64}$/;
+// a protected pattern covers the file: exact path, or a ':(glob)dir/**' / 'dir/**' prefix (the env record's forms)
+const covers = (pat, f) => { const p = String(pat).replace(/^:\(glob\)/, ''); return p.endsWith('/**') ? f.startsWith(p.slice(0, -2)) : p === f; };
+function bindingError(v, map, candidateTree) {
+  const prep = v && v.prep;
+  if (!prep || prep.status !== 'ready') return 'no ready verify-prep record (protected tests not shown restored)';
+  if (!candidateTree || prep.tree !== candidateTree) return 'tests did not run on the candidate tree';
+  if (!map.base_commit || v.task_base_commit !== map.base_commit) return 'test run base is not the map base_commit';
+  if (!Array.isArray(v.protected) || !v.protected.some((p) => covers(p, map.file))) return `${map.file} is not restored from the base before the run`;
+  return null;
+}
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
 
 /** The approved map for this criterion, or { error }. */
@@ -61,14 +75,17 @@ function testStatus(i, byId, excluded) {
  * @param ev            evaluateChecks() result
  * @param approvals     [{ map, sha256, reviewed_by, ref }] supplied by the controller
  * @param checks        the contract's accepted checks
+ * @param candidateTree execution.candidate_tree
  */
-function decideMappedPreservation(ac, v, classified, ev, approvals, checks) {
+function decideMappedPreservation(ac, v, classified, ev, approvals, checks, candidateTree) {
   const base = { id: ac.id, criterion: ac.criterion, method: 'test-identity-map' };
   const m = acceptMap(ac, approvals, checks);
   if (m.error) return { ...base, met: null, evidence: `Preservation not verified: ${m.error}.` };
   const usable = classified && ['passed', 'failed', 'preexisting_failures'].includes(classified.outcome)
     && v && v.validation && Array.isArray(v.validation.identities);
   if (!usable) return { ...base, met: null, map_sha256: m.sha256, evidence: `Preservation not verified: test evidence unusable (${classified ? classified.reason : 'no test run'}).` };
+  const bind = bindingError(v, m.map, candidateTree);
+  if (bind) return { ...base, met: null, map_sha256: m.sha256, evidence: `Preservation not verified: ${bind}.` };
   const byId = new Map(v.validation.identities.map((e) => [e.id, e]));
   const x = v.known_base_failures || {};
   const excluded = new Set([...(x.entries || []), ...(x.isolation_rechecks || [])].map((e) => e && e.id));

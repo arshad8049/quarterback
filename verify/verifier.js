@@ -105,7 +105,7 @@ async function verify(contract, context, execution, options = {}) {
     const judged = new Map(criteriaResults.map(r => [r.id, r]));
     const classified = classifyTestRun(execution?.sandbox?.verification || null, testOptions(contract));
     criteriaResults = allCriteria.map(ac => judged.get(ac.id)
-      || (ac.preserves ? preservationResult(ac, classified, checkEval, { verification: execution?.sandbox?.verification || null, maps: options.preservationMaps, checks: contract.checks }) : criterionFromChecks(ac, checkEval)));
+      || (ac.preserves ? preservationResult(ac, classified, checkEval, { verification: execution?.sandbox?.verification || null, maps: options.preservationMaps, checks: contract.checks, candidateTree: execution?.candidate_tree || null }) : criterionFromChecks(ac, checkEval)));
   }
 
   // ── Verdict ──────────────────────────────────────────────────────────────
@@ -241,7 +241,7 @@ function criterionFromChecks(ac, ev) {
 function preservationResult(ac, classified, ev, research = {}) {
   // KAN-117 (research only): clause-level evidence map of exact test identities; ordinary runs keep the file-level rule
   const t = isResearchVerification(research.verification)
-    ? decideMappedPreservation(ac, research.verification, classified, ev, research.maps, research.checks)
+    ? decideMappedPreservation(ac, research.verification, classified, ev, research.maps, research.checks, research.candidateTree)
     : decidePreservation(ac, classified);
   if (!ev.requested.some(c => c.ac_id === ac.id)) return t;
   const k = criterionFromChecks(ac, ev);
