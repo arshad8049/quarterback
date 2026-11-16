@@ -1,0 +1,18 @@
+{
+  "schema": "qb-contract-freeze/1",
+  "task": "axios-5892",
+  "rule": "KAN-117 decision 10638 (ii): disclosed controller FORMAT-ONLY repair of the frozen clean contract; v1 preserved",
+  "of_contract_sha256": "cbac3e770ad13f39d2e85d3a7f5e8c92d66425c37a612c45a4291d1e74acf438",
+  "repaired_contract_sha256": "4310fa8fe2f70bd5e3f99dd092ba08f711ac8e5b9f990726dfab1e11568427d3",
+  "diff_sha256": "5c82ebd0a31db64c59a52bb2ca3933efa9b37086ef9df8aa5b59c8658ca2a08d",
+  "repair_by": "controller (answer-exposed junior); disclosed",
+  "changes": [
+    "constraint_policy[*].enforced_by: {kind, ref:[...]} -> [{kind, ref}] (same kinds and paths)",
+    "AC-4.preserves -> {tests:[test/unit/adapters/http.js]} (the file the author named as evidence)",
+    "AC-5.preserves removed (named no test; AC-5 is decided by its bound check CHK-HTTP-ADAPTER-LOADS) - open question to the author"
+  ],
+  "validators": { "schema": "ok", "registry": "1 accepted / 0 rejected", "policy": "0 errors", "preservation": "0 errors",
+    "traceability": "5 errors: untraced request spans (content decision -> question to the clean author)", "contractState": "invalid (traceability only)" },
+  "behavioural_criteria_without_check": ["AC-1", "AC-2", "AC-3"],
+  "frozen_at_utc": "2026-11-16T00:44:48Z"
+}
