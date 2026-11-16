@@ -92,7 +92,10 @@ const SRC = {
   'SC-HTTP': "module.exports = async ({ require }) => { require('http'); };",
   'SC-NET': "module.exports = async ({ require }) => { require('net'); };",
   'SC-ESCAPE': "module.exports = async ({ require }) => { require('/etc/passwd'); };",
-  'SC-HANG': 'module.exports = async () => { await new Promise(() => {}); };',
+  // run 43784091419: a bare never-settling promise lets Node exit (no pending work) — keep a long timer pending so ONLY the
+  // runner's own deadline (SIGKILL after QB_CHECK_TIMEOUT_MS, default 10 s) can end it
+  'SC-HANG': 'module.exports = async () => { await new Promise((resolve) => setTimeout(resolve, 600000)); };',
+  'SC-SPIN': 'module.exports = async () => { for (;;) {} };',
   'SC-NONFN': 'module.exports = 42;',
 };
 const ACS = Object.keys(SRC).map((k, i) => ({ id: `AC-${i + 1}`, criterion: `fixture ${k}`, kind: 'behavioral', met: null }));
@@ -101,7 +104,7 @@ const reviewed = Object.entries(SRC).map(([id, s]) => ({ check_id: id, source_sh
 const v = validateResearchChecks(proposed, ACS, { reviewed });
 if (v.accepted.length !== proposed.length) { console.error(`registry rejected fixtures: ${JSON.stringify(v.rejected)}`); process.exit(3); }
 const runner = researchCheckRunner();
-const expected = { 'SC-PASS': 'pass', 'SC-ESM': 'pass', 'SC-HTTP': 'error', 'SC-NET': 'error', 'SC-ESCAPE': 'error', 'SC-HANG': 'error', 'SC-NONFN': 'error' };
+const expected = { 'SC-PASS': 'pass', 'SC-ESM': 'pass', 'SC-HTTP': 'error', 'SC-NET': 'error', 'SC-ESCAPE': 'error', 'SC-HANG': 'error', 'SC-SPIN': 'error', 'SC-NONFN': 'error' };
 
 async function one(label, extra) {
   const t0 = Date.now();
@@ -120,7 +123,7 @@ const st = (run, id) => (run.results || []).find((x) => x.id === id);
 const assertions = {
   base_matches_expected: Object.entries(expected).every(([id, s]) => st(runs.base, id) && st(runs.base, id).status === s),
   defect_fails_pass_check: st(runs.defect, 'SC-PASS') && st(runs.defect, 'SC-PASS').status === 'fail',
-  hang_bounded_by_runner_timeout: st(runs.base, 'SC-HANG') && st(runs.base, 'SC-HANG').duration_ms !== null && st(runs.base, 'SC-HANG').duration_ms < 20_000,
+  hang_ended_by_runner_timeout: ['SC-HANG', 'SC-SPIN'].every((id) => { const x = st(runs.base, id); return x && /timed out after \d+ ms/.test(x.detail) && x.duration_ms >= 9_000 && x.duration_ms < 20_000; }),
   results_validated_fail_closed: runs.base.results_valid && runs.defect.results_valid,
   runner_is_mounted_research_runner: runs.base.runner && runs.base.runner.sha256 === runner.sha256 && runs.base.runner.path === runner.path,
 };

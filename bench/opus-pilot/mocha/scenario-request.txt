@@ -1,1 +1,1 @@
-request 2: after run 43783665006 failed at image load — the ported runner changed sandbox/agent (content-tagged image); runner moved to sandbox/research, agent dir identical to pre-port
+request 3: real timeout fixtures (pending timer + busy loop) after run 43784091419 showed the bare never-settling promise exits without reaching the runner deadline
