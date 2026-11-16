@@ -36,8 +36,10 @@ files['REPOSITORY.md'] = [
   '# Starting repository (pinned)', '',
   '- Repository: https://github.com/axios/axios',
   `- Starting commit (base): \`${ENV.base_commit}\` — work only from this commit; do not look at later history, pull requests or issues.`,
-  '- Fetch it with no history beyond that commit:', '',
-  '```', 'git init axios && cd axios', `git fetch --depth 1 https://github.com/axios/axios ${ENV.base_commit}`, 'git checkout FETCH_HEAD', '```', '',
+  ...(arg('prepare-base') ? [
+    '- **Already checked out in `./axios`** (one commit, no remote), with only the runtime dependencies installed (`npm ci --omit=dev --ignore-scripts`, prepared by the controller). **Do not fetch, clone or install anything**; work offline.', ''] : [
+    '- Fetch it with no history beyond that commit:', '',
+    '```', 'git init axios && cd axios', `git fetch --depth 1 https://github.com/axios/axios ${ENV.base_commit}`, 'git checkout FETCH_HEAD', '```', '']),
   '## Visible tests QB runs (a disclosed subset of the repository\'s tests)', '',
   `- Command: \`${ENV.test_argv.join(' ')} <files>\` (Mocha ${ENV.mocha_version}, Node 24)`,
   '- Files:', ...ENV.test_files.map((f) => `  - \`${f}\``), '',
@@ -120,7 +122,21 @@ files['validate.cjs'] = [
   "console.log(errs.length ? errs.length + ' error(s)' : 'OK');", ''].join('\n');
 for (const [f, t] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(out, f)), { recursive: true }); fs.writeFileSync(path.join(out, f), t); manifest.files[f] = sha(t); }
 try { manifest.built_from_qb_commit = (await import('node:child_process')).execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* none */ }
-manifest.packet_sha256 = sha(JSON.stringify(manifest.files));
+// review after 10644: the pinned base is prepared BEFORE authoring, so the author needs no network at all
+if (arg('prepare-base')) {
+  const { execFileSync: x } = await import('node:child_process');
+  const dir = path.join(out, 'axios');
+  fs.mkdirSync(dir, { recursive: true });
+  const g = (...a) => x('git', ['-C', dir, ...a], { encoding: 'utf8' }).trim();
+  g('init', '-q'); g('fetch', '-q', '--depth', '1', 'https://github.com/axios/axios', ENV.base_commit); g('checkout', '-q', 'FETCH_HEAD');
+  const head = g('rev-parse', 'HEAD'); const tree = g('rev-parse', 'HEAD^{tree}'); const commits = Number(g('rev-list', '--all', '--count'));
+  if (head !== ENV.base_commit || commits !== 1 || g('remote')) { console.error('base checkout is not the pinned single commit without remotes'); process.exit(5); }
+  x('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: dir, stdio: 'ignore' });
+  const nm = x('sh', ['-c', 'find node_modules -name package.json -maxdepth 3 | LC_ALL=C sort | xargs cat | shasum -a 256 | cut -c1-64'], { cwd: dir, encoding: 'utf8' }).trim();
+  const pkgs = x('sh', ['-c', 'ls node_modules | wc -l'], { cwd: dir, encoding: 'utf8' }).trim();
+  manifest.base_checkout = { dir: 'axios', commit: head, tree, commits, remotes: 0, dependencies: 'npm ci --omit=dev --ignore-scripts (runtime only; dev tooling and lifecycle scripts skipped)', node_modules_top_level_entries: Number(pkgs), node_modules_package_json_sha256: nm };
+}
+manifest.packet_sha256 = sha(JSON.stringify({ files: manifest.files, base_checkout: manifest.base_checkout || null }));
 const mtext = `${JSON.stringify(manifest, null, 2)}\n`;
 fs.writeFileSync(path.join(out, 'MANIFEST.json'), mtext);
 if (arg('manifest')) fs.writeFileSync(arg('manifest'), mtext);

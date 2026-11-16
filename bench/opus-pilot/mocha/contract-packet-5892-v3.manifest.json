@@ -4,7 +4,7 @@
   "task": "axios-5892",
   "task_id": "qbt_72e2affc8e5d",
   "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
-  "built_from_qb_commit": "591fc7e1ed04e2c8d80d3f7e696dbca930e0ddfb",
+  "built_from_qb_commit": "f49c38eae85324fa97512c4599ba790cd7b33864",
   "approved_by": "KAN-117 review 10635 step 1",
   "contents_rule": "task text + pinned repo/visible tests + contract/check schema docs + generic constraints only",
   "excluded": [
@@ -18,7 +18,7 @@
   "leak_check": "passed (QB lib/research/agent-bundle.js leakCheck: hidden test names, gold-patch lines, test-patch lines; counts only)",
   "files": {
     "TASK.md": "02ef022a366475f1263094c2f6742974cbf025210ee61bb846a7cc24324cc1ae",
-    "REPOSITORY.md": "e6ee986594c0c5a92d2e60f1d4a8b8c5852d97ecd7d42ef92b231550c1f2cc40",
+    "REPOSITORY.md": "d492f598924c44ade5d4e08788c0609648b0a1e75efaf7691bd608dc43820ce4",
     "CONSTRAINTS.md": "eaac116d1b815c33c55b3c45fbcb4e8efd057a2af7d80e385a1c4e68e90685a2",
     "CHECKS.md": "e7ca9a4a5a0478600e699d6d9b2ed5e55d003cf1326ca5ccd433f4590f690d9c",
     "RESEARCH_SCENARIOS.md": "e0b4694cc1d4d8ef798f2a986ee0bb695bfec73b9852aea0654d37619c6b2b10",
@@ -31,5 +31,15 @@
     "validators/preservation.cjs": "777479df26328bd081d5a2d63525626db758596f215b0aa9b0a1439b4a062147",
     "validate.cjs": "acfbc8894a6e918f6a93af178f90c1175cdca337c137819c9ae43d3397a2b8fa"
   },
-  "packet_sha256": "48c6e4ba401ba33d09fa42d91e7d4490faff8956d97810d86c046864eb8705d4"
+  "base_checkout": {
+    "dir": "axios",
+    "commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+    "tree": "d37c27531ee7d744f25932ad0cb20ecabbf202ff",
+    "commits": 1,
+    "remotes": 0,
+    "dependencies": "npm ci --omit=dev --ignore-scripts (runtime only; dev tooling and lifecycle scripts skipped)",
+    "node_modules_top_level_entries": 38,
+    "node_modules_package_json_sha256": "9191cb0eaf2a7620326686adaff150f23dc64ebbdbee3465c636a303cb467bef"
+  },
+  "packet_sha256": "d4149e945b37fae592288b21a06725a48dec9ffb7a297f1e35e7b89c3594fa66"
 }
