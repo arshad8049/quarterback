@@ -1,0 +1,21 @@
+{
+  "schema": "qb-contract-freeze/1",
+  "task": "axios-5892",
+  "rule": "KAN-117 10642/after-10644: clean-author output frozen before any comparison with gold or hidden tests",
+  "packet_sha256": "d4149e945b37fae592288b21a06725a48dec9ffb7a297f1e35e7b89c3594fa66",
+  "author_session": { "transcript_sha256": "df94e52be465ac0087c70aaf8ecff191bf022ecb9b35ed0bc4159bedb548ed54", "model": "claude-opus-5-5", "permission_mode": "default",
+    "launch": "claude --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --setting-sources project --disable-slash-commands --no-chrome --disallowedTools WebFetch,WebSearch --permission-mode default",
+    "audit": "audit-author-session.mjs: 15 calls; 2 flags, both benign (the packet's own 'gold patch' exclusion text; the fake http://qb.invalid/ URL inside a stub transport); available tools: no claude.ai connectors, only mcp__easel (chart); global CLAUDE.md (graphify pointer) loaded; no project memory" },
+  "output_loss_and_reconstruction": "The packet folder (with contract.json and EXPOSURE.md) was deleted by an iCloud Desktop merge on 2026-11-16 before the controller read it. Reconstructed OFFLINE by replaying the author's own logged write steps (9-15) with only two folder paths remapped, on a byte-identical packet (same packet_sha256, same base checkout record) built from the format-repaired contract recovered from the same log (sha256 matches the v1r1 freeze). Verified: the three scenario sources equal the sha256 values the author's log recorded; EXPOSURE.md equals the logged write; validate.cjs prints OK as logged. contract.json itself has no logged hash; it is the output of the author's build script on verified-identical inputs.",
+  "reconstructed": {
+    "contract_json_sha256": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+    "exposure_md_sha256": "3e5880a19c3f6b73daa57711bc8f29ebf202a23d523a34be127e38e76ebf5784",
+    "scenario_sources_sha256": {
+      "CHK-AC1-MIXED-CASE-GZIP": "841dd6118bdccf7160ce6ed80814eba8b319d894de9d920a4bf2e1502e37c733",
+      "CHK-AC2-MIXED-CASE-OTHER": "44223cac680d759bfcdbe521e57c4327259a7bd5fb19e1a06f87378500051133",
+      "CHK-AC3-HEADER-REMOVED": "d6b3d4c00c8f5d5f5caced039e37b07dd2dfb06773a8876e89264c9dd04924a5" } },
+  "possible_training_data_contamination": "The author is claude-opus-5-5; its training data may include later public axios history (it disclosed this). No transcript can rule it out.",
+  "status": "frozen; not yet validated by the controller (schema, registry with review entries, contractState) and not human source-reviewed; NOT compared with gold or hidden tests",
+  "location": "outside the repository: ~/qb-evidence/reconstruct-v3/packet/ (contains dataset task text)",
+  "frozen_at_utc": "2026-11-16T18:00:50Z"
+}
