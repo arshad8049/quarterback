@@ -1,0 +1,59 @@
+{
+  "schema": "qb-contract-validation/1",
+  "task": "axios-5892",
+  "appends_to": "bench/opus-pilot/mocha/contract-5892-v3.freeze.json (unchanged: its status recorded the state AT FREEZE, before validation)",
+  "validated_at_utc": "2026-11-16T20:01:10.291Z",
+  "qb_commit": "4bc6591c96bdf5d619d407c9159445f87ff83d5d",
+  "contract_sha256": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+  "reconstruction_status": "reconstructed; NO original whole-file hash exists for v3 contract.json, so it is NOT proven byte-identical to the lost original",
+  "results": {
+    "contract_sha256": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1",
+    "schema": "ok",
+    "registry_default_rejected": [
+      "CHK-AC1-MIXED-CASE-GZIP",
+      "CHK-AC2-MIXED-CASE-OTHER",
+      "CHK-AC3-HEADER-REMOVED"
+    ],
+    "registry_structural_with_scenarios": [
+      "CHK-HTTP-ADAPTER-LOADS",
+      "CHK-AC1-MIXED-CASE-GZIP",
+      "CHK-AC2-MIXED-CASE-OTHER",
+      "CHK-AC3-HEADER-REMOVED"
+    ],
+    "research_path_without_review_rejected": 3,
+    "traceability_errors": [],
+    "policy_errors": [],
+    "preservation_errors": [],
+    "contractState": [
+      "finalized",
+      "finalized"
+    ]
+  },
+  "expected_verdict": {
+    "scenario": "simulated: every executable check passes (scenarios with SIMULATED review entries) and the visible channel passes; contract test_policy waive",
+    "verdict": "partial",
+    "criteria": {
+      "AC-1": true,
+      "AC-2": true,
+      "AC-3": true,
+      "AC-4": null,
+      "AC-5": true
+    },
+    "reason": "AC-4 unresolved (no byFile on the research path)",
+    "pass_capable": false
+  },
+  "ac4_mechanism": "verify/preservation.js decidePreservation needs classifyTestRun(...).byFile; the research adapter (verify/research-adapter.js) does not produce byFile, so AC-4 is met:null (unresolved) on the research-Mocha path whatever the tests do",
+  "v1_contract_reconstructed_sha256": "cbac3e770ad13f39d2e85d3a7f5e8c92d66425c37a612c45a4291d1e74acf438",
+  "handoff_files_sha256": {
+    "CHK-AC1-MIXED-CASE-GZIP.js": "841dd6118bdccf7160ce6ed80814eba8b319d894de9d920a4bf2e1502e37c733",
+    "CHK-AC2-MIXED-CASE-OTHER.js": "44223cac680d759bfcdbe521e57c4327259a7bd5fb19e1a06f87378500051133",
+    "CHK-AC3-HEADER-REMOVED.js": "d6b3d4c00c8f5d5f5caced039e37b07dd2dfb06773a8876e89264c9dd04924a5",
+    "EXPOSURE-v3.md": "3e5880a19c3f6b73daa57711bc8f29ebf202a23d523a34be127e38e76ebf5784",
+    "audit-v3-summary.json": "7e1ebfe36170bcfe7cd2d6bd734960ad6b7f1ffc2d055cfe3ae1afd96449412c",
+    "author-replay-steps.zip": "7d3f7c98cc7e305ecd8463f6d8de45ad15eaa3bbbb42b028a38c4a7cd1ed9887",
+    "base-http-adapter-decompression-excerpt.txt": "f148c9f3dfc107203fd34ce7f8dd5484a8058c90cac197df660dda2a62939ba1",
+    "contract-v1-reconstructed.json": "cbac3e770ad13f39d2e85d3a7f5e8c92d66425c37a612c45a4291d1e74acf438",
+    "contract-v3-reconstructed.json": "8cd1949d3bf3d10a3ba131fee56fe5d2bf5e6617635f65afe54da977dc8d0bb1"
+  },
+  "note": "review handoff files are attached to KAN-117 (access-controlled), not committed: they contain dataset task text"
+}
