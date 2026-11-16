@@ -48,7 +48,7 @@ test('runChecks: the research runner is mounted READ-ONLY at its own path and is
   };
   const WS = { runId: 'qb-t', image: 'tools-img', mount: (n, ro) => ['-v', `qb-t-${n}:/${n}${ro ? ':ro' : ''}`] };
   const runner = R.researchCheckRunner();
-  assert.equal(runner.sha256, sha(fs.readFileSync(path.join(ROOT, 'sandbox/agent/qb-check-runner.mjs'))));
+  assert.equal(runner.sha256, sha(fs.readFileSync(path.join(ROOT, 'sandbox/research/qb-check-runner.mjs'))));
   await S.runChecks(WS, { status: 'ready' }, [scenario()], { seams, runner });
   const a = calls.find((c) => c.name.endsWith('-checks')).args;
   assert.ok(a.includes(`${runner.host}:${runner.path}:ro`), 'read-only bind mount');

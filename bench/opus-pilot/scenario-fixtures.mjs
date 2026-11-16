@@ -126,7 +126,7 @@ const assertions = {
 };
 const out = {
   schema: 'qb-kan117-scenario-fixtures/1', approved_by: 'KAN-117 10640 (no model; synthetic toy package)', qb_commit: process.env.GITHUB_SHA || null,
-  runner: { host_file: 'sandbox/agent/qb-check-runner.mjs', mount: `${runner.path}:ro`, sha256: runner.sha256 },
+  runner: { host_file: 'sandbox/research/qb-check-runner.mjs', mount: `${runner.path}:ro`, sha256: runner.sha256 },
   images: ids, node_in_agent_image: nodeV, launches: launches.length, distinct_launch_images: [...new Set(launches.map((l) => l.image))],
   check_set_hash: checkSetHash(v.accepted), scenario_sources_sha256: Object.fromEntries(reviewed.map((r) => [r.check_id, r.source_sha256])),
   expected, runs, assertions, all_ok: Object.values(assertions).every(Boolean),

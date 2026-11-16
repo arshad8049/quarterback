@@ -26,7 +26,7 @@ const { contractHash } = require('../../intent/contract-state');
 const { buildBriefing } = require('../../agent/briefing');
 const { mockFetch, ollamaReply } = require('../helpers/mocks');
 
-const RUNNER = path.join(__dirname, '..', '..', 'sandbox', 'agent', 'qb-check-runner.mjs');
+const RUNNER = path.join(__dirname, '..', '..', 'sandbox', 'research', 'qb-check-runner.mjs');
 const ACS = [{ id: 'AC-1', criterion: 'the dispatcher receives the JSON body' }];
 const SRC = `module.exports = async ({ require, assert }) => {
   const { inject } = require('./index.js');

@@ -1,1 +1,1 @@
-request 1: KAN-117 10640 step 3 — synthetic scenario fixtures through the real sandbox with the read-only research runner
+request 2: after run 43783665006 failed at image load — the ported runner changed sandbox/agent (content-tagged image); runner moved to sandbox/research, agent dir identical to pre-port
