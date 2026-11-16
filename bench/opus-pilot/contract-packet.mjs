@@ -52,6 +52,15 @@ files['CONSTRAINTS.md'] = [
 ].join('\n');
 const doc = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 files['CHECKS.md'] = `# QB executable checks: registry and documentation\n\n## docs/verify/executable-checks.md\n\n${doc('docs/verify/executable-checks.md')}\n\n## verify/checks/registry.js (the adapter registry, source)\n\n\`\`\`js\n${doc('verify/checks/registry.js')}\n\`\`\`\n`;
+if (Number(arg('version') || '1') >= 3) files['RESEARCH_SCENARIOS.md'] = [
+  '# Scenario checks in this research contract (qb-checks/3)', '',
+  'Besides the data adapters, this research contract may use `scenario` checks (see CHECKS.md, "scenario"): a short CommonJS module, at most 8 KiB, exporting `async ({ require, assert }) => {}` that throws when the criterion is not met.', '',
+  '- **Review:** a scenario is code. A human reviewer approves its exact source (by sha256) before the contract is frozen; any later change needs a new review.',
+  '- **Where it runs:** QB\'s check stage, on a fresh read-only checkout of the candidate with its installed dependencies, no network, no credentials, one child process per check, 10 seconds per check.',
+  '- **What it may use:** `require` resolves files inside the repository (and its node_modules) and Node built-ins **except** child_process, worker_threads, cluster, net, tls, dgram, http, https, http2, inspector and vm. Not allowed in the source: dynamic `import()`, process control, `eval`, `Function(`, `globalThis`.',
+  '- **How to write it:** from TASK.md and the base repository\'s public behaviour only. It must pass when the requirement is met and throw when it is not; a scenario that cannot fail tests nothing.',
+  '- **Outcomes:** a throw is `fail`; a scenario that cannot load, exports no function, escapes, uses a forbidden module or exceeds its time is `error`.',
+  '- ES modules in the repository can be loaded with `require` on Node 24.', ''].join('\n');
 files['CONTRACT_SCHEMA.md'] = `# QB task contract: schema and an example\n\n## intent/schema.js\n\n\`\`\`js\n${doc('intent/schema.js')}\n\`\`\`\n\n## docs/verify/scope-policy.md\n\n${doc('docs/verify/scope-policy.md')}\n\n## docs/verify/test-oracle.md\n\n${doc('docs/verify/test-oracle.md')}\n\n## intent/requirements.js (traceability: every part of the request must be quoted; source)\n\n\`\`\`js\n${doc('intent/requirements.js')}\n\`\`\`\n\n## verify/policy.js (how constraint_policy and scope are validated and enforced; source)\n\n\`\`\`js\n${doc('verify/policy.js')}\n\`\`\`\n\n## verify/preservation.js (the exact \`preserves\` format; source)\n\n\`\`\`js\n${doc('verify/preservation.js')}\n\`\`\`\n\n## Example contract (docs/demo/clamp-contract.json; an unrelated toy task)\n\n\`\`\`json\n${doc('docs/demo/clamp-contract.json')}\`\`\`\n`;
 files['AUTHOR_INSTRUCTIONS.md'] = [
   '# Instructions for the contract author', '',
@@ -67,7 +76,8 @@ files['AUTHOR_INSTRUCTIONS.md'] = [
     '`previous-contract.json` is the contract another fresh author wrote from packet v1, after a disclosed FORMAT-ONLY repair by the (answer-exposed) controller; its `format_repair` field lists exactly what changed. Two questions remain that only an author may answer:',
     '- **Q1 (traceability):** `node validate.cjs previous-contract.json` lists TASK.md text that no requirement quotes. For each span, add a requirement quoting it: a real requirement (then cover it with a criterion), or `disposition: "context"` with a reason.',
     '- **Q2 (AC-5):** the controller removed AC-5\'s descriptive `preserves` (it named no test file); AC-5 is decided by its bound check. Confirm, or instead name the test files it preserves.',
-    'Change nothing else. Write the result as contract.json.', ''] : []),
+    ...(Number(arg('version') || '1') >= 3 ? ['- **Q3 (behavioural checks):** with `scenario` checks now available (RESEARCH_SCENARIOS.md), write checks for the behavioural criteria that previously had none, where a scenario can express them; keep any that still cannot be expressed behavioural and unresolved, with the reason in `ambiguity_flags`. You may revise those criteria\'s wording only to make them testable, keeping their meaning and requirement links.'] : []),
+    `Change nothing else${Number(arg('version') || '1') >= 3 ? ' beyond Q1-Q3' : ''}. Write the result as contract.json.`, ''] : []),
 ].join('\n');
 files['EXPOSURE.md'] = [
   '# Author exposure declaration (fill in)', '',
