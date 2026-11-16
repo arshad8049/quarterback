@@ -1,0 +1,67 @@
+# KAN-117 review 10640 step 3: synthetic, no-model fixtures for the research scenario capability (KAN-99 adapter ported),
+# through QB's real runSandboxed path with the research check runner mounted READ-ONLY, on the SAVED kan117 image set
+# (run 43610841280; no build, ids checked). No model, no credential, no environment, no secret.
+# Trigger: a push to kan117-axios-mocha changing bench/opus-pilot/mocha/scenario-request.txt.
+name: kan117-scenario-fixtures
+on:
+  push:
+    branches: [kan117-axios-mocha]
+    paths: [bench/opus-pilot/mocha/scenario-request.txt]
+permissions:
+  contents: read
+  actions: read
+env:
+  OUT: ${{ github.workspace }}/scenario-out
+  IMG: ${{ github.workspace }}/kan117-images
+  KAN117_IMAGES_RUN: '43610841280'
+  QB_INTEGRATION: '0'
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: kan117-images
+          path: ${{ env.IMG }}
+          run-id: ${{ env.KAN117_IMAGES_RUN }}
+          github-token: ${{ github.token }}
+      - name: Load the saved image set; require the recorded ids (no build)
+        env: { KAN117_CI_RUN: '1' }
+        run: node bench/public/kan117/image-bundle.mjs load --in="$IMG"
+      - name: Scenario fixtures (no model)
+        id: fx
+        env: { KAN117_CI_RUN: '1' }
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          node bench/opus-pilot/scenario-fixtures.mjs --images="$IMG" --out="$OUT"
+      - name: Public notice (statuses, durations, hashes, runner/mount/image/Node evidence)
+        if: ${{ !cancelled() }}
+        run: |
+          node -e '
+            const j = require(process.argv[1]);
+            const r = (x) => (x.results || []).map((c) => `${c.id}=${c.status}(${c.duration_ms}ms)`).join(",") || `invalid:${x.results_reason}`;
+            const L = [
+              `SCENARIO all_ok=${j.all_ok} node=${j.node_in_agent_image} runner=${j.runner.mount}:sha=${j.runner.sha256.slice(0,12)} images=${j.distinct_launch_images.length}/${Object.values(j.images).map((i) => i.slice(7,19)).join(",")} launches=${j.launches} cleanup=${JSON.stringify(j.cleanup)} check_set=${j.check_set_hash.slice(0,12)}`,
+              `RESULTS base[${j.runs.base.status}|checks=${j.runs.base.checks_state}|runner_used=${j.runs.base.runner && j.runs.base.runner.sha256 ? j.runs.base.runner.sha256.slice(0,12) : "-"}]: ${r(j.runs.base)} ; defect[${j.runs.defect.status}]: ${r(j.runs.defect)}`,
+              `ASSERT ${JSON.stringify(j.assertions)}`,
+              `DETAIL ${(j.runs.base.results || []).map((c) => `${c.id}: ${c.detail}`).join(" | ").replace(/%/g, "%25")}`,
+            ];
+            for (const l of L) console.log(`::notice title=kan117-scenario::${l}`);
+          ' "$OUT/scenario-fixtures.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: kan117-scenario-fixtures
+          path: ${{ env.OUT }}/scenario-fixtures.json
+          retention-days: 90

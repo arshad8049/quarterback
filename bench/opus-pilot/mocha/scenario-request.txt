@@ -1,0 +1,1 @@
+request 1: KAN-117 10640 step 3 — synthetic scenario fixtures through the real sandbox with the read-only research runner
