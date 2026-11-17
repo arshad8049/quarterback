@@ -159,8 +159,8 @@ describe('10690 (1): every criterion\'s actual evidence path (honest fixture, re
     assert.deepEqual([by['AC-2'].met, by['AC-2'].method], [null, 'no-check']);
     for (const id of ['AC-3', 'AC-4', 'AC-5']) assert.deepEqual([by[id].met, by[id].method, by[id].check_status], [true, 'check', 'passed'], `${id}: ${by[id].evidence}`);
     assert.equal(by['AC-6'].met, null);
-    assert.equal(by['AC-6'].human_review, true);
-    assert.equal(by['AC-6'].witness.advisory, true);
+    assert.equal(by['AC-6'].human_review, true, by['AC-6'].evidence);
+    assert.equal(by['AC-6'].witness?.advisory, true, JSON.stringify(by['AC-6']));
     assert.notEqual(v.verdict, 'pass', 'two unresolved behaviour criteria and an advisory witness cannot pass');
   });
 });

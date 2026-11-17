@@ -32,7 +32,9 @@ const FIX = path.join(__dirname, '..', 'fixtures', 'kan106');
 const REQUEST = fs.readFileSync(path.join(FIX, 'request.txt'), 'utf8').trim();
 const INITIAL = fs.readFileSync(path.join(FIX, 'b2416ebc-initial.json'), 'utf8');
 const REPAIRED = fs.readFileSync(path.join(FIX, 'b2416ebc-repair.json'), 'utf8');
-const CORRECTED = fs.readFileSync(path.join(FIX, 'b2416ebc-structural-only.json'), 'utf8');
+// 10690: the old "corrected" reply is structural-only (its checks never call asNumber); the repair-shape
+// tests now use the human-reviewed reply faithful to the pinned repository's API.
+const CORRECTED = fs.readFileSync(path.join(FIX, 'pinned-api-honest.json'), 'utf8');
 const FAITHFUL = fs.readFileSync(path.join(FIX, 'faithful-draft.json'), 'utf8');
 const SMOKE = JSON.parse(fs.readFileSync(path.join(FIX, 'b2416ebc-errors.json'), 'utf8'));
 const QB = path.join(__dirname, '..', '..', 'qb.js');
@@ -67,8 +69,12 @@ const errorsOf = (text, edit = null, request = REQUEST) => { const s = load.stat
 
 describe('10677: the b2416ebc drafts, reproduced offline', () => {
   test('the exact smoke drafts give the exact recorded errors (eaa3882), and the timings fixture is the run\'s', () => {
-    assert.deepEqual(errorsOf(INITIAL), SMOKE.errors[0]);
-    assert.deepEqual(errorsOf(REPAIRED), SMOKE.errors[1]);
+    // 10690: the recorded errors are still reported first and unchanged; the check-fidelity rules add theirs after them.
+    for (const [draft, recorded] of [[INITIAL, SMOKE.errors[0]], [REPAIRED, SMOKE.errors[1]]]) {
+      const e = errorsOf(draft);
+      assert.deepEqual(e.slice(0, recorded.length), recorded);
+      assert.ok(e.slice(recorded.length).length > 0 && e.slice(recorded.length).every((x) => /never calls asNumber|make the identical call|is about behaviour/.test(x)), e.slice(recorded.length).join('\n'));
+    }
     assert.equal(SMOKE.qb_revision, 'eaa38820425982b4236e3492e52a2c8967eb5e1e');
     assert.equal(SMOKE.timings.l1_ms, 350110);
     assert.deepEqual(SMOKE.timings.calls.map((c) => [c.kind, c.ms, c.limit_ms]), [['initial', 179063, 240000], ['repair', 170885, 240000]]);
@@ -96,11 +102,11 @@ describe('10677 (1): the repair names each conflicting criterion and why; valida
     assert.match(p, /QB's own regression gate already fails the task on any new test failure/);
     assert.match(p, /cover R-6 with the criterion that requires adding the tests \("adds_tests"\)/);
   });
-  test('a corrected reply (AC-6/AC-7 removed with their constraints; R-1 and R-6 cited) passes FULL validation through the real compiler path', async () => {
+  test('a corrected reply (AC-6/AC-7 removed with their constraints; R-1 and R-6 cited; checks faithful to the pinned API) passes FULL validation through the real compiler path', async () => {
     const { s, calls } = await compileWith([INITIAL, CORRECTED]);
     assert.equal(calls, 2);
     assert.equal(s.state, 'finalized', JSON.stringify(s.errors));
-    assert.deepEqual(s.contract.acceptance_criteria.map((a) => a.id), ['AC-1', 'AC-2', 'AC-3', 'AC-4', 'AC-5']);
+    assert.deepEqual(s.contract.acceptance_criteria.map((a) => a.id), ['AC-1', 'AC-2', 'AC-3', 'AC-4', 'AC-5', 'AC-6']);
     assert.equal(s.repair.rejected.length, 1, 'the rejected first draft stays in the record');
     assert.ok(!s.contract.approval, 'still needs human review and approval');
   });
@@ -164,24 +170,25 @@ describe('10677 (2): adds_tests needs a witness of NEW, relevant, passing test c
   const decide = async (execution) => (await load.verifier().verify(approved(), null, execution, { noLlm: true })).criteria_results.find((x) => x.id === 'AC-6');
   const OLD = ['test/asNumber.test.js', 'returns numbers', true];
 
-  test('new relevant cases that ran and passed: met, with the witness in the evidence', async () => {
+  test('new relevant cases that ran and passed: the witness is recorded, but it is advisory (10690): human review, never met on its own', async () => {
     const r = await decide(exec(["+test('empty string throws', () => { assert.throws(() => asNumber('')) })", "+test('whitespace throws', () => { assert.throws(() => asNumber('   ')) })"],
       [OLD, ['test/asNumber.test.js', 'empty string throws', true], ['test/asNumber.test.js', 'whitespace throws', true]]));
-    assert.equal(r.met, true, r.evidence);
+    assert.equal(r.met, null, r.evidence);
+    assert.equal(r.human_review, true);
     assert.deepEqual(r.witness.files['test/asNumber.test.js'].added, ['empty string throws', 'whitespace throws']);
     assert.deepEqual(r.witness.files['test/asNumber.test.js'].mentions, ['asNumber']);
-    assert.match(r.evidence, /2 new test case\(s\) added in the diff, all ran and passed, and they call asNumber/);
+    assert.match(r.evidence, /2 new test case\(s\) added in the diff; the added code calls asNumber \(identifiers from the whole contract\); textual heuristic only \(advisory\): human review required/);
     assert.match(r.evidence, /does not show that their assertions are meaningful/);
   });
   test('a comment-only edit while an old test passes: NOT met', async () => {
     const r = await decide(exec(['+// TODO: cover empty strings with asNumber'], [OLD]));
     assert.equal(r.met, false);
-    assert.match(r.evidence, /no new test case in the diff of test\/asNumber\.test\.js/);
+    assert.match(r.evidence, /the diff of test\/asNumber\.test\.js adds no code \(comments or blank lines only\)/);
   });
   test('deleting tests while one old test passes: NOT met', async () => {
     const r = await decide(exec(["-test('handles negatives', () => { assert.equal(asNumber('-7'), -7) })"], [OLD]));
     assert.equal(r.met, false);
-    assert.match(r.evidence, /no new test case in the diff/);
+    assert.match(r.evidence, /adds no code \(it only removes lines\)/);
     assert.match(r.evidence, /removed: handles negatives/);
   });
   test('cases added while others are removed: unresolved, human review', async () => {
@@ -197,10 +204,13 @@ describe('10677 (2): adds_tests needs a witness of NEW, relevant, passing test c
     assert.equal(r.human_review, true);
     assert.match(r.evidence, /the added cases do not call any function the checks exercise \(asNumber\)/);
   });
-  test('an added case that did not run or did not pass: NOT met', async () => {
+  test('an added case missing from the report: insufficient evidence (unresolved); an added case reported failing: NOT met', async () => {
     const r = await decide(exec(["+test('empty string throws', () => { assert.throws(() => asNumber('')) })"], [OLD]));
-    assert.equal(r.met, false);
-    assert.match(r.evidence, /added but did not pass: empty string throws/);
+    assert.equal(r.met, null);
+    assert.match(r.evidence, /not found in the test report \(empty string throws\): insufficient evidence, not a demonstrated failure/);
+    const f = await decide(exec(["+test('empty string throws', () => { assert.throws(() => asNumber('')) })"], [OLD, ['test/asNumber.test.js', 'empty string throws', false]]));
+    assert.equal(f.met, false);
+    assert.match(f.evidence, /added but failed: empty string throws/);
   });
   test('L1 vs execution: the checklist text says what L1 checked structurally and what only the run can show', () => {
     const view = require('../../intent/oracle-view').formatOracle(approved());

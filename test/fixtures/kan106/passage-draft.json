@@ -154,64 +154,98 @@
   ],
   "checks": [
     {
-      "id": "CHK-1",
-      "ac_id": "AC-1",
-      "adapter": "call_throws",
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_sequence",
       "params": {
         "module": "lib/serializer.js",
-        "export": "Serializer",
-        "args": [],
-        "message_includes": "The value \"\" cannot be converted to a number."
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              0
+            ],
+            "expect": "0"
+          }
+        ]
       },
       "plan_item": 0
     },
     {
-      "id": "CHK-2",
-      "ac_id": "AC-2",
-      "adapter": "call_throws",
-      "params": {
-        "module": "lib/serializer.js",
-        "export": "Serializer",
-        "args": [],
-        "message_includes": "The value \" \" cannot be converted to a number."
-      },
-      "plan_item": 1
-    },
-    {
-      "id": "CHK-3",
-      "ac_id": "AC-3",
-      "adapter": "call_returns",
-      "params": {
-        "module": "lib/serializer.js",
-        "export": "Serializer",
-        "args": [],
-        "expect": "0"
-      },
-      "plan_item": 2
-    },
-    {
       "id": "CHK-4",
       "ac_id": "AC-4",
-      "adapter": "call_returns",
+      "adapter": "call_sequence",
       "params": {
         "module": "lib/serializer.js",
-        "export": "Serializer",
-        "args": [],
-        "expect": "0"
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "0"
+            ],
+            "expect": "0"
+          }
+        ]
       },
-      "plan_item": 3
+      "plan_item": 0
     },
     {
       "id": "CHK-5",
       "ac_id": "AC-5",
-      "adapter": "call_returns",
+      "adapter": "call_sequence",
       "params": {
         "module": "lib/serializer.js",
-        "export": "Serializer",
-        "args": [],
-        "expect": "12.5"
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "12.5"
+            ],
+            "expect": "12.5"
+          },
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "-7"
+            ],
+            "expect": "-7"
+          },
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              " 123 "
+            ],
+            "expect": "123"
+          }
+        ]
       },
-      "plan_item": 4
+      "plan_item": 0
     }
   ],
   "relevant_context": [

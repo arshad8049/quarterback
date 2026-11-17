@@ -250,9 +250,10 @@ function preservationResult(ac, classified, ev, execution = null) {
 /** KAN-106 (10677): the functions the contract's checks exercise (their export / method names). */
 function checkedIdentifiers(checks) {
   const ids = new Set();
-  for (const k of checks || []) for (const key of ['export', 'method', 'function']) {
-    const v = k?.params?.[key];
-    if (typeof v === 'string' && /^[A-Za-z_$][\w$]*$/.test(v) && v !== 'default') ids.add(v);
+  const add = (v) => { if (typeof v === 'string' && /^[A-Za-z_$][\w$]*$/.test(v) && v !== 'default') ids.add(v); };
+  for (const k of checks || []) {
+    for (const key of ['export', 'method', 'function']) add(k?.params?.[key]);
+    for (const st of Array.isArray(k?.params?.steps) ? k.params.steps : []) add(st && st.method);   // 10690: call_sequence methods
   }
   return [...ids].sort();
 }

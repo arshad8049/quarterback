@@ -101,8 +101,8 @@ function validateNodeReport(text) {
   for (const e of tests) {
     const f = relFile(e.file);
     if (!f || e.todo) continue;
-    const s = byFile[f] || (byFile[f] = { passed: 0, failed: 0, skipped: 0, passed_names: [] });
-    if (e.type === 'test:fail') s.failed++; else if (e.skip) s.skipped++; else { s.passed++; s.passed_names.push(String(e.name)); }   // KAN-106 (10677): names, for the adds_tests witness
+    const s = byFile[f] || (byFile[f] = { passed: 0, failed: 0, skipped: 0, passed_names: [], failed_names: [] });
+    if (e.type === 'test:fail') { s.failed++; s.failed_names.push(String(e.name)); } else if (e.skip) s.skipped++; else { s.passed++; s.passed_names.push(String(e.name)); }   // KAN-106 (10677): names, for the adds_tests witness
   }
   return { ok: true, counts: Object.fromEntries(COUNT_KEYS.map((k) => [k, counts[k]])), collectionFailures, failingTests, byFile };
 }

@@ -18,8 +18,10 @@ const CriterionResultSchema = z.object({
   evidence_ids:     z.array(z.string()).optional(),                                  // QB-11: what the judgment was based on
   evidence_missing: z.array(z.object({ what: z.string(), reason: z.string() })).optional(),
   human_review:     z.boolean().optional(),                                          // KAN-106 (10677): partial adds_tests evidence
-  witness:          z.object({ identifiers: z.array(z.string()), files: z.record(z.object({
-    added: z.array(z.string()), modified: z.array(z.string()), removed: z.array(z.string()), mentions: z.array(z.string()) })) }).optional(),
+  witness:          z.object({ advisory: z.boolean(), identifiers: z.array(z.string()), identifiers_scope: z.string(),   // 10690: advisory only
+    files: z.record(z.object({ added: z.array(z.string()), modified: z.array(z.string()), removed: z.array(z.string()),
+      skipped: z.array(z.string()), duplicate_titles: z.array(z.string()), mentions: z.array(z.string()),
+      code_added: z.boolean(), lines_added: z.number().int().nonnegative() })) }).optional(),
 });
 
 const EvidenceItemSchema = z.object({                                                  // QB-11 manifest (no contents)

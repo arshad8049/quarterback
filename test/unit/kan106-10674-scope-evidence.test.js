@@ -258,7 +258,7 @@ describe('10674: the faithful contract and its criterion-to-evidence mapping', (
     // (the full witness is in kan106-10677-repair-evidence.test.js).
     const headerOnly = await decide(exec(both, [['test/asNumber.test.js', 'empty string throws', true]]));
     assert.deepEqual([headerOnly.met, headerOnly.method], [false, 'test-runner+change-set']);
-    assert.match(headerOnly.evidence, /test\/asNumber\.test\.js: changed; 1 passed, 0 failed; no new test case in the diff of test\/asNumber\.test\.js/);
+    assert.match(headerOnly.evidence, /test\/asNumber\.test\.js: changed; 1 passed, 0 failed; the diff of test\/asNumber\.test\.js adds no code/);   // 10690: wording
     const unchanged = await decide(exec(['lib/serializer.js'], [['test/asNumber.test.js', 'old test', true]]));
     assert.equal(unchanged.met, false);
     assert.match(unchanged.evidence, /not changed by the task: test\/asNumber\.test\.js/);
