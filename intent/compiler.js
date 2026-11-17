@@ -20,6 +20,7 @@ const SEMANTIC_FIELDS = [
 const { modelCall } = require('../lib/budget');
 const { validateChecks } = require('../verify/checks/registry');
 const { splitPassages, passageListing, resolveInRequest } = require('./passages');
+const { requestTargets } = require('./request-targets');
 
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'), 'utf8');
 
@@ -39,6 +40,9 @@ async function compile(request, repoContext = null, clarification = null, o = {}
   const bound = history.map((h) => ({ question_id: h.question_id ?? null, answer: h.answer }));
   const ambiguity = detectAmbiguity(request, bound);
   if (ambiguity) return ambiguity;
+  // KAN-106 (10674 F-a): QB cannot tell whether a named file may be changed: ask, never guess.
+  const scopeQuestion = targetQuestion(request, bound);
+  if (scopeQuestion) return scopeQuestion;
   const clar = resolveClarifications(request, bound);
   return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry), clar, o.timer);
 }
@@ -59,6 +63,16 @@ async function repair(request, repoContext, clarification, failure, o = {}) {
   const clar = resolveClarifications(request, history.map((h) => ({ question_id: h.question_id ?? null, answer: h.answer })));
   const section = failure.kind === 'syntax' ? syntaxSection(failure.diagnostic) : repairSection(failure.contract, failure.errors);
   return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar, o.timer);
+}
+
+const TARGET_QUESTION = 'scope.target';
+/** A clarifying question for the first ambiguous file instruction (intent/request-targets.js), unless already answered. */
+function targetQuestion(request, bound) {
+  if (bound.some((b) => b.question_id === TARGET_QUESTION)) return null;
+  const a = requestTargets(request).ambiguous[0];
+  if (!a) return null;
+  const question = `May the task change ${a.path}? The request says ${JSON.stringify(a.passage)} and then limits it, so QB cannot tell whether ${a.path} is to be edited.`;
+  return { ambiguity_flags: [a.reason], clarifying_question: question, unresolved: [{ id: TARGET_QUESTION, question, choices: [], flag: a.reason }] };
 }
 
 function syntaxSection(diagnostic) {
@@ -105,6 +119,10 @@ function repairSection(rejected, errors) {
     '- Fix every validation error above.',
     '- Cite request passages by id in each requirement\'s passage_ids (QB copies their exact text); do not retype the request. Every passage P1…Pn must be cited by at least one requirement; one passage may support several requirements.',
     '- Keep every part of the request. Add nothing the request does not ask for.',
+    '- A scope error about a file the request asks to change: keep that file in scope.allowed_changes and remove or narrow the protected_paths glob that covers it. Never fix a scope conflict by dropping requested work or its criterion.',
+    '- Keep the criterion that requires adding the requested tests, with "adds_tests": { "files": [<the test file>] }. Do not mark that requirement "context", and do not mark the criterion non_behavioral.',
+    '- A passage that only names a file location: list its requirement in requirement_ids of the criteria that test that file, or mark it disposition "context" with a reason "location only".',
+    '- A criterion that says tests still pass names literal test files in preserves.tests that the task does not edit, and has no value checks bound to it.',
     '- Remove every proposed default that was "not covered by any acceptance criterion". Do NOT add criteria to justify it, and do not add new or reworded defaults.',
     '- Do not ask a clarifying question; set clarifying_question to null.',
   ].join('\n');
@@ -114,6 +132,9 @@ function repairSection(rejected, errors) {
 async function draftContract(request, userContent, clar, timer = null) {
   // QB-21: deadline-bound, cancellable, concurrency-bounded (lib/budget.js)
   const t0 = timer ? timer.now() : 0;
+  // KAN-106 (10674 F-d): the call's limit is min(per-call cap, what is left of L1, the run deadline).
+  let limit = null;
+  const lim = { ...(timer && timer.limits ? timer.limits() : {}), onLimit: (ms) => { limit = ms; } };
   let data;
   try {
     data = await modelCall(`${OLLAMA_URL}/api/chat`, {
@@ -124,10 +145,11 @@ async function draftContract(request, userContent, clar, timer = null) {
     ],
     stream: false,
     options: { temperature: 0.1, num_ctx: 16384 },
-    });
+    }, lim);
   } finally {
-    // KAN-106: the model call's own elapsed time, whether it answered or failed.
-    if (timer) timer.onModelCall(timer.now() - t0);
+    // KAN-106: the model call's own elapsed time, whether it answered or failed, with its limit and
+    // (when Ollama reports it) the model load time: a cold load shows here, never hidden.
+    if (timer) timer.onModelCall(timer.now() - t0, { limit_ms: limit, load_ms: loadMs(data) });
   }
   const raw = data.message?.content;
   if (!raw) throw new Error('Empty response from Ollama');
@@ -140,6 +162,25 @@ async function draftContract(request, userContent, clar, timer = null) {
     else delete result.clarifications;
   }
   return result;
+}
+
+/** Ollama's reported model load time (load_duration, ns) in ms, or null when not reported. */
+const loadMs = (data) => (data && Number.isFinite(data.load_duration) ? Math.round(data.load_duration / 1e6) : null);
+
+/**
+ * KAN-106 (10674 F-d): an optional, explicit warm-up before the first draft (--l1-warmup): one
+ * request that loads the model (empty prompt, /api/generate). It is inside L1's wall time and
+ * budget, bounded like any L1 call, and recorded as its own call. No keep_alive or other Ollama
+ * setting is sent or changed.
+ */
+async function warmup(timer = null) {
+  const t0 = timer ? timer.now() : 0;
+  let limit = null;
+  const lim = { ...(timer && timer.limits ? timer.limits() : {}), onLimit: (ms) => { limit = ms; } };
+  let data;
+  try { data = await modelCall(`${OLLAMA_URL}/api/generate`, { model: MODEL, prompt: '', stream: false }, lim); }
+  finally { if (timer) timer.onModelCall(timer.now() - t0, { limit_ms: limit, load_ms: loadMs(data) }); }
+  return { load_ms: loadMs(data) };
 }
 
 /**
@@ -259,6 +300,7 @@ function contractFromObject(raw, request) {
         // QB-14: which requirements this criterion covers (validated by contractState).
         requirement_ids: obj && Array.isArray(ac.requirement_ids) ? ac.requirement_ids.filter((x) => typeof x === 'string') : [],
         ...(obj && ac.preserves !== undefined ? { preserves: ac.preserves } : {}),   // QB-15: validated by contractState
+        ...(obj && ac.adds_tests !== undefined ? { adds_tests: ac.adds_tests } : {}),   // KAN-106: validated by contractState
       };
     })
     : [];
@@ -381,4 +423,4 @@ function fixUnquotedKeys(str) {
   return str.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
 }
 
-module.exports = { compile, repair, contractFromObject, DraftSyntaxError, NO_QUESTION_SENTINELS };
+module.exports = { compile, repair, warmup, contractFromObject, DraftSyntaxError, NO_QUESTION_SENTINELS };

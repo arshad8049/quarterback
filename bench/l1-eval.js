@@ -6,13 +6,19 @@
  * survey, validator and one-correction path qb.js uses) against the local Ollama, and records
  * every trial. No agent, no Docker, no paid calls. Nothing is approved or executed.
  *
- *   node bench/l1-eval.js --model deepseek-r1:7b --trials 5 [--task greeting] [--out DIR]
+ *   node bench/l1-eval.js --model deepseek-r1:7b --trials 5 [--task greeting] [--out DIR] [--l1-profile NAME] [--l1-warmup]
  *   node bench/l1-eval.js --summarize DIR     # rescore every trials-*.jsonl[.gz] in DIR, no model calls
  *
  * Writes DIR/trials-<model>.jsonl (one line per trial, appended as it goes) and DIR/summary.{json,md}.
  * A summary always rescores the saved contracts against the CURRENT tasks.json matchers, and pools
  * trials only under one run identity (score.groupKey). With no trials found it refuses and leaves
  * any existing summary alone. One model per process: QB_MODEL is read when the compiler loads.
+ *
+ * KAN-106 (10674 item 5): each trial row (qb-l1-eval-trial/3) also saves the L1 timings (per call:
+ * kind, ms, limit_ms, load_ms when Ollama reports it, i.e. warm/cold where observable), the effective
+ * L1 budget and per-call cap, and the profile/warm-up in the run identity's settings, so a changed
+ * profile is a different run group and is never pooled with earlier results. Old rows are kept as
+ * they are (no rewrite).
  */
 const fs = require('fs');
 const os = require('os');
@@ -25,7 +31,7 @@ const score = require('./l1-eval/score');
 const ROOT = path.join(__dirname, '..');
 const TASKS_FILE = path.join(__dirname, 'l1-eval', 'tasks.json');
 // The code a trial's outcome depends on: the harness, the compiler, its prompt and the validators.
-const CODE_PATHS = ['bench/l1-eval.js', 'bench/l1-eval', 'intent', 'verify/policy.js', 'verify/checks', 'lib/budget.js'];
+const CODE_PATHS = ['bench/l1-eval.js', 'bench/l1-eval', 'intent', 'verify/policy.js', 'verify/preservation.js', 'verify/added-tests.js', 'verify/tests.js', 'verify/checks', 'lib/budget.js'];
 
 function args(argv) {
   const o = { trials: 3, tasks: [], out: path.join(__dirname, 'results', 'l1-eval') };
@@ -36,6 +42,8 @@ function args(argv) {
     else if (a === '--task') o.tasks.push(argv[++i]);
     else if (a === '--out') o.out = path.resolve(argv[++i]);
     else if (a === '--summarize') o.summarize = path.resolve(argv[++i]);
+    else if (a === '--l1-profile') o.l1Profile = argv[++i];
+    else if (a === '--l1-warmup') o.l1Warmup = true;
     else throw new Error(`unknown argument ${a}`);
   }
   return o;
@@ -73,7 +81,7 @@ function codeHash(root = ROOT) {
 }
 
 /** The identity a trial may be pooled under (with the model digest): task set, code, settings. */
-function runIdentity() {
+function runIdentity({ l1Budget = null, warmup = false } = {}) {
   let dirty = null;
   try { dirty = String(git(ROOT, ['status', '--porcelain', '--', ...CODE_PATHS])).trim().length > 0; } catch { /* unknown */ }
   return {
@@ -85,6 +93,9 @@ function runIdentity() {
       model_call_timeout_ms: Number(process.env.QB_MODEL_CALL_TIMEOUT_MS) > 0 ? Number(process.env.QB_MODEL_CALL_TIMEOUT_MS) : 180000,
       model_concurrency: Number(process.env.QB_MODEL_CONCURRENCY) > 0 ? Number(process.env.QB_MODEL_CONCURRENCY) : 2,
       ollama_host: (() => { try { return new URL(process.env.QB_OLLAMA_URL || 'http://127.0.0.1:11434').host; } catch { return null; } })(),
+      // KAN-106 (10674): present only when set, so rows from before keep their identity.
+      ...(l1Budget ? { l1_profile: l1Budget.profile, l1_budget_ms: l1Budget.ms, l1_budget_enforced: l1Budget.enforced, l1_per_call_ms: l1Budget.per_call_ms } : {}),
+      ...(warmup ? { l1_warmup: true } : {}),
     },
   };
 }
@@ -136,7 +147,10 @@ async function main() {
   const file = path.join(o.out, `trials-${o.model.replace(/[^A-Za-z0-9._-]/g, '_')}.jsonl`);
   const digest = await modelDigest(url, o.model);
   const commit = (() => { try { return String(git(ROOT, ['rev-parse', '--short', 'HEAD'])).trim(); } catch { return null; } })();
-  const run = runIdentity();
+  const { l1Budget: budgetOf } = require('../lib/budget');
+  const explicit = o.l1Profile || process.env.QB_L1_PROFILE || process.env.QB_L1_BUDGET_MS;
+  const l1Budget = explicit ? budgetOf({ profile: o.l1Profile || null }) : null;
+  const run = runIdentity({ l1Budget, warmup: Boolean(o.l1Warmup) });
   const host = { platform: process.platform, arch: process.arch, cpus: os.cpus().length, mem_gib: Math.round(os.totalmem() / 2 ** 30), node: process.version };
 
   // Count model calls (every POST to the model server) per trial.
@@ -150,13 +164,14 @@ async function main() {
       calls = 0;
       const t0 = Date.now();
       let result = null; let error = null;
-      try { result = await compileIntent(task.request, { repoPath: repo }); } catch (e) { error = e; }
+      try { result = await compileIntent(task.request, { repoPath: repo, ...(l1Budget ? { l1Budget } : {}), warmup: Boolean(o.l1Warmup) }); } catch (e) { error = e; }
       finally { fs.rmSync(repo, { recursive: true, force: true }); }
       const ms = Date.now() - t0;
       const rejected = result?.repair?.rejected || error?.recovery?.rejected || [];
       const outcome = score.outcomeOf(result, error);
       const rec = {
-        format: 'qb-l1-eval-trial/2', model: o.model, digest, commit, run, host, task: task.id, trial, outcome,
+        format: 'qb-l1-eval-trial/3', model: o.model, digest, commit, run, host, task: task.id, trial, outcome,
+        timings: result?.timings || error?.l1_timings || null,
         first_draft_failure: rejected[0] ? (rejected[0].kind === 'syntax' ? 'syntax' : 'invalid') : null,
         calls, ms,
         categories: score.categorize(rejected.flatMap((r) => r.errors || [])),

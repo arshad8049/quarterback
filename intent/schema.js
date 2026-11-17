@@ -9,6 +9,7 @@ const AcceptanceCriterion = z.object({
   kind: z.enum(['behavioral', 'non_behavioral']).optional(),
   requirement_ids: z.array(z.string()).optional(),   // QB-14
   preserves: z.unknown().optional(),                 // QB-15: validated by verify/preservation.js
+  adds_tests: z.unknown().optional(),                // KAN-106: validated by verify/added-tests.js
 });
 
 const TaskContractSchema = z.object({

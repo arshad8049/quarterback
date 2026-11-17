@@ -76,7 +76,9 @@ program
   .option('--no-llm-verify',       'Skip LLM judgment in Layer 4 (DSA only)')
   .option('--save',                'Save all artifacts to disk')
   .option('--deadline <minutes>',  'Total-run deadline; in-flight work is cancelled and the run ends CANCELLED naming the stage (QB-21; env QB_RUN_DEADLINE_MS)')
-  .option('--l1-budget <seconds>', 'L1 (intent) time budget, recorded with the L1 timings and flagged when exceeded; not enforced (KAN-106; env QB_L1_BUDGET_MS)')
+  .option('--l1-budget <seconds>', 'L1 (intent) time budget over all L1 model calls, enforced with a monotonic deadline (KAN-106; env QB_L1_BUDGET_MS)')
+  .option('--l1-profile <name>',   'EXPERIMENTAL L1 time profile, e.g. qwen-14b-experimental (240 s per call, 420 s for L1); not a default (KAN-106; env QB_L1_PROFILE)')
+  .option('--l1-warmup',           'Load the L1 model with one recorded warm-up call before the first draft (inside the L1 time and budget)')
   .option('--telemetry',           'Send this run\'s outcome metrics to Quarterback (opt-in; needs a telemetry token)')
   .option('--telemetry-token <t>', 'Your verified telemetry token (or QB_TELEMETRY_TOKEN); request one at /api/telemetry/request (QB-33)')
   .option('--telemetry-dry-run',   'Print the exact telemetry payload this run would send, and send nothing (QB-32)')
@@ -181,6 +183,7 @@ async function main() {
     };
     const s = await compileIntent(request, {
       repoPath, answers: opts.clarify || [],
+      l1Budget: budget.l1Budget({ flagMs: checked.l1BudgetMs, profile: checked.l1Profile }), warmup: Boolean(opts.l1Warmup),
       ask: process.stdin.isTTY ? async (h) => { showQuestion(h); return (await prompt('  Your answer → ')).trim() || null; } : null,
     });
     reportL1Timings(run, s.timings);   // KAN-106: before any exit below
@@ -408,17 +411,19 @@ async function main() {
 
 /**
  * KAN-106: the L1 timings with the L1 budget, as a run event (`l1.timings`) and one CLI line.
- * The budget is recorded and compared, not enforced (lib/budget.js l1Budget).
+ * An explicit budget (flag, env, profile) is enforced; the provisional default is recorded only.
  */
 function reportL1Timings(run, timings) {
   if (!run || !timings) return;
-  const b = budget.l1Budget({ flagMs: checked.l1BudgetMs });
+  const b = timings.l1_budget || budget.l1Budget({ flagMs: checked.l1BudgetMs, profile: checked.l1Profile });
   const data = { ...timings, budget: { ...b, over_budget: timings.l1_ms > b.ms } };
   run.event('l1.timings', data);
   const sec = (ms) => (ms === null || ms === undefined ? 'n/a' : `${(ms / 1000).toFixed(1)}s`);
   const repairs = timings.repair_call_ms.length ? timings.repair_call_ms.map(sec).join(' + ') : 'none';
   const src = b.source === 'provisional_default' ? 'provisional default' : `from ${b.source}`;
-  log('L1', `Timings: first draft ${sec(timings.initial_call_ms)} · validation ${sec(timings.validation_ms)} · repair ${repairs} · L1 total ${sec(timings.l1_ms)} (budget ${Math.round(b.ms / 1000)}s ${src}, not enforced)`);
+  const warm = timings.warmup_ms !== null && timings.warmup_ms !== undefined ? `warm-up ${sec(timings.warmup_ms)} · ` : '';
+  const loads = (timings.calls || []).filter((c) => Number.isFinite(c.load_ms) && c.load_ms > 0).map((c) => `${c.kind} ${sec(c.load_ms)}`);
+  log('L1', `Timings: ${warm}first draft ${sec(timings.initial_call_ms)} · validation ${sec(timings.validation_ms)} · repair ${repairs} · L1 total ${sec(timings.l1_ms)} (budget ${Math.round(b.ms / 1000)}s ${src}, ${b.enforced ? 'enforced' : 'not enforced'}${b.profile ? `, per call ${Math.round(b.per_call_ms / 1000)}s, experimental` : ''})${loads.length ? ` · model load reported: ${loads.join(', ')}` : ''}`);
   if (data.budget.over_budget) log('L1', `L1 took longer than its budget (${sec(timings.l1_ms)} > ${sec(b.ms)})`);
 }
 

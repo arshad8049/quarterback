@@ -8,6 +8,7 @@ const { checkSetHash } = require('./checks/registry');
 const { evaluatePolicy } = require('./policy');
 const { buildEvidence, candidateFiles, manifestEntry } = require('./evidence');
 const { decidePreservation } = require('./preservation');
+const { decideAddedTests } = require('./added-tests');
 const { openCache } = require('./judge-cache');
 const { VerificationReportSchema } = require('./schema');
 const { contractState, stateReason, contractHash, approvalState } = require('../intent/contract-state');
@@ -47,7 +48,7 @@ async function verify(contract, context, execution, options = {}) {
   const checkEval   = evaluateChecks(contract, execution);
   const execFailed  = FAILED_EXECUTION.has(execution?.status ?? null);
   // QB-15: a preservation criterion is decided by the named tests it preserves, never by the judge.
-  const criteria    = execFailed ? allCriteria : allCriteria.filter(ac => ac.kind === 'non_behavioral' && !ac.preserves);
+  const criteria    = execFailed ? allCriteria : allCriteria.filter(ac => ac.kind === 'non_behavioral' && !ac.preserves && !ac.adds_tests);
   const judgeCache  = options.judgeCache ? openCache(options.judgeCache) : null;
   let criteriaResults;
 
@@ -103,7 +104,8 @@ async function verify(contract, context, execution, options = {}) {
     const judged = new Map(criteriaResults.map(r => [r.id, r]));
     const classified = classifyTestRun(execution?.sandbox?.verification || null, testOptions(contract));
     criteriaResults = allCriteria.map(ac => judged.get(ac.id)
-      || (ac.preserves ? preservationResult(ac, classified, checkEval) : criterionFromChecks(ac, checkEval)));
+      || (ac.preserves ? preservationResult(ac, classified, checkEval, execution)
+        : ac.adds_tests ? addedTestsResult(ac, classified, checkEval, execution) : criterionFromChecks(ac, checkEval)));
   }
 
   // ── Verdict ──────────────────────────────────────────────────────────────
@@ -236,8 +238,18 @@ function criterionFromChecks(ac, ev) {
 }
 
 /** QB-15: the named tests decide; checks bound to the criterion (interfaces) must also pass. */
-function preservationResult(ac, classified, ev) {
-  const t = decidePreservation(ac, classified);
+function preservationResult(ac, classified, ev, execution = null) {
+  const t = decidePreservation(ac, classified, execution);
+  if (!ev.requested.some(c => c.ac_id === ac.id)) return t;
+  const k = criterionFromChecks(ac, ev);
+  const met = t.met === false || k.met === false ? false : t.met === true && k.met === true ? true : null;
+  return { ...t, met, checks: k.checks, check_status: k.check_status, evidence: `${t.evidence} | checks: ${k.evidence}`,
+    repair: met === false ? [t.repair, k.repair].filter(Boolean).join(' ') : null };
+}
+
+/** KAN-106: the requested test files changed and pass; checks bound to the criterion must also pass. */
+function addedTestsResult(ac, classified, ev, execution) {
+  const t = decideAddedTests(ac, classified, execution);
   if (!ev.requested.some(c => c.ac_id === ac.id)) return t;
   const k = criterionFromChecks(ac, ev);
   const met = t.met === false || k.met === false ? false : t.met === true && k.met === true ? true : null;

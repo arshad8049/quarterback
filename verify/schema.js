@@ -4,7 +4,8 @@ const CriterionResultSchema = z.object({
   id:        z.string(),
   criterion: z.string(),
   met:       z.boolean().nullable(),
-  method:    z.enum(['deterministic', 'llm', 'test-runner', 'no-diff', 'not-run', 'llm-vote-3', 'llm-vote-5', 'check', 'no-check']),
+  method:    z.enum(['deterministic', 'llm', 'test-runner', 'no-diff', 'not-run', 'llm-vote-3', 'llm-vote-5', 'check', 'no-check',
+    'test-runner+change-set']),   // KAN-106: adds_tests (verify/added-tests.js)
   evidence:  z.string(),
   votes:     z.array(z.boolean().nullable()).optional(),
   repair:    z.string().nullable().optional(),

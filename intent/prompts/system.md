@@ -39,7 +39,7 @@ The input lists the request as numbered REQUEST PASSAGES (P1, P2, …): its sent
 - Every passage must be cited by at least one requirement, including file locations, "instead of …" clauses, the things to keep unchanged, and the tests to add.
 - One passage may support several requirements (e.g. "empty or whitespace-only" gives one requirement per case, both citing the same passage).
 - A requirement may cite several passages only if they are adjacent (["P1", "P2"]).
-- A passage that is only context (e.g. a file location) may be cited by `{ "id": "R-2", "passage_ids": ["P1"], "disposition": "context", "reason": "…" }`.
+- A passage that only names a file location (e.g. "In lib/x.js,") is covered by listing its requirement in `requirement_ids` of the criteria that test that file, or by `{ "id": "R-2", "passage_ids": ["P1"], "disposition": "context", "reason": "location only: …" }`. Only a location or similar context may be "context": an instruction such as "Add tests in …" never is.
 - A prohibition ("Do not X") is its own requirement with its own criterion.
 - A requirement the request implies but does not state: `{ "id": "R-3", "implied": true, "text": "…", "reason": "…" }`.
 Every acceptance criterion lists the requirements it covers in `requirement_ids`; every requirement must be covered by at least one criterion (or be context). Criteria that trace to no requirement are rejected as unsupported additions. Cover the ESSENTIAL behaviour of each requirement, not only its shape: "cumulative ms tracked since created" needs a criterion (and a check) that the total grows across events, starts at zero for a new instance, and is independent between instances.
@@ -55,10 +55,12 @@ Executable checks that prove the behavioural acceptance criteria. Each check is 
 - `call_sequence` — behaviour over time: `{ "module": "src/vad.js", "export": "AdaptiveVAD", "instances": { "a": { "construct": "new", "args": [] }, "b": { "construct": "new", "args": [] } }, "steps": [{ "on": "a", "method": "onSpeech", "args": [300] }, { "on": "a", "method": "getVADStats", "args": [], "expect": { "speechCount": 1, "totalSpeechMs": 300 } }, { "on": "b", "method": "getVADStats", "args": [], "expect": { "speechCount": 0, "totalSpeechMs": 0 } }] }`
 Every check has a unique `id`, the `ac_id` it proves, and optionally `plan_item` (the 0-based index of the verification_plan step it executes). `module` is a repository-relative .js/.cjs/.mjs path; `export` is an identifier or "default". Give every behavioural criterion at least one check with concrete inputs and expected outputs from the request. A criterion that cannot be checked this way stays unverified.
 Mark a criterion `"kind": "non_behavioral"` only when it is about documentation, naming or wording rather than behaviour.
-A criterion that claims something is NOT broken ("existing tests still pass", "no regressions", "backward compatible") must name the tests that prove it: `"preserves": { "tests": ["test/parser.test.js"] }` (repository-relative test files). Without it the contract is rejected — a preservation claim is decided only by those tests passing.
+A criterion that claims something is NOT broken ("existing tests still pass", "no regressions", "backward compatible") must name the tests that prove it: `"preserves": { "tests": ["test/parser.test.js"] }` (literal repository-relative test files, never a glob, and never a file the task is allowed to edit). Without it the contract is rejected — a preservation claim is decided only by those tests passing. Do not bind value checks (call_returns, call_throws, …) to a claim that tests still pass: a value check proves one behaviour, not a test suite. QB already fails the task on any new test failure, so do not add a "no other tests regress" criterion.
+When the request asks to add tests in a file ("Add node:test cases in test/x.test.js"), write a criterion that requires adding them, cites that requirement, and names the file: `{ "id": "AC-6", "criterion": "test/x.test.js has new node:test cases for …, and they pass", "kind": "behavioral", "requirement_ids": ["R-6"], "adds_tests": { "files": ["test/x.test.js"] } }`. It is decided from the test run (the file changed, its tests ran and passed). Never mark it non_behavioral.
 
 **scope** (enforced policy, approved by a human)
 `{ "allowed_changes": ["path globs the task may change"], "protected_paths": ["path globs that must not change"] }`. Any change outside allowed_changes is unauthorized and the task cannot pass; any change to a protected path fails it. Being relevant is not permission: list only what the request authorizes. Globs: `**` any depth, `*` within a folder.
+Every file the request asks you to change or add tests in must be in allowed_changes. Never protect a path you allow: protection wins, so a protected glob that covers an allowed file (e.g. `test/**` while allowing `test/x.test.js`) makes the requested work impossible. Protect only other paths, named so that they do not cover the allowed files.
 
 **constraint_policy**
 One entry per constraint (0-based index into constraints) saying how it is enforced: `{ "constraint": 0, "enforced_by": [{ "kind": "protected_paths", "ref": "<a glob from scope.protected_paths>" }] }`, `{ "kind": "allowed_changes" }`, `{ "kind": "check", "ref": "<check id>" }`, or `{ "constraint": 1, "advisory": true }` when it cannot be machine-checked. A constraint without an entry stays unresolved.
@@ -103,8 +105,8 @@ Return ONLY a valid JSON object. No markdown code fences, no explanation, no pre
   "goal": "string",
   "required_behavior": ["string"],
   "constraints": ["string"],
-  "scope": { "allowed_changes": ["src/utils.js"], "protected_paths": ["test/**"] },
-  "constraint_policy": [{ "constraint": 0, "enforced_by": [{ "kind": "protected_paths", "ref": "test/**" }] }],
+  "scope": { "allowed_changes": ["src/utils.js"], "protected_paths": ["package.json"] },
+  "constraint_policy": [{ "constraint": 0, "enforced_by": [{ "kind": "protected_paths", "ref": "package.json" }] }],
   "acceptance_criteria": [
     { "id": "AC-1", "criterion": "string", "met": null, "kind": "behavioral", "requirement_ids": ["R-1"] }
   ],

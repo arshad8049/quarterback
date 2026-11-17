@@ -35,10 +35,21 @@
  *   repair_call_ms    each corrective model call (at most one today);
  *   l1_ms             compileIntent overall;
  *   calls             every model call in order: { kind: 'initial' | 'repair', round, ms, outcome }.
- * Times are wall-clock ms from `now` (default Date.now; tests inject a fake clock).
+ * Times are ms from `now` (default: a monotonic clock, lib/budget.js monotonicMs; tests inject a fake clock).
+ *
+ * KAN-106 (senior 10674 F-d): `o.l1Budget` (lib/budget.js l1Budget) bounds ALL of L1 when it is
+ * enforced (an explicit --l1-budget / QB_L1_BUDGET_MS / --l1-profile): a monotonic deadline from the
+ * start of compileIntent; each model call gets min(per-call cap, what is left of L1, the run
+ * deadline). Once it is spent no further call starts (in particular no repair): a DeadlineError of
+ * kind 'l1' is thrown with the timings kept (error.l1_timings) and, after a rejected draft,
+ * error.recovery = { attempted: false, rejected, failed: { kind: 'l1_budget', message } }. One repair
+ * at most, as before. `o.warmup` makes one explicit warm-up call first (intent/compiler.js warmup),
+ * recorded as its own call and inside L1's time and budget. Each call records limit_ms and, when
+ * Ollama reports it, load_ms (cold model load).
  */
 
-const { compile, repair } = require('./compiler');
+const { compile, repair, warmup } = require('./compiler');
+const { l1Deadline, monotonicMs } = require('../lib/budget');
 const { contractState } = require('./contract-state');
 const { surveyRepository, surveySummary } = require('./survey');
 const { parseSelection, answerText } = require('./dsa');
@@ -58,35 +69,53 @@ const FORMAT = 'qb-intent-handoff/1';
  * @param {number} [o.maxRounds]
  */
 async function compileIntent(request, o = {}) {
-  const t = l1Timer(o.now || Date.now);
+  const t = l1Timer(o.now || monotonicMs, o.l1Budget || null);
   try {
+    if (o.warmup) await warmupStep(t);
     const s = await compileRounds(request, o, t);
     return { ...s, timings: t.result() };
   } catch (e) {
-    t.failed();
+    t.failed(e && e.code === 'DEADLINE' && e.kind === 'l1' ? 'l1_budget_exhausted' : 'error');
     if (e && typeof e === 'object') e.l1_timings = t.result();
     throw e;
   }
 }
 
-/** KAN-106: elapsed time of each L1 step, on one clock. */
-function l1Timer(now) {
+/** KAN-106 (10674 F-d): the optional warm-up call; its failure is recorded, an exhausted L1 budget ends L1. */
+async function warmupStep(t) {
+  t.check('warm-up');
+  try { await warmup(t.timer('warmup', 0)); t.outcome('ok'); }
+  catch (e) { if (e && e.code === 'DEADLINE' && e.kind === 'l1') throw e; t.outcome('error'); }
+}
+
+const STEP = { warmup: 'warm-up call', initial: 'first draft call', repair: 'repair call' };
+
+/** KAN-106: elapsed time of each L1 step, on one clock, and (10674) the L1 deadline on that clock. */
+function l1Timer(clock, budget = null) {
+  // Whole milliseconds on one clock (the monotonic default is fractional).
+  const now = () => Math.round(clock());
   const start = now();
+  const deadline = l1Deadline(budget, now);
   const calls = [];
   let validation = 0;
   let survey = 0;
   return {
     now,
-    timer: (kind, round) => ({ now, onModelCall: (ms) => calls.push({ kind, round, ms, outcome: null }) }),
+    timer: (kind, round) => ({ now, limits: () => deadline.limits(STEP[kind] || kind),
+      onModelCall: (ms, info = {}) => calls.push({ kind, round, ms, outcome: null, limit_ms: info.limit_ms ?? null, load_ms: info.load_ms ?? null }) }),
+    check: (step) => deadline.check(step),
     /** The outcome of the latest model call, once its draft has been read and validated. */
     outcome(kind) { const c = calls.at(-1); if (c && c.outcome === null) c.outcome = kind; },
-    failed() { const c = calls.at(-1); if (c && c.outcome === null) c.outcome = 'error'; },
+    failed(kind = 'error') { const c = calls.at(-1); if (c && c.outcome === null) c.outcome = kind; },
     validate(fn) { const t0 = now(); try { return fn(); } finally { validation += now() - t0; } },
     survey(fn) { const t0 = now(); try { return fn(); } finally { survey = now() - t0; } },
     result: () => {
       const first = calls.find((c) => c.kind === 'initial');
-      return { schema: 'qb-l1-timings/1', survey_ms: survey, initial_call_ms: first ? first.ms : null, validation_ms: validation,
-        repair_call_ms: calls.filter((c) => c.kind === 'repair').map((c) => c.ms), l1_ms: now() - start, calls: calls.map((c) => ({ ...c })) };
+      const warm = calls.find((c) => c.kind === 'warmup');
+      const l1 = now() - start;
+      return { schema: 'qb-l1-timings/1', survey_ms: survey, warmup_ms: warm ? warm.ms : null, initial_call_ms: first ? first.ms : null, validation_ms: validation,
+        repair_call_ms: calls.filter((c) => c.kind === 'repair').map((c) => c.ms), l1_ms: l1, calls: calls.map((c) => ({ ...c })),
+        l1_budget: budget ? { ...budget, exhausted: Boolean(budget.enforced) && l1 >= budget.ms } : null };
     },
   };
 }
@@ -97,6 +126,7 @@ async function compileRounds(request, { repoPath = null, answers = [], ask = nul
   const history = [];
   for (let round = 1; ; round++) {
     const context = survey ? survey.text : null;
+    t.check('first draft call');
     const first = await draft(() => compile(request, context, history, { timer: t.timer('initial', round) }));
     const result = first.contract;
     const cs = first.syntax ? { state: 'invalid' } : t.validate(() => contractState(result));
@@ -107,12 +137,18 @@ async function compileRounds(request, { repoPath = null, answers = [], ask = nul
       // unreadable or invalid; the correction is parsed and validated from scratch.
       const rejected = [first.syntax ? syntaxEntry(first.syntax) : { kind: 'invalid', contract: result, errors: cs.errors }];
       const failure = first.syntax ? { kind: 'syntax', diagnostic: first.syntax.diagnostic } : { kind: 'invalid', contract: result, errors: cs.errors };
+      try { t.check('repair call'); }
+      catch (e) {
+        // 10674: no repair once the L1 budget is spent; the rejected draft stays in the run record.
+        e.recovery = { attempted: false, rejected, failed: { kind: 'l1_budget', message: e.message } };
+        throw e;
+      }
       let second;
       try { second = await draft(() => repair(request, context, history, failure, { timer: t.timer('repair', round) })); }
       catch (e) {
         // Re-review 1: the correction itself failed (empty reply, network, cancellation). The first
         // draft and its errors travel with the error so the caller can keep them in the run record.
-        if (e && typeof e === 'object') e.recovery = { attempted: true, rejected, failed: { kind: e.code === 'DEADLINE' ? 'cancelled' : 'error', message: String(e.message || e) } };
+        if (e && typeof e === 'object') e.recovery = { attempted: true, rejected, failed: { kind: e.code === 'DEADLINE' ? (e.kind === 'l1' ? 'l1_budget' : 'cancelled') : 'error', message: String(e.message || e) } };
         throw e;
       }
       if (second.syntax) {

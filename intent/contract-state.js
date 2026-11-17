@@ -19,6 +19,8 @@ const { testPolicyErrors } = require('../verify/tests');
 const { preservationErrors } = require('../verify/preservation');
 const { validateTraceability, validateDefaults } = require('./requirements');
 const { clarificationErrors } = require('./dsa');
+const { targetErrors } = require('./request-targets');
+const { addedTestsErrors } = require('../verify/added-tests');
 
 function contractState(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c)) return { state: 'invalid', errors: ['contract is not an object'] };
@@ -46,7 +48,9 @@ function contractState(c) {
     }
   }
   // QB-09: the scope and constraint policy must be well-formed (they are enforced, not advisory text).
-  if (!errors.length) errors.push(...policyErrors(c), ...testPolicyErrors(c), ...preservationErrors(c));
+  // KAN-106 (10674): the request's own targets are allowed and unprotected, requested tests have a
+  // criterion bound to them (adds_tests), and preservation bindings are real named-test evidence.
+  if (!errors.length) errors.push(...policyErrors(c), ...targetErrors(c, 'scope'), ...testPolicyErrors(c), ...preservationErrors(c), ...addedTestsErrors(c));
   // QB-17 re-review 2: a recorded clarification's parameterized choice carries a valid value.
   if (!errors.length) errors.push(...clarificationErrors(c));
   // QB-13: every computable example is recomputed with trusted arithmetic; a wrong
@@ -55,7 +59,7 @@ function contractState(c) {
     for (const e of validateExamples(c).errors) errors.push(`${e.where} example is wrong: ${e.claim} (correct: ${e.correct})`);
   }
   // QB-14: every request clause traced; no uncovered requirement, unsupported addition or duplicate AC.
-  if (!errors.length) errors.push(...validateDefaults(c).errors, ...validateTraceability(c).errors);
+  if (!errors.length) errors.push(...validateDefaults(c).errors, ...validateTraceability(c).errors, ...targetErrors(c, 'tests'));
   return errors.length ? { state: 'invalid', errors } : { state: 'finalized' };
 }
 
@@ -68,7 +72,8 @@ function approvedContent(c) {
   return {
     goal: c?.goal ?? null, required_behavior: c?.required_behavior ?? [], constraints: c?.constraints ?? [],
     acceptance_criteria: (c?.acceptance_criteria || []).map((a) => ({ id: a.id, criterion: a.criterion, kind: a.kind || 'behavioral',
-      requirement_ids: a.requirement_ids ?? [], ...(a.preserves !== undefined ? { preserves: a.preserves } : {}) })),   // QB-15
+      requirement_ids: a.requirement_ids ?? [], ...(a.preserves !== undefined ? { preserves: a.preserves } : {}),   // QB-15
+      ...(a.adds_tests !== undefined ? { adds_tests: a.adds_tests } : {}) })),   // KAN-106: absent → not hashed, older approvals stay valid
     requirements: c?.requirements ?? [],   // QB-14
     verification_plan: c?.verification_plan ?? [], checks: c?.checks ?? [],
     scope: { allowed_changes: c?.scope?.allowed_changes ?? [], protected_paths: c?.scope?.protected_paths ?? [] },   // QB-09
