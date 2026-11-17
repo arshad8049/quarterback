@@ -94,12 +94,17 @@
     },
     {
       "id": "AC-6",
-      "criterion": "test/asNumber.test.js contains node:test cases for the empty string, a whitespace-only string, numeric 0, string \"0\" and a valid numeric string.",
+      "criterion": "test/asNumber.test.js has new node:test cases for the empty string, a whitespace-only string, numeric 0, string \"0\" and a valid numeric string, and they pass.",
       "met": null,
-      "kind": "non_behavioral",
+      "kind": "behavioral",
       "requirement_ids": [
         "R-6"
-      ]
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
     }
   ],
   "requirements": [

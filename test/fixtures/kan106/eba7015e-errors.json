@@ -1,0 +1,13 @@
+{
+  "run": "eba7015e-a5f8-40fb-8be9-87c5b3498c45",
+  "qb_revision": "4ed4be5c7fba699da00b446d2e7d243f9259626c",
+  "model": "qwen2.5-coder:14b",
+  "errors": [
+    [
+      "scope.allowed_changes entry \"test/asNumber.test.js\" is entirely covered by scope.protected_paths \"test/**\": no change it allows could pass"
+    ],
+    [
+      "requirement R-1 \"In lib/serializer.js,\" is not covered by any acceptance criterion"
+    ]
+  ]
+}

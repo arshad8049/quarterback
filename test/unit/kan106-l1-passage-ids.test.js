@@ -284,12 +284,13 @@ describe('KAN-106: L1 timings and the L1 budget', () => {
     const saved = { b: process.env.QB_L1_BUDGET_MS, c: process.env.QB_MODEL_CALL_TIMEOUT_MS };
     try {
       delete process.env.QB_L1_BUDGET_MS; delete process.env.QB_MODEL_CALL_TIMEOUT_MS;
-      assert.deepEqual(budget.l1Budget(), { ms: 360_000, source: 'provisional_default', enforced: false });
+      // 10674: the provisional default stays recorded only; an EXPLICIT budget (env, flag) is enforced.
+      assert.deepEqual(budget.l1Budget(), { ms: 360_000, source: 'provisional_default', enforced: false, per_call_ms: 180_000, profile: null });
       process.env.QB_MODEL_CALL_TIMEOUT_MS = '100000';
       assert.equal(budget.l1Budget().ms, 200_000);
       process.env.QB_L1_BUDGET_MS = '240000';
-      assert.deepEqual(budget.l1Budget(), { ms: 240_000, source: 'env QB_L1_BUDGET_MS', enforced: false });
-      assert.deepEqual(budget.l1Budget({ flagMs: 90_000 }), { ms: 90_000, source: '--l1-budget', enforced: false });
+      assert.deepEqual(budget.l1Budget(), { ms: 240_000, source: 'env QB_L1_BUDGET_MS', enforced: true, per_call_ms: 100_000, profile: null });
+      assert.deepEqual(budget.l1Budget({ flagMs: 90_000 }), { ms: 90_000, source: '--l1-budget', enforced: true, per_call_ms: 100_000, profile: null });
       const base = { agent: 'dry-run', repo: os.tmpdir(), maxRetries: '3' };
       assert.equal(validateRunOptions({ ...base, l1Budget: '300' }, 'x').l1BudgetMs, 300_000);
       assert.match(validateRunOptions({ ...base, l1Budget: 'soon' }, 'x').errors.join('\n'), /--l1-budget must be a positive number of seconds/);
@@ -325,8 +326,8 @@ describe('KAN-106: L1 timings and the L1 budget', () => {
     assert.equal(ev.data.schema, 'qb-l1-timings/1');
     for (const k of ['initial_call_ms', 'validation_ms', 'l1_ms']) assert.ok(Number.isInteger(ev.data[k]) && ev.data[k] >= 0, k);
     assert.deepEqual(ev.data.repair_call_ms, []);
-    assert.deepEqual(ev.data.budget, { ms: 300_000, source: '--l1-budget', enforced: false, over_budget: false });
-    assert.match(r.out, /\[L1\]\s+Timings: first draft \d+(\.\d)?s · validation \d+(\.\d)?s · repair none · L1 total \d+(\.\d)?s \(budget 300s from --l1-budget, not enforced\)/);
+    assert.deepEqual(ev.data.budget, { ms: 300_000, source: '--l1-budget', enforced: true, per_call_ms: 180_000, profile: null, exhausted: false, over_budget: false });
+    assert.match(r.out, /\[L1\]\s+Timings: first draft \d+(\.\d)?s · validation \d+(\.\d)?s · repair none · L1 total \d+(\.\d)?s \(budget 300s from --l1-budget, enforced\)/);
   });
 
   test('qb.js dry run with the smoke draft: BLOCKED as in the smoke, and the timings of both calls are in the run record and the output', () => {
