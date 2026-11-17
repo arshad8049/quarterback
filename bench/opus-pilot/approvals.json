@@ -28,5 +28,30 @@
       "can_admins_bypass": false,
       "checked_via": "GET /repos/arshad8049/quarterback/environments/opus-pilot-live (public API)"
     }
+  },
+  "paired_route": {
+    "route": "subscription_token_env",
+    "drivers": [
+      "bench/opus-pilot/pair.mjs"
+    ],
+    "confirmed_by": "Arshad (owner, chat)",
+    "confirmed_at": "2026-11-17",
+    "confirmation_text": "I confirm the paired route subscription_token_env for bench/opus-pilot/pair.mjs, with the same residual risk as arm A, and paid overage is off.",
+    "residual_risk_file": "bench/opus-pilot/arm-a-residual-risk.md",
+    "residual_risk_sha256": "458020931a3b6d14d0eec002f41b26edc7c2d00147ca9008eaf19e8a6f9a5dab",
+    "overage": "off (owner statement, 2026-11-17)",
+    "token": "rotated by the owner and stored as the opus-pilot-live environment secret CLAUDE_CODE_OAUTH_TOKEN (owner statement; not readable without credentials)",
+    "environment_checked": {
+      "name": "opus-pilot-live",
+      "required_reviewer": "arshad8049",
+      "prevent_self_review": false,
+      "branch_policy": [
+        "kan117-axios-mocha",
+        "opus-arm-a"
+      ],
+      "can_admins_bypass": false,
+      "checked_via": "GET /repos/arshad8049/quarterback/environments/opus-pilot-live (+ /deployment-branch-policies), public API, 2026-11-17"
+    },
+    "scope": "configuration only for the paired driver inside pair-5892-live.yml; not a security boundary; NOT authorisation to run: the senior hold (KAN-112 10662) still applies"
   }
 }
