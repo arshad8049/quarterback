@@ -269,3 +269,31 @@ describe('10694: prompt, docs and fixture labels', () => {
     assert.match(read('pinned-fast-json-stringify/README.md'), /SYNTHETIC mutation, not necessarily the owner's original repository base/);
   });
 });
+
+describe('10698: the throws branch looks the method up ONCE and calls the saved function', () => {
+  // A stateful getter: lookup 1 returns a function, lookup 2 throws the expected message. Before
+  // 10698 the runner read o[st.method] twice (typeof check, then the call inside the catch), so the
+  // second read's throw was mistaken for the method's own throw.
+  const STATEFUL = `
+class Thing {
+  constructor () { this.reads = 0; this.tag = 'receiver-ok' }
+  get twoRead () {
+    this.reads += 1
+    if (this.reads === 1) return () => 'not thrown'
+    throw new Error('boom: second read')
+  }
+  whoAmI () { if (this.tag !== 'receiver-ok') throw new Error('wrong receiver'); throw new Error('boom: ' + this.tag) }
+}
+module.exports = { Thing }
+`;
+  const run = (checks) => runIn({ 'lib/thing.js': STATEFUL }, checks).byId;
+  test('a getter that returns a function on the first read and throws on the second does not satisfy throws', () => {
+    const r = run([seq('T', [throwsStep('twoRead', [], 'boom: second read')])]);
+    assert.equal(r.T.status, 'fail', r.T.detail);
+    assert.match(r.T.detail, /returned 'not thrown' instead of throwing/);
+  });
+  test('the saved method is invoked with the original instance as receiver', () => {
+    const r = run([seq('R', [throwsStep('whoAmI', [], 'boom: receiver-ok')])]);
+    assert.equal(r.R.status, 'pass', r.R.detail);
+  });
+});
