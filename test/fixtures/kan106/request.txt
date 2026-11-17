@@ -1,0 +1,1 @@
+In lib/serializer.js, make Serializer.asNumber() throw a number conversion error for an empty string or a string containing only whitespace instead of returning 0. Keep the behavior for numeric 0, string "0", and valid numeric strings. Add node:test cases in test/asNumber.test.js.

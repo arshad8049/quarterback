@@ -1,0 +1,7 @@
+[
+  "R-3 quote is not in the request verbatim: \"Keep the behavior for string '0'\"",
+  "R-4 quote is not in the request verbatim: \"Keep the behavior for valid numeric strings\"",
+  "request text not traced to any requirement: \"in lib/serializer.js,\"",
+  "request text not traced to any requirement: \"instead of returning 0.\"",
+  "request text not traced to any requirement: \", string \\\"0\\\", and valid numeric strings. add node:test cases in test/asnumber.test.js.\""
+]
