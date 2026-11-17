@@ -92,6 +92,37 @@ function preservationErrors(c) {
 }
 
 /**
+ * KAN-106 (10677): each criterion that preserves a file the REQUEST asks to change, with whether the
+ * request itself asked for that preservation (a cited requirement's quote is a preservation or
+ * test-suite claim). Used to explain the conflict to the repair, never to edit the model's draft:
+ *   requested: false  the claim is attributed to a passage that does not make it (smoke b2416ebc:
+ *                     "Add node:test cases in …" cited for "existing tests … still pass"): the repair
+ *                     is told to remove it with its bindings;
+ *   requested: true   the user asked to keep that file's tests passing AND to change it: QB cannot
+ *                     verify this as written (file-level preservation needs an unedited file), so it
+ *                     is reported as unsupported; the user's requirement is never deleted.
+ */
+function preservationConflicts(c) {
+  const { requestTargets } = require('../intent/request-targets');
+  if (typeof c?.raw_request !== 'string') return [];
+  const targets = new Set(requestTargets(c.raw_request).targets.map((t) => t.path));
+  const reqs = new Map((Array.isArray(c.requirements) ? c.requirements : []).filter((r) => r && typeof r.id === 'string').map((r) => [r.id, r]));
+  const out = [];
+  for (const ac of c.acceptance_criteria || []) {
+    const tests = Array.isArray(ac?.preserves?.tests) ? ac.preserves.tests.filter((f) => typeof f === 'string') : [];
+    const files = tests.filter((f) => targets.has(f));
+    if (!files.length) continue;
+    const cited = (Array.isArray(ac.requirement_ids) ? ac.requirement_ids : []).map((id) => reqs.get(id)).filter(Boolean);
+    const asks = cited.filter((r) => { const q = String(r.quote || r.text || ''); return isPreservationCriterion(q) || isTestSuiteClaim(q); });
+    const passages = (asks.length ? asks : cited).flatMap((r) => (Array.isArray(r.passage_ids) ? r.passage_ids : []));
+    out.push({ criterion_id: ac.id, criterion: ac.criterion, files, requested: asks.length > 0,
+      cited: cited.map((r) => ({ id: r.id, passage_ids: Array.isArray(r.passage_ids) ? r.passage_ids : [], quote: String(r.quote || r.text || '') })),
+      checks: (c.checks || []).filter((k) => k && k.ac_id === ac.id).map((k) => k.id), passages: [...new Set(passages)] });
+  }
+  return out;
+}
+
+/**
  * Decide a preservation criterion from the classified test run (verify/tests.js).
  * @param {object} ac        - with preserves.tests
  * @param {object} classified - classifyTestRun() result (with byFile)
@@ -122,4 +153,4 @@ function decidePreservation(ac, classified, execution = null) {
     : { ...base, met: true, evidence: lines.join('; ') };
 }
 
-module.exports = { isTestSuiteClaim, isPreservationCriterion, preservationErrors, decidePreservation, PRESERVATION_PATTERNS };
+module.exports = { isTestSuiteClaim, isPreservationCriterion, preservationErrors, preservationConflicts, decidePreservation, PRESERVATION_PATTERNS };

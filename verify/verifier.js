@@ -247,9 +247,19 @@ function preservationResult(ac, classified, ev, execution = null) {
     repair: met === false ? [t.repair, k.repair].filter(Boolean).join(' ') : null };
 }
 
+/** KAN-106 (10677): the functions the contract's checks exercise (their export / method names). */
+function checkedIdentifiers(checks) {
+  const ids = new Set();
+  for (const k of checks || []) for (const key of ['export', 'method', 'function']) {
+    const v = k?.params?.[key];
+    if (typeof v === 'string' && /^[A-Za-z_$][\w$]*$/.test(v) && v !== 'default') ids.add(v);
+  }
+  return [...ids].sort();
+}
+
 /** KAN-106: the requested test files changed and pass; checks bound to the criterion must also pass. */
 function addedTestsResult(ac, classified, ev, execution) {
-  const t = decideAddedTests(ac, classified, execution);
+  const t = decideAddedTests(ac, classified, execution, checkedIdentifiers(ev.requested));
   if (!ev.requested.some(c => c.ac_id === ac.id)) return t;
   const k = criterionFromChecks(ac, ev);
   const met = t.met === false || k.met === false ? false : t.met === true && k.met === true ? true : null;

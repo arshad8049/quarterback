@@ -50,7 +50,8 @@
 
 const { compile, repair, warmup } = require('./compiler');
 const { l1Deadline, monotonicMs } = require('../lib/budget');
-const { contractState } = require('./contract-state');
+const { contractState, laterStageErrors, requirementDispositions } = require('./contract-state');
+const { preservationConflicts } = require('../verify/preservation');
 const { surveyRepository, surveySummary } = require('./survey');
 const { parseSelection, answerText } = require('./dsa');
 const { validateDefaults } = require('./requirements');
@@ -135,8 +136,16 @@ async function compileRounds(request, { repoPath = null, answers = [], ask = nul
     if (cs.state === 'invalid') {
       // KAN-103 / KAN-104: ONE corrective call in total for QB's own draft, whether it was
       // unreadable or invalid; the correction is parsed and validated from scratch.
-      const rejected = [first.syntax ? syntaxEntry(first.syntax) : { kind: 'invalid', contract: result, errors: cs.errors }];
-      const failure = first.syntax ? { kind: 'syntax', diagnostic: first.syntax.diagnostic } : { kind: 'invalid', contract: result, errors: cs.errors };
+      const later = first.syntax ? [] : laterStageErrors(result).filter((e) => !cs.errors.includes(e));
+      const rejected = [first.syntax ? syntaxEntry(first.syntax) : invalidEntry(result, cs.errors, later)];
+      // KAN-106 (10677): the user explicitly asked to keep a file's tests passing AND to change that
+      // file. No draft can verify that as written without deleting the user's requirement, so it is
+      // reported as unsupported; no repair call is made.
+      const unsupported = first.syntax ? [] : unsupportedPreservation(result);
+      if (unsupported.length) {
+        return { format: FORMAT, state: 'invalid', errors: cs.errors, unsupported, contract: result, round, history, survey: grounding, repair: { attempted: false, reason: 'unsupported_request', rejected } };
+      }
+      const failure = first.syntax ? { kind: 'syntax', diagnostic: first.syntax.diagnostic } : { kind: 'invalid', contract: result, errors: cs.errors, later_errors: later };
       try { t.check('repair call'); }
       catch (e) {
         // 10674: no repair once the L1 budget is spent; the rejected draft stays in the run record.
@@ -158,17 +167,20 @@ async function compileRounds(request, { repoPath = null, answers = [], ask = nul
         return { format: FORMAT, state: 'invalid', errors, contract: null, round, history, survey: grounding, repair: { attempted: true, rejected } };
       }
       const fixed = second.contract;
+      let fixedLater = [];
       const errors = t.validate(() => {
         const fixedState = contractState(fixed);
+        if (fixedState.state === 'invalid') fixedLater = laterStageErrors(fixed).filter((e) => !fixedState.errors.includes(e));
         return [
           ...(fixedState.state === 'invalid' ? fixedState.errors : []),
+          ...fixedLater,   // KAN-106 (10677): what the earlier stage masked, so the final reasons are complete
           ...(fixedState.state === 'needs_clarification' ? [`the correction asked a question instead of correcting the draft: ${fixedState.question}`] : []),
           ...(first.syntax ? [] : correctionDefaultErrors(result, fixed)),
         ];
       });
       t.outcome(errors.length ? 'invalid' : 'finalized');
       if (!errors.length) return { format: FORMAT, state: 'finalized', contract: fixed, round, history, survey: grounding, repair: { attempted: true, rejected } };
-      rejected.push({ kind: 'invalid', contract: fixed, errors });
+      rejected.push(invalidEntry(fixed, errors, fixedLater));
       return { format: FORMAT, state: 'invalid', errors, contract: fixed, round, history, survey: grounding, repair: { attempted: true, rejected } };
     }
 
@@ -197,6 +209,21 @@ async function draft(call) {
 }
 
 /** An unreadable draft as run evidence: the diagnostic and at most 16 KiB of the reply. */
+/** A rejected, readable draft for the run record, with every requirement's disposition (10677). */
+function invalidEntry(contract, errors, laterErrors = []) {
+  return { kind: 'invalid', contract, errors, later_errors: laterErrors, trace: requirementDispositions(contract) };
+}
+
+/** KAN-106 (10677): explicitly requested preservations of a file the request also asks to change. */
+function unsupportedPreservation(contract) {
+  return preservationConflicts(contract).filter((x) => x.requested).map((x) => ({
+    criterion_id: x.criterion_id, files: x.files, passages: x.passages,
+    reason: `The request asks both to change ${x.files.join(', ')} and to keep its existing tests passing (${x.passages.join(', ')}). `
+      + `QB can only show that preserved tests still pass for a file the task does not edit, so it cannot verify this request as written. `
+      + `Name the existing tests to keep in another file, or say whether the existing tests in ${x.files.join(', ')} may change.`,
+  }));
+}
+
 function syntaxEntry(e) {
   const buf = Buffer.from(String(e.raw ?? ''), 'utf8');
   // Re-review 3: the limit is in UTF-8 bytes, and a cut never splits a character (back off to

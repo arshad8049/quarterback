@@ -28,7 +28,7 @@ function formatOracle(contract) {
   // QB-17 re-review 2: what the user chose when asked, with the values they gave.
   if (Array.isArray(c.clarifications) && c.clarifications.length) list('Clarified by you (approved with the contract)',
     c.clarifications.map((x) => `${x.question_id}: ${x.choice ?? 'defined as'}${x.value ? ` = ${x.value}` : ''}`));
-  list('Acceptance criteria', c.acceptance_criteria.map((a) => `[${a.id}] (${a.kind}) ${a.criterion}${a.requirement_ids.length ? `  ← ${a.requirement_ids.join(', ')}` : ''}${a.preserves ? `  [preserved = these tests pass: ${a.preserves.tests.join(', ')}]` : ''}${a.adds_tests ? `  [added tests = these files change and their tests pass: ${a.adds_tests.files.join(', ')}]` : ''}`));
+  list('Acceptance criteria', c.acceptance_criteria.map((a) => `[${a.id}] (${a.kind}) ${a.criterion}${a.requirement_ids.length ? `  ← ${a.requirement_ids.join(', ')}` : ''}${a.preserves ? `  [preserved = these tests pass: ${a.preserves.tests.join(', ')}]` : ''}${a.adds_tests ? `  [added tests: L1 checked only that ${a.adds_tests.files.join(', ')} is in scope; the run must show new test cases there that pass and call the behaviour under test]` : ''}`));
   list('Verification plan', c.verification_plan.map((p, i) => `${i}. ${p}`));
   list('May change (scope.allowed_changes; anything else is unauthorized)', c.scope.allowed_changes);
   list('Must not change (scope.protected_paths)', c.scope.protected_paths);

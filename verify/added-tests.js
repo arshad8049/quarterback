@@ -46,14 +46,58 @@ function addedTestsErrors(c) {
 }
 
 /**
- * @param {object} ac          with adds_tests.files
- * @param {object} classified  classifyTestRun() result (with byFile)
- * @param {object} execution   the captured result (its change set)
+ * KAN-106 (10677 item 2): "the file changed and one of its tests passes" is not evidence that tests
+ * were ADDED: a comment-only edit, or deleting tests while one old test passes, satisfied it. The
+ * criterion is now met only with a bounded witness, per named file, from the captured diff and the
+ * test run:
+ *   - the diff adds ≥ 1 new test case declaration (test(…) / it(…) with a literal title) and removes
+ *     none (a removed case that is not re-added with the same title → unresolved, human review);
+ *   - every added case ran and passed (by title, in that file's test report);
+ *   - the added lines call at least one function the contract's checks exercise (their export /
+ *     method names); otherwise the added cases may be unrelated → unresolved, human review.
+ * Limitation, stated in the evidence: this shows that new, passing cases calling the behaviour under
+ * test were added. It does not show that their assertions are meaningful; the behaviour itself is
+ * proven by the behaviour criteria's own checks. L1 only checks structurally that the file is in
+ * scope and bound to the requirement; only the run can show this witness.
  */
-function decideAddedTests(ac, classified, execution) {
+const DECL = /^\s*(?:\w+\.)?(?:test|it)(?:\.(?:only|skip|todo))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/;
+
+/** Added / removed lines of one file in a unified diff. */
+function fileDiffLines(diff, file) {
+  const { parseDiffHeader } = require('./policy');
+  const out = { added: [], removed: [] };
+  let mine = false;
+  for (const line of String(diff || '').split('\n')) {
+    if (line.startsWith('diff --git ')) { const p = parseDiffHeader(line); mine = Boolean(p && p[1] === file); continue; }
+    if (!mine || line.startsWith('+++') || line.startsWith('---')) continue;
+    if (line.startsWith('+')) out.added.push(line.slice(1));
+    else if (line.startsWith('-')) out.removed.push(line.slice(1));
+  }
+  return out;
+}
+const titles = (lines) => lines.map((l) => DECL.exec(l)).filter(Boolean).map((m) => m[2]);
+
+/** The witness for one file: added and removed case titles, and which checked functions the added lines call. */
+function witnessFor(diff, file, identifiers) {
+  const d = fileDiffLines(diff, file);
+  const added = titles(d.added);
+  const removedAll = titles(d.removed);
+  const removed = removedAll.filter((t) => !added.includes(t));
+  const text = d.added.join('\n');
+  const mentions = identifiers.filter((id) => new RegExp(`(^|[^\\w$])${id.replace(/\$/g, '\\$')}\\s*\\(`).test(text));
+  return { added: added.filter((t) => !removedAll.includes(t)), modified: added.filter((t) => removedAll.includes(t)), removed, mentions };
+}
+
+/**
+ * @param {object} ac           with adds_tests.files
+ * @param {object} classified   classifyTestRun() result (with byFile)
+ * @param {object} execution    the captured result (its change set and diff)
+ * @param {string[]} identifiers  the functions the contract's checks exercise
+ */
+function decideAddedTests(ac, classified, execution, identifiers = []) {
   const base = { id: ac.id, criterion: ac.criterion, method: 'test-runner+change-set' };
   const files = ac.adds_tests.files;
-  const limitation = 'shows the file changed and its tests pass, not that the new tests exercise the new behaviour';
+  const limitation = 'does not show that their assertions are meaningful';
   const changed = new Set(changedFiles(execution));
   const unchanged = files.filter((f) => !changed.has(f));
   if (unchanged.length) {
@@ -62,15 +106,35 @@ function decideAddedTests(ac, classified, execution) {
   const usable = classified && ['passed', 'failed', 'preexisting_failures'].includes(classified.outcome) && classified.byFile;
   if (!usable) return { ...base, met: null, evidence: `The test run cannot show that the tests in ${files.join(', ')} pass (${classified ? classified.reason : 'no test run'}); not verified.` };
   const lines = [];
-  let broken = false;
+  const witness = { files: {}, identifiers };
+  let verdict = true;
+  const worst = (v) => { if (v === false) verdict = false; else if (v === null && verdict !== false) verdict = null; };
   for (const f of files) {
     const s = classified.byFile[f];
-    if (!s || s.passed + s.failed === 0) { lines.push(`${f} did not run`); broken = true; continue; }
-    lines.push(`${f}: changed; ${s.passed} passed, ${s.failed} failed`);
-    if (s.failed > 0 || s.passed === 0) broken = true;
+    const w = witnessFor(execution?.diff, f, identifiers);
+    witness.files[f] = w;
+    if (!s || s.passed + s.failed === 0) { lines.push(`${f} did not run`); worst(false); continue; }
+    const head = `${f}: changed; ${s.passed} passed, ${s.failed} failed`;
+    if (s.failed > 0) { lines.push(head); worst(false); continue; }
+    const passedNames = Array.isArray(s.passed_names) ? s.passed_names : [];
+    const fresh = [...w.added, ...w.modified];
+    if (!w.added.length) {
+      lines.push(`${head}; no new test case in the diff of ${f}${w.removed.length ? ` (removed: ${w.removed.join(', ')})` : ''}`);
+      worst(false); continue;
+    }
+    const notPassed = fresh.filter((t) => !passedNames.includes(t));
+    if (notPassed.length) { lines.push(`${head}; added but did not pass: ${notPassed.join(', ')}`); worst(false); continue; }
+    if (w.removed.length) { lines.push(`${head}; ${w.added.length} new test case(s) added, but existing test case(s) were removed (${w.removed.join(', ')}): human review required`); worst(null); continue; }
+    if (!w.mentions.length) {
+      lines.push(`${head}; ${w.added.length} new test case(s) added and passed, but the added cases do not call any function the checks exercise (${identifiers.join(', ') || 'none named'}): they may be unrelated; human review required`);
+      worst(null); continue;
+    }
+    lines.push(`${head}; ${w.added.length} new test case(s) added in the diff, all ran and passed, and they call ${w.mentions.join(', ')} (${limitation})`);
   }
-  const evidence = `${lines.join('; ')} (${limitation})`;
-  return broken ? { ...base, met: false, evidence, repair: `Make the added tests in ${files.join(', ')} run and pass` } : { ...base, met: true, evidence };
+  const evidence = lines.join('; ');
+  if (verdict === false) return { ...base, met: false, witness, evidence, repair: `Add new test cases in ${files.join(', ')} that call the changed behaviour, run and pass` };
+  if (verdict === null) return { ...base, met: null, human_review: true, evidence_missing: [{ what: 'added-tests witness', reason: 'partial: human review required' }], witness, evidence };
+  return { ...base, met: true, witness, evidence };
 }
 
-module.exports = { addedTestsErrors, decideAddedTests };
+module.exports = { addedTestsErrors, decideAddedTests, witnessFor };

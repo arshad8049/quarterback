@@ -32,6 +32,7 @@ const { git: gitProc }  = require('./lib/proc');
 const { AGENT_VERSION } = require('./lib/sandbox/agent');
 const { AGENT_IDS } = require('./agent/adapters');
 const { validateRunOptions } = require('./lib/run-options');
+const { shortText } = require('./lib/short-text');   // KAN-106 (10677)
 
 /** What the run record names as the agent (QB-38: a pinned decision trail). */
 const AGENT_IDENTITY = {
@@ -208,6 +209,18 @@ async function main() {
     }
     // KAN-103: QB corrected its own rejected draft once. Every rejected draft and its errors are
     // kept in the run record for engineering; the correction still needs the usual approval.
+    // KAN-106 (10677): the request explicitly asks to keep a file's tests passing AND to change it.
+    // QB cannot verify that as written; it says so instead of repairing (or deleting) the requirement.
+    if (s.repair && s.repair.attempted === false && Array.isArray(s.unsupported) && s.unsupported.length) {
+      run.artifact('contract-repair', { format: 'qb-contract-repair/1', outcome: 'unsupported_request', rejected: s.repair.rejected, unsupported: s.unsupported });
+      run.event('contract.unsupported', { unsupported: s.unsupported.map((u) => ({ criterion_id: u.criterion_id, files: u.files, passages: u.passages })) });
+      console.log('\n  ✗ QB can\'t verify this request as written. No code was changed.');
+      s.unsupported.forEach((u) => console.log(`    • ${shortText(u.reason, 400)}`));
+      console.log(`    Engineering details: ${run.dir} (artifact contract-repair)\n`);
+      run.finish('BLOCKED', { reason: `unsupported_request: ${s.unsupported.map((u) => u.reason).join('; ')}` });
+      process.exitCode = 2;
+      return;
+    }
     if (s.repair) {
       run.artifact('contract-repair', { format: 'qb-contract-repair/1', outcome: s.state, rejected: s.repair.rejected });
       if (s.state === 'finalized') {
@@ -222,7 +235,7 @@ async function main() {
         const readable = s.repair.rejected.at(-1).kind === 'invalid';
         if (readable) {
           console.log('    What was still wrong:');
-          s.errors.slice(0, 5).forEach((e) => console.log(`      • ${e.length > 160 ? `${e.slice(0, 157)}...` : e}`));
+          s.errors.slice(0, 5).forEach((e) => console.log(`      • ${shortText(e)}`));   // KAN-106 (10677): complete, never cut mid-word
           if (s.errors.length > 5) console.log(`      • … and ${s.errors.length - 5} more`);
           console.log('');
         }

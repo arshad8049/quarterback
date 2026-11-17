@@ -17,6 +17,9 @@ const CriterionResultSchema = z.object({
   judgment_cache:   z.enum(['hit', 'miss', 'wait_timeout', 'cancelled']).optional(),                              // QB-15
   evidence_ids:     z.array(z.string()).optional(),                                  // QB-11: what the judgment was based on
   evidence_missing: z.array(z.object({ what: z.string(), reason: z.string() })).optional(),
+  human_review:     z.boolean().optional(),                                          // KAN-106 (10677): partial adds_tests evidence
+  witness:          z.object({ identifiers: z.array(z.string()), files: z.record(z.object({
+    added: z.array(z.string()), modified: z.array(z.string()), removed: z.array(z.string()), mentions: z.array(z.string()) })) }).optional(),
 });
 
 const EvidenceItemSchema = z.object({                                                  // QB-11 manifest (no contents)

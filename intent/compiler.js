@@ -61,7 +61,7 @@ async function repair(request, repoContext, clarification, failure, o = {}) {
   const history = Array.isArray(clarification) ? clarification
     : clarification ? [{ question: null, answer: String(clarification) }] : [];
   const clar = resolveClarifications(request, history.map((h) => ({ question_id: h.question_id ?? null, answer: h.answer })));
-  const section = failure.kind === 'syntax' ? syntaxSection(failure.diagnostic) : repairSection(failure.contract, failure.errors);
+  const section = failure.kind === 'syntax' ? syntaxSection(failure.diagnostic) : repairSection(failure.contract, failure.errors, failure.later_errors || []);
   return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar, o.timer);
 }
 
@@ -105,13 +105,43 @@ function modelAuthored(c) {
   return out;
 }
 
-function repairSection(rejected, errors) {
+/**
+ * KAN-106 (10677): name each criterion that preserves a file the request asks to change, and why it
+ * conflicts. Only unrequested claims reach a repair (an explicitly requested one is reported as
+ * unsupported before any repair, intent/session.js); the model is told to remove them with their
+ * bindings, never to keep the claim in another form. QB does not edit the model's draft itself.
+ */
+function conflictSection(rejected) {
+  const { preservationConflicts } = require('../verify/preservation');
+  const conflicts = preservationConflicts(rejected).filter((x) => !x.requested);
+  if (!conflicts.length) return [];
+  const addTargets = new Map(requestTargets(rejected.raw_request || '').targets.filter((t) => t.action === 'add_tests').map((t) => [t.path, t]));
+  const lines = ['CONFLICTING CRITERIA (they preserve a file the request asks to change):'];
+  const toCover = new Set();
+  for (const x of conflicts) {
+    const files = x.files.join(', ');
+    const cites = x.cited.length ? x.cited.map((r) => `${r.id} (${r.passage_ids.join(', ')} ${JSON.stringify(r.quote)})`).join(', ') : 'no requirement';
+    const adds = x.files.every((f) => addTargets.has(f));
+    lines.push(`- ${x.criterion_id} claims that existing tests in ${files} still pass. No request passage asks for that: it cites ${cites}, which ${adds ? `asks to ADD tests to ${x.files.length > 1 ? 'those files' : 'that file'}` : 'does not ask for it'}, and the task changes ${x.files.length > 1 ? 'those files' : 'that file'}. `
+      + `Remove ${x.criterion_id}${x.checks.length ? `, the checks bound to it (${x.checks.join(', ')}),` : ''} and the constraints and constraint_policy entries that exist only for it.`);
+    for (const r of x.cited) toCover.add(r.id);
+  }
+  lines.push('- Do not keep the same claim with "preserves" deleted, reworded, or with the criterion marked non_behavioral. QB\'s own regression gate already fails the task on any new test failure, so removing these criteria drops no protection.');
+  if (toCover.size) lines.push(`- Then cover ${[...toCover].join(', ')} with the criterion that requires adding the tests ("adds_tests"), or with the behaviour criteria they support.`);
+  return [...lines, ''];
+}
+
+function repairSection(rejected, errors, laterErrors = []) {
   return [
     'YOUR PREVIOUS DRAFT WAS REJECTED by QB\'s contract validator. Write the whole contract again, in the same JSON format, for the same REQUEST.',
     '',
     'VALIDATION ERRORS:',
     ...errors.map((e) => `- ${e}`),
     '',
+    // KAN-106 (10677): later stages run only once earlier ones pass, so their errors (e.g. an
+    // uncovered requirement) are sent too; otherwise one repair could never fix both.
+    ...(laterErrors.length ? ['ALSO TO FIX (QB checks these after the errors above):', ...laterErrors.map((e) => `- ${e}`), ''] : []),
+    ...conflictSection(rejected),
     'REJECTED DRAFT:',
     JSON.stringify(modelAuthored(rejected), null, 2),
     '',

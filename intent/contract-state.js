@@ -112,4 +112,19 @@ function stateReason(s) {
   return s.state === 'invalid' ? `invalid_contract: ${s.errors.join('; ')}` : s.state;
 }
 
-module.exports = { contractState, stateReason, contractHash, approvedContent, approve, approvalState };
+/**
+ * KAN-106 (10677): the later stages (defaults, traceability, the request's add-tests targets) run in
+ * contractState only once the earlier stages pass, so a draft rejected early never hears that, e.g.,
+ * a requirement is uncovered (smoke b2416ebc: R-1). For QB's own repair and run record, these are
+ * computed regardless; they never make a contract valid and never replace contractState.
+ */
+function laterStageErrors(c) {
+  try { return [...validateDefaults(c).errors, ...validateTraceability(c).errors, ...targetErrors(c, 'tests')]; } catch { return []; }
+}
+
+/** KAN-106 (10677): every requirement's disposition (covered / context / uncovered), for the run record. */
+function requirementDispositions(c) {
+  try { return validateTraceability(c).trace.map((t) => ({ id: t.id, disposition: t.disposition, reason: t.reason ?? null, covered_by: t.covered_by || [] })); } catch { return []; }
+}
+
+module.exports = { contractState, stateReason, contractHash, approvedContent, approve, approvalState, laterStageErrors, requirementDispositions };
