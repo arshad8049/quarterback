@@ -61,7 +61,13 @@ async function child() {
       }
       for (const [i, st] of check.params.steps.entries()) {
         const o = inst[st.on];
-        if (!o || typeof o[st.method] !== 'function') return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method} is not a function` });
+        // KAN-106 10698: read the method ONCE, outside any expected-throw catch, and call the saved
+        // function with the original receiver. A second lookup could hit a stateful getter whose throw
+        // would be mistaken for the method's own. A throwing lookup is a failure, never a pass.
+        let fn;
+        try { fn = o ? o[st.method] : undefined; }
+        catch (e) { return report({ status: 'fail', detail: `step ${i}: looking up ${st.on}.${st.method} threw: ${String(e && e.message || e).slice(0, 200)}` }); }
+        if (typeof fn !== 'function') return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method} is not a function` });
         let v;
         if (st.throws) {
           // KAN-106 10694: only THIS method call's own synchronous throw or awaited rejection counts.
@@ -69,7 +75,7 @@ async function child() {
           // exits are runner errors (parent). A return value, or the wrong message, fails.
           const want = st.throws.message_includes;
           let threw = false, msg = '';
-          try { v = await o[st.method](...st.args); }
+          try { v = await Reflect.apply(fn, o, st.args); }
           catch (e) { threw = true; msg = String(e && e.message || e); }
           if (!threw) return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) returned ${show(v)} instead of throwing`, observed: show(v) });
           if (typeof want !== 'string' || !want.trim() || !msg.includes(want)) {
@@ -78,7 +84,7 @@ async function child() {
           thrown.push(`step ${i}: ${st.on}.${st.method}(…) threw as expected: ${msg.slice(0, 200)}`);
           continue;
         }
-        try { v = await o[st.method](...st.args); }
+        try { v = await Reflect.apply(fn, o, st.args); }
         catch (e) { return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) threw: ${String(e && e.message || e).slice(0, 200)}` }); }
         if (st.expect !== undefined && !isDeepStrictEqual(v, st.expect)) {
           return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) returned ${show(v)}, expected ${show(st.expect)}`, observed: show(v) });
