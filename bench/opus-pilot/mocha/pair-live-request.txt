@@ -1,2 +1,2 @@
-mode=smoke
-# KAN-112 10669: ONE harmless credentialed smoke (paired driver, arm-A path); never mode=pair
+mode=pair
+# KAN-112 10680: ONE paired engineering smoke on axios-5892 (arm A first, then arm B); freeze v6 unchanged; no reruns
