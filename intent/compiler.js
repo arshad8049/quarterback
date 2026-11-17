@@ -19,6 +19,7 @@ const SEMANTIC_FIELDS = [
 ];
 const { modelCall } = require('../lib/budget');
 const { validateChecks } = require('../verify/checks/registry');
+const { splitPassages, passageListing, resolveInRequest } = require('./passages');
 
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'), 'utf8');
 
@@ -26,8 +27,10 @@ const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'),
  * @param {string} request
  * @param {string|null} repoContext   the repository survey text (intent/survey.js, QB-17)
  * @param {string|Array<{question, answer}>|null} clarification  answers so far, round by round
+ * @param {object} [o]
+ * @param {{ now: Function, onModelCall: Function }} [o.timer]  KAN-106: told the model call's elapsed ms
  */
-async function compile(request, repoContext = null, clarification = null) {
+async function compile(request, repoContext = null, clarification = null, o = {}) {
   const history = Array.isArray(clarification) ? clarification
     : clarification ? [{ question: null, answer: String(clarification) }] : [];
   // DSA pre-pass (QB-17): a vague term blocks until the request or an answer defines it.
@@ -37,7 +40,7 @@ async function compile(request, repoContext = null, clarification = null) {
   const ambiguity = detectAmbiguity(request, bound);
   if (ambiguity) return ambiguity;
   const clar = resolveClarifications(request, bound);
-  return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry), clar);
+  return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry), clar, o.timer);
 }
 
 /**
@@ -50,12 +53,12 @@ async function compile(request, repoContext = null, clarification = null) {
  * The result is normalized exactly like a first draft; the caller validates it from scratch
  * (contractState). Never used for a user-supplied contract file.
  */
-async function repair(request, repoContext, clarification, failure) {
+async function repair(request, repoContext, clarification, failure, o = {}) {
   const history = Array.isArray(clarification) ? clarification
     : clarification ? [{ question: null, answer: String(clarification) }] : [];
   const clar = resolveClarifications(request, history.map((h) => ({ question_id: h.question_id ?? null, answer: h.answer })));
   const section = failure.kind === 'syntax' ? syntaxSection(failure.diagnostic) : repairSection(failure.contract, failure.errors);
-  return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar);
+  return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar, o.timer);
 }
 
 function syntaxSection(diagnostic) {
@@ -71,10 +74,20 @@ function syntaxSection(diagnostic) {
   ].join('\n');
 }
 
-/** What the model wrote in the rejected draft: its own fields only, not QB's metadata. */
+/**
+ * What the model wrote in the rejected draft: its own fields only, not QB's metadata. A quote QB
+ * copied from cited passages (KAN-106) is QB's, so it is left out: the model sees its ids.
+ */
 function modelAuthored(c) {
   const out = {};
   for (const key of [...SEMANTIC_FIELDS, 'checks']) if (c && c[key] !== undefined) out[key] = c[key];
+  if (Array.isArray(out.requirements)) {
+    out.requirements = out.requirements.map((r) => {
+      if (!r || typeof r !== 'object' || r.passage_ids === undefined) return r;
+      const { quote, ...rest } = r;   // eslint-disable-line no-unused-vars
+      return rest;
+    });
+  }
   return out;
 }
 
@@ -90,7 +103,7 @@ function repairSection(rejected, errors) {
     '',
     'When you correct it:',
     '- Fix every validation error above.',
-    '- Copy every requirement quote character for character from REQUEST; together the quotes must cover the whole request.',
+    '- Cite request passages by id in each requirement\'s passage_ids (QB copies their exact text); do not retype the request. Every passage P1…Pn must be cited by at least one requirement; one passage may support several requirements.',
     '- Keep every part of the request. Add nothing the request does not ask for.',
     '- Remove every proposed default that was "not covered by any acceptance criterion". Do NOT add criteria to justify it, and do not add new or reworded defaults.',
     '- Do not ask a clarifying question; set clarifying_question to null.',
@@ -98,9 +111,12 @@ function repairSection(rejected, errors) {
 }
 
 /** One model call for a contract draft, normalized by the same rules as every contract. */
-async function draftContract(request, userContent, clar) {
+async function draftContract(request, userContent, clar, timer = null) {
   // QB-21: deadline-bound, cancellable, concurrency-bounded (lib/budget.js)
-  const data = await modelCall(`${OLLAMA_URL}/api/chat`, {
+  const t0 = timer ? timer.now() : 0;
+  let data;
+  try {
+    data = await modelCall(`${OLLAMA_URL}/api/chat`, {
     model: MODEL,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
@@ -108,7 +124,11 @@ async function draftContract(request, userContent, clar) {
     ],
     stream: false,
     options: { temperature: 0.1, num_ctx: 16384 },
-  });
+    });
+  } finally {
+    // KAN-106: the model call's own elapsed time, whether it answered or failed.
+    if (timer) timer.onModelCall(timer.now() - t0);
+  }
   const raw = data.message?.content;
   if (!raw) throw new Error('Empty response from Ollama');
 
@@ -128,6 +148,9 @@ async function draftContract(request, userContent, clar) {
  */
 function buildUserContent(request, repoContext, history, byEntry = []) {
   let content = `REQUEST:\n${request}`;
+  // KAN-106: the request as numbered passages; requirements cite these ids and QB copies the text.
+  const passages = splitPassages(request);
+  if (passages.length) content += `\n\nREQUEST PASSAGES (cite these ids in requirements[].passage_ids; QB copies the exact text):\n${passageListing(passages)}`;
   history.forEach((h, i) => {
     const b = byEntry[i];
     const r = b && b.resolved;
@@ -142,7 +165,25 @@ function buildUserContent(request, repoContext, history, byEntry = []) {
 }
 
 function parseAndValidate(text, request) {
-  return contractFromObject(parseJSON(text, request), request);
+  return contractFromObject(fillPassageQuotes(parseJSON(text, request), request), request);
+}
+
+/**
+ * KAN-106: for each requirement that cites request passages, QB copies the exact source text of
+ * those passages into `quote` (replacing any text the model typed) and drops `occurrence` (the
+ * passages fix the position). Ids that do not resolve are left as cited: the validator
+ * (intent/requirements.js) reports them, and the draft can be corrected once.
+ */
+function fillPassageQuotes(raw, request) {
+  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.requirements)) return raw;
+  raw.requirements = raw.requirements.map((r) => {
+    if (!r || typeof r !== 'object' || Array.isArray(r) || r.passage_ids === undefined || r.implied === true) return r;
+    const p = resolveInRequest(request, r.passage_ids);
+    if (!p.ok) return r;
+    const { occurrence, ...rest } = r;   // eslint-disable-line no-unused-vars
+    return { ...rest, passage_ids: p.ids, quote: p.text };
+  });
+  return raw;
 }
 
 /**

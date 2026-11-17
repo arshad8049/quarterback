@@ -20,7 +20,15 @@
  *   - two criteria say the same thing.
  * Applies to contracts that carry the user's request (`raw_request`), which every
  * real contract does (compiler, contract file, benchmark oracle).
+ *
+ * KAN-106: a requirement may cite request passages (`passage_ids`, intent/passages.js) instead
+ * of retyping a quote; QB copies the exact text into `quote`. Here the passages are re-derived
+ * from `raw_request`: unknown, malformed or non-adjacent ids are errors, the quote must be the
+ * exact text of those passages, and the span is the passages' own position (so a repeated text
+ * needs no `occurrence`). Coverage is unchanged; when passages are in use, each passage left
+ * outside every span is also named by its id.
  */
+const { splitPassages, resolvePassageIds } = require('./passages');
 
 // Request text that needs no requirement of its own: articles and pure connectives.
 // Deliberately tiny — negation ("not", "no", "never", "without"), numbers, units,
@@ -33,6 +41,8 @@ const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
 // ordinary prose, and nothing has to guess whether "?", "!" or "." is code.
 const TOKEN = /[\p{L}\p{N}_$]+(?:[.'][\p{L}\p{N}_$]+)*|[^\s\p{L}\p{N}_$]+/gu;
 const tokens = (text) => [...text.matchAll(TOKEN)].map((m) => ({ t: m[0], start: m.index, end: m.index + m[0].length }));
+/** The offset in norm(text) of raw offset i (i at a non-space character). */
+const normOffset = (text, i) => String(text).slice(0, i).toLowerCase().replace(/\s+/g, ' ').replace(/^ /, '').length;
 const occurrences = (hay, needle) => { const at = []; for (let i = hay.indexOf(needle); i !== -1; i = hay.indexOf(needle, i + 1)) at.push(i); return at; };
 
 /** @returns {{ errors: string[], trace: Array<{ id, quote, span, implied, disposition, reason, covered_by }> }} */
@@ -47,6 +57,9 @@ function validateTraceability(c) {
   // position, so a word repeated elsewhere never covers an unquoted clause. A quote
   // that occurs more than once must say which occurrence it means (`occurrence`, 1-based).
   const nreq = norm(request);
+  let cachedPassages = null;
+  const passages = () => (cachedPassages ||= splitPassages(request));
+  let usesPassages = false;
   const ids = new Set();
   const spans = new Map();   // id → [start, end) in the normalized request
   for (const r of reqs) {
@@ -55,6 +68,19 @@ function validateTraceability(c) {
     ids.add(id);
     if (r.implied === true) {
       if (typeof r.text !== 'string' || !r.text.trim() || typeof r.reason !== 'string' || !r.reason.trim()) errors.push(`${id} is implied but has no text or reason`);
+      continue;
+    }
+    if (r.passage_ids !== undefined) {
+      // KAN-106: the cited passages decide the span; the quote is their exact text.
+      const p = resolvePassageIds(passages(), r.passage_ids);
+      if (!p.ok) { errors.push(`${id} ${p.error}`); continue; }
+      const exact = request.slice(p.start, p.end);
+      if (r.quote !== exact) { errors.push(`${id} quote does not match its passages ${p.ids.join(', ')}: expected the exact text ${JSON.stringify(exact)}`); continue; }
+      const start = normOffset(request, p.start);
+      const len = norm(exact).length;
+      if (nreq.slice(start, start + len) !== norm(exact)) { errors.push(`${id} passages ${p.ids.join(', ')} could not be located in the request`); continue; }
+      spans.set(id, [start, start + len]);
+      usesPassages = true;
       continue;
     }
     if (typeof r.quote !== 'string' || !r.quote.trim()) { errors.push(`${id} has no quote from the request`); continue; }
@@ -81,6 +107,17 @@ function validateTraceability(c) {
     if (cur) { cur.end = tk.end; cur.substantive = true; } else { cur = { start: tk.start, end: tk.end, substantive: true }; runs.push(cur); }
   }
   for (const run of runs) errors.push(`request text not traced to any requirement: ${JSON.stringify(nreq.slice(run.start, run.end))}`);
+  // KAN-106: the same gaps, named by passage id, for a model that cites passages.
+  if (usesPassages) {
+    for (const p of passages()) {
+      const s = normOffset(request, p.start);
+      const pt = tokens(nreq.slice(s, s + norm(p.text).length)).map((tk) => ({ ...tk, start: tk.start + s, end: tk.end + s }));
+      const open = pt.filter((tk) => !inSpan(tk) && !FILLER.has(tk.t));
+      if (!open.length) continue;
+      const how = open.length === pt.filter((tk) => !FILLER.has(tk.t)).length ? 'is not cited by any requirement' : 'is only partly covered';
+      errors.push(`passage ${p.id} ${JSON.stringify(p.text)} ${how} (cite it in passage_ids; a passage that is only context is cited by a requirement with disposition "context" and a reason)`);
+    }
+  }
 
   const acs = Array.isArray(c.acceptance_criteria) ? c.acceptance_criteria : [];
   const coveredBy = new Map([...ids].map((id) => [id, []]));

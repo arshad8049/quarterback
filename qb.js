@@ -76,6 +76,7 @@ program
   .option('--no-llm-verify',       'Skip LLM judgment in Layer 4 (DSA only)')
   .option('--save',                'Save all artifacts to disk')
   .option('--deadline <minutes>',  'Total-run deadline; in-flight work is cancelled and the run ends CANCELLED naming the stage (QB-21; env QB_RUN_DEADLINE_MS)')
+  .option('--l1-budget <seconds>', 'L1 (intent) time budget, recorded with the L1 timings and flagged when exceeded; not enforced (KAN-106; env QB_L1_BUDGET_MS)')
   .option('--telemetry',           'Send this run\'s outcome metrics to Quarterback (opt-in; needs a telemetry token)')
   .option('--telemetry-token <t>', 'Your verified telemetry token (or QB_TELEMETRY_TOKEN); request one at /api/telemetry/request (QB-33)')
   .option('--telemetry-dry-run',   'Print the exact telemetry payload this run would send, and send nothing (QB-32)')
@@ -182,6 +183,7 @@ async function main() {
       repoPath, answers: opts.clarify || [],
       ask: process.stdin.isTTY ? async (h) => { showQuestion(h); return (await prompt('  Your answer → ')).trim() || null; } : null,
     });
+    reportL1Timings(run, s.timings);   // KAN-106: before any exit below
     budget.checkpoint();   // QB-21: a run deadline during L1 ends the run here, naming the stage
     if (s.survey) run.event('contract.grounding', s.survey);
     if (s.state === 'needs_clarification' || s.state === 'blocked') {
@@ -404,6 +406,22 @@ async function main() {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/**
+ * KAN-106: the L1 timings with the L1 budget, as a run event (`l1.timings`) and one CLI line.
+ * The budget is recorded and compared, not enforced (lib/budget.js l1Budget).
+ */
+function reportL1Timings(run, timings) {
+  if (!run || !timings) return;
+  const b = budget.l1Budget({ flagMs: checked.l1BudgetMs });
+  const data = { ...timings, budget: { ...b, over_budget: timings.l1_ms > b.ms } };
+  run.event('l1.timings', data);
+  const sec = (ms) => (ms === null || ms === undefined ? 'n/a' : `${(ms / 1000).toFixed(1)}s`);
+  const repairs = timings.repair_call_ms.length ? timings.repair_call_ms.map(sec).join(' + ') : 'none';
+  const src = b.source === 'provisional_default' ? 'provisional default' : `from ${b.source}`;
+  log('L1', `Timings: first draft ${sec(timings.initial_call_ms)} · validation ${sec(timings.validation_ms)} · repair ${repairs} · L1 total ${sec(timings.l1_ms)} (budget ${Math.round(b.ms / 1000)}s ${src}, not enforced)`);
+  if (data.budget.over_budget) log('L1', `L1 took longer than its budget (${sec(timings.l1_ms)} > ${sec(b.ms)})`);
+}
+
 function log(layer, msg) {
   const tag = `[${layer}]`.padEnd(6);
   console.log(`  ${tag} ${msg}`);
@@ -436,6 +454,8 @@ function buildLayersUsed(opts) {
 
 main().catch(e => {
   // KAN-103/104 re-review 1: the corrective call failed outright; keep QB's rejected draft(s).
+  // KAN-106: L1 failed outright (e.g. the repair call); keep its timings.
+  if (e && e.l1_timings && currentRun) { try { reportL1Timings(currentRun, e.l1_timings); } catch { /* best effort */ } }
   if (e && e.recovery && currentRun) {
     try {
       currentRun.artifact('contract-repair', { format: 'qb-contract-repair/1', outcome: e.recovery.failed.kind, rejected: e.recovery.rejected, failed: e.recovery.failed });

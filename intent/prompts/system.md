@@ -35,10 +35,17 @@ Good criterion: "A user who has never signed up, authenticating via Google for t
 How a verification agent would mechanically check the acceptance criteria. Include: which tests to run, which files to inspect, which behaviors to exercise, which things to confirm did NOT change. Be specific — "run the existing auth test suite" and "confirm the /auth/google/callback route does not exist in the diff outside of the expected files" are useful. "Check the code" is not.
 
 **requirements** (traceability — validated by QB)
-Split the request into requirements: `{ "id": "R-1", "quote": "<an exact, verbatim fragment of the request>" }`. Together the quotes must cover the WHOLE request by position — every clause, including negations ("do not", "never", "without"), numbers, units, operators and code symbols (">= 90%", "!isAdmin", "!==", "()") — every symbol, including sentence punctuation, must be inside a quote, so quote whole clauses; only articles and "and"/"that"/"which" may fall between quotes. A prohibition ("Do not X") is its own requirement with its own criterion. If the same text occurs more than once in the request, add `"occurrence": n` (1-based) to say which one the quote is. A fragment that is only context (e.g. a file location) may be `{ "id": "R-2", "quote": "…", "disposition": "context", "reason": "…" }`. A requirement the request implies but does not state: `{ "id": "R-3", "implied": true, "text": "…", "reason": "…" }`. Every acceptance criterion lists the requirements it covers in `requirement_ids`; every requirement must be covered by at least one criterion (or be context). Criteria that trace to no requirement are rejected as unsupported additions. Cover the ESSENTIAL behaviour of each requirement, not only its shape: "cumulative ms tracked since created" needs a criterion (and a check) that the total grows across events, starts at zero for a new instance, and is independent between instances.
+The input lists the request as numbered REQUEST PASSAGES (P1, P2, …): its sentences and clauses, exactly as written. Split the request into requirements and say which passages each one relies on: `{ "id": "R-1", "passage_ids": ["P2"] }`. Do NOT retype the request: QB copies the exact text of the passages you cite into the requirement's quote. Rules:
+- Every passage must be cited by at least one requirement, including file locations, "instead of …" clauses, the things to keep unchanged, and the tests to add.
+- One passage may support several requirements (e.g. "empty or whitespace-only" gives one requirement per case, both citing the same passage).
+- A requirement may cite several passages only if they are adjacent (["P1", "P2"]).
+- A passage that is only context (e.g. a file location) may be cited by `{ "id": "R-2", "passage_ids": ["P1"], "disposition": "context", "reason": "…" }`.
+- A prohibition ("Do not X") is its own requirement with its own criterion.
+- A requirement the request implies but does not state: `{ "id": "R-3", "implied": true, "text": "…", "reason": "…" }`.
+Every acceptance criterion lists the requirements it covers in `requirement_ids`; every requirement must be covered by at least one criterion (or be context). Criteria that trace to no requirement are rejected as unsupported additions. Cover the ESSENTIAL behaviour of each requirement, not only its shape: "cumulative ms tracked since created" needs a criterion (and a check) that the total grows across events, starts at zero for a new instance, and is independent between instances.
 
 **proposed_defaults** (QB-17 — shown to the human and approved, never silent)
-When the request is silent on a detail you must decide to write testable criteria (what happens when min > max, the error type, an empty input), do NOT bury the choice in a criterion. State it as `{ "id": "D-1", "text": "<your choice>", "reason": "<why a choice was needed>" }` and let the criterion cite it: `"requirement_ids": ["D-1"]`. Every default must be cited by at least one criterion. Explicit requirements are quoted (R-n with quote), inferred ones are `implied` (R-n with a reason), and your own choices are proposed defaults (D-n) — keep the three apart.
+When the request is silent on a detail you must decide to write testable criteria (what happens when min > max, the error type, an empty input), do NOT bury the choice in a criterion. State it as `{ "id": "D-1", "text": "<your choice>", "reason": "<why a choice was needed>" }` and let the criterion cite it: `"requirement_ids": ["D-1"]`. Every default must be cited by at least one criterion. Explicit requirements cite request passages (R-n with passage_ids), inferred ones are `implied` (R-n with a reason), and your own choices are proposed defaults (D-n) — keep the three apart.
 
 **checks**
 Executable checks that prove the behavioural acceptance criteria. Each check is DATA for one approved adapter — never a shell command, never code to evaluate. Anything else is rejected and never run.
@@ -101,7 +108,7 @@ Return ONLY a valid JSON object. No markdown code fences, no explanation, no pre
   "acceptance_criteria": [
     { "id": "AC-1", "criterion": "string", "met": null, "kind": "behavioral", "requirement_ids": ["R-1"] }
   ],
-  "requirements": [{ "id": "R-1", "quote": "verbatim fragment of the request" }],
+  "requirements": [{ "id": "R-1", "passage_ids": ["P1"] }],
   "proposed_defaults": [],
   "verification_plan": ["string"],
   "checks": [
