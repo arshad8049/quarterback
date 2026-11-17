@@ -63,7 +63,7 @@ function writeAndReadBack(res, ctx = CTX) {
   const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'pairv7-pub-')), `pair-${ctx.arm}.json`);
   fs.writeFileSync(f, `${JSON.stringify(summary, null, 2)}\n`);
   const back = JSON.parse(fs.readFileSync(f, 'utf8'));
-  return { summary, back, problems: PAIR.recordProblems(back) };
+  return { summary, back, problems: PAIR.recordProblems(back, { patchBytes: res.patch }) };   // v8 (10693): linkage needs the actual bytes
 }
 
 test('v7 complete valid sequence: every QB attempt carries its own served model, CLI, billing and patch link; the readback verifies', async () => {
@@ -134,8 +134,8 @@ test('v7: the configured profile alone can NOT satisfy verification (the v6 gap:
   assert.ok(p.some((x) => /no per-attempt evidence/.test(x)), p.join('; '));
   assert.ok(p.some((x) => /execution_verified/.test(x)), p.join('; '));
   // fewer evidence entries than attempts run
-  const one = { attempt: 1, outcome: 'verified', flags: ['verified'], requested_model: MODEL, served_model: MODEL, cli: '2.1.322', provider: 'firstParty', api_key_source: 'none', is_using_overage: false, evidence_complete: true };
-  assert.ok(PAIR.recordProblems({ ...v6Like, attempts: 2, attempt_evidence: [one], evidence: { verified: true } }).some((x) => /2 attempt/.test(x)));
+  const one = { attempt: 1, outcome: 'verified', flags: ['verified'], requested_model: MODEL, served_model: MODEL, cli: '2.1.322', provider: 'firstParty', api_key_source: 'none', is_using_overage: false, evidence_complete: true, patch_sha256: null };
+  assert.ok(PAIR.recordProblems({ ...v6Like, attempts: 2, attempt_evidence: [one], evidence: { verified: true } }).some((x) => /for 2 executed attempt/.test(x)));   // v8 wording (10693)
   assert.deepEqual(PAIR.evidenceProblems([one], { model: MODEL, claude_code_version: '2.1.322' }, 1), []);
   // a served-model field copied from the profile but with no classified outcome is not evidence
   assert.ok(PAIR.evidenceProblems([{ attempt: 1, served_model: MODEL }], { model: MODEL, claude_code_version: '2.1.322' }, 1).length > 0);

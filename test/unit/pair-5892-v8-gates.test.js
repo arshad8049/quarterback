@@ -138,3 +138,29 @@ test('v8 driver: pair.mjs exits through readbackGate on the PUBLISHED record, wr
   assert.match(src, /pair-5892-freeze-v8\.json/);
   assert.doesNotMatch(src, /process\.exit\(res\.stop_batch/, 'the exit no longer ignores the readback');
 });
+
+test('v8 rehearsal workflow: branch-only, no environment, no secret, no live flag; simulation refuses any credential or live flag', () => {
+  const wf = fs.readFileSync(path.join(ROOT, '.github/workflows/pair-5892-v8-rehearsal.yml'), 'utf8');
+  const code = wf.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+  assert.doesNotMatch(code, /secrets\./); assert.doesNotMatch(code, /^\s*environment:/m); assert.doesNotMatch(code, /PAIR_LIVE|ARM_A_LIVE|CLAUDE_CODE_OAUTH_TOKEN/);
+  assert.match(code, /branches: \[pair-5892-v7\]/); assert.doesNotMatch(code, /kan117-axios-mocha|opus-arm-a/);
+  assert.match(code, /--mode=dry-run/); assert.doesNotMatch(code, /--mode=(task|smoke)\b/);
+  const { spawnSync } = require('node:child_process');
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'bench/opus-pilot/sim/pair-sim.mjs'), '--write', `--out=${fs.mkdtempSync(path.join(os.tmpdir(), 'pairv8-sim-'))}`],
+    { env: { ...process.env, CLAUDE_CODE_OAUTH_TOKEN: 'dummy-not-a-token' }, encoding: 'utf8' });
+  assert.equal(r.status, 2); assert.match(r.stdout, /refusing: CLAUDE_CODE_OAUTH_TOKEN is set/);
+});
+
+test('v8 SIMULATED artifact path: write -> separate readback process verifies the valid sequences, refuses missing evidence, live gate refuses all', () => {
+  const { spawnSync } = require('node:child_process');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'pairv8-simrb-'));
+  const env = { ...process.env }; for (const k of Object.keys(env)) if (/^(PAIR_LIVE|ARM_A_LIVE|CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_|CLAUDE_API)/.test(k)) delete env[k];
+  const w = spawnSync(process.execPath, [path.join(ROOT, 'bench/opus-pilot/sim/pair-sim.mjs'), '--write', `--out=${d}`], { env, encoding: 'utf8' });
+  assert.equal(w.status, 0, w.stdout + w.stderr);
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'bench/opus-pilot/sim/pair-sim.mjs'), '--readback', `--in=${d}`], { env, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal((r.stdout.match(/live_gate=8/g) || []).length, 3);
+  // tampering with the transferred bytes breaks the readback
+  fs.writeFileSync(path.join(d, 'a-complete.diff'), 'tampered\n');
+  assert.notEqual(spawnSync(process.execPath, [path.join(ROOT, 'bench/opus-pilot/sim/pair-sim.mjs'), '--readback', `--in=${d}`], { env, encoding: 'utf8' }).status, 0);
+});

@@ -43,7 +43,7 @@ const restricted = arg('restricted'); const pub = arg('public'); let repoPath = 
 if (!restricted || !pub || !store || !imagesDir || (!smoke && !repoPath)) die(2, 'refusing: --store, --images, --restricted, --public (and --repo for a task) are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v7.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v8.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
@@ -165,17 +165,21 @@ for (const [f, x] of Object.entries(files)) {
 if (problems.length) { for (const d of [restricted, pub]) fs.rmSync(d, { recursive: true, force: true }); die(6, `evidence refused before upload: ${problems.join('; ')}`); }
 for (const d of [restricted, pub]) fs.mkdirSync(d, { recursive: true });
 for (const [f, x] of Object.entries(files)) fs.writeFileSync(f, x.data);
-// KAN-114 10689 (v7): read the PUBLISHED record back and gate it on its own per-attempt evidence
+// KAN-114 10689/10693 (v7, v8): read the PUBLISHED record back; the exit decision is made on IT and on the actual
+// captured bytes (lib/pilot/pair.js readbackGate), never on the earlier in-memory summary
 const back = JSON.parse(fs.readFileSync(path.join(pub, `pair-${arm}.json`), 'utf8'));
-const evProblems = PAIR.recordProblems(back);
-const evLine = back.attempt_evidence.map((e) => `a${e.attempt}:${e.outcome}/${e.served_model}/${e.cli}/${e.provider}/${e.api_key_source}/overage=${e.is_using_overage}/${e.agent_stage_ms}ms/${String(e.patch_sha256).slice(0, 12)}`).join(' ');
-console.log(`::notice title=pair-evidence-${arm}::verified=${evProblems.length === 0} label=${back.evidence_label} attempts=${back.attempts} ${evLine} problems=${JSON.stringify(evProblems.slice(0, 6)).replace(/%/g, '%25')}`);
-console.log(JSON.stringify({ arm, mode, primary: summary.primary, attempts: summary.attempts, attempt_verdicts: summary.attempt_verdicts, coding_ms: summary.coding_ms,
-  candidate: { bytes: summary.candidate.bytes, gradable: summary.candidate.gradable }, probe: probes, grade_now: summary.grade_now }, null, 1));
+const gate = PAIR.readbackGate({ mode, record: back, patchBytes: res.patch, stopBatch: res.stop_batch });
+fs.writeFileSync(path.join(pub, `readback-${arm}.json`), `${JSON.stringify(gate.sidecar, null, 2)}\n`);   // diagnostic; never a verified artifact when refused
+const evLine = (back.attempt_evidence || []).map((e) => `a${e.attempt}:${e.outcome}/${e.served_model}/${e.cli}/${e.provider}/${e.api_key_source}/overage=${e.is_using_overage}/${e.agent_stage_ms}ms/${String(e.patch_sha256).slice(0, 12)}`).join(' ');
+console.log(`::notice title=pair-evidence-${arm}::verified=${gate.verified} expectation=${gate.expectation} label=${back.evidence_label} attempts=${back.attempts} ${evLine} problems=${JSON.stringify(gate.problems.slice(0, 6)).replace(/%/g, '%25')}`);
+console.log(JSON.stringify({ arm, mode, primary: back.primary, attempts: back.attempts, attempt_verdicts: back.attempt_verdicts, coding_ms: back.coding_ms,
+  candidate: { bytes: back.candidate.bytes, gradable: back.candidate.gradable }, probe: probes, grade_now: back.grade_now }, null, 1));
+if (gate.code === 8) die(8, `readback refused: ${gate.problems.slice(0, 6).join('; ')} (not grade-eligible; the pair stops)`);
+if (gate.code === 9) die(9, `dry-run expectation violated: ${gate.problems.slice(0, 6).join('; ')}`);
 if (smoke) {
-  const probs = PAIR.smokeProblems({ primary: summary.primary, capture_state: res.candidate.capture_state, model: summary.model, billing_route: summary.billing_route });
+  const probs = PAIR.smokeProblems({ primary: back.primary, capture_state: res.candidate.capture_state, model: back.model, billing_route: back.billing_route });
   console.log(`::notice title=pair-smoke::acceptable=${probs.length === 0} mode=${mode} problems=${JSON.stringify(probs).replace(/%/g, '%25')}`);
   if (probs.length) die(7, `smoke NOT acceptable: ${probs.join('; ')} (the pair does not start)`);
   process.exit(0);
 }
-process.exit(res.stop_batch ? 5 : 0);
+process.exit(gate.code);

@@ -1,0 +1,230 @@
+# KAN-114 10693 (freeze v8): branch-only NO-ENVIRONMENT, NO-SECRET rehearsal of the paired record-integrity gates.
+# No token, no auth, no model network call, no live branch allowlist change; nothing here can run a live mode
+# (pair.mjs refuses --mode=task/smoke without PAIR_LIVE=1, which no step sets; no job uses an environment or a secret).
+#   dry-a, dry-b      the REAL Docker entrypoint (bench/opus-pilot/pair.mjs --mode=dry-run) for both arms with a scripted
+#                     agent stage. A scripted run has no model stream, so its record MUST stay unverified (readback
+#                     sidecar "unverified as expected"); cleanup counters must be zero.
+#   transfer-check    downloads both arms' artifacts: candidate bytes = candidate.json = trial.json = published hashes.
+#   sim-write         SIMULATED complete-stream records (fake stream behind the seam) through the production assembly.
+#   sim-readback      downloads them: valid sequences verify, missing evidence is refused, byte linkage survives the
+#                     transfer, and the LIVE gate refuses every SIMULATED record. Simulated is never live evidence.
+# Trigger: a push to pair-5892-v7 changing bench/opus-pilot/mocha/v8-rehearsal-request.txt.
+name: pair-5892-v8-rehearsal
+
+on:
+  push:
+    branches: [pair-5892-v7]
+    paths: [bench/opus-pilot/mocha/v8-rehearsal-request.txt]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: pair-5892-v8-rehearsal
+  cancel-in-progress: false
+
+env:
+  SWEBENCH_REF: 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e
+  ARCHIVE_SHA256: d06181d5365b51fc7ff490171581b9ee87d77e19b3a739a8d574bf25d9ef9479
+  LOCK_SHA256: 3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba
+  GRADER: bench/public/grader/immutable-offline-v1
+  EV: bench/public/grader/immutable-offline-v1/lock-evidence/run-42906422892
+  WORK: ${{ github.workspace }}/kan117-work
+  PUB: ${{ github.workspace }}/kan117-publish
+  INST: ${{ github.workspace }}/kan117-install-record
+  IMG: ${{ github.workspace }}/kan117-images
+  KAN117_IMAGES_RUN: '43610841280'
+  RESTRICTED: ${{ github.workspace }}/pair-restricted
+  QB_INTEGRATION: '0'
+
+jobs:
+  dry-a:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: kan117-images
+          path: ${{ env.IMG }}
+          run-id: ${{ env.KAN117_IMAGES_RUN }}
+          github-token: ${{ github.token }}
+      - name: Load the frozen image set (no build)
+        env: { KAN117_CI_RUN: '1' }
+        run: node bench/public/kan117/image-bundle.mjs load --in="$IMG"
+      - name: Rebuild the task stores from the hash-verified dataset (network used here only)
+        run: cd bench && node public/import.mjs --download
+      - name: Starting code at the pinned base only (shallow; one commit)
+        run: |
+          set -euo pipefail
+          B=$(node -e "const t=require('./bench/opus-pilot/arm-a-grader-tasks.json').tasks[process.argv[1]];console.log(t.base+' '+t.repo)" axios-5892)
+          read -r BASE REPO <<<"$B"
+          mkdir -p "$WORK/repo" && cd "$WORK/repo"
+          git init -q && git fetch -q --depth 1 "https://github.com/$REPO" "$BASE"
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$BASE"; test "$(git rev-list --all --count)" = 1
+      - name: Paired dry-run, arm A (no model, no token)
+        env: { PAIR_CI_RUN: '1' }
+        run: node bench/opus-pilot/pair.mjs --arm=A --mode=dry-run --repo="$WORK/repo" --store=bench/public/out --images="$IMG" --restricted="$RESTRICTED" --public="$PUB"
+      - name: Cleanup check
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p "$PUB"
+          { echo "qb_containers=$(docker ps -aq --filter label=qb.run | wc -l)"; echo "qb_volumes=$(docker volume ls -q --filter label=qb.run | wc -l)";
+            echo "qb_networks=$(docker network ls -q --filter label=qb.run | wc -l)"; echo "qb_claude_auth_volume=$(docker volume ls -q --filter name=^qb-claude-auth$ | wc -l)"; } | tee "$PUB/cleanup-trial.txt"
+          ! grep -qv '=0$' "$PUB/cleanup-trial.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && hashFiles('pair-restricted/trial.json') != '' }}
+        with:
+          name: pair-grading-input-A
+          path: ${{ env.RESTRICTED }}
+          if-no-files-found: ignore
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && true }}
+        with:
+          name: pair-trial-public-A
+          path: ${{ env.PUB }}
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Public notice (statuses and hashes only)
+        if: ${{ !cancelled() }}
+        run: |
+          [ -f "$PUB/pair-A.json" ] && node -e '
+            const j = require(process.argv[1]);
+            console.log(`::notice title=pair-${j.arm}::arm=${j.arm} mode=${j.mode} primary=${j.primary} flags=${(j.flags||[]).join(",")} attempts=${j.attempts} verdicts=${JSON.stringify(j.attempt_verdicts)} internal=${j.internal_verdict} coding_ms=${j.coding_ms}/${j.coding_allowance_ms} timing=${JSON.stringify(j.timing)} cand=${j.candidate.bytes}B gradable=${j.candidate.gradable} sha=${String(j.candidate.sha256).slice(0,12)} probe=${JSON.stringify(j.coding_isolation_probe)} profile=${j.profile.model}/${j.profile.claude_code_version}/${j.profile.permission_mode} images=${j.distinct_launch_images.length} launches=${j.launches} grade_now=${j.grade_now} (${j.grade_basis}; pilot=${j.pilot_grade_now})`);
+            console.log(`::notice title=pair-${j.arm}-why::reasons=${JSON.stringify(j.reasons)} diag=${JSON.stringify(j.diagnostics).replace(/%/g, "%25").slice(0, 3000)}`);
+          ' "$PUB/pair-A.json" || true
+
+  dry-b:
+    needs: [dry-a]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: kan117-images
+          path: ${{ env.IMG }}
+          run-id: ${{ env.KAN117_IMAGES_RUN }}
+          github-token: ${{ github.token }}
+      - name: Load the frozen image set (no build)
+        env: { KAN117_CI_RUN: '1' }
+        run: node bench/public/kan117/image-bundle.mjs load --in="$IMG"
+      - name: Rebuild the task stores from the hash-verified dataset (network used here only)
+        run: cd bench && node public/import.mjs --download
+      - name: Starting code at the pinned base only (shallow; one commit)
+        run: |
+          set -euo pipefail
+          B=$(node -e "const t=require('./bench/opus-pilot/arm-a-grader-tasks.json').tasks[process.argv[1]];console.log(t.base+' '+t.repo)" axios-5892)
+          read -r BASE REPO <<<"$B"
+          mkdir -p "$WORK/repo" && cd "$WORK/repo"
+          git init -q && git fetch -q --depth 1 "https://github.com/$REPO" "$BASE"
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$BASE"; test "$(git rev-list --all --count)" = 1
+      - name: Paired dry-run, arm B (no model, no token)
+        env: { PAIR_CI_RUN: '1' }
+        run: node bench/opus-pilot/pair.mjs --arm=B --mode=dry-run --repo="$WORK/repo" --store=bench/public/out --images="$IMG" --restricted="$RESTRICTED" --public="$PUB"
+      - name: Cleanup check
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p "$PUB"
+          { echo "qb_containers=$(docker ps -aq --filter label=qb.run | wc -l)"; echo "qb_volumes=$(docker volume ls -q --filter label=qb.run | wc -l)";
+            echo "qb_networks=$(docker network ls -q --filter label=qb.run | wc -l)"; echo "qb_claude_auth_volume=$(docker volume ls -q --filter name=^qb-claude-auth$ | wc -l)"; } | tee "$PUB/cleanup-trial.txt"
+          ! grep -qv '=0$' "$PUB/cleanup-trial.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && hashFiles('pair-restricted/trial.json') != '' }}
+        with:
+          name: pair-grading-input-B
+          path: ${{ env.RESTRICTED }}
+          if-no-files-found: ignore
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && true }}
+        with:
+          name: pair-trial-public-B
+          path: ${{ env.PUB }}
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Public notice (statuses and hashes only)
+        if: ${{ !cancelled() }}
+        run: |
+          [ -f "$PUB/pair-B.json" ] && node -e '
+            const j = require(process.argv[1]);
+            console.log(`::notice title=pair-${j.arm}::arm=${j.arm} mode=${j.mode} primary=${j.primary} flags=${(j.flags||[]).join(",")} attempts=${j.attempts} verdicts=${JSON.stringify(j.attempt_verdicts)} internal=${j.internal_verdict} coding_ms=${j.coding_ms}/${j.coding_allowance_ms} timing=${JSON.stringify(j.timing)} cand=${j.candidate.bytes}B gradable=${j.candidate.gradable} sha=${String(j.candidate.sha256).slice(0,12)} probe=${JSON.stringify(j.coding_isolation_probe)} profile=${j.profile.model}/${j.profile.claude_code_version}/${j.profile.permission_mode} images=${j.distinct_launch_images.length} launches=${j.launches} grade_now=${j.grade_now} (${j.grade_basis}; pilot=${j.pilot_grade_now})`);
+            console.log(`::notice title=pair-${j.arm}-why::reasons=${JSON.stringify(j.reasons)} diag=${JSON.stringify(j.diagnostics).replace(/%/g, "%25").slice(0, 3000)}`);
+          ' "$PUB/pair-B.json" || true
+
+  transfer-check:
+    needs: [dry-a, dry-b]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with: { name: pair-grading-input-A, path: xfer/A/restricted }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with: { name: pair-trial-public-A, path: xfer/A/public }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with: { name: pair-grading-input-B, path: xfer/B/restricted }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with: { name: pair-trial-public-B, path: xfer/B/public }
+      - name: Byte linkage, readback sidecar and cleanup after transfer (DRY RUN records)
+        run: node bench/opus-pilot/sim/rehearsal-check.mjs --dir=xfer --arms=A,B
+
+  sim-write:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - name: SIMULATED complete-stream records (fake stream; not a live model or billing check)
+        run: node bench/opus-pilot/sim/pair-sim.mjs --write --out=sim-out
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        with: { name: pair-sim-records, path: sim-out, retention-days: 7 }
+
+  sim-readback:
+    needs: sim-write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with: { name: pair-sim-records, path: sim-in }
+      - name: Readback of the downloaded SIMULATED records (expected outcomes; the live gate must refuse them)
+        run: node bench/opus-pilot/sim/pair-sim.mjs --readback --in=sim-in

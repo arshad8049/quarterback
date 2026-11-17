@@ -1,0 +1,2 @@
+run=1
+# KAN-114 10693: branch-only no-environment, no-secret v8 rehearsal (dry-run Docker entrypoint + SIMULATED artifact path); never live
