@@ -1,2 +1,2 @@
 mode=pair
-# KAN-112 10680: ONE paired engineering smoke on axios-5892 (arm A first, then arm B); freeze v6 unchanged; no reruns
+# KAN-112 10704: ONE fresh v8 engineering pair on axios-5892 (arm A first, then arm B); freeze v8 unchanged; no reruns
