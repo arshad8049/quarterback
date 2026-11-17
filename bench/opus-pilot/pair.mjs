@@ -36,7 +36,7 @@ const restricted = arg('restricted'); const pub = arg('public'); const repoPath 
 if (!restricted || !pub || !repoPath || !store || !imagesDir) die(2, 'refusing: --repo, --store, --images, --restricted and --public are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v3.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v4.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
@@ -136,7 +136,11 @@ const summary = {
   model: rep.model || null, billing_route: rep.billing_route || null, cli: res.profile.claude_code_version, profile: res.profile,
   candidate: { sha256: res.candidate.sha256, bytes: res.candidate.bytes, gradable: res.candidate.gradable, not_gradable_reason: res.candidate.not_gradable_reason,
     files: res.candidate.files, base_tree: res.candidate.base_tree, candidate_tree: res.candidate.candidate_tree },
-  coding_isolation_probe: probes, grade_now: res.grade_now, stop_batch: res.stop_batch,
+  coding_isolation_probe: probes, stop_batch: res.stop_batch,
+  // the dry run always exercises the independent grader on a gradable captured patch (labelled; never a result)
+  grade_now: live ? res.grade_now : Boolean(res.candidate.gradable && res.patch.length > 0), grade_basis: live ? 'pilot rule (grade_under_10583)' : 'dry-run exercise of the grading path',
+  pilot_grade_now: res.grade_now,
+  diagnostics: { sandbox: res.sandbox || null, attempt_outcome: res.attempt_outcome || null, attempt_reasons: res.attempt_reasons || null, last_report: res.last_report || null },
   images: Object.values(ids), launches: launches.length, distinct_launch_images: [...new Set(launches.map((l) => l.image))],
 };
 const secret = process.env.CLAUDE_CODE_OAUTH_TOKEN || null;

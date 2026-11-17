@@ -99,7 +99,8 @@ jobs:
         run: |
           [ -f "$PUB/pair-${{ matrix.arm }}.json" ] && node -e '
             const j = require(process.argv[1]);
-            console.log(`::notice title=pair-${j.arm}::arm=${j.arm} mode=${j.mode} primary=${j.primary} flags=${(j.flags||[]).join(",")} attempts=${j.attempts} verdicts=${JSON.stringify(j.attempt_verdicts)} internal=${j.internal_verdict} coding_ms=${j.coding_ms}/${j.coding_allowance_ms} timing=${JSON.stringify(j.timing)} cand=${j.candidate.bytes}B gradable=${j.candidate.gradable} sha=${String(j.candidate.sha256).slice(0,12)} probe=${JSON.stringify(j.coding_isolation_probe)} profile=${j.profile.model}/${j.profile.claude_code_version}/${j.profile.permission_mode} images=${j.distinct_launch_images.length} launches=${j.launches} grade_now=${j.grade_now}`);
+            console.log(`::notice title=pair-${j.arm}::arm=${j.arm} mode=${j.mode} primary=${j.primary} flags=${(j.flags||[]).join(",")} attempts=${j.attempts} verdicts=${JSON.stringify(j.attempt_verdicts)} internal=${j.internal_verdict} coding_ms=${j.coding_ms}/${j.coding_allowance_ms} timing=${JSON.stringify(j.timing)} cand=${j.candidate.bytes}B gradable=${j.candidate.gradable} sha=${String(j.candidate.sha256).slice(0,12)} probe=${JSON.stringify(j.coding_isolation_probe)} profile=${j.profile.model}/${j.profile.claude_code_version}/${j.profile.permission_mode} images=${j.distinct_launch_images.length} launches=${j.launches} grade_now=${j.grade_now} (${j.grade_basis}; pilot=${j.pilot_grade_now})`);
+            console.log(`::notice title=pair-${j.arm}-why::reasons=${JSON.stringify(j.reasons)} diag=${JSON.stringify(j.diagnostics).replace(/%/g, "%25").slice(0, 3000)}`);
           ' "$PUB/pair-${{ matrix.arm }}.json" || true
 
   grade:
