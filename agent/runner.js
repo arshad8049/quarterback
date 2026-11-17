@@ -84,6 +84,13 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
       const probs = A.liveRouteProblems(process.env, process.argv[1]);
       if (probs.length) routeErrs.push(...probs.map((x) => `arm-A route: ${x}`)); else approved = [A.ROUTE];
     }
+    // KAN-112 (10660): the paired axios-5892 driver's route, through lib/pilot/pair.js's own guard (the paired driver, the
+    // protected paired live workflow, the owner's SEPARATE recorded confirmation). The arm-A confirmation does not extend to it.
+    if (!options.runSandboxed && options.pairedResearchRoute === true) {
+      const PAIR = require('../lib/pilot/pair');
+      const probs = PAIR.routeProblems(process.env, process.argv[1]);
+      if (probs.length) routeErrs.push(...probs.map((x) => `paired route: ${x}`)); else approved = [PAIR.ROUTE];
+    }
     const errs = [...routeErrs, ...P.checkProfile(profile, { imagePin: CLAUDE_VERSION, approved })];
     // KAN-113 10600: qualification-only options and an overridden (e.g. fake) agent image are never allowed live
     for (const k of ['noCredentials', 'qualificationOnly', 'allowSynthetic']) if (options[k] !== undefined) errs.push(`${k} is qualification-only and refused for pilot runs`);
@@ -108,11 +115,23 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
         stderr_tail: null, patch_raw: null, base_listing: null, error: `pilot ${why}: sign-in ${s ? s.status : 'failed'}`, sandbox: null, pilot_outcome: why };
     }
   }
+  // KAN-112 (10660): every briefing (QB repair hints included) is checked for hidden-answer material before any sandbox
+  if (typeof options.briefingGuard === 'function') {
+    const bad = options.briefingGuard(briefing);
+    if (bad) {
+      if (options.pilot && options.pilot.record) options.pilot.record({ flags: ['preflight_refused'], reasons: [`briefing guard: ${bad}`] });
+      return { status: 'blocked', diff: null, changes: [], unsupported_changes: [], base_tree: null, candidate_tree: null, exit_code: null, signal: null,
+        stderr_tail: null, patch_raw: null, base_listing: null, error: `briefing guard: ${bad}`, sandbox: null, pilot_outcome: 'preflight_refused' };
+    }
+  }
   if (profile && options.pilot && options.pilot.onStage) options.pilot.onStage('agent');
   const r = await run({
     repoPath, briefing,
     ...(profile ? { requireMemoryCheck: true, agentArgs: require('../lib/sandbox/agent-profile').buildAgentArgs(profile), agentStdoutMaxBytes: require('../lib/sandbox/agent-profile').AGENT_STDOUT_MAX_BYTES } : {}),
-    ...(profile && options.armAResearchRoute === true ? { agentConfigTmpfs: true } : {}),
+    ...(profile && (options.armAResearchRoute === true || options.pairedResearchRoute === true) ? { agentConfigTmpfs: true } : {}),
+    // KAN-112 (10660): the frozen research settings (Mocha env record, root-scripts entry, mounted check runner, trial deadline)
+    ...(options.research ? { researchEnv: options.research.env, researchRootScripts: options.research.rootScripts, researchCheckRunner: options.research.checkRunner,
+      researchDeadlineAtMs: options.research.deadlineAtMs, requireMemoryCheck: true, ...(options.research.baseline ? { researchBaseline: options.research.baseline } : {}) } : {}),
     deadlines: options.timeoutMs ? { agent: options.timeoutMs } : undefined,
     snapshotPaths: options.snapshotPaths,
     checks: options.checks,
