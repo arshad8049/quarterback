@@ -1,4 +1,4 @@
-# KAN-106 fixtures: what each one is (senior 10690)
+# KAN-106 fixtures: what each one is (senior 10690, 10694)
 
 | File | Label | Use |
 | --- | --- | --- |
@@ -9,3 +9,5 @@
 | `faithful-draft.json` | **synthetic API** (assumes `lib/serializer.js` exports a plain function `asNumber` returning numbers; the pinned repository does not) | structural tests only; never evidence about the pinned repository |
 | `passage-draft.json` | **synthetic** (the eba7015e draft as a passage-citing model would write it); since 10690 its checks are the pinned-API `call_sequence` checks of `pinned-api-honest.json` (its inherited checks called the class `Serializer` with `args: []`) | passage-ID mechanics |
 | `eba7015e-*`, `malformed-draft.json`, `smoke-errors.json` | observed drafts and errors from earlier smokes (10668–10674) | diagnostic |
+| `pinned-api-throws.json` | **human-reviewed, faithful to the pinned repository** (10694) | `pinned-api-honest.json` plus CHK-1/CHK-2: `call_sequence` steps with `throws: { message_includes: "cannot be converted to a number" }` on `new Serializer().asNumber("")` and `("   ")`, the number-conversion error of the pinned source (07d7196). Recorded as `qb-checks/2.1`. |
+| `pinned-fast-json-stringify/serializer-07d7196.js` | **pinned source** (07d7196, fast-json-stringify 7.2.1, MIT) | the source both pinned-API fixtures were built from; the guard-removed version the tests derive from it is a **SYNTHETIC mutation**, not necessarily the owner's original repository base. Before any owner smoke, record the target repository's actual HEAD and confirm its API matches. |

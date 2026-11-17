@@ -14,6 +14,12 @@
  *   call_throws     { module, export, args, message_includes? }  export(...args) throws / rejects
  *   call_sequence   { module, export, instances, steps }  (qb-checks/2, QB-14) instances made with `new`
  *                   or a factory call, then method calls in order; each step with `expect` must deep-equal
+ *                   (qb-checks/2.1, KAN-106 10694) or, instead of `expect`, a step with
+ *                   `throws: { message_includes }`: THAT method call must throw / reject with a message
+ *                   containing the literal fragment. Construction, missing export/method, timeouts,
+ *                   exits and runner failures never satisfy it. A contract whose checks use `throws`
+ *                   is recorded as qb-checks/2.1; everything else stays qb-checks/2 (same content,
+ *                   same hashes). The runner must declare the capability (verify/checks/results.js).
  *
  * `module` is a repository-relative .js/.cjs/.mjs path (no "..", not absolute);
  * `export` is an identifier or "default"; `args` and `expect` are plain JSON
@@ -24,6 +30,10 @@ const { z } = require('zod');
 const { isDeepStrictEqual } = require('util');
 
 const REGISTRY_VERSION = 'qb-checks/2';   // /2 adds call_sequence (QB-14); /1 checks remain valid
+// KAN-106 10694: a call_sequence step may assert a throw. Only contracts that use it are /2.1
+// (never /3, which the frozen research route uses); old content keeps /2 and its hashes.
+const THROWS_VERSION = 'qb-checks/2.1';
+const usesThrows = (checks) => checks.some((c) => c.adapter === 'call_sequence' && (c.params.steps || []).some((st) => st.throws !== undefined));
 const MAX_JSON_BYTES = 4096;
 const MAX_CHECKS = 32;
 
@@ -61,9 +71,12 @@ const ADAPTERS = {
       on: z.string(), method: z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]{0,99}$/, 'method must be an identifier'),
       args: json('step args').refine((a) => Array.isArray(a), 'args must be an array'),
       expect: json('expect').optional(),
-    }).strict()).min(1).max(50),
+      throws: z.object({
+        message_includes: z.string().min(1).max(200).refine((m) => m.trim().length > 0, 'message_includes must not be blank'),
+      }).strict().optional(),
+    }).strict().refine((st) => !(st.expect !== undefined && st.throws !== undefined), 'expect and throws are mutually exclusive on a step')).min(1).max(50),
   }).strict().refine((p) => p.steps.every((st) => Object.prototype.hasOwnProperty.call(p.instances, st.on)), 'every step must run on a declared instance')
-    .refine((p) => p.steps.some((st) => st.expect !== undefined), 'at least one step must expect a value'),
+    .refine((p) => p.steps.some((st) => st.expect !== undefined || st.throws !== undefined), 'at least one step must expect a value or a throw'),
   call_throws: z.object({
     module: ModulePath, export: ExportName,
     args: json('args').refine((a) => Array.isArray(a), 'args must be an array'),
@@ -101,7 +114,7 @@ function validateChecks(proposed, criteria = []) {
     accepted.push({ ...c.data, params: p.data });
   }
   if (!Array.isArray(proposed) && proposed !== undefined && proposed !== null) rejected.push({ check: proposed, reason: 'checks must be an array' });
-  return { version: REGISTRY_VERSION, accepted, rejected };
+  return { version: usesThrows(accepted) ? THROWS_VERSION : REGISTRY_VERSION, accepted, rejected };
 }
 
 /**
@@ -117,4 +130,4 @@ function checkSetHash(checks) {
   return require('crypto').createHash('sha256').update(canon(Array.isArray(checks) ? checks : [])).digest('hex');
 }
 
-module.exports = { checkSetHash, validateChecks, REGISTRY_VERSION, ADAPTERS: Object.keys(ADAPTERS), MAX_CHECKS, MAX_JSON_BYTES };
+module.exports = { checkSetHash, validateChecks, usesThrows, REGISTRY_VERSION, THROWS_VERSION, ADAPTERS: Object.keys(ADAPTERS), MAX_CHECKS, MAX_JSON_BYTES };

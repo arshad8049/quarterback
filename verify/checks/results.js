@@ -7,6 +7,7 @@
  */
 
 const STATUSES = new Set(['pass', 'fail', 'error']);
+const usesThrows = (checks) => checks.some((c) => c && c.adapter === 'call_sequence' && (c.params?.steps || []).some((st) => st && st.throws !== undefined));
 
 /**
  * @param {string|null} text - /out/qb-checks.json from sandbox stage ⑥
@@ -22,6 +23,9 @@ function validateCheckResults(text, requested, expectedHash) {
   if (!doc || doc.format !== 'qb-check-results/1' || doc.complete !== true || !Array.isArray(doc.results)) return bad('incomplete_check_results');
   // Bound to the exact definitions: the runner's hash of what it received (QB-16 review).
   if (expectedHash !== undefined && doc.check_set_hash !== expectedHash) return bad('check_set_mismatch');
+  // KAN-106 10694: a runner that does not declare call_sequence.throws would treat a `throws` step as a
+  // plain call (a buggy method that returns would pass), so its results are refused, never ignored.
+  if (usesThrows(requested) && !(Array.isArray(doc.capabilities) && doc.capabilities.includes('call_sequence.throws'))) return bad('check_runner_lacks_throws');
   if (doc.results.length !== requested.length) return bad('check_results_mismatch');
   for (const [i, r] of doc.results.entries()) {
     const c = requested[i];

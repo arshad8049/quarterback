@@ -44,6 +44,14 @@ T-005 asked for cumulative speech events and duration "tracked since the Adaptiv
 
   Through `verify()`, the constant-zero VAD is FAIL.
 
+### A method that should throw: `throws` on a step (registry `qb-checks/2.1`, KAN-106 10694)
+`{ on, method, args, throws: { message_includes } }` replaces `expect` on that step (never both). It passes only when **that** method call throws synchronously or its promise rejects, with a message containing the literal fragment.
+- **Never counts as the expected throw:** a constructor error, a missing export or method, a throwing getter, an earlier step's throw, a timeout, a process exit or a runner failure.
+- **Fails:** the method returns; the message lacks the fragment.
+- **Versioning:** a contract whose checks use `throws` is recorded as `qb-checks/2.1`; all other content stays `qb-checks/2`, with unchanged hashes. `qb-checks/3` is the frozen research route and is not used.
+- **Older runners:** the runner declares `capabilities: ["call_sequence.throws"]` in its results. Results without it are refused (`check_runner_lacks_throws`) for any check set that uses `throws`, because an older runner would treat the step as a plain call.
+- **Fidelity rules:** a criterion that says a method throws needs a check that asserts the throw. An existence-only `module_exports` check cannot stand in for a behavioural criterion that names a method.
+
 ## Limitations
 - **Structural coverage, not semantics.** It proves every piece of the request text was accounted for and linked to a criterion. It does **not** prove that the linked criterion captures the clause's meaning: an AC could cite "Do not enable caching for guests." and still be weak. That stays with the human approval (QB-13), where each quote → AC mapping is shown.
 - `call_sequence` covers in-process JavaScript objects.

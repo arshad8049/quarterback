@@ -1,5 +1,5 @@
 // QB check runner (QB-16), sandbox stage ⑥. Trusted code; runs the contract's
-// registry-validated checks (verify/checks/registry.js, qb-checks/1) against the
+// registry-validated checks (verify/checks/registry.js, qb-checks/1…2.1) against the
 // candidate in /verify, with no network. It never evaluates text from the
 // contract: each check is an adapter name plus JSON parameters.
 //
@@ -23,6 +23,7 @@ import { isDeepStrictEqual, inspect } from 'node:util';
 const SELF = fileURLToPath(import.meta.url);
 const OUT = process.env.QB_CHECK_RESULTS || '/out/qb-checks.json';
 const TIMEOUT_MS = Number(process.env.QB_CHECK_TIMEOUT_MS || 10_000);
+const CAPABILITIES = ['call_sequence.throws'];
 const show = (v) => inspect(v, { depth: 4, breakLength: Infinity, maxStringLength: 300 }).slice(0, 600);
 
 async function child() {
@@ -53,6 +54,7 @@ async function child() {
     if (check.adapter === 'call_sequence') {
       // QB-14: instances, then method calls in order; every step with `expect` must match.
       const inst = {};
+      const thrown = [];
       for (const [k, spec] of Object.entries(check.params.instances)) {
         try { inst[k] = spec.construct === 'new' ? new target(...spec.args) : await target(...spec.args); }
         catch (e) { return report({ status: 'fail', detail: `creating instance ${k} threw: ${String(e && e.message || e).slice(0, 200)}` }); }
@@ -61,13 +63,28 @@ async function child() {
         const o = inst[st.on];
         if (!o || typeof o[st.method] !== 'function') return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method} is not a function` });
         let v;
+        if (st.throws) {
+          // KAN-106 10694: only THIS method call's own synchronous throw or awaited rejection counts.
+          // Construction, a missing method and earlier steps were handled above and fail; timeouts and
+          // exits are runner errors (parent). A return value, or the wrong message, fails.
+          const want = st.throws.message_includes;
+          let threw = false, msg = '';
+          try { v = await o[st.method](...st.args); }
+          catch (e) { threw = true; msg = String(e && e.message || e); }
+          if (!threw) return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) returned ${show(v)} instead of throwing`, observed: show(v) });
+          if (typeof want !== 'string' || !want.trim() || !msg.includes(want)) {
+            return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) threw "${msg.slice(0, 200)}", expected a message including "${want}"` });
+          }
+          thrown.push(`step ${i}: ${st.on}.${st.method}(…) threw as expected: ${msg.slice(0, 200)}`);
+          continue;
+        }
         try { v = await o[st.method](...st.args); }
         catch (e) { return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) threw: ${String(e && e.message || e).slice(0, 200)}` }); }
         if (st.expect !== undefined && !isDeepStrictEqual(v, st.expect)) {
           return report({ status: 'fail', detail: `step ${i}: ${st.on}.${st.method}(…) returned ${show(v)}, expected ${show(st.expect)}`, observed: show(v) });
         }
       }
-      return report({ status: 'pass', detail: `${check.params.steps.length} step(s) on ${Object.keys(inst).length} instance(s) matched` });
+      return report({ status: 'pass', detail: [`${check.params.steps.length} step(s) on ${Object.keys(inst).length} instance(s) matched`, ...thrown].join('; ').slice(0, 800) });
     }
     if (check.adapter === 'call_throws') {
       try { const v = await target(...check.params.args); return report({ status: 'fail', detail: `${name}(…) returned ${show(v)} instead of throwing` }); }
@@ -124,7 +141,9 @@ async function main() {
     results.push(r);
     process.stdout.write(`${r.status.toUpperCase().padEnd(5)} ${r.id} (${r.adapter}, ${r.ac_id}) ${r.detail}\n`);
   }
-  writeFileSync(OUT, JSON.stringify({ format: 'qb-check-results/1', check_set_hash, results, complete: true }) + '\n');
+  // KAN-106 10694: declare what this runner understands, so results from an older runner that would
+  // silently ignore `throws` on a call_sequence step are refused (verify/checks/results.js).
+  writeFileSync(OUT, JSON.stringify({ format: 'qb-check-results/1', check_set_hash, capabilities: CAPABILITIES, results, complete: true }) + '\n');
 }
 
 if (process.argv.includes('--child')) child(); else main();

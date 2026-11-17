@@ -7,17 +7,25 @@
  *
  *   1. A criterion that names a method call (`Serializer.asNumber()`) needs checks that call that
  *      method: the export itself (call_returns / call_throws), or a call_sequence step's method.
- *      module_exports checks (existence only) are exempt.
+ *      module_exports checks (existence only) are handled by rule 4.
  *   2. Two call_returns checks making the identical call (module, export, args) must not expect
  *      different results.
  *   3. A constraint about behaviour (behaviour, returns, result, throws, output, value) cannot be
  *      enforced only by allowed_changes / protected_paths: those show where edits are permitted,
  *      not that the behaviour is kept. Enforce it with a check, or mark it advisory.
+ *   4. (10694) An existence-only module_exports check cannot stand in for a criterion that names a
+ *      method call (`asNumber throws`), unless the criterion is itself about an export existing.
+ *   5. (10694) A criterion that says the named method throws / rejects needs a check that asserts
+ *      the throw: a call_sequence step with `throws` on that method, or call_throws on the function.
+ *      A value expectation (call_returns, or call_sequence steps with only `expect`) cannot verify it.
  */
 
 const METHOD_CALL = /\b[A-Za-z_$][\w$]*\.([A-Za-z_$][\w$]*)\s*\(/g;
 const BEHAVIOUR = /\b(behaviou?rs?|returns?|returned|results?|throws?|thrown|outputs?|values?)\b/i;
 
+const EXISTENCE = /\b(exports?|exported|exists?|defined|available)\b/i;
+const THROW_CLAIM = /\b(throws?|thrown|rejects?|raises?)\b/i;
+const NO_THROW = /\b(?:does not|doesn't|do not|don't|never|no longer|without)\s+(?:throw|throwing|reject|rejecting|raise)/i;
 const namedMethods = (text) => [...String(text || '').matchAll(METHOD_CALL)].map((m) => m[1]);
 function calledNames(k) {
   const p = k?.params || {};
@@ -35,12 +43,25 @@ function checkFidelityErrors(c) {
   const checks = Array.isArray(c?.checks) ? c.checks : [];
   const acs = new Map((c?.acceptance_criteria || []).map((a) => [a && a.id, a]));
   for (const k of checks) {
-    if (!k || k.adapter === 'module_exports') continue;
+    if (!k) continue;
     const ac = acs.get(k.ac_id);
     if (!ac) continue;
     const methods = [...new Set(namedMethods(ac.criterion))];
     if (!methods.length) continue;
+    const named0 = (String(ac.criterion).match(new RegExp(`[A-Za-z_$][\\w$]*\\.(?:${methods.map((m) => m.replace(/\$/g, '\\$')).join('|')})\\s*\\(\\)?`)) || [methods[0]])[0];
+    if (k.adapter === 'module_exports') {
+      if (!EXISTENCE.test(ac.criterion)) {
+        errors.push(`${k.id} (${ac.id}) only checks that ${k.params?.module} exports ${k.params?.export} exists, but ${ac.id} is about behaviour (${named0}): an existence check cannot verify it`);
+      }
+      continue;
+    }
     const called = calledNames(k);
+    if (THROW_CLAIM.test(ac.criterion) && !NO_THROW.test(ac.criterion) && called.some((n) => methods.includes(n))) {
+      const asserts = k.adapter === 'call_throws'
+        || (k.adapter === 'call_sequence' && (k.params?.steps || []).some((st) => st && st.throws && methods.includes(st.method)));
+      if (!asserts) errors.push(`${k.id} (${ac.id}) never asserts a throw, but ${ac.id} says ${methods.join(' or ')} throws: use a call_sequence step with throws (or call_throws on the function itself)`);
+      continue;
+    }
     if (called.some((n) => methods.includes(n))) continue;
     const named = (String(ac.criterion).match(new RegExp(`[A-Za-z_$][\\w$]*\\.(?:${methods.map((m) => m.replace(/\$/g, '\\$')).join('|')})\\s*\\(\\)?`)) || [methods[0]])[0];
     const args = Array.isArray(k.params?.args) ? k.params.args : [];
