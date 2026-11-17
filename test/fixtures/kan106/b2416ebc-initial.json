@@ -1,0 +1,270 @@
+{
+  "goal": "Modify Serializer.asNumber() to throw a number conversion error for empty strings or whitespace-only strings, while preserving the behavior for numeric 0, string '0', and valid numeric strings. Add tests in test/asNumber.test.js.",
+  "required_behavior": [
+    "Serializer.asNumber() throws a number conversion error for an empty string.",
+    "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+    "Serializer.asNumber() returns 0 for numeric 0.",
+    "Serializer.asNumber() returns 0 for the string '0'.",
+    "Serializer.asNumber() returns the correct number for valid numeric strings."
+  ],
+  "constraints": [
+    "The behavior for numeric 0 must not change.",
+    "The behavior for the string '0' must not change.",
+    "The behavior for valid numeric strings must not change.",
+    "Existing tests in test/asNumber.test.js must still pass.",
+    "No other tests must regress."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Serializer.asNumber() throws a number conversion error for an empty string.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Serializer.asNumber() returns 0 for numeric 0.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-3"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Serializer.asNumber() returns 0 for the string '0'.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Serializer.asNumber() returns the correct number for valid numeric strings.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-6",
+      "criterion": "Existing tests in test/asNumber.test.js still pass.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "preserves": {
+        "tests": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-7",
+      "criterion": "No other tests regress.",
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "preserves": {
+        "tests": [
+          "test/asNumber.test.js"
+        ]
+      }
+    }
+  ],
+  "verification_plan": [
+    "Modify Serializer.asNumber() in lib/serializer.js to throw an error for empty strings and whitespace-only strings.",
+    "Add tests in test/asNumber.test.js to verify the new behavior.",
+    "Run the existing test suite to ensure no regressions."
+  ],
+  "relevant_context": [
+    "lib/serializer.js",
+    "test/asNumber.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "scope": {
+    "allowed_changes": [
+      "lib/serializer.js",
+      "test/asNumber.test.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes",
+          "ref": "lib/serializer.js"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes",
+          "ref": "lib/serializer.js"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes",
+          "ref": "lib/serializer.js"
+        }
+      ]
+    },
+    {
+      "constraint": 3,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes",
+          "ref": "lib/serializer.js"
+        }
+      ]
+    },
+    {
+      "constraint": 4,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes",
+          "ref": "lib/serializer.js"
+        }
+      ]
+    },
+    {
+      "constraint": 5,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-2"
+        }
+      ]
+    },
+    {
+      "constraint": 6,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ]
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ]
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ]
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ]
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ]
+    },
+    {
+      "id": "R-6",
+      "passage_ids": [
+        "P6"
+      ]
+    }
+  ],
+  "proposed_defaults": [],
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_throws",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "Serializer",
+        "args": [],
+        "message_includes": "The value \"\" cannot be converted to a number."
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-6",
+      "adapter": "call_returns",
+      "params": {
+        "module": "test/asNumber.test.js",
+        "export": "default",
+        "args": [],
+        "expect": "all tests pass"
+      },
+      "plan_item": 1
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-7",
+      "adapter": "call_returns",
+      "params": {
+        "module": "test/asNumber.test.js",
+        "export": "default",
+        "args": [],
+        "expect": "all tests pass"
+      },
+      "plan_item": 2
+    }
+  ]
+}

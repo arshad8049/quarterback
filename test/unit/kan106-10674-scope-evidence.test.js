@@ -254,9 +254,11 @@ describe('10674: the faithful contract and its criterion-to-evidence mapping', (
 
   test('adds_tests is decided from the change set and the test run, never by the judge', async () => {
     const both = ['lib/serializer.js', 'test/asNumber.test.js'];
-    const met = await decide(exec(both, [['test/asNumber.test.js', 'empty string throws', true]]));
-    assert.deepEqual([met.met, met.method], [true, 'test-runner+change-set']);
-    assert.match(met.evidence, /test\/asNumber\.test\.js: changed; 1 passed, 0 failed \(shows the file changed and its tests pass, not that the new tests exercise the new behaviour\)/);
+    // 10677 (2): "changed + passing" alone is no longer enough: a diff with no new test case is not met
+    // (the full witness is in kan106-10677-repair-evidence.test.js).
+    const headerOnly = await decide(exec(both, [['test/asNumber.test.js', 'empty string throws', true]]));
+    assert.deepEqual([headerOnly.met, headerOnly.method], [false, 'test-runner+change-set']);
+    assert.match(headerOnly.evidence, /test\/asNumber\.test\.js: changed; 1 passed, 0 failed; no new test case in the diff of test\/asNumber\.test\.js/);
     const unchanged = await decide(exec(['lib/serializer.js'], [['test/asNumber.test.js', 'old test', true]]));
     assert.equal(unchanged.met, false);
     assert.match(unchanged.evidence, /not changed by the task: test\/asNumber\.test\.js/);

@@ -1,0 +1,66 @@
+{
+  "run": "b2416ebc-6dc0-4dcc-be26-c41879be741d",
+  "qb_revision": "eaa38820425982b4236e3492e52a2c8967eb5e1e",
+  "model": "qwen2.5-coder:14b",
+  "profile": "qwen-14b-experimental",
+  "errors": [
+    [
+      "constraint_policy entry {\"constraint\":5,\"enforced_by\":[{\"kind\":\"check\",\"ref\":\"CHK-2\"}]} names no constraint",
+      "constraint_policy entry {\"constraint\":6,\"enforced_by\":[{\"kind\":\"check\",\"ref\":\"CHK-3\"}]} names no constraint",
+      "AC-6 preserves test/asNumber.test.js, which the request asks to change: passing afterwards cannot show that its existing tests were kept (require the added tests with adds_tests instead)",
+      "AC-6 claims tests still pass, but is bound to CHK-2 (call_returns): a value check cannot show that a test suite passed; bind it to the behaviour criterion it tests, or remove it",
+      "AC-7 preserves test/asNumber.test.js, which the request asks to change: passing afterwards cannot show that its existing tests were kept (require the added tests with adds_tests instead)",
+      "AC-7 claims tests still pass, but is bound to CHK-3 (call_returns): a value check cannot show that a test suite passed; bind it to the behaviour criterion it tests, or remove it"
+    ],
+    [
+      "AC-6 preserves test/asNumber.test.js, which the request asks to change: passing afterwards cannot show that its existing tests were kept (require the added tests with adds_tests instead)",
+      "AC-7 preserves test/asNumber.test.js, which the request asks to change: passing afterwards cannot show that its existing tests were kept (require the added tests with adds_tests instead)"
+    ]
+  ],
+  "timings": {
+    "schema": "qb-l1-timings/1",
+    "survey_ms": 3,
+    "warmup_ms": null,
+    "initial_call_ms": 179063,
+    "validation_ms": 34,
+    "repair_call_ms": [
+      170885
+    ],
+    "l1_ms": 350110,
+    "calls": [
+      {
+        "kind": "initial",
+        "round": 1,
+        "ms": 179063,
+        "outcome": "invalid",
+        "limit_ms": 240000,
+        "load_ms": 15780
+      },
+      {
+        "kind": "repair",
+        "round": 1,
+        "ms": 170885,
+        "outcome": "invalid",
+        "limit_ms": 240000,
+        "load_ms": 31
+      }
+    ],
+    "l1_budget": {
+      "ms": 420000,
+      "source": "profile qwen-14b-experimental",
+      "enforced": true,
+      "per_call_ms": 240000,
+      "profile": "qwen-14b-experimental",
+      "exhausted": false
+    },
+    "budget": {
+      "ms": 420000,
+      "source": "profile qwen-14b-experimental",
+      "enforced": true,
+      "per_call_ms": 240000,
+      "profile": "qwen-14b-experimental",
+      "exhausted": false,
+      "over_budget": false
+    }
+  }
+}
