@@ -16,7 +16,7 @@
  * (4) a complete short terminal explanation. Fixtures: b2416ebc-initial.json / b2416ebc-repair.json
  * are the model-authored fields of both drafts from that run's contract-repair artifact (quotes,
  * which QB copies from passages, removed); b2416ebc-errors.json the validator's errors and the
- * run's timings; b2416ebc-corrected.json the repair as a correct reply would be (AC-6/AC-7 and
+ * run's timings; b2416ebc-structural-only.json the repair as a correct reply would be (AC-6/AC-7 and
  * their constraints removed, R-1 and R-6 cited by AC-1…AC-5). No live model, no Claude, no Docker.
  */
 const { test, describe } = require('node:test');
@@ -32,7 +32,7 @@ const FIX = path.join(__dirname, '..', 'fixtures', 'kan106');
 const REQUEST = fs.readFileSync(path.join(FIX, 'request.txt'), 'utf8').trim();
 const INITIAL = fs.readFileSync(path.join(FIX, 'b2416ebc-initial.json'), 'utf8');
 const REPAIRED = fs.readFileSync(path.join(FIX, 'b2416ebc-repair.json'), 'utf8');
-const CORRECTED = fs.readFileSync(path.join(FIX, 'b2416ebc-corrected.json'), 'utf8');
+const CORRECTED = fs.readFileSync(path.join(FIX, 'b2416ebc-structural-only.json'), 'utf8');
 const FAITHFUL = fs.readFileSync(path.join(FIX, 'faithful-draft.json'), 'utf8');
 const SMOKE = JSON.parse(fs.readFileSync(path.join(FIX, 'b2416ebc-errors.json'), 'utf8'));
 const QB = path.join(__dirname, '..', '..', 'qb.js');
@@ -74,7 +74,7 @@ describe('10677: the b2416ebc drafts, reproduced offline', () => {
     assert.deepEqual(SMOKE.timings.calls.map((c) => [c.kind, c.ms, c.limit_ms]), [['initial', 179063, 240000], ['repair', 170885, 240000]]);
   });
   test('the fixtures carry no private paths or run-local metadata', () => {
-    for (const f of ['b2416ebc-initial.json', 'b2416ebc-repair.json', 'b2416ebc-corrected.json', 'b2416ebc-errors.json']) {
+    for (const f of ['b2416ebc-initial.json', 'b2416ebc-repair.json', 'b2416ebc-structural-only.json', 'b2416ebc-errors.json']) {
       const t = fs.readFileSync(path.join(FIX, f), 'utf8');
       assert.doesNotMatch(t, /\/Users\/|qb_test_grounds|repo_path|raw_request/, f);
     }

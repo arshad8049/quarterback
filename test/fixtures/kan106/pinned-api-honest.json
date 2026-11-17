@@ -1,0 +1,271 @@
+{
+  "goal": "Make Serializer#asNumber() (lib/serializer.js; the module exports the Serializer class) throw a number conversion error for an empty or whitespace-only string instead of returning \"0\", keep its results for numeric 0, the string \"0\" and valid numeric strings (it returns their serialized form as a string), and add node:test cases in test/asNumber.test.js.",
+  "required_behavior": [
+    "new Serializer().asNumber(\"\") throws a number conversion error.",
+    "new Serializer().asNumber(\"   \") throws a number conversion error.",
+    "new Serializer().asNumber(0) still returns \"0\".",
+    "new Serializer().asNumber(\"0\") still returns \"0\".",
+    "new Serializer().asNumber(<valid numeric string>) still returns that number serialized as a string (\"12.5\" -> \"12.5\")."
+  ],
+  "constraints": [
+    "Only lib/serializer.js and test/asNumber.test.js change.",
+    "package.json does not change.",
+    "The results of asNumber for numeric 0, the string \"0\" and valid numeric strings do not change."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Serializer.asNumber() throws a number conversion error for an empty string.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Serializer.asNumber() still returns \"0\" for numeric 0.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Serializer.asNumber() still returns \"0\" for the string \"0\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Serializer.asNumber() still returns the serialized number (a string) for valid numeric strings.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "criterion": "test/asNumber.test.js has new node:test cases for the empty string, a whitespace-only string, numeric 0, string \"0\" and a valid numeric string, and they pass.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    }
+  ],
+  "verification_plan": [
+    "Construct new Serializer() from lib/serializer.js and call asNumber on 0, \"0\" and valid numeric strings: the results are unchanged. (Empty and whitespace-only strings: no registry adapter can assert that a method call throws; AC-1/AC-2 stay unresolved for human review.)",
+    "Run the test suite: test/asNumber.test.js has new cases and they pass."
+  ],
+  "relevant_context": [
+    "lib/serializer.js",
+    "test/asNumber.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "scope": {
+    "allowed_changes": [
+      "lib/serializer.js",
+      "test/asNumber.test.js"
+    ],
+    "protected_paths": [
+      "package.json"
+    ]
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "protected_paths",
+          "ref": "package.json"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        },
+        {
+          "kind": "check",
+          "ref": "CHK-4"
+        },
+        {
+          "kind": "check",
+          "ref": "CHK-5"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ]
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ]
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ]
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ]
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ]
+    },
+    {
+      "id": "R-6",
+      "passage_ids": [
+        "P6"
+      ]
+    }
+  ],
+  "proposed_defaults": [],
+  "checks": [
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              0
+            ],
+            "expect": "0"
+          }
+        ]
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "0"
+            ],
+            "expect": "0"
+          }
+        ]
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-5",
+      "ac_id": "AC-5",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "12.5"
+            ],
+            "expect": "12.5"
+          },
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "-7"
+            ],
+            "expect": "-7"
+          },
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              " 123 "
+            ],
+            "expect": "123"
+          }
+        ]
+      },
+      "plan_item": 0
+    }
+  ]
+}
