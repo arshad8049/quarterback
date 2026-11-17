@@ -149,3 +149,36 @@ test('arm A: the SAME dependency handling as arm B (reviewed root-scripts entry)
   assert.equal(calls[0].researchEnv, undefined, 'arm A gets no QB research verification');
   assert.deepEqual(calls[0].checks, [], 'arm A runs no QB checks');
 });
+
+test('briefing guard (10662): a grader test name in QB feedback is allowed ONLY if verified in the pinned visible suite', () => {
+  const FILE = 'test/unit/adapters/http.js';
+  const idOf = (t) => sha(`${FILE}\0${t}`);
+  const vault = { FAIL_TO_PASS: JSON.stringify(['suite new hidden behaviour']), PASS_TO_PASS: JSON.stringify(['suite keeps old behaviour', 'suite added by the hidden patch']),
+    patch: '+const decoded = applyTheFixHereForRealNow(value);\n', test_patch: '+  it(\'checks the hidden thing really well\', () => {});\n' };
+  const g = PAIR.briefingGuard(vault, { visible: { test_files: [FILE], identities: [{ id: idOf('suite keeps old behaviour') }] } });
+  assert.equal(g('QB feedback: "suite keeps old behaviour" failed'), null, 'a verified visible test name is allowed');
+  assert.match(g('QB feedback: "suite added by the hidden patch" failed'), /not in the pinned visible suite/, 'a grader name NOT in the visible suite is refused');
+  assert.match(g('see suite new hidden behaviour'), /fail_to_pass/, 'FAIL_TO_PASS names are always refused');
+  assert.match(g('try applyTheFixHereForRealNow(value)'.replace('try ', 'const decoded = ') + ';'), /patch lines/);
+  assert.match(g("it('checks the hidden thing really well', () => {});"), /patch lines/);
+  // without a visible-suite record, every grader test name is refused (fail closed)
+  assert.match(PAIR.briefingGuard(vault)('QB feedback: "suite keeps old behaviour" failed'), /not in the pinned visible suite/);
+});
+
+test('smoke acceptance (10662): complete served-model and subscription/billing evidence, no overage, no change — anything missing or unknown is NOT acceptable', () => {
+  const ok = { primary: 'execution_verified', capture_state: 'no_change', model: { requested: 'claude-opus-5-5', served: 'claude-opus-5-5' },
+    billing_route: { api_key_source: 'none', provider: 'firstParty', is_using_overage: false, overage_status: 'disabled' } };
+  assert.deepEqual(PAIR.smokeProblems(ok), []);
+  const bad = {
+    'not verified': { ...ok, primary: 'incomplete_evidence' },
+    'files changed': { ...ok, capture_state: 'captured' },
+    'other model served': { ...ok, model: { ...ok.model, served: 'claude-sonnet-5-5' } },
+    'served unknown': { ...ok, model: { requested: 'claude-opus-5-5', served: null } },
+    'api key route': { ...ok, billing_route: { ...ok.billing_route, api_key_source: 'ANTHROPIC_API_KEY' } },
+    'provider unknown': { ...ok, billing_route: { ...ok.billing_route, provider: 'not_available' } },
+    'overage in use': { ...ok, billing_route: { ...ok.billing_route, is_using_overage: true } },
+    'overage unknown': { ...ok, billing_route: { ...ok.billing_route, is_using_overage: 'not_available' } },
+    'no billing record': { ...ok, billing_route: null },
+  };
+  for (const [why, s] of Object.entries(bad)) assert.ok(PAIR.smokeProblems(s).length > 0, why);
+});

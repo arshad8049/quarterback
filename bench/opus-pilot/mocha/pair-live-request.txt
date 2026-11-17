@@ -1,0 +1,2 @@
+mode=dry-run
+# KAN-112 10662 no-model check of the protected paired workflow (no environment, no token)

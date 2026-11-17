@@ -6,11 +6,16 @@
 //                    the coding container, for answer/grader files, credential variables and network, (2) makes a
 //                    harmless edit (different on every attempt). Labelled dry run, never a result.
 //   --mode=task      the live trial: refused unless the paired route is confirmed (lib/pilot/pair.js routeProblems)
-// Every mode refuses unless bench/opus-pilot/pair-5892-freeze-v1.json matches the files on disk (frozen before results).
+//   --mode=smoke     live, arm A path only: ONE harmless turn ("Reply with exactly OK.") on a throwaway repository through the
+//                    paired route; acceptable only with complete served-model and subscription/billing evidence and no
+//                    overage (lib/pilot/pair.js smokeProblems), else exit 7 and the pair does not start
+//   --mode=smoke-dry NO model, NO token: the same smoke path with the scripted stage; it MUST be rejected (exit 7)
+// Every mode refuses unless the frozen file set (FREEZE below) matches the files on disk (frozen before results).
 // Outputs: --restricted=<dir> (exact candidate.diff + records for the grade job) and --public=<dir> (sanitized summary).
-// Exit: 0 record written · 5 stop (usage limit / auth / policy) · 6 evidence refused · 2/3 refused before anything ran.
+// Exit: 0 record written · 5 stop (usage limit / auth / policy) · 6 evidence refused · 7 smoke not acceptable · 2/3 refused before anything ran.
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -26,17 +31,19 @@ const die = (code, m) => { console.error(m); process.exit(code); };
 const crash = (e) => { const m = String((e && e.stack) || e).split('\n').slice(0, 6).join(' | ').replace(/%/g, '%25').slice(0, 1500); console.log(`::error title=pair-crash::${m}`); process.exit(1); };
 process.on('uncaughtException', crash); process.on('unhandledRejection', crash);
 const arm = arg('arm'); const mode = arg('mode');
-if (!['A', 'B'].includes(arm) || !['dry-run', 'task'].includes(mode)) die(2, 'usage: pair.mjs --arm=A|B --mode=dry-run|task ...');
+if (!['A', 'B'].includes(arm) || !['dry-run', 'task', 'smoke', 'smoke-dry'].includes(mode)) die(2, 'usage: pair.mjs --arm=A|B --mode=dry-run|task|smoke|smoke-dry ...');
+const smoke = mode === 'smoke' || mode === 'smoke-dry';
+if (smoke && arm !== 'A') die(2, 'refusing: the smoke runs on the arm-A path only');
 if (process.env.GITHUB_ACTIONS !== 'true' || process.env.PAIR_CI_RUN !== '1') die(2, 'refusing: CI only (GITHUB_ACTIONS=true, PAIR_CI_RUN=1)');
-const live = mode === 'task';
+const live = mode === 'task' || mode === 'smoke';
 if (live && process.env.PAIR_LIVE !== '1') die(2, 'refusing: the live mode runs only in the protected paired live job (PAIR_LIVE=1)');
 if (!live && (process.env.PAIR_LIVE || process.env.CLAUDE_CODE_OAUTH_TOKEN || process.env.ARM_A_LIVE)) die(2, 'refusing: the dry run never runs with a live flag or a token');
 for (const k of Object.keys(process.env)) if (!live && /^(ANTHROPIC_|CLAUDE_API)/.test(k)) die(2, `refusing: credential-like variable ${k} is set`);
-const restricted = arg('restricted'); const pub = arg('public'); const repoPath = arg('repo'); const store = arg('store'); const imagesDir = arg('images');
-if (!restricted || !pub || !repoPath || !store || !imagesDir) die(2, 'refusing: --repo, --store, --images, --restricted and --public are required');
+const restricted = arg('restricted'); const pub = arg('public'); let repoPath = arg('repo'); const store = arg('store'); const imagesDir = arg('images');
+if (!restricted || !pub || !store || !imagesDir || (!smoke && !repoPath)) die(2, 'refusing: --store, --images, --restricted, --public (and --repo for a task) are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v5.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v6.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
@@ -58,13 +65,22 @@ const ap = TP.checkAmendment(amendment, fs.readFileSync(path.join(HERE, 'pilot-c
 if (ap.length) die(3, `refusing: amendment: ${ap.join('; ')}`);
 
 const ENV = validateTaskEnv(JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'axios-5892.env.json'), 'utf8')));
+// the pinned visible suite's identities (hashes only), for the briefing guard (10662): bound to the base and the freeze
+const VISIBLE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'visible-identities-5892.json'), 'utf8'));
+if (VISIBLE.base_commit !== ENV.base_commit || sha(JSON.stringify(VISIBLE.identities)) !== FREEZE.shared.visible_identities_sha256) die(3, 'refusing: visible-suite identity record differs from the freeze');
+if (smoke) {
+  repoPath = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'pair-smoke-'));
+  fs.writeFileSync(path.join(repoPath, 'README.md'), 'Paired smoke repository (no task).\n');
+  execFileSync('git', ['-C', repoPath, 'init', '-q']); execFileSync('git', ['-C', repoPath, 'add', '.']);
+  execFileSync('git', ['-C', repoPath, '-c', 'user.name=qb', '-c', 'user.email=qb@invalid', 'commit', '-qm', 'smoke']);
+}
 const head = execFileSync('git', ['-C', repoPath, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const commits = Number(execFileSync('git', ['-C', repoPath, 'rev-list', '--all', '--count'], { encoding: 'utf8' }).trim());
-if (head !== FREEZE.shared.base_commit || head !== ENV.base_commit || commits !== 1) die(3, `refusing: checkout ${head} (${commits} commits) is not the task base with one commit`);
+if (!smoke && (head !== FREEZE.shared.base_commit || head !== ENV.base_commit || commits !== 1)) die(3, `refusing: checkout ${head} (${commits} commits) is not the task base with one commit`);
 const row = (s) => fs.readFileSync(path.join(store, s, 'swe-bench-multilingual.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).find((r) => r.task_id === ENV.task_id);
 const agentRow = row('agent'); const vaultRow = row('vault');   // the vault is read HERE only (guard + scan); it never enters a sandbox
 const arr = (x) => (Array.isArray(x) ? x : JSON.parse(x));
-const names = [...arr(vaultRow.FAIL_TO_PASS), ...arr(vaultRow.PASS_TO_PASS)];
+const names = [...arr(vaultRow.FAIL_TO_PASS), ...arr(vaultRow.PASS_TO_PASS)];   // scan only (never printed)
 
 // ── images: the loaded set, by the frozen ids ──
 const ids = {};
@@ -77,7 +93,9 @@ for (const [name, ref] of Object.entries({ agent: AGENT_IMAGE, tools: TOOLS_IMAG
 // ── per-arm inputs (the reviewed root-scripts entry is SHARED: both arms install dependencies the same way) ──
 const ROOT_SCRIPTS = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'root-scripts-allow.json'), 'utf8')).entries.filter((e) => e.key === ENV.root_scripts_key);
 let armInput = {};
-if (arm === 'A') {
+if (smoke) {
+  armInput = { briefing: 'Reply with exactly OK. Do not create, edit or delete any files and do not run any commands.\n' };
+} else if (arm === 'A') {
   const b = A.armABriefing(agentRow, vaultRow);
   if (b.sha256 !== FREEZE.arm_a.briefing_sha256) die(3, 'refusing: the arm-A briefing differs from the frozen one');
   armInput = { briefing: b.briefing, research: { rootScripts: ROOT_SCRIPTS } };   // shared dependency handling; no QB verification
@@ -109,16 +127,18 @@ if (!live) {
     // an IN-SCOPE edit (lib/utils.js, allowed by contract v4), different on every attempt (no QB no-progress stop)
     "printf '\\n// pair dry run (scripted, not a model output) attempt-at %s: probe answer_files=%s credential_vars=%s dns=%s\\n' \"$(date +%s%N)\" \"$n\" \"$t\" \"$d\" >> lib/utils.js",
   ].join('; ');
+  // smoke-dry: change nothing and print nothing a model would (so it must be rejected for missing model/billing evidence only)
+  const SCRIPT = smoke ? "printf 'pair smoke dry run (scripted, not a model output)\\n' >&2" : PROBE;
   const scripted = (ws, _e, { waitTimeoutMs }) => D.runStage(`${ws.runId}-agent`, [
-    ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-w', '/work', '--entrypoint', 'sh', AGENT_IMAGE, '-c', PROBE,
+    ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-w', '/work', '--entrypoint', 'sh', AGENT_IMAGE, '-c', SCRIPT,
   ], { waitTimeoutMs });
   seam = (opts) => runSandboxed({ ...opts, agentStage: scripted });
   signInAdapter = async () => ({ status: 'ok', kind: 'dry run (no token, no sign-in)' });
 }
 
 const release = D.bindImages(ids);
-const common = { repoPath, amendment, amendmentSha256: sha(amendBytes), seam, signInAdapter, vaultRow, trialId: `${FREEZE.version}-${arm}-${mode}`,
-  taskId: ENV.task_id, graderTask: FREEZE.shared.grader_task, qbCommit: process.env.GITHUB_SHA || null, label: `pair-${arm.toLowerCase()}-${live ? 'live' : 'dry'}`,
+const common = { repoPath, amendment, amendmentSha256: sha(amendBytes), seam, signInAdapter, ...(smoke ? {} : { vaultRow, visible: VISIBLE }), trialId: `${FREEZE.version}-${arm}-${mode}`,
+  taskId: ENV.task_id, graderTask: FREEZE.shared.grader_task, qbCommit: process.env.GITHUB_SHA || null, label: `pair-${smoke ? 'smoke' : arm.toLowerCase()}-${live ? 'live' : 'dry'}`,
   ...(seam ? { approvedAuthRoutes: [PAIR.ROUTE] } : {}) };
 const res = arm === 'A' ? await PAIR.runArmA({ ...common, ...armInput }) : await PAIR.runArmB({ ...common, ...armInput, runsDir: path.join(restricted, '..', 'pair-runs') });
 const launches = release();
@@ -161,4 +181,10 @@ for (const d of [restricted, pub]) fs.mkdirSync(d, { recursive: true });
 for (const [f, x] of Object.entries(files)) fs.writeFileSync(f, x.data);
 console.log(JSON.stringify({ arm, mode, primary: summary.primary, attempts: summary.attempts, attempt_verdicts: summary.attempt_verdicts, coding_ms: summary.coding_ms,
   candidate: { bytes: summary.candidate.bytes, gradable: summary.candidate.gradable }, probe: probes, grade_now: summary.grade_now }, null, 1));
+if (smoke) {
+  const probs = PAIR.smokeProblems({ primary: summary.primary, capture_state: res.candidate.capture_state, model: summary.model, billing_route: summary.billing_route });
+  console.log(`::notice title=pair-smoke::acceptable=${probs.length === 0} mode=${mode} problems=${JSON.stringify(probs).replace(/%/g, '%25')}`);
+  if (probs.length) die(7, `smoke NOT acceptable: ${probs.join('; ')} (the pair does not start)`);
+  process.exit(0);
+}
 process.exit(res.stop_batch ? 5 : 0);
