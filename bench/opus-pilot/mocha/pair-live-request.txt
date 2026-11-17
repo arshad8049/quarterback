@@ -1,2 +1,2 @@
-mode=smoke-dry
-# KAN-112 10662 no-model check: the smoke path must REJECT missing model/billing evidence (exit 7)
+mode=smoke
+# KAN-112 10669: ONE harmless credentialed smoke (paired driver, arm-A path); never mode=pair
