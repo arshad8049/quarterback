@@ -1,1 +1,1 @@
-request 2: freeze v2 (crash reporting); request 1 (run 44016398808) crashed in both arms before any record
+request 3: freeze v3 (lowercase candidate label); requests 1-2 crashed at the candidate record after the sandbox run

@@ -36,7 +36,7 @@ const restricted = arg('restricted'); const pub = arg('public'); const repoPath 
 if (!restricted || !pub || !repoPath || !store || !imagesDir) die(2, 'refusing: --repo, --store, --images, --restricted and --public are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v2.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v3.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
@@ -117,7 +117,7 @@ if (!live) {
 
 const release = D.bindImages(ids);
 const common = { repoPath, amendment, amendmentSha256: sha(amendBytes), seam, signInAdapter, vaultRow, trialId: `${FREEZE.version}-${arm}-${mode}`,
-  taskId: ENV.task_id, graderTask: FREEZE.shared.grader_task, qbCommit: process.env.GITHUB_SHA || null, label: `pair-${arm}-${live ? 'live' : 'dry'}`,
+  taskId: ENV.task_id, graderTask: FREEZE.shared.grader_task, qbCommit: process.env.GITHUB_SHA || null, label: `pair-${arm.toLowerCase()}-${live ? 'live' : 'dry'}`,
   ...(seam ? { approvedAuthRoutes: [PAIR.ROUTE] } : {}) };
 const res = arm === 'A' ? await PAIR.runArmA({ ...common, ...armInput }) : await PAIR.runArmB({ ...common, ...armInput, runsDir: path.join(restricted, '..', 'pair-runs') });
 const launches = release();
