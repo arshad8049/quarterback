@@ -1,2 +1,2 @@
-mode=dry-run
-# KAN-112 10662 no-model check of the protected paired workflow (no environment, no token)
+mode=smoke-dry
+# KAN-112 10662 no-model check: the smoke path must REJECT missing model/billing evidence (exit 7)
