@@ -57,7 +57,9 @@ async function execute(briefing, contract, context, options = {}) {
   });
   // Raw patch bytes and the base listing travel alongside the record, not in it
   // (not JSON, and never redacted): qb.js stores them as binary artifacts for `qb patch`.
-  for (const k of ['patch_raw', 'base_listing']) {
+  // KAN-114 10689 (v7): the pilot evidence outcome travels alongside too (the schema record is unchanged), so the repair
+  // loop can stop on missing or wrong evidence
+  for (const k of ['patch_raw', 'base_listing', 'pilot_outcome', 'agent_report']) {
     if (outcome[k]) Object.defineProperty(result, k, { value: outcome[k], enumerable: false });
   }
   return result;
@@ -154,7 +156,12 @@ async function runAgentSandboxed(briefing, repoPath, options = {}) {
     const agentState = r.sandbox && r.sandbox.stages && r.sandbox.stages.agent ? r.sandbox.stages.agent.state : status;
     const c = require('../lib/sandbox/agent-profile').classifyAttempt({ stdout: r.agent_stdout, dropped: r.agent_stdout_dropped || 0, sandboxState: agentState }, profile);
     out.agent_report = c.report; out.pilot_outcome = c.outcome; out.pilot_evidence_complete = c.evidence_complete; out.pilot_reasons = c.reasons; out.pilot_flags = c.flags;
-    if (options.pilot && options.pilot.record) options.pilot.record({ flags: c.flags, reasons: c.reasons, sandbox_state: agentState });
+    // KAN-114 10689 (v7): the attempt's OWN evidence travels with its record (sanitized parsed report, never the raw stream)
+    const agentStageMs = r.sandbox && r.sandbox.stages && r.sandbox.stages.agent && Number.isFinite(r.sandbox.stages.agent.duration_ms) ? r.sandbox.stages.agent.duration_ms : null;
+    const patchSha = r.patch_raw ? require('crypto').createHash('sha256').update(Buffer.from(r.patch_raw)).digest('hex') : null;
+    if (options.pilot && options.pilot.record) options.pilot.record({ flags: c.flags, reasons: c.reasons, sandbox_state: agentState,
+      attempt: Number.isInteger(options.attempt) ? options.attempt : 1, outcome: c.outcome, evidence_complete: c.evidence_complete, report: c.report,
+      agent_stage_ms: agentStageMs, patch_sha256: patchSha, stdout_dropped: r.agent_stdout_dropped || 0 });
     if (!['verified', 'coding_timeout'].includes(c.outcome)) { out.status = 'infra_error'; out.error = `pilot ${c.outcome}: ${c.reasons.join('; ')}`; }
   }
   return out;

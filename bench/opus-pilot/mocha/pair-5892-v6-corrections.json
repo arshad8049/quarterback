@@ -1,0 +1,39 @@
+{
+  "schema": "qb-pair-correction/1",
+  "applies_to": {
+    "freeze": "pair-5892-freeze-v6",
+    "workflow_run": "44146278864",
+    "attempt": 1,
+    "qb_commit": "6d6c8b7455a57309d583099ae1b1118dbb763cfa"
+  },
+  "review": "KAN-114 comment 10689 (senior)",
+  "recorded": "2026-11-17T20:06:09.296Z",
+  "determination": "NOT a verified paired comparison. Do not count v6 run 44146278864 as a verified pair in any downstream report.",
+  "retained": {
+    "arm_a": {
+      "grade": "solved",
+      "candidate_sha256": "b6fedddd1702cbdcbd9645c80eef703e076407ffbdfd428ab245a611e7c0096e",
+      "model_billing": "code-checked from the stream (classifyAttempt verified); not account-side billing verification"
+    },
+    "arm_b": {
+      "grade": "solved",
+      "candidate_sha256": "52547d5ed635ff104859dcd1c8c6918f8cff986dbc02947e3833bc4dd749233b",
+      "model_billing": "PERMANENTLY UNVERIFIED: the published record has model null and billing_route null; the raw stream was not retained"
+    }
+  },
+  "notes": [
+    "The record field valid_completed_trial=true is the code's value, not the review determination.",
+    "Arm B attempt 1 was classified in-job by agent/runner.js (its pilot record flags led to primary execution_verified), but the classified served-model and billing values were dropped before the record was written (ExecutionResultSchema strips agent_report; runArmB did not carry the pilot records). The flags alone are not reviewable evidence. This corrects KAN-114 10688, which said execution_verified only reflected pipeline completion.",
+    "Never reconstruct the served model from profile.model, never mark unknown billing as free, never rewrite the original artifacts.",
+    "Smoke attempt 3 on run 44029420496 exceeded the single approved retry (KAN-112 10678/10680); kept as extra operational evidence only.",
+    "axios-5892 is now a seen development task, not a fresh holdout. A new comparison needs BOTH arms fresh under an approved freeze; never pair a new B with this A."
+  ],
+  "original_artifacts_unchanged": [
+    "pair-trial-public-A",
+    "pair-grading-input-A",
+    "pair-trial-public-B",
+    "pair-grading-input-B",
+    "pair-grade-public-A",
+    "pair-grade-public-B"
+  ]
+}

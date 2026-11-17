@@ -43,7 +43,7 @@ const restricted = arg('restricted'); const pub = arg('public'); let repoPath = 
 if (!restricted || !pub || !store || !imagesDir || (!smoke && !repoPath)) die(2, 'refusing: --store, --images, --restricted, --public (and --repo for a task) are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v6.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v7.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
@@ -146,24 +146,10 @@ const launches = release();
 // ── records ──
 const patchText = res.patch.toString('utf8');
 const probes = [...patchText.matchAll(/probe answer_files=(\d+) credential_vars=(\d+) dns=(\w+)/g)].map((m) => ({ answer_files: Number(m[1]), credential_vars: Number(m[2]), dns: m[3] }));
-const rep = res.agent_report || {};
-const summary = {
-  schema: 'qb-pair-trial/1', freeze: FREEZE.version, arm, mode, dry_run: !live, task: FREEZE.shared.grader_task, task_id: ENV.task_id,
-  qb_commit: process.env.GITHUB_SHA || null, run_id: process.env.GITHUB_RUN_ID || null,
-  primary: res.pilot.primary, flags: res.pilot.flags, reasons: res.pilot.reasons, patch_use: res.pilot.patch_use, valid_completed_trial: res.pilot.valid_completed_trial,
-  coding_ms: res.pilot.effort ? res.pilot.effort.coding_ms : null, total_elapsed_ms: res.pilot.effort ? res.pilot.effort.total_elapsed_ms : null,
-  coding_allowance_ms: res.coding_ms, total_allowance_ms: res.total_ms,
-  attempts: arm === 'A' ? 1 : res.attempts, attempt_verdicts: res.attempt_verdicts || null, timing: res.timing || null, internal_verdict: res.internal_verdict ?? null,
-  model: rep.model || null, billing_route: rep.billing_route || null, cli: res.profile.claude_code_version, profile: res.profile,
-  candidate: { sha256: res.candidate.sha256, bytes: res.candidate.bytes, gradable: res.candidate.gradable, not_gradable_reason: res.candidate.not_gradable_reason,
-    files: res.candidate.files, base_tree: res.candidate.base_tree, candidate_tree: res.candidate.candidate_tree },
-  coding_isolation_probe: probes, stop_batch: res.stop_batch,
-  // the dry run always exercises the independent grader on a gradable captured patch (labelled; never a result)
-  grade_now: live ? res.grade_now : Boolean(res.candidate.gradable && res.patch.length > 0), grade_basis: live ? 'pilot rule (grade_under_10583)' : 'dry-run exercise of the grading path',
-  pilot_grade_now: res.grade_now,
-  diagnostics: { sandbox: res.sandbox || null, attempt_outcome: res.attempt_outcome || null, attempt_reasons: res.attempt_reasons || null, last_report: res.last_report || null },
-  images: Object.values(ids), launches: launches.length, distinct_launch_images: [...new Set(launches.map((l) => l.image))],
-};
+// KAN-114 10689 (v7): the record is assembled by lib/pilot/pair.js pairSummary (tested), with per-attempt evidence
+const summary = PAIR.pairSummary(res, { arm, mode, live, freeze: FREEZE.version, task: FREEZE.shared.grader_task, taskId: ENV.task_id,
+  qbCommit: process.env.GITHUB_SHA || null, runId: process.env.GITHUB_RUN_ID || null, probes, images: Object.values(ids), launches: launches.length,
+  distinctImages: [...new Set(launches.map((l) => l.image))] });
 const secret = process.env.CLAUDE_CODE_OAUTH_TOKEN || null;
 const files = {
   [path.join(restricted, 'candidate.diff')]: { data: res.patch, kind: 'secret_only' },
@@ -179,6 +165,11 @@ for (const [f, x] of Object.entries(files)) {
 if (problems.length) { for (const d of [restricted, pub]) fs.rmSync(d, { recursive: true, force: true }); die(6, `evidence refused before upload: ${problems.join('; ')}`); }
 for (const d of [restricted, pub]) fs.mkdirSync(d, { recursive: true });
 for (const [f, x] of Object.entries(files)) fs.writeFileSync(f, x.data);
+// KAN-114 10689 (v7): read the PUBLISHED record back and gate it on its own per-attempt evidence
+const back = JSON.parse(fs.readFileSync(path.join(pub, `pair-${arm}.json`), 'utf8'));
+const evProblems = PAIR.recordProblems(back);
+const evLine = back.attempt_evidence.map((e) => `a${e.attempt}:${e.outcome}/${e.served_model}/${e.cli}/${e.provider}/${e.api_key_source}/overage=${e.is_using_overage}/${e.agent_stage_ms}ms/${String(e.patch_sha256).slice(0, 12)}`).join(' ');
+console.log(`::notice title=pair-evidence-${arm}::verified=${evProblems.length === 0} label=${back.evidence_label} attempts=${back.attempts} ${evLine} problems=${JSON.stringify(evProblems.slice(0, 6)).replace(/%/g, '%25')}`);
 console.log(JSON.stringify({ arm, mode, primary: summary.primary, attempts: summary.attempts, attempt_verdicts: summary.attempt_verdicts, coding_ms: summary.coding_ms,
   candidate: { bytes: summary.candidate.bytes, gradable: summary.candidate.gradable }, probe: probes, grade_now: summary.grade_now }, null, 1));
 if (smoke) {
