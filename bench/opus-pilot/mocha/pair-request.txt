@@ -1,1 +1,1 @@
-request 1: KAN-112 10660 no-model verification of both paired entrypoints (axios-5892), dry run + independent grading
+request 2: freeze v2 (crash reporting); request 1 (run 44016398808) crashed in both arms before any record

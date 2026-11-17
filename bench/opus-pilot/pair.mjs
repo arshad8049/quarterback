@@ -22,6 +22,9 @@ const ROOT = path.resolve(HERE, '..', '..');
 const arg = (k) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : null; };
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 const die = (code, m) => { console.error(m); process.exit(code); };
+// an uncaught error is reported as a public annotation (message and first stack frames only; the dry run holds no secret)
+const crash = (e) => { const m = String((e && e.stack) || e).split('\n').slice(0, 6).join(' | ').replace(/%/g, '%25').slice(0, 1500); console.log(`::error title=pair-crash::${m}`); process.exit(1); };
+process.on('uncaughtException', crash); process.on('unhandledRejection', crash);
 const arm = arg('arm'); const mode = arg('mode');
 if (!['A', 'B'].includes(arm) || !['dry-run', 'task'].includes(mode)) die(2, 'usage: pair.mjs --arm=A|B --mode=dry-run|task ...');
 if (process.env.GITHUB_ACTIONS !== 'true' || process.env.PAIR_CI_RUN !== '1') die(2, 'refusing: CI only (GITHUB_ACTIONS=true, PAIR_CI_RUN=1)');
@@ -33,7 +36,7 @@ const restricted = arg('restricted'); const pub = arg('public'); const repoPath 
 if (!restricted || !pub || !repoPath || !store || !imagesDir) die(2, 'refusing: --repo, --store, --images, --restricted and --public are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v1.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v2.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
