@@ -136,3 +136,16 @@ test('arm B: QB\'s no-progress rule (an identical patch twice) stops the loop ea
   const r = await PAIR.runArmB(baseB({ seam, approvedAuthRoutes: ['subscription_token_env'] }));
   assert.equal(calls.length, 2); assert.equal(r.attempts, 2);
 });
+
+test('arm A: the SAME dependency handling as arm B (reviewed root-scripts entry), and no QB verification or checks', async () => {
+  const calls = [];
+  const seam = async (opts) => { calls.push(opts); return { status: 'no_change', diff: null, changes: [], unsupported_changes: [], base_tree: 'b'.repeat(40), candidate_tree: 'b'.repeat(40),
+    exit_code: 0, signal: null, stderr_tail: null, patch_raw: null, agent_stdout: stream(), agent_stdout_dropped: 0,
+    sandbox: { credential_mode: 'K', stages: { agent: { state: 'completed', duration_ms: 10 } }, capture: { verdict: { state: 'no_change' } } } }; };
+  await PAIR.runArmA({ briefing: 'Fix it.\n', repoPath: repo(), amendment, amendmentSha256: sha(amendBytes), signInAdapter: async () => ({ status: 'ok' }),
+    seam, research: { rootScripts: research.rootScripts }, label: 'pair-a-dry', trialId: 't', taskId: 'qbt_x', graderTask: 'axios-x' });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].researchRootScripts, research.rootScripts);
+  assert.equal(calls[0].researchEnv, undefined, 'arm A gets no QB research verification');
+  assert.deepEqual(calls[0].checks, [], 'arm A runs no QB checks');
+});

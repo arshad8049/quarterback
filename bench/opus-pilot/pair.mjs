@@ -36,7 +36,7 @@ const restricted = arg('restricted'); const pub = arg('public'); const repoPath 
 if (!restricted || !pub || !repoPath || !store || !imagesDir) die(2, 'refusing: --repo, --store, --images, --restricted and --public are required');
 
 // ── the freeze must match before anything runs ──
-const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v4.json'), 'utf8'));
+const FREEZE = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'pair-5892-freeze-v5.json'), 'utf8'));
 const drift = Object.entries(FREEZE.files).filter(([f, h]) => !fs.existsSync(path.join(ROOT, f)) || sha(fs.readFileSync(path.join(ROOT, f))) !== h).map(([f]) => f);
 if (drift.length) die(3, `refusing: files differ from ${FREEZE.version}: ${drift.join(', ')} (record a new freeze version; never edit silently)`);
 
@@ -74,12 +74,13 @@ for (const [name, ref] of Object.entries({ agent: AGENT_IMAGE, tools: TOOLS_IMAG
   ids[ref] = r.stdout.trim();
 }
 
-// ── per-arm inputs ──
+// ── per-arm inputs (the reviewed root-scripts entry is SHARED: both arms install dependencies the same way) ──
+const ROOT_SCRIPTS = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'root-scripts-allow.json'), 'utf8')).entries.filter((e) => e.key === ENV.root_scripts_key);
 let armInput = {};
 if (arm === 'A') {
   const b = A.armABriefing(agentRow, vaultRow);
   if (b.sha256 !== FREEZE.arm_a.briefing_sha256) die(3, 'refusing: the arm-A briefing differs from the frozen one');
-  armInput = { briefing: b.briefing };
+  armInput = { briefing: b.briefing, research: { rootScripts: ROOT_SCRIPTS } };   // shared dependency handling; no QB verification
 } else {
   const overlay = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'contract-5892-v4.overlay.json'), 'utf8'));
   const { contract: C0 } = rebuildContract(overlay, agentRow.problem_statement, FREEZE.arm_b.contract_sha256);
@@ -93,7 +94,6 @@ if (arm === 'A') {
   if (contractState(contract).state !== 'finalized') die(3, 'refusing: contract not finalized');
   const runner = researchCheckRunner();
   if (runner.sha256 !== FREEZE.arm_b.research_check_runner_sha256) die(3, 'refusing: research check runner differs from the freeze');
-  const ROOT_SCRIPTS = JSON.parse(fs.readFileSync(path.join(HERE, 'mocha', 'root-scripts-allow.json'), 'utf8')).entries.filter((e) => e.key === ENV.root_scripts_key);
   armInput = { contract, research: { env: ENV, rootScripts: ROOT_SCRIPTS, checkRunner: runner }, preservationMaps: MAPS };
 }
 
@@ -106,7 +106,8 @@ if (!live) {
     "t=$(env | grep -cE '^(CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|GITHUB_TOKEN|ACTIONS_RUNTIME_TOKEN)=' || true)",
     "d=$(node -e \"require('dns').lookup('github.com',(e)=>{process.stdout.write(e?'none':'reachable')})\" 2>/dev/null || echo none)",
     "k=$(ls -A /work/.git 2>/dev/null | wc -l)",
-    "printf 'pair dry run (scripted, not a model output) attempt-at %s: probe answer_files=%s credential_vars=%s dns=%s\\n' \"$(date +%s%N)\" \"$n\" \"$t\" \"$d\" >> PAIR_DRY_RUN.md",
+    // an IN-SCOPE edit (lib/utils.js, allowed by contract v4), different on every attempt (no QB no-progress stop)
+    "printf '\\n// pair dry run (scripted, not a model output) attempt-at %s: probe answer_files=%s credential_vars=%s dns=%s\\n' \"$(date +%s%N)\" \"$n\" \"$t\" \"$d\" >> lib/utils.js",
   ].join('; ');
   const scripted = (ws, _e, { waitTimeoutMs }) => D.runStage(`${ws.runId}-agent`, [
     ...hardened(ws.runId, 'workload'), '--network', 'none', ...ws.mount('work'), '-w', '/work', '--entrypoint', 'sh', AGENT_IMAGE, '-c', PROBE,
