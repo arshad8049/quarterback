@@ -1,0 +1,93 @@
+{
+  "label": "generated failure (owner smoke e578f99b, qwen2.5-coder:14b, QB 31af046): diagnostic only, never a reference answer",
+  "run": "e578f99b-bce1-4f97-a1c1-6e785c3490f6",
+  "qb_revision": "31af046145d970573161f95676221569372790ee",
+  "target": {
+    "base_sha": "2c71f484b4bdf6b864655cdd92b21f3d023c762d"
+  },
+  "model": "qwen2.5-coder:14b",
+  "artifact_sha256": "20645d20e9bcc36ea3d3859630825b6c7eaef14ee8945569bda7cd4450ef4153",
+  "outcome": "BLOCKED",
+  "outcome_reason": "invalid_contract_after_repair: AC-4 duplicates AC-3",
+  "draft1_errors": [
+    "constraint 0 refers to unknown check \"CHK-2\"",
+    "constraint 1 refers to unknown check \"CHK-3\"",
+    "constraint 2 refers to unknown check \"CHK-4\""
+  ],
+  "draft1_later_errors": [
+    "AC-4 duplicates AC-3",
+    "requirement R-1 \"In lib/serializer.js,\" is not covered by any acceptance criterion"
+  ],
+  "draft2_errors": [
+    "AC-4 duplicates AC-3"
+  ],
+  "draft2_later_errors": [],
+  "grounding": {
+    "files_total": 95,
+    "tree_files": 95,
+    "snippet_files": [
+      "test/asNumber.test.js",
+      "test/string-array-cutoff.test.js",
+      "test/string.test.js",
+      "test/multi-type-serializer.test.js"
+    ],
+    "digest": "ae19f7c88aaa510bc03475c4cdf9d28921854819df2541fc7db18b23d394b6f9",
+    "api": [
+      {
+        "path": "lib/serializer.js",
+        "sha256": "ae9d3d2fdfcfea0477c3802d2e80ea2c15126aad073629d3ef8711ee36e80c5e",
+        "bytes": 5365,
+        "status": "known",
+        "excerpts": [
+          {
+            "symbol": "export",
+            "start_line": 43,
+            "end_line": 43,
+            "truncated": true
+          },
+          {
+            "symbol": "constructor",
+            "start_line": 44,
+            "end_line": 61,
+            "truncated": false
+          },
+          {
+            "symbol": "asNumber",
+            "start_line": 79,
+            "end_line": 91,
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "path": "test/asNumber.test.js",
+        "sha256": "7ed38f4f700a1ddf5bb760f4e59206185d3ab4e3777280468ef285e31228d263",
+        "bytes": 297,
+        "status": "known"
+      }
+    ]
+  },
+  "timings": {
+    "initial_call_ms": 193954,
+    "repair_call_ms": [
+      147559
+    ],
+    "l1_ms": 341608,
+    "calls": [
+      {
+        "kind": "initial",
+        "ms": 193954,
+        "outcome": "invalid",
+        "limit_ms": 240000,
+        "load_ms": 16480
+      },
+      {
+        "kind": "repair",
+        "ms": 147559,
+        "outcome": "invalid",
+        "limit_ms": 225987,
+        "load_ms": 21
+      }
+    ]
+  }
+}

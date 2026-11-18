@@ -1,0 +1,163 @@
+{
+  "goal": "Modify the Serializer.asNumber() method to throw a number conversion error for empty strings or strings containing only whitespace, while keeping the behavior for numeric 0, string '0', and valid numeric strings. Add tests in test/asNumber.test.js.",
+  "required_behavior": [
+    "Serializer.asNumber() throws a number conversion error for an empty string.",
+    "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+    "Serializer.asNumber() returns '0' for the input '0'.",
+    "Serializer.asNumber() returns '0' for the input 0.",
+    "Serializer.asNumber() returns the correct string representation of valid numeric strings."
+  ],
+  "constraints": [
+    "Do not change the behavior for numeric 0.",
+    "Do not change the behavior for string '0'.",
+    "Do not change the behavior for valid numeric strings."
+  ],
+  "scope": {
+    "allowed_changes": [
+      "lib/serializer.js",
+      "test/asNumber.test.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-2"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-4"
+        }
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Serializer.asNumber() throws a number conversion error for an empty string.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Serializer.asNumber() returns '0' for the input '0'.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Serializer.asNumber() returns '0' for the input 0.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Serializer.asNumber() returns the correct string representation of valid numeric strings.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "criterion": "test/asNumber.test.js has new node:test cases for Serializer.asNumber() behavior, and they pass.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ]
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ]
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ]
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ]
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ]
+    },
+    {
+      "id": "R-6",
+      "passage_ids": [
+        "P6"
+      ]
+    }
+  ],
+  "proposed_defaults": [],
+  "verification_plan": [
+    "Modify Serializer.asNumber() in lib/serializer.js to throw an error for empty strings and whitespace-only strings.",
+    "Add tests in test/asNumber.test.js to verify the new behavior.",
+    "Run the existing test suite to ensure no regressions."
+  ],
+  "checks": [],
+  "relevant_context": [
+    "lib/serializer.js",
+    "test/asNumber.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null
+}
