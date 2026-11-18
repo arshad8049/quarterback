@@ -96,21 +96,20 @@
   <!-- ============================================================ -->
   <!-- SECTION: HOME-LOGOS → edit: src/home-logos.html -->
   <!-- ============================================================ -->
-  <!-- LOGO STRIP (revision 5, owner decision 2026-11-10). Exactly these items; see media/logos/SOURCES.md.
-       "Works with" shows compatibility, not endorsement. The group labels stay visible.
+  <!-- LOGO STRIP (revision 6, owner decision 2026-11-19). Coding agents: Claude Code is supported today; Codex and
+       Copilot are planned adapters, labelled "planned" and shown as text, not logos. Not an endorsement; see media/logos/SOURCES.md. The group labels stay visible.
        Without JavaScript or under reduced motion it is a static, wrapped row. interactions.js adds the moving
        copy (aria-hidden, inert) and the Pause button. -->
-  <section class="qbh-logos" data-qbh-marquee aria-label="Works with, and research collaborations">
+  <section class="qbh-logos" data-qbh-marquee aria-label="Coding agents, and research collaborations">
     <div class="qbh-marquee">
       <div class="qbh-marquee-track">
         <div class="qbh-marquee-set">
           <div class="qbh-logo-group">
-            <p class="qbh-logo-label" id="logos-works">Works with</p>
+            <p class="qbh-logo-label" id="logos-works">Coding agents</p>
             <ul class="qbh-logo-list" aria-labelledby="logos-works">
-              <li class="qbh-logo"><img src="./media/logos/claude-code.svg" alt="Claude Code" width="160" height="22" style="--h: 22px" decoding="async"></li>
-              <li class="qbh-logo"><img src="./media/logos/nodejs.svg" alt="Node.js" width="107" height="32" style="--h: 32px" decoding="async"></li>
-              <li class="qbh-logo"><img src="./media/logos/docker.svg" alt="Docker" width="131" height="28" style="--h: 28px" decoding="async"></li>
-              <li class="qbh-logo"><img src="./media/logos/github.svg" alt="GitHub" width="123" height="28" style="--h: 28px" decoding="async"></li>
+              <li class="qbh-logo"><img src="./media/logos/claude-code.svg" alt="Claude Code (supported)" width="160" height="22" style="--h: 22px" decoding="async"></li>
+              <li class="qbh-logo qbh-logo-text">OpenAI Codex <span class="qbh-logo-plan">planned</span></li>
+              <li class="qbh-logo qbh-logo-text">GitHub Copilot <span class="qbh-logo-plan">planned</span></li>
             </ul>
           </div>
           <div class="qbh-logo-group">
@@ -312,7 +311,7 @@
       <div class="qb-reveal">
         <p class="qbx-eyebrow">Supervised demos</p>
         <h2 id="beta-h" class="qbx-h2">Request a guided demo.</h2>
-        <p class="qbx-sub">Leave your email and we’ll be in touch to arrange a supervised demo on a sample project.</p>
+        <p class="qbx-sub">Sign up and we email you the setup guide. Reply at any step and we’ll help you try it on a real task.</p>
         <ul class="qbx-compat">
           <li><span>Assistant</span>Claude Code, with your own Claude subscription or API key</li>
           <li><span>Projects</span>JavaScript or Node.js, tested with node:test</li>
@@ -327,7 +326,7 @@
           <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" class="qbx-input">
           <label for="stack" class="qbx-label">Which coding assistant do you use most?</label>
           <input id="stack" name="agent" type="text" placeholder="Claude Code" class="qbx-input">
-          <button type="submit" class="qbx-btn qbx-btn-primary qbx-btn-block">Request a demo</button>
+          <button type="submit" class="qbx-btn qbx-btn-primary qbx-btn-block">Send me the setup guide</button>
           <p id="form-feedback" role="status" class="qbx-form-note">Quarterback runs on your machine. During a run, Claude Code sends your task and the code it reads to Anthropic under your account. <a href="./privacy.html">Data and privacy</a></p>
         </form>
         <p id="form-status" role="status" style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;"></p>

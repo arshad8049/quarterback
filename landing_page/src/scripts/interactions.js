@@ -221,20 +221,23 @@
     const compute = () => {
       ticking = false;
       if (!staged) return;
-      const mid = window.innerHeight / 2;
-      let best = 0, bestD = Infinity;
-      steps.forEach((st, k) => {
-        const r = st.getBoundingClientRect();
-        const d = mid < r.top ? r.top - mid : mid > r.bottom ? mid - r.bottom : 0;
-        if (d < bestD) { bestD = d; best = k; }
-      });
-      setActive(best);
+      // Pinned track: progress through the story's extra height picks the step.
+      const r = story.getBoundingClientRect();
+      const travel = Math.max(1, story.offsetHeight - (window.innerHeight - headerH()));
+      const t = Math.min(0.9999, Math.max(0, (headerH() - r.top) / travel));
+      setActive(Math.floor(t * steps.length));
     };
     const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(compute); } };
-    const fits = () => stage.offsetHeight <= window.innerHeight - headerH() - 48;
+    const list = story.querySelector('.qbh-steps');
+    const content = (el) => Array.from(el.children).reduce((h, c) => h + c.offsetHeight, 0);
+    const fits = () => {
+      const room = window.innerHeight - headerH() - 48;
+      return holder.offsetHeight + 60 <= room && content(list) + 28 * (steps.length - 1) <= room;
+    };
     const enter = () => {
       staged = true; active = -1;
       panels.forEach((p) => holder.appendChild(p));
+      story.style.setProperty('--qbh-n', String(steps.length));
       stage.hidden = false; story.classList.add('is-staged');
       window.addEventListener('scroll', onScroll, { passive: true });
       compute();
@@ -253,8 +256,8 @@
       if (staged) compute();
     };
     buttons.forEach((b, i) => b.addEventListener('click', () => {
-      const r = steps[i].getBoundingClientRect();
-      const y = window.scrollY + r.top + r.height / 2 - window.innerHeight / 2;
+      const travel = Math.max(1, story.offsetHeight - (window.innerHeight - headerH()));
+      const y = window.scrollY + story.getBoundingClientRect().top - headerH() + travel * (i + 0.5) / steps.length;
       window.scrollTo({ top: Math.max(0, y), behavior: reduced() ? 'auto' : 'smooth' });
       setActive(i);
     }));
