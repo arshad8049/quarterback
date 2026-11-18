@@ -491,6 +491,11 @@ main().catch(e => {
   // KAN-103/104 re-review 1: the corrective call failed outright; keep QB's rejected draft(s).
   // KAN-106: L1 failed outright (e.g. the repair call); keep its timings.
   if (e && e.l1_timings && currentRun) { try { reportL1Timings(currentRun, e.l1_timings); } catch { /* best effort */ } }
+  // KAN-106 10749 (staged profile only): the fact replies received before the failure are kept.
+  if (e && e.staged && currentRun) {
+    try { currentRun.artifact('contract-staged', e.staged); currentRun.event('contract.staged_failed', { failed: (e.staged.facts.at(-1) || {}).failed || null }); }
+    catch { /* best effort; the abort below still records the outcome */ }
+  }
   if (e && e.recovery && currentRun) {
     try {
       currentRun.artifact('contract-repair', { format: 'qb-contract-repair/1', outcome: e.recovery.failed.kind, rejected: e.recovery.rejected, failed: e.recovery.failed });

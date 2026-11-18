@@ -66,6 +66,19 @@ const PATH = '(?:[A-Za-z0-9_@-][A-Za-z0-9_.@-]*\\/)*[A-Za-z0-9_@-][A-Za-z0-9_.@-
 const LOCATION_ONLY = new RegExp(`^in\\s+(\`?)(${PATH})\\1\\s*,?$`, 'i');
 const SENTENCE_END = /[.!?]["')\]]*$/;
 const KEEP_START = /^(?:please\s+)?(?:keep|preserve|retain|maintain)\b|^(?:do\s+not|don't|must\s+not|should\s+not|never)\s+(?:change|alter|break)\b/i;
+// 10749 G1: a passage that is ONLY "Do not change <file>." / "Leave <file> unchanged." (scope.protected_paths)
+const PROTECT_ONLY = [
+  new RegExp(`^(?:please\\s+)?(?:do\\s+not|don't|never|must\\s+not)\\s+(?:change|modify|edit|touch)\\s+(\`?)(${PATH})\\1\\s*[.!]?$`, 'i'),
+  new RegExp(`^(?:please\\s+)?leave\\s+(\`?)(${PATH})\\1\\s+(?:unchanged|untouched|as\\s+it\\s+is)\\s*[.!]?$`, 'i'),
+];
+// 10749 G3: a requested-tests passage that says nothing else ("Add node:test cases in <file>.", optionally "for <name>")
+const PURE_TESTS = new RegExp(`^(?:please\\s+)?(?:add|write|create)\\s+(?:(?:new|more|some|unit|integration|[a-z]+:[a-z]+)\\s+)*(?:tests?|test\\s+cases?|cases|specs?)(?:\\s+for\\s+[A-Za-z_$][\\w$.]*(?:\\(\\))?)?\\s+(?:in|to|into)\\s+(\`?)(${PATH})\\1\\s*[.!]?$`, 'i');
+const plainPath = (p) => !p.startsWith('/') && !p.split('/').some((x) => x === '' || x === '.' || x === '..');
+/** The file a passage only protects ("Do not change lib/x.js."), or null. */
+function protectOnly(text) {
+  for (const re of PROTECT_ONLY) { const m = re.exec(String(text || '').trim()); if (m && plainPath(m[2])) return m[2]; }
+  return null;
+}
 
 /** Is the passage text exactly a path locator ("In lib/x.js,")? Conservative: nothing else may be in it. */
 function isLocationOnly(text) {
@@ -73,10 +86,17 @@ function isLocationOnly(text) {
   return !!m && !m[2].split('/').some((s) => s === '' || s === '.' || s === '..');
 }
 
-/** Each passage's role: context | adds_tests | keep | change (see the header). */
+/**
+ * Each passage's role: context | protect | adds_tests | keep | change, or unsupported (with a reason):
+ * a do-not-change clause inside another passage (10749 G1), or a requested-tests passage that also says
+ * something else (10749 G3). An unsupported passage stops the staged prototype before any model call.
+ */
 function passageRoles(request) {
   const passages = splitPassages(request);
-  const tests = new Map(requestTargets(request).targets.filter((t) => t.action === 'add_tests').map((t) => [t.passage_id, t.path]));
+  const rt = requestTargets(request);
+  const tests = new Map(rt.targets.filter((t) => t.action === 'add_tests').map((t) => [t.passage_id, t.path]));
+  const negated = new Map();
+  for (const x of rt.ignored.filter((y) => y.why === 'negated')) negated.set(x.passage_id, [...(negated.get(x.passage_id) || []), x.path]);
   // sentences: runs of passages up to one ending a sentence, or a line break between passages
   const sentenceOf = [];
   let s = 0;
@@ -89,7 +109,17 @@ function passageRoles(request) {
   return passages.map((p, i) => {
     const base = { passage_id: p.id, text: p.text, sentence: passages.filter((_, j) => sentenceOf[j] === sentenceOf[i]).map((x) => x.text).join(' ') };
     if (isLocationOnly(p.text)) return { ...base, role: 'context' };
-    if (tests.has(p.id)) return { ...base, role: 'adds_tests', file: tests.get(p.id) };
+    const prot = protectOnly(p.text);
+    if (prot) return { ...base, role: 'protect', file: prot };
+    if (negated.has(p.id)) {
+      return { ...base, role: 'unsupported', reason: `${p.id} ${JSON.stringify(p.text)} says not to change ${negated.get(p.id).join(', ')} inside another instruction: the staged prototype supports a do-not-change request only as its own sentence ("Do not change <file>.")` };
+    }
+    if (tests.has(p.id)) {
+      if (!PURE_TESTS.test(p.text.trim())) {
+        return { ...base, role: 'unsupported', file: tests.get(p.id), reason: `${p.id} ${JSON.stringify(p.text)} asks to add tests and says more: the staged prototype does not split that passage, so its other instructions would be lost; state the behaviour in its own sentence` };
+      }
+      return { ...base, role: 'adds_tests', file: tests.get(p.id) };
+    }
     return { ...base, role: keepSentence.has(sentenceOf[i]) ? 'keep' : 'change' };
   });
 }
@@ -134,10 +164,73 @@ function literalPieces(text) {
 }
 
 const GLOBALS = new Set(Object.getOwnPropertyNames(globalThis));
+const EXCERPT_ROOM = 100;   // kept excerpt lines below which a missing constructor block means "no constructor" (a block is ≤ 60 lines, a file ≤ 160)
+const escapeRe = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** Does the request ask to create or export this name? (any export/create word next to it in one sentence) */
+const asksFor = (request, name) => new RegExp(`\\b(?:export|create)\\w*\\b[^.!?]*\\b${escapeRe(name)}\\b|\\b${escapeRe(name)}\\b[^.!?]*\\b(?:export|create)\\w*\\b`, 'i').test(String(request || ''));
 
 /**
- * The call targets: [{ label, module, kind: 'method'|'function', export, method?, display, pieces }].
- * `api` is groundApi's result (with excerpt text); `request` names the calls.
+ * 10749 G2: can QB construct the class with `new` and no arguments? 'none' (no constructor parameters),
+ * 'optional' (every parameter has a default, is a rest parameter, or is only read behind a guard: `p && …`,
+ * `p || …`, `p ?? …`, `p?.x`, `typeof p`, `p == null`, a test of `p`, or stored as `this.x = p`), or
+ * 'required_or_unknown' (anything else, or the constructor could not be read).
+ */
+function constructorArgs(m) {
+  const blocks = m.excerpts || [];
+  const b = blocks.find((x) => x.kind === 'constructor');
+  if (!b || typeof b.text !== 'string') {
+    const kept = blocks.reduce((n, x) => n + (x.end_line - x.start_line + 1), 0);
+    return kept <= EXCERPT_ROOM ? 'none' : 'required_or_unknown';
+  }
+  let ctor;
+  try { ctor = acorn.parse(`(class {\n${b.text}\n})`, { ecmaVersion: 'latest' }).body[0].expression.body.body.find((x) => x.kind === 'constructor'); } catch { return 'required_or_unknown'; }
+  if (!ctor) return 'required_or_unknown';
+  const params = ctor.value.params;
+  if (!params.length) return 'none';
+  for (const p of params) {
+    if (p.type === 'AssignmentPattern' || p.type === 'RestElement') continue;
+    if (p.type !== 'Identifier') return 'required_or_unknown';
+    if (!onlyGuarded(ctor.value.body, p.name)) return 'required_or_unknown';
+  }
+  return 'optional';
+}
+function onlyGuarded(body, name) {
+  const isP = (n) => n && n.type === 'Identifier' && n.name === name;
+  const nullish = (n) => n && ((n.type === 'Literal' && n.value === null) || (n.type === 'Identifier' && n.name === 'undefined'));
+  let ok = true;
+  const walk = (n, chain) => {
+    if (!ok || !n || typeof n.type !== 'string') return;
+    if (isP(n)) {
+      const { node: parent, key } = chain.at(-1) || {};
+      const guarded = (parent && parent.type === 'LogicalExpression' && key === 'left')
+        || (parent && parent.type === 'UnaryExpression' && parent.operator === 'typeof')
+        || (parent && parent.type === 'BinaryExpression' && /^[!=]==?$/.test(parent.operator) && (nullish(parent.left) || nullish(parent.right)))
+        || (parent && parent.type === 'MemberExpression' && key === 'object' && parent.optional)
+        || (parent && parent.type === 'AssignmentExpression' && key === 'right' && parent.left.type === 'MemberExpression' && parent.left.object.type === 'ThisExpression')
+        || (parent && /^(?:IfStatement|ConditionalExpression)$/.test(parent.type) && key === 'test')
+        || chain.some((c) => (c.node.type === 'LogicalExpression' && c.node.operator === '&&' && isP(c.node.left) && c.key === 'right')
+          || (/^(?:IfStatement|ConditionalExpression)$/.test(c.node.type) && isP(c.node.test) && c.key === 'consequent'));
+      if (!guarded) ok = false;
+      return;
+    }
+    for (const [k, v] of Object.entries(n)) {
+      if (k === 'loc' || k === 'start' || k === 'end') continue;
+      if (n.type === 'MemberExpression' && k === 'property' && !n.computed) continue;
+      if (n.type === 'Property' && k === 'key' && !n.computed) continue;
+      const next = [...chain, { node: n, key: k }];
+      if (Array.isArray(v)) v.forEach((c) => walk(c, next));
+      else if (v && typeof v === 'object') walk(v, next);
+    }
+  };
+  walk(body, []);
+  return ok;
+}
+
+/**
+ * The call targets: [{ label, module, kind: 'method'|'function', export, method?, display, pieces,
+ * grounding: 'grounded'|'requested_new'|'unsupported', reason?, constructor_args? }].
+ * `api` is groundApi's result (with excerpt text); `request` names the calls. 10749 G2: only a grounded or
+ * requested-new target is offered to the model; an unsupported one is recorded with its reason.
  */
 function callTargets(request, api) {
   const rt = requestTargets(request);
@@ -157,13 +250,27 @@ function callTargets(request, api) {
     const candidates = definers.length ? definers : mods.filter((m) => targetPaths.has(m.path) || m.status !== 'known');
     for (const m of candidates) {
       const d = m.status === 'known' ? m.default : null;
-      const asMethod = d && d.kind === 'class' && (d.methods.includes(name) || (!definers.length && prefix && prefix === d.name));
+      const isDefiner = definers.includes(m);
+      const asMethod = d && d.kind === 'class' && (d.methods.includes(name) || (!isDefiner && prefix && prefix === d.name));
+      const asked = asksFor(request, name) && targetPaths.has(m.path);
+      let grounding = 'grounded'; let reason = null; let ctorArgs = null;
+      if (m.status !== 'known') {
+        if (/^no such file/.test(m.reason || '') && asked) grounding = 'requested_new';
+        else { grounding = 'unsupported'; reason = `${m.path}: exports unknown (${m.reason}); QB cannot tell how to call ${name}`; }
+      } else if (!isDefiner) {
+        if (asked && !asMethod) grounding = 'requested_new';
+        else { grounding = 'unsupported'; reason = `${m.path} does not define ${name} and the request does not ask to create or export it, so how to call it is ambiguous`; }
+      } else if (asMethod) {
+        ctorArgs = constructorArgs(m);
+        if (ctorArgs === 'required_or_unknown') { grounding = 'unsupported'; reason = `the constructor of ${d.name || 'the default class'} in ${m.path} may need arguments QB cannot supply (QB constructs with new and no arguments)`; }
+      }
+      const extra = { grounding, ...(reason ? { reason } : {}), ...(ctorArgs ? { constructor_args: ctorArgs } : {}) };
       if (asMethod) {
         const display = `${prefix || d.name || 'instance'}.${name}`;
-        push({ label: `${display} (${m.path})`, module: m.path, kind: 'method', export: 'default', method: name, display, pieces: literalPieces(excerptOf(m, name)) });
+        push({ label: `${display} (${m.path})`, module: m.path, kind: 'method', export: 'default', method: name, display, pieces: literalPieces(excerptOf(m, name)), ...extra });
       } else {
         const exp = d && d.kind === 'function' && d.name === name && !m.named.some((x) => x.name === name) ? 'default' : name;
-        push({ label: `${name} (${m.path})`, module: m.path, kind: 'function', export: exp, display: name, pieces: literalPieces(excerptOf(m, name)) });
+        push({ label: `${name} (${m.path})`, module: m.path, kind: 'function', export: exp, display: name, pieces: literalPieces(excerptOf(m, name)), ...extra });
       }
     }
   }
@@ -276,8 +383,10 @@ function factInput({ request, role, rid, targets, fragments, api }) {
     '',
     'CALL TARGETS (copy one exactly into "call"):',
     ...targets.map((t) => (t.kind === 'method'
-      ? `- ${JSON.stringify(t.label)}: instance method ${t.method} of the default export class of ${t.module}; QB constructs it with new and no arguments`
-      : `- ${JSON.stringify(t.label)}: function export ${t.export} of ${t.module}`)),
+      ? `- ${JSON.stringify(t.label)}: instance method ${t.method} of the default export class of ${t.module}; QB constructs it with new and no arguments (${t.constructor_args === 'none' ? 'it has no constructor parameters' : 'its constructor arguments are optional'})`
+      : t.grounding === 'requested_new'
+        ? `- ${JSON.stringify(t.label)}: requested NEW function export ${t.export} of ${t.module} (not in the source yet; the request asks for it)`
+        : `- ${JSON.stringify(t.label)}: function export ${t.export} of ${t.module}`)),
     '',
     fragments.length
       ? `ERROR MESSAGE FRAGMENTS (literal pieces of the errors the shown code throws, extracted by QB; "error_fragment" is a number from this list):\n${fragments.map((f, i) => `${i}: ${JSON.stringify(f.text)}`).join('\n')}`
@@ -305,21 +414,31 @@ async function callModel(messages, schema, timer) {
 const cut = (s) => { const b = Buffer.from(String(s), 'utf8'); return b.length <= RAW_LIMIT ? String(s) : `${b.subarray(0, RAW_LIMIT).toString('utf8')}…`; };
 
 /** One requirement's facts: a call and, if refused, ONE repair. */
-async function factsFor(ctx, role, rid, t) {
+/**
+ * One requirement's facts: a call and, if refused, ONE repair. `entry` is already in the run record
+ * (staged.facts) before the first call, so replies received survive a later timeout or cancellation
+ * (10749 G4); a call that fails records `entry.failed` and the error is rethrown.
+ */
+async function factsFor(ctx, role, rid, t, entry) {
   const schema = factSchema({ requirementId: rid, calls: ctx.targets.map((x) => x.label), fragments: ctx.fragments.length });
   let messages = [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: factInput({ ...ctx, role, rid }) }];
-  const attempts = [];
   for (const kind of ['fact', 'fact_repair']) {
-    t.check(`${kind === 'fact' ? 'fact call' : 'fact repair call'} for ${rid}`);
-    const reply = await callModel(messages, schema, t.timer(kind, 1, { requirement_id: rid }));
+    let reply;
+    try {
+      t.check(`${kind === 'fact' ? 'fact call' : 'fact repair call'} for ${rid}`);
+      reply = await callModel(messages, schema, t.timer(kind, 1, { requirement_id: rid }));
+    } catch (e) {
+      entry.failed = { attempt: kind, kind: e && e.code === 'DEADLINE' ? (e.kind === 'l1' ? 'l1_budget' : e.kind === 'call' ? 'call_timeout' : 'cancelled') : 'error', message: String((e && e.message) || e) };
+      throw e;
+    }
     const { value, errors } = t.validate(() => (reply.text.trim() ? readFacts(reply.text, schema, ctx.fragments) : { value: null, errors: ['empty reply'] }));
     t.outcome(errors.length ? 'invalid' : 'ok');
-    attempts.push({ kind, model: reply.model, raw: cut(reply.text), raw_bytes: Buffer.byteLength(reply.text), errors });
-    if (!errors.length) return { requirement_id: rid, passage_id: role.passage_id, role: role.role, attempts, cases: value.cases };
+    entry.attempts.push({ kind, model: reply.model, raw: cut(reply.text), raw_bytes: Buffer.byteLength(reply.text), errors });
+    if (!errors.length) { entry.cases = value.cases; return entry; }
     messages = [...messages, { role: 'assistant', content: reply.text || '(empty)' },
       { role: 'user', content: `QB refused your reply:\n${errors.map((e) => `- ${e}`).join('\n')}\n\nReply again with ONE JSON object that matches the required schema exactly, for REQUIREMENT ${rid}.` }];
   }
-  return { requirement_id: rid, passage_id: role.passage_id, role: role.role, attempts, cases: null };
+  return entry;
 }
 
 // ── assembly ────────────────────────────────────────────────────────────────
@@ -336,11 +455,19 @@ function assemble(request, roles, facts, targets, fragments) {
   const factsOf = new Map(facts.map((f) => [f.passage_id, f]));
   const requirements = []; const acs = []; const checks = []; const constraints = []; const policy = [];
   const used = new Set();
+  const protectedPaths = [];
   const errors = [];
   const seen = new Map();   // call + args → { result, ac, check, rid } (10749: one criterion per distinct case)
   roles.forEach((r, i) => {
     const rid = `R-${i + 1}`;
-    requirements.push({ id: rid, passage_ids: [r.passage_id], quote: r.text, ...(r.role === 'context' ? { disposition: 'context', reason: 'location only' } : {}) });
+    requirements.push({ id: rid, passage_ids: [r.passage_id], quote: r.text, ...(r.role === 'context' ? { disposition: 'context', reason: 'location only' } : {}),
+      ...(r.role === 'protect' ? { disposition: 'context', reason: `do-not-change file ${r.file}: enforced by scope.protected_paths` } : {}) });
+    if (r.role === 'protect') {
+      if (!protectedPaths.includes(r.file)) protectedPaths.push(r.file);
+      policy.push({ constraint: constraints.length, enforced_by: [{ kind: 'protected_paths', ref: r.file }] });
+      constraints.push(`Do not change ${r.file} (${r.passage_id} ${JSON.stringify(r.text)}).`);
+      return;
+    }
     if (r.role === 'adds_tests') {
       acs.push({ id: `AC-${acs.length + 1}`, criterion: `New tests are added in ${r.file} and they pass (requested tests: decided from the test run, for human review).`,
         kind: 'behavioral', requirement_ids: [rid], adds_tests: { files: [r.file] } });
@@ -381,8 +508,8 @@ function assemble(request, roles, facts, targets, fragments) {
       }
     }
   });
-  const rt = requestTargets(request);
-  const allowed = [...new Set([...rt.targets.map((t) => t.path), ...[...used].filter((m) => !rt.ignored.some((x) => x.path === m && x.why !== 'mentioned'))])];
+  // 10749 G1: only what the request itself targets may change; a module a check merely calls stays read-only.
+  const allowed = [...new Set(requestTargets(request).targets.map((t) => t.path))];
   const behaviour = acs.filter((a) => !a.adds_tests).map((a) => a.criterion);
   if (errors.length) return { errors, raw: null };
   return { errors, raw: {
@@ -390,12 +517,12 @@ function assemble(request, roles, facts, targets, fragments) {
     required_behavior: behaviour.length ? behaviour : acs.map((a) => a.criterion),
     constraints, constraint_policy: policy,
     acceptance_criteria: acs, requirements, checks,
-    scope: { allowed_changes: allowed, protected_paths: [] },
+    scope: { allowed_changes: allowed, protected_paths: protectedPaths },
     verification_plan: [
       'Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).',
       ...(acs.some((a) => a.adds_tests) ? ['Run the requested test files: each must be in the change and pass (human review decides whether they test the change).'] : []),
     ],
-    relevant_context: allowed,
+    relevant_context: [...new Set([...allowed, ...used])],
     ambiguity_flags: [], clarifying_question: null, proposed_defaults: [],
   } };
 }
@@ -420,10 +547,13 @@ function checkFor(t, c, frag, id, acId) {
  */
 async function compileStaged(request, g, t) {
   const roles = passageRoles(request);
-  const targets = callTargets(request, g.api);
+  const all = callTargets(request, g.api);
+  const targets = all.filter((x) => x.grounding !== 'unsupported');
   const fragments = fragmentList(targets);
-  const staged = { format: FORMAT, roles: roles.map((r) => ({ passage_id: r.passage_id, role: r.role, ...(r.file ? { file: r.file } : {}) })),
-    call_targets: targets.map((x) => ({ label: x.label, module: x.module, kind: x.kind, export: x.export, ...(x.method ? { method: x.method } : {}) })),
+  const rec = (x) => ({ label: x.label, module: x.module, kind: x.kind, export: x.export, ...(x.method ? { method: x.method } : {}), grounding: x.grounding,
+    ...(x.constructor_args ? { constructor_args: x.constructor_args } : {}), ...(x.reason ? { reason: x.reason } : {}) });
+  const staged = { format: FORMAT, roles: roles.map((r) => ({ passage_id: r.passage_id, role: r.role, ...(r.file ? { file: r.file } : {}), ...(r.reason ? { reason: r.reason } : {}) })),
+    call_targets: targets.map(rec), unsupported_targets: all.filter((x) => x.grounding === 'unsupported').map(rec),
     fragments: targets.map((x) => ({ call: x.label, pieces: x.pieces })), fragment_list: fragments.map((f) => f.text), facts: [] };
   const done = (state, extra) => ({ format: 'qb-intent-handoff/1', state, round: 1, history: [], survey: g.grounding, staged, ...extra });
 
@@ -431,13 +561,21 @@ async function compileStaged(request, g, t) {
   const amb = detectAmbiguity(request, []);
   const unclear = requestTargets(request).ambiguous[0];
   if (amb || unclear) return done('invalid', { contract: null, errors: [`the staged L1 prototype does not ask clarification questions: ${amb ? amb.clarifying_question : unclear.reason}`] });
+  const unsupported = roles.filter((r) => r.role === 'unsupported');
+  if (unsupported.length) return done('invalid', { contract: null, errors: unsupported.map((r) => `unsupported by the staged prototype: ${r.reason}`) });
   const asks = roles.map((r, i) => ({ r, rid: `R-${i + 1}` })).filter((x) => x.r.role === 'change' || x.r.role === 'keep');
-  if (asks.length && !targets.length) return done('invalid', { contract: null, errors: ['the staged L1 prototype needs a function or method call named in the request (e.g. `name(` or `Class.method(`); none was found'] });
+  if (asks.length && !targets.length) {
+    return done('invalid', { contract: null, errors: staged.unsupported_targets.length
+      ? staged.unsupported_targets.map((x) => `unsupported call shape ${x.label}: ${x.reason}`)
+      : ['the staged L1 prototype needs a function or method call named in the request (e.g. `name(` or `Class.method(`); none was found'] });
+  }
 
   const ctx = { request, targets, fragments, api: g.api };
   for (const { r, rid } of asks) {
-    const f = await factsFor(ctx, r, rid, t);
-    staged.facts.push(f);
+    const f = { requirement_id: rid, passage_id: r.passage_id, role: r.role, attempts: [], cases: null };
+    staged.facts.push(f);   // 10749 G4: in the record before the call
+    try { await factsFor(ctx, r, rid, t, f); }
+    catch (e) { if (e && typeof e === 'object') e.staged = staged; throw e; }
     if (!f.cases) {
       return done('invalid', { contract: null, errors: [`${rid} (${r.passage_id}): the model's facts were refused after one repair: ${f.attempts.at(-1).errors.join('; ')}`] });
     }
