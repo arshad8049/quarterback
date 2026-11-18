@@ -1,0 +1,40 @@
+~/qb-velora % qb 'Show durations under one minute as seconds only, for example 30000 ms as "30s" instead of "0m 30s". Durations of one minute or more keep the current format, for example 90000 ms stays "1m 30s".' --repo velora-sample --agent claude-code --contract-file velora-duration-contract.json --deadline 20
+
+════════════════════════════════════════════════════════════════════════
+  QUARTERBACK
+  Request: "Show durations under one minute as seconds only, for example 30000 ms as "30s" instead of "0m 30s". Durations of one minute or more keep the current format, for example 90000 ms stays "1m 30s"."
+  Repo:    ~/qb-velora/velora-sample
+  Agent:   claude-code  (sandboxed: docs/security/agent-sandbox.md)
+════════════════════════════════════════════════════════════════════════
+
+  [RUN]  0e9eede7-be7f-41a9-a024-91e431f00f88
+  [L1]   Intent compiler...
+  [L1]   Using the reviewed contract file velora-duration-contract.json (sha256 7fcb8c91120b)
+  [L1]   Contract ready  (7ms)
+     Goal: Show durations under one minute as seconds only (30000 ms as "30s", not "0m 30s"); durations of one minute or more keep the current "<m>m <s>s" format.
+     ACs:  3
+  [L1]   Oracle approved (contract-file); frozen as d3832fb539fb
+  [L2]   Context engine...
+  [L2]   Context ready  (30238ms)
+     2 files, 1 symbols
+  [L3]   L3 Agent...
+  [L3]   Execution done  (105756ms)  status=completed
+     src/duration.js                        +2 -1
+     test/duration.test.js                  +16 -0
+  [L4]   Verification...
+  [L4]   Verdict: ✓ PASS  (67ms)
+     ✓ [AC-1] src/duration.js still exports formatDuration as a functi
+     ✓ [AC-2] under one minute, seconds only: formatDuration(30000) re
+     ✓ [AC-3] one minute or more keeps the current format: formatDurat
+  [L5]   Memory updated  (1 run(s), 2 file(s) tracked)
+
+════════════════════════════════════════════════════════════════════════
+  RESULT: ✓ PASS
+  Attempts: 1 / 3
+  Total time: 136.3s
+  Run:      0e9eede7-be7f-41a9-a024-91e431f00f88  outcome=VERIFIED
+
+  All 3 acceptance criteria met.
+  2 file(s) changed.
+
+════════════════════════════════════════════════════════════════════════
