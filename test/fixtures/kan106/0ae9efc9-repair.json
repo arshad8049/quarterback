@@ -1,0 +1,312 @@
+{
+  "goal": "Modify Serializer.asNumber() to throw a number conversion error for empty strings or whitespace-only strings, while preserving the behavior for numeric 0, string '0', and valid numeric strings. Add tests in test/asNumber.test.js.",
+  "required_behavior": [
+    "Serializer.asNumber() throws a number conversion error for an empty string.",
+    "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+    "Serializer.asNumber() returns 0 for numeric 0.",
+    "Serializer.asNumber() returns 0 for string '0'.",
+    "Serializer.asNumber() returns the correct number for valid numeric strings.",
+    "test/asNumber.test.js has new node:test cases for Serializer.asNumber() behavior, and they pass."
+  ],
+  "constraints": [
+    "The existing behavior for numeric 0, string '0', and valid numeric strings must not change.",
+    "No other tests should regress as a result of this change."
+  ],
+  "scope": {
+    "allowed_changes": [
+      "lib/serializer.js",
+      "test/asNumber.test.js"
+    ],
+    "protected_paths": [
+      "package.json"
+    ]
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "protected_paths",
+          "ref": "package.json"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-6"
+        }
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Serializer.asNumber() throws a number conversion error for an empty string.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Serializer.asNumber() returns 0 for numeric 0.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Serializer.asNumber() returns 0 for string '0'.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Serializer.asNumber() returns the correct number for valid numeric strings.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "criterion": "test/asNumber.test.js has new node:test cases for Serializer.asNumber() behavior, and they pass.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    },
+    {
+      "id": "AC-7",
+      "criterion": "Existing tests still pass.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [],
+      "preserves": {
+        "tests": [
+          "test/additionalProperties.test.js",
+          "test/allof.test.js",
+          "test/any.test.js",
+          "test/anyof.test.js",
+          "test/array.test.js",
+          "test/basic.test.js",
+          "test/bigint.test.js",
+          "test/clean-cache.test.js",
+          "test/code-generation-fallbacks.test.js",
+          "test/compile-validators.test.js",
+          "test/const.test.js",
+          "test/date.test.js",
+          "test/debug-mode.test.js",
+          "test/defaults.test.js",
+          "test/deopt.test.js",
+          "test/enum.test.js",
+          "test/fix-604.test.js",
+          "test/if-then-else.test.js",
+          "test/inferType.test.js",
+          "test/infinity.test.js",
+          "test/integer.test.js",
+          "test/invalidSchema.test.js",
+          "test/issue-479.test.js",
+          "test/issue-793.test.js",
+          "test/issue-794.test.js",
+          "test/issue-836.test.js",
+          "test/json-add-comma.test.js",
+          "test/json-schema-test-suite/draft4.test.js",
+          "test/json-schema-test-suite/draft6.test.js",
+          "test/json-schema-test-suite/draft7.test.js",
+          "test/missing-values.test.js",
+          "test/multi-type-serializer.test.js",
+          "test/nestedObjects.test.js",
+          "test/nullable.test.js",
+          "test/oneof.test.js",
+          "test/optional-property-prefix.test.js",
+          "test/patternProperties.test.js",
+          "test/primitive-array-prototype.test.js",
+          "test/property-names.test.js",
+          "test/recursion.test.js",
+          "test/ref.test.js",
+          "test/regex.test.js",
+          "test/required.test.js",
+          "test/requiresAjv.test.js",
+          "test/sanitize.test.js",
+          "test/sanitize2.test.js",
+          "test/sanitize3.test.js",
+          "test/sanitize4.test.js",
+          "test/sanitize5.test.js",
+          "test/sanitize6.test.js",
+          "test/sanitize7.test.js",
+          "test/schema-depth.test.js",
+          "test/side-effect.test.js",
+          "test/standalone-mode.test.js",
+          "test/strict-schema.test.js",
+          "test/string-array-cutoff.test.js",
+          "test/string.test.js",
+          "test/surrogate.test.js",
+          "test/toJSON.test.js",
+          "test/typebox.test.js",
+          "test/typesArray.test.js",
+          "test/unknownFormats.test.js",
+          "test/webpack.test.js"
+        ]
+      }
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ]
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ]
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ]
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ]
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ]
+    },
+    {
+      "id": "R-6",
+      "passage_ids": [
+        "P6"
+      ]
+    }
+  ],
+  "proposed_defaults": [],
+  "verification_plan": [
+    "Modify Serializer.asNumber() in lib/serializer.js to throw a number conversion error for empty strings or whitespace-only strings.",
+    "Add new test cases in test/asNumber.test.js to verify the new behavior.",
+    "Run all existing tests to ensure no regressions."
+  ],
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_throws",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          ""
+        ],
+        "message_includes": "number conversion error"
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_throws",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "   "
+        ],
+        "message_includes": "number conversion error"
+      },
+      "plan_item": 1
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          0
+        ],
+        "expect": 0
+      },
+      "plan_item": 2
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "0"
+        ],
+        "expect": 0
+      },
+      "plan_item": 3
+    },
+    {
+      "id": "CHK-5",
+      "ac_id": "AC-5",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "123"
+        ],
+        "expect": 123
+      },
+      "plan_item": 4
+    },
+    {
+      "id": "CHK-6",
+      "ac_id": "AC-7",
+      "adapter": "module_exports",
+      "params": {
+        "module": "test/asNumber.test.js",
+        "export": "default",
+        "type": "function"
+      },
+      "plan_item": 5
+    }
+  ],
+  "relevant_context": [
+    "lib/serializer.js",
+    "test/asNumber.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null
+}

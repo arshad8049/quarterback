@@ -1,0 +1,56 @@
+{
+  "label": "generated failure (owner smoke 0ae9efc9, qwen2.5-coder:14b): diagnostic only, never a reference answer",
+  "run": "0ae9efc9-8974-4a3b-a2aa-58c43efff929",
+  "qb_revision": "ee87b4a65f63612ba66dcb6feb02ba89e35b0c2b",
+  "target": {
+    "base_sha": "2c71f484b4bdf6b864655cdd92b21f3d023c762d",
+    "lib/serializer.js sha256": "ae9d3d2fdfcfea0477c3802d2e80ea2c15126aad073629d3ef8711ee36e80c5e"
+  },
+  "model": "qwen2.5-coder:14b",
+  "profile": "qwen-14b-experimental",
+  "artifact_sha256": "930ca00b8c09122672e76f70a278255018958f8282cbdda86b807b14b98e3b76",
+  "syntax": {
+    "diagnostic": "Expected ',' or '}' after property value in JSON at position 4294",
+    "raw_bytes": 6196
+  },
+  "repair_errors": [
+    "AC-7 preserves must be { \"tests\": [<repository-relative test files>] } (1\u201332 plain paths)",
+    "constraint 0 (\"The existing behavior for numeric 0, string '0', and valid numeric strings must not change.\") is about behaviour, but protected_paths only shows where edits are permitted, not that the behaviour is kept: enforce it with a check that exercises it, or mark it advisory",
+    "AC-7 traces to no requirement (unsupported addition)",
+    "requirement R-1 \"In lib/serializer.js,\" is not covered by any acceptance criterion"
+  ],
+  "repair_later_errors": [
+    "AC-7 traces to no requirement (unsupported addition)",
+    "requirement R-1 \"In lib/serializer.js,\" is not covered by any acceptance criterion"
+  ],
+  "survey_snippet_files": [
+    "test/asNumber.test.js",
+    "test/string-array-cutoff.test.js",
+    "test/string.test.js",
+    "test/multi-type-serializer.test.js"
+  ],
+  "survey_digest": "ae19f7c88aaa510bc03475c4cdf9d28921854819df2541fc7db18b23d394b6f9",
+  "timings": {
+    "initial_call_ms": 219390,
+    "repair_call_ms": [
+      177172
+    ],
+    "l1_ms": 396655,
+    "calls": [
+      {
+        "kind": "initial",
+        "ms": 219390,
+        "outcome": "syntax",
+        "limit_ms": 240000,
+        "load_ms": 20370
+      },
+      {
+        "kind": "repair",
+        "ms": 177172,
+        "outcome": "invalid",
+        "limit_ms": 200594,
+        "load_ms": 19
+      }
+    ]
+  }
+}
