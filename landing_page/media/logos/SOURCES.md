@@ -39,3 +39,8 @@ Every planned item says "planned" and links to the support matrix. None of these
 - `openai.svg`: the OpenAI mark, an unmodified copy of the owner's `openai_codex.svg`, sha256 `af4fb01bc6a90a2bf8eae8ef2f377ae8ed8a2bf9b269660eff0f61609768b6ad`. Shown with the text "Codex".
 - `gemini.png`: the Gemini sparkle. The owner's `Google_Gemini_icon_2025.svg` is actually a 960x960 WebP image; it was converted to PNG and scaled to 96 px. sha256 `a9d047a26ef65c72f9d881f04fda88f7d441b2f79061c4f7a05853d6d498d7ce`. Shown with the text "Gemini".
 - **Not used:** the owner's `Copilot-Logo.png` is the **Microsoft Copilot** app logo, not GitHub Copilot, so "GitHub Copilot" stays as text.
+
+**Currently supported group (2026-11-19).**
+- `linux-tux.svg`: Tux, the Linux mascot, by Larry Ewing (lewing@isc.tamu.edu), made with The GIMP; SVG from https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg, unmodified. sha256 `cd503ad510e16ff2869f959cf57b892bb2175a6874ff696b495bd94fd7db9743`. Terms: "Permission to use and/or modify this image is granted provided you acknowledge me lewing@isc.tamu.edu and The GIMP if someone asks." Shown with the text "Linux".
+- `nodejs-icon.svg`: the Node.js hexagon icon from the OpenJS Foundation's Node.js site, https://nodejs.org/static/logos/jsIconGreen.svg (see https://nodejs.org/en/about/branding), unmodified. sha256 `3c88b1a2261132b11d242fe8831525be051450e1149c965d5a5f1ded63e9b50d`. Shown with the text "node:test" (Node.js's built-in test runner has no logo of its own).
+- **Owner rule:** every item in the strip is a logo or a mark-and-name lockup.
