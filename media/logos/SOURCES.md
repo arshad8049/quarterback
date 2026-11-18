@@ -21,3 +21,16 @@ Kit hashes (SHA-256), for the originals kept in `landing_page/assets/logos/`:
 - `Anthropic-press-kit.zip`: `c68ac92df86c825f95177e24016fcc9a8863a3fd4ca344fe6f0700b2c1e07151`
 - `Docker-Logos-1.zip`: `590790ecdaaa577e55ce3dcad3a6c67a04ca7f8cc53a4a2fa21ac69d6767d476`
 - `GitHub_Logos.zip`: `e2a67d6cc51d990a52c46c1cf6bcab688db4830982174bca50e0be7a5c2f3194`
+
+## Revision 6 (2026-11-19, owner): coding agents, planned adapters
+
+| File | Owner | Source | Item used | sha256 | Rules |
+| --- | --- | --- | --- | --- | --- |
+| `cursor.svg` (2523 B) | Anysphere, Inc. (Cursor) | https://cursor.com/brand, kit https://ptht05hbb1ssoooe.public.blob.vercel-storage.com/assets/brand/cursor-brand-assets.zip (kit sha256 97488a7751914e60f9ff532bc33810cdeaebdddc017548abe6ca2bc29bbc3928) | `General Logos/Lockup Horizontal/SVG/LOCKUP_HORIZONTAL_2D_LIGHT.svg`, unmodified | `f7a384d3d6e1875196aa770d2c8df58ceb79b1219e97b86e522dee83d3d9c6ac` | "Refer to us as Cursor." No other rules stated on the page. |
+
+**Not used, and why** (checked 2026-11-19; shown as text until resolved):
+- **GitHub Copilot.** https://brand.github.com/brand-identity/copilot says Copilot no longer has a standalone logo, and https://brand.github.com/foundations/logo forbids use "without the express written permission of GitHub, Inc." and implying affiliation.
+- **OpenAI Codex.** https://openai.com/brand returned 403 to an automated fetch; no official file was obtained.
+- **Gemini.** Google's brand resources for Gemini require a Partner Marketing Hub account (sign-in wall).
+
+Every planned item says "planned" and links to the support matrix. None of these companies endorses Quarterback.

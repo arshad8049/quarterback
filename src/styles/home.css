@@ -40,7 +40,7 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 .qbh-eyebrow { margin: 0 0 16px; font-size: 14px; font-weight: 500; color: var(--muted); }
 .qbh-sub { margin: 20px 0 0; max-width: 58ch; color: var(--text-2); }
 .qbh-dim { color: var(--muted); }
-.qbh main a:not(.qbh-btn):not(.qbh-brand):not(.qbh-link) { color: var(--orange-text); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.qbh main a:not(.qbh-btn):not(.qbh-brand):not(.qbh-link):not(.qbh-logo-link) { color: var(--orange-text); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .qbh :not(pre) > code { font-size: 0.86em; padding: 1px 5px; border-radius: 4px; background: var(--paper-2); }
 
 /* ── Buttons ── */
@@ -183,8 +183,12 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
    vertically centred below the header, and scrolling through the track moves the active step. */
 .qbh-story.is-staged { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; height: calc(var(--qbh-n, 4) * 75svh); }
 .qbh-story.is-staged .qbh-steps, .qbh-story.is-staged .qbh-stage { position: sticky; top: var(--header); height: calc(100svh - var(--header)); display: flex; flex-direction: column; justify-content: center; }
-.qbh-story.is-staged .qbh-steps { gap: 28px; }
+.qbh-story.is-staged .qbh-steps { gap: 20px; }
 .qbh-story.is-staged .qbh-step { gap: 0; }
+.qbh-story.is-staged .qbh-step-num { margin-bottom: 4px; }
+.qbh-story.is-staged .qbh-step-text p:last-child { margin-top: 6px; }
+/* Short windows: only the active step keeps its description, so the pinned list fits. */
+.qbh-story.is-staged.is-compact .qbh-step:not(.is-active) .qbh-step-text p:last-child { display: none; }
 .qbh-story.is-staged .qbh-step-text, .qbh-story.is-staged .qbh-step-text p:last-child { color: #5c625f; transition: color 200ms ease; }
 .qbh-story.is-staged .qbh-step.is-active .qbh-step-text { color: var(--text); }
 .qbh-story.is-staged .qbh-step.is-active .qbh-step-text p:last-child { color: var(--text-2); }
@@ -301,3 +305,6 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 
 /* Logo strip: a "planned" tag after a text logo (revision 6) */
 .qbh-logo-plan { margin-left: 6px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); vertical-align: middle; }
+.qbh-logos a.qbh-logo-link, .qbh-logos a.qbh-logo-link:hover { display: inline-flex; align-items: center; color: inherit; text-decoration: none; }
+.qbh-logo-link:hover .qbh-logo-plan, .qbh-logo-link:focus-visible .qbh-logo-plan { border-color: var(--text-2); color: var(--text); }
+.qbh-logo-link:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; border-radius: 4px; }

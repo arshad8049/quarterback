@@ -232,7 +232,7 @@
     const content = (el) => Array.from(el.children).reduce((h, c) => h + c.offsetHeight, 0);
     const fits = () => {
       const room = window.innerHeight - headerH() - 48;
-      return holder.offsetHeight + 60 <= room && content(list) + 28 * (steps.length - 1) <= room;
+      return holder.offsetHeight + 60 <= room && content(list) + 20 * (steps.length - 1) <= room;
     };
     const enter = () => {
       staged = true; active = -1;
@@ -245,14 +245,18 @@
     const leave = () => {
       staged = false; active = -1;
       window.removeEventListener('scroll', onScroll);
-      story.classList.remove('is-staged'); stage.hidden = true;
+      story.classList.remove('is-staged', 'is-compact'); stage.hidden = true;
       panels.forEach((p, k) => { p.classList.remove('is-active'); steps[k].appendChild(p); });
       steps.forEach((st) => st.classList.remove('is-active'));
     };
     const decide = () => {
-      const want = wide.matches && !reduced();
+      const want = wide.matches;
       if (want && !staged) enter();
-      if (staged && (!want || !fits())) leave();
+      if (staged) {
+        story.classList.remove('is-compact');
+        if (!fits()) story.classList.add('is-compact');
+        if (!want || !fits()) leave();
+      }
       if (staged) compute();
     };
     buttons.forEach((b, i) => b.addEventListener('click', () => {
