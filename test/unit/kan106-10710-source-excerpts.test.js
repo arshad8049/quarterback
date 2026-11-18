@@ -102,7 +102,7 @@ describe('10710 (1): bounded verbatim source excerpts in BOTH L1 inputs, through
     const { EXCERPT_MAX_LINES, MAX_BYTES } = grounding();
     const long = `module.exports = class Big {\n  asNumber (i) {\n${Array.from({ length: EXCERPT_MAX_LINES + 40 }, (_, k) => `    i = i + ${k}`).join('\n')}\n    return i\n  }\n}\n`;
     const r = await produce([THROWS], { files: repoFiles(long) });
-    const p = r.prompts[0];
+    const p = r.prompts[0].slice(r.prompts[0].indexOf('SOURCE EXCERPTS'));   // the survey's own 2,000-byte snippet is separate
     assert.match(p, new RegExp(`lib/serializer\\.js lines 2-${EXCERPT_MAX_LINES + 1} \\(asNumber\\), sha256 [0-9a-f]{64}, truncated: yes \\(the block ends at line ${EXCERPT_MAX_LINES + 44}\\)`));
     assert.ok(p.includes(`    i = i + ${EXCERPT_MAX_LINES - 2}`));
     assert.ok(!p.includes(`    i = i + ${EXCERPT_MAX_LINES - 1}\n`), 'nothing past the cap');

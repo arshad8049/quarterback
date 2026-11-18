@@ -21,7 +21,7 @@ const { modelCall } = require('../lib/budget');
 const { validateChecks } = require('../verify/checks/registry');
 const { splitPassages, passageListing, resolveInRequest } = require('./passages');
 const { requestTargets } = require('./request-targets');
-const { groundingExcerpt } = require('./api-grounding');
+const { groundingExcerpt, contractGrounding } = require('./api-grounding');
 
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'), 'utf8');
 
@@ -195,7 +195,7 @@ async function draftContract(request, userContent, clar, timer = null, apiGround
   if (result && !result.clarifying_question) {
     if (clar.resolved.length) result.clarifications = clar.resolved;
     else delete result.clarifications;
-    if (apiGrounding) result.api_grounding = apiGrounding;
+    if (apiGrounding) result.api_grounding = contractGrounding(apiGrounding);   // provenance only, no source text (10710)
     else delete result.api_grounding;
   }
   return result;
