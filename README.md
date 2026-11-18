@@ -60,7 +60,7 @@ The checkout was not touched; the change came back as a patch to read and apply.
 
 | | |
 |---|---|
-| Coding agent | **Claude Code** only, run in Quarterback's Docker sandbox. Cursor, Codex and Gemini are not supported. |
+| Coding agent | **Claude Code** only, run in Quarterback's Docker sandbox. Cursor, Codex, Gemini and GitHub Copilot are not supported yet. |
 | Repositories | JavaScript / Node.js, tested with **node:test**, with an npm lockfile. Agent runs on repositories using another test runner (Jest, Mocha, Vitest, …) are refused before any model call. |
 | Platform | **Ubuntu 24.04 LTS on x86_64 with Docker Engine and 16 GB RAM** is the validated profile. macOS with Docker Desktop: limited successful runs; not a validated supported environment. Windows is not supported. |
 | Also needed | Node 20+, git, [Ollama](https://ollama.com) with `deepseek-r1:7b`, and a Claude subscription or Anthropic API key. |

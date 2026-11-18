@@ -11,7 +11,7 @@ Agents are adapters in a versioned registry, `agent/adapters.js`, interface **`q
 | `claude-code` | **supported** | Runs the Claude Code CLI in the QB sandbox. Tests and checks run there too, and the result comes back as a patch (`qb patch`). The only adapter that can end in `pass`. | Docker, `qb auth login` or `ANTHROPIC_API_KEY` |
 | `manual` | builtin | Prints the briefing; you run your own agent. There is no sandbox evidence, so a manual run ends `unresolved`, never `pass`. | — |
 | `dry-run` | builtin (default) | Compiles the contract and briefing only. Nothing is changed or verified. | — |
-| Cursor, Codex, Gemini | **not supported yet** (planned) | `qb` exits 2 with "not supported yet". | — |
+| Cursor, Codex, Gemini, GitHub Copilot | **not supported yet** (planned) | `qb` exits 2: "not supported yet" for `cursor`, `codex` and `gemini`. GitHub Copilot has no registry entry yet, so `--agent copilot` exits 2 as an unknown agent. | — |
 
 **Interface `qb-agent-adapter/1`:**
 - **In:** an approved contract (QB-08, QB-13), the context package, the repository path and the run options.
@@ -25,7 +25,7 @@ A change to this contract is a new interface version.
 | | Status |
 |---|---|
 | Node | **20 or newer** (`engines`). CI runs Node 20, 22 and 24. The agent image uses Node 24. |
-| OS | **Linux x86_64 + Docker Engine: validated.** macOS + Docker Desktop: limited successful runs; not a validated supported environment. Windows is not supported. |
+| OS | **Linux x86_64 + Docker Engine: validated** (the recorded walkthrough ran on Ubuntu 24.04 LTS, see [Validated commits](#validated-commits)). macOS + Docker Desktop: limited successful runs; not a validated supported environment. Windows is not supported. |
 | Memory | **At least 16 GB RAM** for `--agent claude-code`: a run is admitted only with about 11.1 GiB free (per-run peak plus a 2 GiB reserve, `lib/sandbox/admission.js`). `qb doctor` checks it. QB unloads the local model from a local Ollama before the sandbox starts, so the model's memory (about 5.6 GiB for `deepseek-r1:7b` on CPU) is not needed on top. |
 | git | Required. With `--agent claude-code` the target repository must be a git work tree (the sandbox captures changes as git trees). |
 | Local model | An Ollama server (`QB_OLLAMA_URL`, default `http://127.0.0.1:11434`) with `QB_MODEL` (default `deepseek-r1:7b`). Used by the intent, context and judge stages. |
@@ -39,6 +39,7 @@ A change to this contract is a new interface version.
 | Other runners (Jest, Mocha, Vitest, …) | Detected (or read from `.quarterback.json`) and named, never executed. **Every agent run on such a repository is refused before any model call** (exit 2, the runner named), because no task there could pass. `--agent dry-run` is the one exception: it only plans and verifies nothing. `qb doctor --repo` shows `✗ test-runner` for an agent run and `!` for dry-run. An invalid `.quarterback.json` is refused the same way. |
 | Dependencies | `package-lock.json` (lockfile v2/v3) from the npm registry. `link:`, `file:` and `git` dependencies and root lifecycle scripts are refused by the sandbox. |
 | Executable checks | Registry `qb-checks/2` (`module_exports`, `call_returns`, `call_throws`, `call_sequence`). |
+| Contracts | A contract a person wrote or reviewed, passed with `--contract-file`, is the recommended path. Drafting a contract from the request with the local model is not yet reliable (KAN-106). |
 
 ## Options validated before a run
 
@@ -57,7 +58,8 @@ A commit is listed here only after the fresh-machine onboarding walkthrough ([on
 ## Release, licence and support
 
 - **Release:** `0.1.0`, pre-release. Install the latest `main` from the repository and note its commit ID (`docs/onboarding.md` step 2); QB is not published to npm. There are no version tags yet.
-- **Support:** supervised beta (Phase 5), best effort, no SLA. The supported surface is this page.
+- **Support:** supervised evaluation (pre-release; not yet qualified as a beta, KAN-44), best effort, no SLA. The supported surface is this page.
+- **Private code:** not without the evaluator's consent and a review of the [data flows](privacy/data-flows.md).
 - **Licence: MIT** ([LICENSE](../LICENSE)), copyright 2026 Arshad Ahmed Shaik. Owner decision recorded on 2026-10-12 (release gate from the QB-31 review). Anyone may use, copy, modify and redistribute QB, including commercially, provided the copyright and permission notice are kept. It comes with no warranty.
   - Every `package.json` declares `"license": "MIT"`. They also keep `"private": true`: QB is not published to npm, and the flag prevents an accidental publish. The licence is not a distribution channel.
   - The licence covers QB's own code. It is separate from the coding agent's terms (a Claude subscription or API key) and from the licences of the repositories QB benchmarks, and it grants nothing in either.
