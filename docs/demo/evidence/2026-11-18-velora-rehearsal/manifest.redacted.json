@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "run_id": "0e9eede7-be7f-41a9-a024-91e431f00f88",
+  "kind": "qb",
+  "qb_revision": "2f01d93df05d819d71d38515082a60e534156769",
+  "request": "Show durations under one minute as seconds only, for example 30000 ms as \"30s\" instead of \"0m 30s\". Durations of one minute or more keep the current format, for example 90000 ms stays \"1m 30s\".",
+  "repo": {
+    "path": "~/qb-velora/velora-sample",
+    "identity": "7dc930be4fde8ec2058f5e357cbbde6df235eee0c21a6b0a5f5a022c47e3103f",
+    "base_sha": "14fcfe4efa8f965ae2fb08b44fe0ef2a3869cf50"
+  },
+  "agent": {
+    "type": "claude-code",
+    "version": "claude-code@2.1.288 (qb-sandbox-agent:c-4b166ca34296ddda)",
+    "isolation": "sandbox"
+  },
+  "models": {
+    "intent": "deepseek-r1:7b",
+    "context": "deepseek-r1:7b",
+    "judge": "deepseek-r1:7b"
+  },
+  "config": {
+    "repo": "velora-sample",
+    "agent": "claude-code",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": true,
+    "llmVerify": true,
+    "contractFile": "velora-duration-contract.json",
+    "deadline": "20"
+  },
+  "config_hash": "d5bf1841cd062c6b7d9f387a8ef37b292ab5ccfee8004f10dce45fc9384a3f01",
+  "contract_hash": "47584b147c11c86f7ad1a8aa7c35011cb3c2569aa971aded6376d5a060b758da",
+  "sandbox_policy": null,
+  "pid": 6200,
+  "started_at": "2026-11-18T21:35:36.546Z",
+  "finished_at": "2026-11-18T21:37:52.691Z",
+  "outcome": "VERIFIED",
+  "legacy_verdict": "pass",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-18T21:36:06.828Z",
+      "finished_at": "2026-11-18T21:37:52.667Z",
+      "base_sha": "14fcfe4efa8f965ae2fb08b44fe0ef2a3869cf50",
+      "base_tree": "fc5242bdfa0eae75a42c5868c6af9abe390fd1ee",
+      "candidate_tree": "08ba6add14e7f86fdac6e569bad489643a8e3a6d",
+      "patch_sha256": "2eb12078a003c0e4a8aed795d6d6bf89e3407a3ae9a52ffd6f0f7e47a7a1cd37",
+      "execution_status": "completed",
+      "verdict": "pass",
+      "checks": [
+        {
+          "check_id": "test-suite",
+          "status": "pass",
+          "exit_code": 0,
+          "signal": null,
+          "duration_ms": 132,
+          "evidence_ids": [
+            "a1-execution"
+          ],
+          "runner": "sandbox: npm test"
+        }
+      ],
+      "artifacts": {
+        "patch": "a1-patch",
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract": {
+      "name": "contract",
+      "sha256": "47584b147c11c86f7ad1a8aa7c35011cb3c2569aa971aded6376d5a060b758da",
+      "path": "artifacts/47584b147c11c86f7ad1a8aa7c35011cb3c2569aa971aded6376d5a060b758da.json",
+      "bytes": 5646
+    },
+    "a1-patch": {
+      "name": "a1-patch",
+      "sha256": "2eb12078a003c0e4a8aed795d6d6bf89e3407a3ae9a52ffd6f0f7e47a7a1cd37",
+      "path": "artifacts/2eb12078a003c0e4a8aed795d6d6bf89e3407a3ae9a52ffd6f0f7e47a7a1cd37.diff",
+      "bytes": 1528
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "2255cf6dc89257f09651eb42a4c6f82f3f2c120070500b823191f2e8f0042f77",
+      "path": "artifacts/2255cf6dc89257f09651eb42a4c6f82f3f2c120070500b823191f2e8f0042f77.json",
+      "bytes": 153970
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "0a4d4563ded3e4e477d565abd56394e9926c2e4558bc590d2b945c0a71f08fd7",
+      "path": "artifacts/0a4d4563ded3e4e477d565abd56394e9926c2e4558bc590d2b945c0a71f08fd7.json",
+      "bytes": 7756
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "28904f77a883520de546692fe92fcd2c4650981b4d925c09cd3c39d236304885",
+      "path": "artifacts/28904f77a883520de546692fe92fcd2c4650981b4d925c09cd3c39d236304885.json",
+      "bytes": 579
+    },
+    "a1-patch-raw": {
+      "name": "a1-patch-raw",
+      "sha256": "2eb12078a003c0e4a8aed795d6d6bf89e3407a3ae9a52ffd6f0f7e47a7a1cd37",
+      "path": "artifacts/2eb12078a003c0e4a8aed795d6d6bf89e3407a3ae9a52ffd6f0f7e47a7a1cd37.bin",
+      "bytes": 1528
+    },
+    "a1-base-ls": {
+      "name": "a1-base-ls",
+      "sha256": "b141e4cf7121830899eceb908b29027868647cd1b21c87d265ef602de978e27b",
+      "path": "artifacts/b141e4cf7121830899eceb908b29027868647cd1b21c87d265ef602de978e27b.bin",
+      "bytes": 144
+    }
+  }
+}

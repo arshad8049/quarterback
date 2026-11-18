@@ -1,0 +1,6 @@
+git apply --check: clean (no output)
+# tests 4
+# pass 4
+# fail 0
+outputs: 0s | 30s | 1m 30s | 60m 0s
+sha256(velora.patch) 487dd8c1874fa099ca36eea81ef691219b28e256ea6ef8e2c4ff7b0ab154d816

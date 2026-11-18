@@ -1,0 +1,40 @@
+diff --git a/src/duration.js b/src/duration.js
+index fee990eb3b008c893f32b9fb90197b7f11c7933c..c1f722632337911ca8cae17d5baf9fb32c1289e6 100644
+--- a/src/duration.js
++++ b/src/duration.js
+@@ -1,9 +1,10 @@
+ 'use strict';
+ 
+-/** Formats a duration in milliseconds for the status line, e.g. 90000 -> "1m 30s". */
++/** Formats a duration in milliseconds for the status line, e.g. 30000 -> "30s", 90000 -> "1m 30s". */
+ function formatDuration(ms) {
+   const minutes = Math.floor(ms / 60000);
+   const seconds = Math.floor((ms % 60000) / 1000);
++  if (minutes === 0) return `${seconds}s`;
+   return `${minutes}m ${seconds}s`;
+ }
+ 
+diff --git a/test/duration.test.js b/test/duration.test.js
+index b0b22429a4d644516c33d558e9bb98faf3e7b722..1b9c32b0ffa7ae0f990072ceeb15449201ead813 100644
+--- a/test/duration.test.js
++++ b/test/duration.test.js
+@@ -6,3 +6,19 @@ const { formatDuration } = require('../src/duration');
+ test('minutes and seconds', () => {
+   assert.equal(formatDuration(90000), '1m 30s');
+ });
++
++test('under one minute shows seconds only', () => {
++  assert.equal(formatDuration(30000), '30s');
++  assert.equal(formatDuration(1000), '1s');
++  assert.equal(formatDuration(0), '0s');
++  assert.equal(formatDuration(59999), '59s');
++});
++
++test('one minute or more keeps minutes and seconds', () => {
++  assert.equal(formatDuration(60000), '1m 0s');
++  assert.equal(formatDuration(3600000), '60m 0s');
++});
++
++test('formatDuration is exported as a function', () => {
++  assert.equal(typeof formatDuration, 'function');
++});
