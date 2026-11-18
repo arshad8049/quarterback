@@ -34,3 +34,8 @@ Kit hashes (SHA-256), for the originals kept in `landing_page/assets/logos/`:
 - **Gemini.** Google's brand resources for Gemini require a Partner Marketing Hub account (sign-in wall).
 
 Every planned item says "planned" and links to the support matrix. None of these companies endorses Quarterback.
+
+**Owner-supplied files (2026-11-19).** The owner downloaded these in a browser and provided them; their source pages were not recorded by the junior.
+- `openai.svg`: the OpenAI mark, an unmodified copy of the owner's `openai_codex.svg`, sha256 `af4fb01bc6a90a2bf8eae8ef2f377ae8ed8a2bf9b269660eff0f61609768b6ad`. Shown with the text "Codex".
+- `gemini.png`: the Gemini sparkle. The owner's `Google_Gemini_icon_2025.svg` is actually a 960x960 WebP image; it was converted to PNG and scaled to 96 px. sha256 `a9d047a26ef65c72f9d881f04fda88f7d441b2f79061c4f7a05853d6d498d7ce`. Shown with the text "Gemini".
+- **Not used:** the owner's `Copilot-Logo.png` is the **Microsoft Copilot** app logo, not GitHub Copilot, so "GitHub Copilot" stays as text.
