@@ -126,6 +126,12 @@ test('no U2 workflow trigger path matches any committed file (the push of this b
     const paths = (y.match(/^    paths: \[(.*)\]$/m) || [])[1].split(',').map((s) => s.trim());
     for (const p of paths) {
       assert.ok(/request\.txt$/.test(p), `${f}: trigger ${p} is a request file`);
+      // KAN-114 10728: only the approved build request may exist, and only citing KAN-114 10724.
+      // Every other trigger (the qualification request included) must stay absent.
+      if (p === 'bench/opus-pilot/u2/build-request.txt' && fs.existsSync(path.join(ROOT, p))) {
+        assert.match(fs.readFileSync(path.join(ROOT, p), 'utf8').split('\n')[0], /^KAN-114 10724:/, `${f}: ${p} must cite KAN-114 10724`);
+        continue;
+      }
       assert.ok(!fs.existsSync(path.join(ROOT, p)), `${f}: ${p} must not exist`);
     }
   }

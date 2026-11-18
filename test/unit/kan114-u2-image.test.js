@@ -63,7 +63,12 @@ test('the image digest is honestly PENDING a build approval (no invented digest)
 test('the build workflow is token-free, no-model, and triggers only on manual dispatch or its own request file', () => {
   const y = read('.github/workflows/u2-image-build.yml');
   assert.match(y, /^on:\n  push:\n    branches: \[kan114-u2\]\n    paths: \[bench\/opus-pilot\/u2\/build-request\.txt\]\n  workflow_dispatch:\n/m);
-  assert.ok(!fs.existsSync(path.join(ROOT, 'bench/opus-pilot/u2/build-request.txt')), 'the request file is NOT created');
+  // KAN-114 10728: absent stays valid; if present (the approved launcher), its first line must cite KAN-114 10724.
+  // A consistency check, not an authorization system.
+  const reqFile = path.join(ROOT, 'bench/opus-pilot/u2/build-request.txt');
+  if (fs.existsSync(reqFile)) {
+    assert.match(fs.readFileSync(reqFile, 'utf8').split('\n')[0], /^KAN-114 10724:/, 'the build request must cite KAN-114 10724');
+  }
   for (const bad of ['secrets.', 'CLAUDE_CODE_OAUTH_TOKEN', 'ANTHROPIC_', 'environment:', 'pull_request', 'schedule:', 'workflow_run', 'docker push', 'docker login']) {
     assert.ok(!y.includes(bad), `build workflow must not contain ${bad}`);
   }
