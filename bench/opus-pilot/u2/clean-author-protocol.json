@@ -1,0 +1,25 @@
+{
+  "schema": "qb-kan114-clean-author-protocol/1",
+  "decision": "KAN-114 10720 item 5",
+  "status": "SPECIFIED ONLY - not run; each session is a model call that needs separate owner approval",
+  "when": "only AFTER the six are frozen (qualification_v9.freeze_before_checklists); one task at a time",
+  "allowed_inputs": ["issue text (the task problem_statement as given to arm A, redacted)", "the pinned base repository (one commit, no remotes)", "QB contract schema and registry docs"],
+  "forbidden_inputs": ["hints text", "gold patch", "test patch", "FAIL_TO_PASS / PASS_TO_PASS names", "grader output or calibration results", "prior trial results or other arms' output", "other tasks' contracts or reviews", "web access (WebFetch/WebSearch disallowed)"],
+  "session_settings": {
+    "model_requested": "claude-opus-5-5 (served model read back from the stream and recorded)",
+    "claude_code_version": "2.1.322",
+    "launch": "owner-launched in a clean packet folder containing only the allowed inputs; --permission-mode default; MCP servers stripped; web tools disallowed",
+    "bounds": "at most 3 sessions per task (1 authoring + at most 2 repair/format sessions), each at most 45 min wall clock; stop on any subscription limit, no paid fallback"
+  },
+  "record_fields": ["task", "session_index", "model_requested", "model_served", "claude_code_version", "started_at", "wall_ms", "tokens", "transcript_sha256", "transcript_audit", "inputs_manifest_sha256", "ai_review_rounds", "ai_reviewer_model", "owner_minutes", "outcome"],
+  "record_notes": {
+    "tokens": "input / output / cache read / cache write from the session's own usage records",
+    "transcript": "kept as a restricted artifact; only its sha256 and the audit result (allowed inputs only, no forbidden access) are public",
+    "ai_review_rounds": "count of AI senior review rounds before freeze; AI review is NOT human sign-off",
+    "owner_minutes": "owner's self-reported minutes for launching, relaying and approving"
+  },
+  "freeze": "the contract is frozen (sha256 recorded) before any gold or reference replay; never edited after",
+  "reference_replay": "preferred AFTER the trial captures; if run earlier: controller-only counts, no feedback to authors or coding sessions, no contract tuning or task replacement from the result",
+  "failures": "a session that cannot produce a valid contract, or a contract that fails its validators, is recorded as a QB preparation failure for that frozen task (unresolved outcome); the task is not replaced",
+  "reporting": "authoring cost is reported as arm B preparation, separately and in total-work comparisons"
+}

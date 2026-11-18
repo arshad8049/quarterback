@@ -1,0 +1,10 @@
+{
+  "schema": "qb-kan114-u2-arm-order/1",
+  "decision": "KAN-114 10720 item 6: predeclared, balanced A-first / B-first order",
+  "seed": "qb-kan114-u2-arm-order-2026-11-18",
+  "rule": "lib/pilot/u2-order.js balancedOrder(6, seed): positions in pairs (1,2),(3,4),(5,6); first bit of sha256(seed + NUL + 'pair-' + p) picks [A-first,B-first] (0) or [B-first,A-first] (1). Exactly 3/3, one of each within every consecutive pair.",
+  "applies_to": "the frozen six, by position in committed seed order (position 1 = first frozen task). Fixed now, before any task is frozen or run, so it cannot follow qualification results.",
+  "order_by_position": ["A-first", "B-first", "A-first", "B-first", "A-first", "B-first"],
+  "note": "With this seed every pair drew bit 0, so the order alternates starting A-first. That is the outcome of the committed rule, not a choice; the seed is not re-drawn.",
+  "gate": "lib/pilot/u2-order.js firstArmGate: the same gate for either order (first arm job success + verified readback sidecar for that arm + cleanup 0/0/0/0; second arm on a fresh runner and fresh workspace at the base, downloads only the shared images, no grading started, its approval recorded). Grading runs only after both captures. Budgets unchanged from v8: A one attempt, B up to three in a shared 1800 s."
+}

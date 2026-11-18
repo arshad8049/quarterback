@@ -1,0 +1,7 @@
+{
+  "schema": "qb-kan114-u2-approvals/1",
+  "note": "KAN-114 10720: nothing in U2 is approved yet. Each field is filled ONLY by a commit that cites the approving KAN-114 comment id. The image build, the qualification launch and the browser-sandbox exception are separate approvals.",
+  "u2_image": { "approval_comment_id": null, "build_run_id": null, "image_digest": null },
+  "u2_qualification": { "approval_comment_id": null },
+  "browser_sandbox_exception": { "id": "E1-chromium-no-sandbox-in-hardened-container", "approval_comment_id": null }
+}

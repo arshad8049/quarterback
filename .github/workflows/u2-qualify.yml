@@ -1,0 +1,225 @@
+# KAN-114 10720 (U2): bounded NO-MODEL qualification of the U2 screen (committed seed order). NOT LAUNCHED.
+# The launch is not approved until the implementation and these resource limits are reviewed (10720 item 3).
+# Trigger: manual dispatch, or a push to kan114-u2 that changes bench/opus-pilot/u2/qualify-request.txt (NOT created).
+# Even then the plan job refuses unless bench/opus-pilot/u2/approvals.json records the qualification approval AND an
+# approved U2 image build (run id + digest), and the requested tasks are a prefix of the screen order (<= 9).
+# Limits (lib/pilot/u2-qualify.js LIMITS): max 9 tasks; one task at a time (concurrency group + max-parallel 1);
+# timeouts plan 5 / qualify 45 per task / summary 10 min; ceiling 5 + 9 x 45 + 10 = 420 job-minutes.
+# Per task: QB's real runSandboxed path with the U2 agent image (both arms' image) and the unchanged kan117 tools/proxy
+# images; deps via the UNCHANGED deps-root-scripts-v1 transform; the pinned pattern-B build with --network none and no
+# credentials; the task's own test command; a Chromium sandbox probe; the QB Karma research channel; then KAN-111
+# calibration (A0, 3x empty / 3x gold + isolation, the unchanged grader and tasks file). No secret, no environment,
+# no model CLI is invoked. Leftover containers/volumes/networks/auth volume FAIL the job. Results leave only through
+# the existing sanitizer (counts and hashes; scanned for test names).
+name: u2-qualify
+
+on:
+  push:
+    branches: [kan114-u2]
+    paths: [bench/opus-pilot/u2/qualify-request.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: u2-qualify
+  cancel-in-progress: false
+
+env:
+  SWEBENCH_REF: 02e7a74ffd0b707aab73d203fe87bdc7c76afc8e
+  ARCHIVE_SHA256: d06181d5365b51fc7ff490171581b9ee87d77e19b3a739a8d574bf25d9ef9479
+  LOCK_SHA256: 3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba
+  GRADER: bench/public/grader/immutable-offline-v1
+  EV: bench/public/grader/immutable-offline-v1/lock-evidence/run-42906422892
+  WORK: ${{ github.workspace }}/u2-work
+  PUB: ${{ github.workspace }}/u2-publish
+  INST: ${{ github.workspace }}/u2-install-record
+  IMG: ${{ github.workspace }}/kan117-images
+  U2IMG: ${{ github.workspace }}/u2-image
+  KAN117_IMAGES_RUN: '43610841280'
+  QB_INTEGRATION: '0'
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      tasks: ${{ steps.p.outputs.tasks }}
+      images_run: ${{ steps.p.outputs.images_run }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Validate the request (approvals, image, committed screen order, <= 9 tasks)
+        id: p
+        env: { U2_CI_RUN: '1' }
+        run: node bench/opus-pilot/u2/u2-qualify.mjs --plan
+
+  qualify:
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        task: ${{ fromJSON(needs.plan.outputs.tasks) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB
+        run: |
+          set -euo pipefail
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: kan117-images
+          path: ${{ env.IMG }}
+          run-id: ${{ env.KAN117_IMAGES_RUN }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: u2-agent-image
+          path: ${{ env.U2IMG }}
+          run-id: ${{ needs.plan.outputs.images_run }}
+          github-token: ${{ github.token }}
+      - name: Load the saved kan117 set and the approved U2 agent image; require the recorded ids (no build)
+        env: { KAN117_CI_RUN: '1', U2_CI_RUN: '1' }
+        run: |
+          set -euo pipefail
+          node bench/public/kan117/image-bundle.mjs load --in="$IMG"
+          ref=$(node bench/opus-pilot/u2/u2-image.mjs load --in="$U2IMG" | tail -n 1)
+          want=$(jq -r .u2_image.image_digest bench/opus-pilot/u2/approvals.json)
+          test "$(docker image inspect -f '{{.Id}}' "$ref")" = "$want"
+          echo "QB_SANDBOX_AGENT_IMAGE=$ref" >> "$GITHUB_ENV"
+      - name: Verify the persisted lock evidence (the six reviewed files, byte for byte)
+        run: |
+          set -euo pipefail
+          printf '%s\n' \
+            '3ff9e5ec290027e4925964a8eb537af39f676a588aa81d9da2f429619e7de1ba  requirements.lock' \
+            '0123302e17e1933d5c7e321734c47b25e0764ab4bb91b5fa1a941c74d98b2b32  dists.sha256' \
+            'a60f0de346e0783dc6645edeb537b24b0f5d35c9d01be7a19f6b129bf5f79bff  archive.sha256' \
+            '1a454284cf5fd8afef66e40a0e0d3581548c2504a938fbdfdea35c20f177705c  harness-files.sha256' \
+            '7195c125aa09cc048505378fbede55c127dc65b7797ab8b75d7ca5cc843cfcf7  env.txt' \
+            '24b24a510d29fdac8c7215faf93238ac41453332d472e91fdec85545af6a3f5e  build-notes.txt' \
+            > /tmp/ev.expected
+          ( cd "$EV" && sha256sum -c /tmp/ev.expected )
+          grep -q "$ARCHIVE_SHA256" "$EV/archive.sha256"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065       # v5
+        with: { python-version: '3.11.9' }
+      - name: Split the lock (81 PyPI wheels + the disclosed swebench source-build exception)
+        run: |
+          set -euo pipefail
+          mkdir -p "$WORK" "$INST"
+          python -I - "$EV/requirements.lock" "$EV/dists.sha256" "$WORK" <<'PY'
+          import re, sys
+          lock, dists, work = sys.argv[1:]
+          entries = re.findall(r"^([A-Za-z0-9_.\-]+)==(\S+) --hash=sha256:([0-9a-f]{64})$", open(lock).read(), re.M)
+          assert len(entries) == 82, f"expected 82 locked distributions, found {len(entries)}"
+          swe = [e for e in entries if e[0].lower() == "swebench"]; deps = [e for e in entries if e[0].lower() != "swebench"]
+          assert len(swe) == 1 and len(deps) == 81, (len(swe), len(deps))
+          assert any(n.lower() == "setuptools" for n, _, _ in deps), "setuptools (swebench's only build requirement) is not locked"
+          open(f"{work}/deps.lock", "w").write("".join(f"{n}=={v} --hash=sha256:{h}\n" for n, v, h in deps))
+          open(f"{work}/swebench.version", "w").write(swe[0][1] + "\n")
+          rows = [l.split() for l in open(dists).read().splitlines() if l.strip()]
+          keep = sorted(f"{h}  {f}" for h, f in rows if not f.lower().startswith("swebench-"))
+          assert len(keep) == 81, f"dists.sha256 has {len(keep)} non-swebench files, expected 81"
+          open(f"{work}/deps.dists.sha256", "w").write("\n".join(keep) + "\n")
+          PY
+      - name: Download the 81 locked wheels (hash-checked twice) and the source archive (hash-checked)
+        run: |
+          set -euo pipefail
+          python -m venv /tmp/kan111/swe
+          /tmp/kan111/swe/bin/pip install --disable-pip-version-check 'pip==24.3.1'
+          /tmp/kan111/swe/bin/pip download --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes -r "$WORK/deps.lock" -d "$WORK/wheels"
+          ( cd "$WORK/wheels" && sha256sum * | LC_ALL=C sort ) > "$WORK/got.sha256"
+          LC_ALL=C sort "$WORK/deps.dists.sha256" | diff - "$WORK/got.sha256"
+          curl -fsSL -o "$WORK/swebench.tar.gz" "https://github.com/SWE-bench/SWE-bench/archive/${SWEBENCH_REF}.tar.gz"
+          echo "$ARCHIVE_SHA256  $WORK/swebench.tar.gz" | sha256sum -c -
+          mkdir -p "$WORK/src" && tar -xzf "$WORK/swebench.tar.gz" -C "$WORK/src" --strip-components=1
+      - name: Install offline; build swebench offline from the verified source (source-build exception)
+        run: |
+          set -euo pipefail
+          P=/tmp/kan111/swe/bin
+          $P/pip install --disable-pip-version-check --no-index --find-links "$WORK/wheels" --require-hashes --no-deps -r "$WORK/deps.lock"
+          $P/pip wheel --disable-pip-version-check --no-index --no-deps --no-build-isolation --wheel-dir "$WORK/built" "$WORK/src"
+          ( cd "$WORK/built" && sha256sum swebench-*.whl ) | tee "$INST/swebench-rebuilt-wheel.sha256"
+          $P/pip install --disable-pip-version-check --no-index --no-deps "$WORK"/built/swebench-*.whl
+          $P/python -I "$GRADER/installed-set-check.py" "$EV/requirements.lock" "$INST/swebench-rebuilt-wheel.sha256" > "$INST/install-provenance.json"
+          d=$($P/python -I -c 'import os, swebench; print(os.path.dirname(swebench.__file__))')
+          ( cd "$d/.." && sha256sum swebench/harness/log_parsers/javascript.py swebench/harness/grading.py swebench/harness/run_evaluation.py ) > "$INST/installed-harness-files.sha256"
+          diff "$EV/harness-files.sha256" "$INST/installed-harness-files.sha256"
+      - name: Rebuild the grader vault from the hash-verified dataset (network used here only)
+        run: cd bench && node public/import.mjs --download
+      - name: Starting code at the pinned base only (shallow; one commit)
+        run: |
+          set -euo pipefail
+          B=$(node -e "const t=require('./bench/opus-pilot/arm-a-grader-tasks.json').tasks[process.argv[1]];console.log(t.base+' '+t.repo)" "${{ matrix.task }}")
+          read -r BASE REPO <<<"$B"
+          mkdir -p "$WORK/repo" && cd "$WORK/repo"
+          git init -q && git fetch -q --depth 1 "https://github.com/$REPO" "$BASE"
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$BASE"; test "$(git rev-list --all --count)" = 1
+      - name: U2 setup, offline pattern-B build, sandbox probe and Karma channel (QB runSandboxed, no model)
+        id: setup
+        continue-on-error: true
+        env: { U2_CI_RUN: '1' }
+        run: node bench/opus-pilot/u2/u2-qualify.mjs --task="${{ matrix.task }}" --repo="$WORK/repo" --store=bench/public/out --images="$IMG" --u2-images="$U2IMG" --out="$WORK/q"
+      - name: Setup outcome
+        id: ok
+        if: ${{ !cancelled() }}
+        run: echo "setup=$(node -e "try{process.stdout.write(String(require(process.argv[1]).qualified_setup))}catch{process.stdout.write('missing')}" "$WORK/q/qualify-${{ matrix.task }}.json")" >> "$GITHUB_OUTPUT"
+      - name: KAN-111 calibration (A0; 3x empty, 3x gold, isolation controls; unchanged grader; only when setup passed)
+        id: calib
+        if: ${{ !cancelled() && steps.ok.outputs.setup == 'pending_calibration' }}
+        continue-on-error: true
+        env:
+          SWEBENCH_PYTHON: /tmp/kan111/swe/bin/python
+          ARM_A_CI_RUN: '1'
+        run: node "$GRADER/grade.mjs" --execute --approved-by=10610 --tasks-file=bench/opus-pilot/arm-a-grader-tasks.json --only="${{ matrix.task }}" --out="$WORK/calib"
+      - name: Sanitize (counts and hashes only; refused on any test name)
+        id: sanitize
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          node bench/opus-pilot/arm-a-qualify-sanitize.mjs "${{ matrix.task }}" "$WORK/q" "$WORK/calib" bench/public/out "$PUB"
+          if grep -IEn '(ghp_|gho_|ghs_|ghu_|github_pat_|sk-ant-|diff --git)' "$PUB"/*; then echo "::error::refused"; exit 1; fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && steps.sanitize.outcome == 'success' }}
+        with:
+          name: u2-qualify-${{ matrix.task }}
+          path: ${{ env.PUB }}
+          retention-days: 30
+      - name: Cleanup gate (leftovers FAIL the job)
+        if: ${{ always() }}
+        run: sh bench/opus-pilot/u2/cleanup-gate.sh "$RUNNER_TEMP/u2-cleanup.txt"
+
+  summary:
+    needs: [plan, qualify]
+    if: ${{ always() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          pattern: u2-qualify-*
+          path: ${{ env.PUB }}
+          merge-multiple: true
+      - name: Freeze the first six environmentally eligible tasks in committed order (no checklist authored)
+        env: { U2_CI_RUN: '1' }
+        run: node bench/opus-pilot/u2/u2-qualify.mjs --summarize --pub="$PUB"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        with:
+          name: u2-freeze
+          path: ${{ env.PUB }}/u2-freeze.json
+          retention-days: 90

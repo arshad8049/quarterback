@@ -1,0 +1,17 @@
+{
+  "schema": "qb-kan114-u2-image/1",
+  "decision": "KAN-114 10720 item 1: a versioned, browser-capable agent image shared by both arms",
+  "dockerfile": "sandbox/agent-u2/Dockerfile (build context: sandbox/)",
+  "version": "u2-1",
+  "base": { "ref": "node@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54", "source": "the base digest recorded by the kan117 image set (run 43610841280) that v8 used, so Node stays v24.22.3" },
+  "claude_code_version": "2.1.322",
+  "debian_snapshot": "20261115T000000Z",
+  "browser": "Debian bookworm chromium from snapshot.debian.org at debian_snapshot (exact version recorded by the build in u2-image-provenance.json)",
+  "browser_sandbox": "on (no image-level exception)",
+  "used_by": ["arm_a", "arm_b"],
+  "v8_agent_content_tag": "qb-sandbox-agent:c-6e9312968a31b7b8",
+  "v8_unchanged": "sandbox/agent/ is not modified; the v8 agent image (sha256:bffc1d6a...) stays the v8 image. U2 is selected only through QB_SANDBOX_AGENT_IMAGE in U2 jobs.",
+  "image_digest": null,
+  "status": "pending_build_approval",
+  "build": ".github/workflows/u2-image-build.yml: token-free and no-model; manual dispatch or a push to kan114-u2 that changes bench/opus-pilot/u2/build-request.txt (NOT created). Not run."
+}

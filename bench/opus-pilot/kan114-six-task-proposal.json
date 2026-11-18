@@ -1,6 +1,6 @@
 {
   "schema": "qb-kan114-six-task-proposal/1",
-  "status": "PROPOSAL ONLY - not frozen, not approved, nothing launched. KAN-114 10717.",
+  "status": "PROPOSAL ONLY - not frozen, not approved, nothing launched. KAN-114 10717; amended for 10720 (U2 offline implementation): usage section corrected, qualification-before-checklists, clean-author protocol, balanced arm order.",
   "no_hidden_content": "Only public identifiers already in bench/opus-pilot/arm-a-batch-1.json and bench/public/manifest/candidates.json. No hidden test names, gold/test patch text, FAIL_TO_PASS/PASS_TO_PASS names or problem text.",
   "dataset": {
     "name": "SWE-bench Multilingual",
@@ -16,11 +16,12 @@
     "pool_size": 26
   },
   "selection_rule_v9": [
-    "Walk the committed arm-a-batch-1 order (rank 1..26).",
+    "Walk the committed arm-a-batch-1 order (rank 1..26). NO new seed.",
     "Skip EXPOSED tasks (axios-5892, axios-4738, axios-4731) and the 2005/2006 setup examples.",
-    "Take the first 6 that pass qualification-v9 (setup + agent-input probe + grader calibration 3x empty RESOLVED_NO / 3x gold RESOLVED_FULL + 4 isolation controls + QB research visible channel runs on the base + clean-authored reviewed contract passes the controller validators), in CI, no model.",
-    "A task that fails qualification is replaced by the next in order, reason recorded, only before any model call. Never replaced for a model result.",
-    "The unlock(s) to build must be chosen by the senior on engineering grounds BEFORE any qualification result is seen."
+    "Under U2 (10720) screen only the reviewed pattern-B bases (bench/opus-pilot/u2/root-build-allow.json); tasks blocked by lockfile v1, the briefing-leak v1 rule, QUnit/three.js setup or other non-U2 blockers are recorded, not screened.",
+    "Freeze the first 6 that are ENVIRONMENTALLY eligible (qualification_v9.environmental_eligibility) in a no-model CI run, BEFORE any checklist is authored.",
+    "A task that fails environmental qualification is skipped with its reason recorded, only before any model call. Never replaced for a model result or a QB preparation failure.",
+    "The unlock was chosen by the senior on engineering grounds (10720: U2 only) before any qualification result was seen."
   ],
   "current_fact": "0 of 23 fresh candidates are qualified or QB-compatible today. Every task that is qualified (2005, 2006, axios-4738, axios-4731, axios-5892) is exposed. Outside this pool, no pinned-image, no-service task in candidates.json passes QB's deps gate either (swe-bench-pro-v2: 50 Jest tasks, all element-web, all setup_missing_lockfile/yarn; polybench: no pinned images).",
   "provisional_six_if_U2_only": {
@@ -513,8 +514,8 @@
     ]
   },
   "usage_estimate": {
-    "basis": "v8 pair 10715: A 29/2905/288851/14103 in 725 s; B 30/4800/488584/23397 in 709 s; scaled linearly to the full 1800 s",
-    "per_task_worst": {
+    "basis": "ESTIMATE, not a worst-case bound: the one observed v8 pair (10715: A 29/2905/288851/14103 tokens in 725 s; B 30/4800/488584/23397 in 709 s) scaled linearly to the full 1800 s coding budget. Token use is not bounded by time-linear scaling of a single run; a task can use more (or less). The real stop is the subscription limit (stop_rule).",
+    "per_task_estimate": {
       "A": {
         "input": 72,
         "output": 7208,
@@ -528,29 +529,79 @@
         "cache_write": 59382
       }
     },
-    "six_tasks_worst": {
+    "six_tasks_estimate": {
       "input": 888,
       "output": 116346,
       "cache_read": 11740482,
       "cache_write": 566250
     },
-    "six_tasks_with_1.5x_margin": {
+    "six_tasks_estimate_with_1_5x_margin": {
       "input": 1332,
       "output": 174519,
       "cache_read": 17610723,
       "cache_write": 849375
     },
-    "api_list_equivalent_usd": "about 12.3 (18.5 with margin) on the Opus 4.5 list-rate basis used in 10616; nothing is charged on the subscription route; subscription limits are the real constraint",
-    "not_included": "clean-author contract sessions (one or more Claude Code sessions per task, owner-launched; token use was not recorded for 5892)",
+    "pricing_note": "No dollar figure is given. The figure previously quoted here used Opus 4.5 API list rates (10616); Opus 4.5 list prices are not prices for this model (claude-opus-5-5) and are not subscription charges. The subscription route (subscription_token_env, overage off) is not billed per token; its usage limits are the constraint.",
+    "authoring_sessions": {
+      "what": "clean-author contract sessions (bench/opus-pilot/u2/clean-author-protocol.json), arm B preparation, separate from the coding budgets",
+      "max_sessions_per_task": 3,
+      "max_wall_min_per_session": 45,
+      "max_sessions_total": 18,
+      "max_wall_min_total": 810,
+      "tokens": "not estimated: unmeasured for 5892; recorded per session from the session's own usage and reported as B preparation",
+      "approval": "separate owner approval before any session (model calls); not part of the trial launch approval"
+    },
+    "stop_rule": {
+      "on_subscription_limit": "stop the batch; the task is incomplete in the denominator",
+      "paid_fallback": false,
+      "detail": "no API key, no overage, no extra-usage purchase, no switch to another model or account; resume only after the limit resets and a new go-ahead"
+    },
     "workflow_minutes": {
       "live_expected_max_per_task": "about 80 billed job-min (A about 32, B about 40, 2 grades about 6, plan about 1); v8 actual 36 billed",
       "live_hard_ceiling_per_task": "421 job-min (timeouts 120+120+90+90+1)",
       "six_expected_max": "about 480",
       "six_hard_ceiling": "about 2,526",
-      "qualification_no_model": "about 10-20 job-min per screened task (runs 43682268936/43683856507/43750792626); about 300 for 15 screened"
+      "qualification_no_model": "U2 qualification (u2-qualify.yml, NOT launched): hard ceiling 420 job-min (plan 5 + 9 tasks x 45 + summary 10), one task at a time; U2 image build (u2-image-build.yml, NOT run): ceiling 60 job-min"
     },
     "wall_time": "per task about 1.5-2 h including two approvals and evidence review (v8: 83 min); six sequential with review gaps: 2-3 working days; compute ceiling about 33 h",
     "protected_approvals": "12 environment approvals (trial-a and trial-b per task) plus one owner route/risk/rotation/overage confirmation before the first launch, re-confirmed if anything changes"
   },
-  "claim_limit": "Six tasks is a small development pilot, not proof of general effectiveness; public data cannot rule out model-training exposure."
+  "claim_limit": "Six tasks is a small development pilot, not proof of general effectiveness; public data cannot rule out model-training exposure.",
+  "qualification_v9": {
+    "decision": "KAN-114 10720 item 4",
+    "order": "committed seed order (arm-a-batch-1, seed qb-arm-a-batch-1-2026-11-14); U2 screen = preact-4245, 3567, 3454, 4436, 4316, 3739, 4152, 3689, 3562",
+    "environmental_eligibility": [
+      "setup: QB deps ready via the unchanged deps-root-scripts-v1 install; installed tree == pinned lockfile; the pinned pattern-B build exits 0 with --network none and leaves no tracked/untracked change; the task's own test command reports results on the base",
+      "agent input: the arm-A briefing reaches the agent stage unchanged (sha256) in a one-commit workspace without remotes",
+      "grader calibration: 3x empty RESOLVED_NO, 3x gold RESOLVED_FULL, 4 isolation controls (unchanged KAN-111 grader A0; gold controller-applied in CI, counts only)",
+      "QB visible channel: the QB Karma research channel gives a valid (passed or failed) report on the base"
+    ],
+    "freeze_before_checklists": true,
+    "freeze_rule": "lib/pilot/u2-qualify.js freezeFirstSix: first six eligible in committed order; an earlier task without a result keeps the freeze incomplete (never padded); fewer than six = reported shortfall before any scope expansion",
+    "qb_preparation_failure_replaces_task": false,
+    "qb_preparation_failures": "recorded as unresolved outcomes for that frozen task (counted in the denominator) and never grounds for replacing a task: a checklist QB cannot write well, checks that fail the reference, validator failures",
+    "reference_replay": {
+      "preferred": "after trial captures",
+      "if_earlier": "controller-only counts, no feedback to authors or coding sessions, no contract tuning or task replacement from the result"
+    },
+    "workflow": ".github/workflows/u2-qualify.yml (NOT launched; launch needs review of the implementation and limits, then a recorded approval)"
+  },
+  "clean_author_protocol": "bench/opus-pilot/u2/clean-author-protocol.json",
+  "u2_implementation": {
+    "decision": "KAN-114 10720 item 1-3: U2 only",
+    "branch": "kan114-u2",
+    "image": "bench/opus-pilot/u2/image.json + sandbox/agent-u2/Dockerfile (base node@sha256:dc26ae92..., Claude Code 2.1.322, Debian-snapshot Chromium); same image for both arms",
+    "image_digest": "pending build approval",
+    "karma_channel": "lib/research/karma-channel.js, lib/research/karma-report.js, sandbox/research/qb-karma.conf.cjs, sandbox/research/qb-karma-reporter.cjs (schema qb-kan114-task-env/3)",
+    "root_build_allowlist": "bench/opus-pilot/u2/root-build-allow.json (root-build-patternB-v1; 9 pinned bases)",
+    "cleanup_gate": "bench/opus-pilot/u2/cleanup-gate.sh (leftovers fail the job)",
+    "arm_order": "bench/opus-pilot/u2/arm-order.json",
+    "qualification_launch": "NOT approved; not launched",
+    "out_of_scope": [
+      "lockfile-v1",
+      "leak-rule changes",
+      "yarn",
+      "QUnit"
+    ]
+  }
 }

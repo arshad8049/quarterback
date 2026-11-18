@@ -1,0 +1,362 @@
+{
+  "schema": "qb-kan114-root-build-allow/1",
+  "rule": "root-build-patternB-v1",
+  "decision": "KAN-114 10720 item 1-2 (U2 only: narrowly specified pattern-B root build). PROPOSED for senior review; not applied in any run.",
+  "source": "public repository files at each pinned base (package.json bytes + git tree id), read by the controller; no task, test or answer material",
+  "install": "UNCHANGED deps-root-scripts-v1 transform (sandbox/research/deps-root-scripts.sh): root `prepare` removed from the disposable install copy only; npm ci via the registry-only DEPS proxy, no credentials; dependency lifecycle scripts still run, contained as before",
+  "offline_build": "after install, in the agent image with --network none, no credentials, no grader material, read-only node_modules: exactly `npm run build` (npm runs build -> npm-run-all --parallel build:* -> postbuild; every one of those script strings is sha256-pinned per base; no prebuild exists). Never run: check-export-map, husky, npm-merge-driver-install, lint, test. The build must leave no tracked change and no untracked non-ignored file (git status --porcelain empty), else the task fails setup qualification (recorded).",
+  "excluded": "lockfile-v1 tasks (2757, 3062, 2927, 3010, 2896) and briefing-leak-v1 tasks (3345, 3763, 4182) are NOT listed: out of U2 scope (10720)",
+  "entries": [
+    {
+      "key": "preact-4245",
+      "instance_id": "preactjs__preact-4245",
+      "base_commit": "13b0afb7a28adb3149d7125fb2b9c16edbcf8e94",
+      "base_tree": "7da03394f047318d677e9b2767f955935f3563b1",
+      "package_json_sha256": "540cdfb387a145c7247997a125e6c391e7834a8e41beda7c05e1f9d417dc5edf",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "39bafca65fe5573a6b980ccb5c56300deb321012faccdeacb41ef3597e9e8b73",
+          "build:core": "10bbe50cb4c208a3ca7d6e97cf28ea9302436f9b1b6a58cff19a69c3a4734108",
+          "build:core-min": "d641c34e0c2fa9feaaf8a865a199f6e617e29935f13ab06770d5c0e3147c2c5e",
+          "build:debug": "7cfd494b844377dc2ef43cf2604ff068538130b7f111dc41c70db8fb1f896d53",
+          "build:devtools": "2d80b4b4ee7f8fb960b8ebc43ef737c617c2fbaed2b903d0c93de857e2909e31",
+          "build:hooks": "641f18f14a2dcd4624ad5781304934797cab7bc7bb127fb9784a82ed0f370374",
+          "build:jsx": "50ce60d429f987bbb6329f0e3116957513c98ec2266cab8a16b39fee8bc18530",
+          "build:test-utils": "3fe7bd7a47202a293672f43d4981e61cac1c76f71e0a297622581f75404bfa07",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-3567",
+      "instance_id": "preactjs__preact-3567",
+      "base_commit": "c77e6284c199761d59467d8cc596a2f03540e72c",
+      "base_tree": "aa75aa1c9cf7f6e46abaa7d31e24c3bedd1bbb9e",
+      "package_json_sha256": "80515fe1490e343ad810f31cfd406646e21902c606414eaec3e2f8a95dcca8fb",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "d1c25b9adcda418ad7ac22c3121a2225bffba21a11b7b809e987efc9b38cd828",
+          "build:core": "9379d17fb043f50b95d583c69fc7d44ba5f491fbaa0ecc782f99f39950454be5",
+          "build:core-min": "5495f4b53e612f67b955bfe2d82ccc1d35b4358fe4c4cf47bb6084c768ac2bba",
+          "build:debug": "3d3589e3a1096dfd1cdcc3c9a41df79bf40330d78bf877e2b96ab70bb19b514f",
+          "build:devtools": "f51633e70599024cafde206b0a5f1185a248c20c2d153f6009a2d3fcea98ee69",
+          "build:hooks": "9e7db8a510af161afb677123ed0adb7096b582b242ad9d886981a7095f66696a",
+          "build:jsx": "a6120fbbcdb0a48b3f9f435bb555a0bc7446ee707c83eb42bb125d6e8ed581d2",
+          "build:test-utils": "88030985e9fd2d4402f0d966ee64c3ecc245e476811e2a8a9fbc1dc4af1f94a6",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-3454",
+      "instance_id": "preactjs__preact-3454",
+      "base_commit": "00c8d1ff1498084c15408cf0014d4c7facdb5dd7",
+      "base_tree": "06ecdd9dba30c8dcf1da1eb5cbea612790f9775a",
+      "package_json_sha256": "b49aad05bfcfa27db88974fd86ce592d19855cb524f008d70212e3c1ca5817a1",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "d1c25b9adcda418ad7ac22c3121a2225bffba21a11b7b809e987efc9b38cd828",
+          "build:core": "9379d17fb043f50b95d583c69fc7d44ba5f491fbaa0ecc782f99f39950454be5",
+          "build:core-min": "5495f4b53e612f67b955bfe2d82ccc1d35b4358fe4c4cf47bb6084c768ac2bba",
+          "build:debug": "3d3589e3a1096dfd1cdcc3c9a41df79bf40330d78bf877e2b96ab70bb19b514f",
+          "build:devtools": "f51633e70599024cafde206b0a5f1185a248c20c2d153f6009a2d3fcea98ee69",
+          "build:hooks": "9e7db8a510af161afb677123ed0adb7096b582b242ad9d886981a7095f66696a",
+          "build:jsx": "a6120fbbcdb0a48b3f9f435bb555a0bc7446ee707c83eb42bb125d6e8ed581d2",
+          "build:test-utils": "88030985e9fd2d4402f0d966ee64c3ecc245e476811e2a8a9fbc1dc4af1f94a6",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-4436",
+      "instance_id": "preactjs__preact-4436",
+      "base_commit": "db0f4f2e7a2338ea40050f623f05505a798fc1a4",
+      "base_tree": "d083654d4edaeb339ce814054d030cb7112bcfff",
+      "package_json_sha256": "3601e7260999611e5aaf98d6a5441fc9341d5231422f9036c9ae3520cc1caeb1",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "b27ddd343c288f7bb734d771615fe65010e830ed55476c076ba99574e9a234c0",
+      "prepare_reviewed": "husky && run-s build && check-export-map && npm-merge-driver-install",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "39bafca65fe5573a6b980ccb5c56300deb321012faccdeacb41ef3597e9e8b73",
+          "build:core": "10bbe50cb4c208a3ca7d6e97cf28ea9302436f9b1b6a58cff19a69c3a4734108",
+          "build:core-min": "d641c34e0c2fa9feaaf8a865a199f6e617e29935f13ab06770d5c0e3147c2c5e",
+          "build:debug": "7cfd494b844377dc2ef43cf2604ff068538130b7f111dc41c70db8fb1f896d53",
+          "build:devtools": "2d80b4b4ee7f8fb960b8ebc43ef737c617c2fbaed2b903d0c93de857e2909e31",
+          "build:hooks": "641f18f14a2dcd4624ad5781304934797cab7bc7bb127fb9784a82ed0f370374",
+          "build:jsx": "50ce60d429f987bbb6329f0e3116957513c98ec2266cab8a16b39fee8bc18530",
+          "build:test-utils": "3fe7bd7a47202a293672f43d4981e61cac1c76f71e0a297622581f75404bfa07",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-4316",
+      "instance_id": "preactjs__preact-4316",
+      "base_commit": "b820d8b73eade8bc5b3fbf7e5fe0dd5150de80e2",
+      "base_tree": "a6ed2cc5c1a6e6cb6708b4739dd31a9adaabd33c",
+      "package_json_sha256": "2846f83579e75b6f092e95aa867934c366a58fcd651bb48c3ab645e22b5d0cec",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "39bafca65fe5573a6b980ccb5c56300deb321012faccdeacb41ef3597e9e8b73",
+          "build:core": "10bbe50cb4c208a3ca7d6e97cf28ea9302436f9b1b6a58cff19a69c3a4734108",
+          "build:core-min": "d641c34e0c2fa9feaaf8a865a199f6e617e29935f13ab06770d5c0e3147c2c5e",
+          "build:debug": "7cfd494b844377dc2ef43cf2604ff068538130b7f111dc41c70db8fb1f896d53",
+          "build:devtools": "2d80b4b4ee7f8fb960b8ebc43ef737c617c2fbaed2b903d0c93de857e2909e31",
+          "build:hooks": "641f18f14a2dcd4624ad5781304934797cab7bc7bb127fb9784a82ed0f370374",
+          "build:jsx": "50ce60d429f987bbb6329f0e3116957513c98ec2266cab8a16b39fee8bc18530",
+          "build:test-utils": "3fe7bd7a47202a293672f43d4981e61cac1c76f71e0a297622581f75404bfa07",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-3739",
+      "instance_id": "preactjs__preact-3739",
+      "base_commit": "2cafedee2ddf7c73795e887ef1970df4be2bca90",
+      "base_tree": "b82ecad99e935b58358d68ae09ef2295dfa33b1c",
+      "package_json_sha256": "b50ceb39e0d20497692340bf0c994c7ae0d6e3e000c7ddb60b7198c152bfd499",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "39bafca65fe5573a6b980ccb5c56300deb321012faccdeacb41ef3597e9e8b73",
+          "build:core": "10bbe50cb4c208a3ca7d6e97cf28ea9302436f9b1b6a58cff19a69c3a4734108",
+          "build:core-min": "d641c34e0c2fa9feaaf8a865a199f6e617e29935f13ab06770d5c0e3147c2c5e",
+          "build:debug": "7cfd494b844377dc2ef43cf2604ff068538130b7f111dc41c70db8fb1f896d53",
+          "build:devtools": "2d80b4b4ee7f8fb960b8ebc43ef737c617c2fbaed2b903d0c93de857e2909e31",
+          "build:hooks": "641f18f14a2dcd4624ad5781304934797cab7bc7bb127fb9784a82ed0f370374",
+          "build:jsx": "50ce60d429f987bbb6329f0e3116957513c98ec2266cab8a16b39fee8bc18530",
+          "build:test-utils": "3fe7bd7a47202a293672f43d4981e61cac1c76f71e0a297622581f75404bfa07",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-4152",
+      "instance_id": "preactjs__preact-4152",
+      "base_commit": "9c5a82efcc3dcbd0035c694817a3022d81264687",
+      "base_tree": "eb6ec1b13d27059c1ab3ae666481b13e50a7aeb4",
+      "package_json_sha256": "38613e859b25894ffd390d8028f5cf285e7c2cff03f4a2711a0b98ccefb9be2e",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "39bafca65fe5573a6b980ccb5c56300deb321012faccdeacb41ef3597e9e8b73",
+          "build:core": "10bbe50cb4c208a3ca7d6e97cf28ea9302436f9b1b6a58cff19a69c3a4734108",
+          "build:core-min": "d641c34e0c2fa9feaaf8a865a199f6e617e29935f13ab06770d5c0e3147c2c5e",
+          "build:debug": "7cfd494b844377dc2ef43cf2604ff068538130b7f111dc41c70db8fb1f896d53",
+          "build:devtools": "2d80b4b4ee7f8fb960b8ebc43ef737c617c2fbaed2b903d0c93de857e2909e31",
+          "build:hooks": "641f18f14a2dcd4624ad5781304934797cab7bc7bb127fb9784a82ed0f370374",
+          "build:jsx": "50ce60d429f987bbb6329f0e3116957513c98ec2266cab8a16b39fee8bc18530",
+          "build:test-utils": "3fe7bd7a47202a293672f43d4981e61cac1c76f71e0a297622581f75404bfa07",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-3689",
+      "instance_id": "preactjs__preact-3689",
+      "base_commit": "9457b221fdacd1052ffdb385918e1bab4b10e833",
+      "base_tree": "7defd60123bd9ba93171de500b0f4b73a161ce33",
+      "package_json_sha256": "e4af95385e5f5282850a3960565f99d319cbaabcfcb87515bfbc36d095e16136",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "d1c25b9adcda418ad7ac22c3121a2225bffba21a11b7b809e987efc9b38cd828",
+          "build:core": "9379d17fb043f50b95d583c69fc7d44ba5f491fbaa0ecc782f99f39950454be5",
+          "build:core-min": "5495f4b53e612f67b955bfe2d82ccc1d35b4358fe4c4cf47bb6084c768ac2bba",
+          "build:debug": "3d3589e3a1096dfd1cdcc3c9a41df79bf40330d78bf877e2b96ab70bb19b514f",
+          "build:devtools": "f51633e70599024cafde206b0a5f1185a248c20c2d153f6009a2d3fcea98ee69",
+          "build:hooks": "9e7db8a510af161afb677123ed0adb7096b582b242ad9d886981a7095f66696a",
+          "build:jsx": "a6120fbbcdb0a48b3f9f435bb555a0bc7446ee707c83eb42bb125d6e8ed581d2",
+          "build:test-utils": "88030985e9fd2d4402f0d966ee64c3ecc245e476811e2a8a9fbc1dc4af1f94a6",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    },
+    {
+      "key": "preact-3562",
+      "instance_id": "preactjs__preact-3562",
+      "base_commit": "0b9a9275b47e446106e6e97c78011896f7db2a61",
+      "base_tree": "382c5071255a9170e6a8687e861d6e8e322728cb",
+      "package_json_sha256": "d371f2af3387c2acc1161695485c2d7d9b451682f6a750f3e7a8b0e6f6422e99",
+      "install": {
+        "rule": "deps-root-scripts-v1",
+        "removed": [
+          "prepare"
+        ]
+      },
+      "prepare_script_sha256": "394f5b3f879614b7a08c7ec9f1a248d0b42af036f2e1340ff5c99d566b30d3bd",
+      "prepare_reviewed": "run-s build && check-export-map",
+      "offline_build": {
+        "rule": "root-build-patternB-v1",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "scripts_sha256": {
+          "build": "a35dbce2167a151c8ee20a7bd865e5b5b767d141072da79df53b9b7aa652b8de",
+          "build:compat": "d1c25b9adcda418ad7ac22c3121a2225bffba21a11b7b809e987efc9b38cd828",
+          "build:core": "9379d17fb043f50b95d583c69fc7d44ba5f491fbaa0ecc782f99f39950454be5",
+          "build:core-min": "5495f4b53e612f67b955bfe2d82ccc1d35b4358fe4c4cf47bb6084c768ac2bba",
+          "build:debug": "3d3589e3a1096dfd1cdcc3c9a41df79bf40330d78bf877e2b96ab70bb19b514f",
+          "build:devtools": "f51633e70599024cafde206b0a5f1185a248c20c2d153f6009a2d3fcea98ee69",
+          "build:hooks": "9e7db8a510af161afb677123ed0adb7096b582b242ad9d886981a7095f66696a",
+          "build:jsx": "a6120fbbcdb0a48b3f9f435bb555a0bc7446ee707c83eb42bb125d6e8ed581d2",
+          "build:test-utils": "88030985e9fd2d4402f0d966ee64c3ecc245e476811e2a8a9fbc1dc4af1f94a6",
+          "postbuild": "2f6eac352ebcbb4ef593271484de20a2b9ff90b5934ce98a283d941a73eefe60"
+        },
+        "timeout_s": 900,
+        "network": "none",
+        "credentials": "none",
+        "tracked_changes_allowed": false
+      }
+    }
+  ]
+}

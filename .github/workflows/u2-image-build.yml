@@ -1,0 +1,59 @@
+# KAN-114 10720 (U2): build + probe + save the versioned browser-capable agent image (both arms). NOT RUN YET.
+# Token-free and no-model: no secret is referenced, no environment, no model CLI is invoked (the probe only prints
+# `claude --version`), no registry push. GITHUB_TOKEN is read-only (contents) and not persisted.
+# Trigger: manual dispatch, or a push to kan114-u2 that changes bench/opus-pilot/u2/build-request.txt. That request file
+# does not exist; creating it is the build launch and needs the senior/owner build approval first (10720 item 3).
+# Output: artifact u2-agent-image (tar + u2-image-provenance.json); the image id recorded there is the digest to freeze.
+name: u2-image-build
+
+on:
+  push:
+    branches: [kan114-u2]
+    paths: [bench/opus-pilot/u2/build-request.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: u2-image-build
+  cancel-in-progress: false
+
+env:
+  IMG: ${{ github.workspace }}/u2-image
+  QB_INTEGRATION: '0'
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262          # v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install QB (root only)
+        run: npm ci
+      - name: U2 unit tests (image pin, allowlist, karma channel, gates)
+        run: node --test test/unit/kan114-u2-*.test.js
+      - name: Build from the digest-pinned base, probe with QB hardening and no network, save and hash
+        env: { U2_CI_RUN: '1' }
+        run: node bench/opus-pilot/u2/u2-image.mjs save --out="$IMG"
+      - name: Public notice (ids, versions, sandbox probe; no logs)
+        if: ${{ !cancelled() && hashFiles('u2-image/u2-image-provenance.json') != '' }}
+        run: |
+          node -e '
+            const p = require(process.argv[1]);
+            console.log(`::notice title=u2-image::ref=${p.image.ref} id=${p.image.id} built_from_base=${p.image.built_from_base} tar_sha256=${p.image.tar_sha256} node=${p.versions.node} claude=${p.versions.claude} chromium=${p.versions.chromium_pkg} sandbox_started=${p.sandbox_probe.started_with_sandbox} no_usable_sandbox_msg=${p.sandbox_probe.no_usable_sandbox_message} problems=${JSON.stringify(p.problems)}`);
+          ' "$IMG/u2-image-provenance.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02    # v4
+        if: ${{ !cancelled() && hashFiles('u2-image/u2-image-provenance.json') != '' }}
+        with:
+          name: u2-agent-image
+          path: ${{ env.IMG }}
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+      - name: Cleanup gate (leftovers FAIL the job)
+        if: ${{ always() }}
+        run: sh bench/opus-pilot/u2/cleanup-gate.sh "$RUNNER_TEMP/u2-cleanup.txt"
