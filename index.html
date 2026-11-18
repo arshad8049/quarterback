@@ -100,7 +100,8 @@
   <!-- LOGO STRIP (revision 6, owner decision 2026-11-19). Coding agents: Claude Code is supported today; Cursor, Codex and
        Gemini are planned adapters, labelled "planned" and linked to docs/support.md#agents---agent. Cursor, Codex
        (OpenAI mark) and Gemini use logo files (see SOURCES.md). GitHub Copilot removed for now (owner, 2026-11-19).
-       "Currently supported" (owner, 2026-11-19) mirrors docs/support.md: Node.js 20+, Linux x86_64, Docker, node:test. Not an endorsement; see media/logos/SOURCES.md. The group labels stay visible.
+       "Currently supported" (owner, 2026-11-19) mirrors docs/support.md: Node.js 20+, Linux x86_64, Docker, node:test.
+       Owner rule (2026-11-19): every item in this strip is a logo or a mark+name lockup; no plain text items. Not an endorsement; see media/logos/SOURCES.md. The group labels stay visible.
        Without JavaScript or under reduced motion it is a static, wrapped row. interactions.js adds the moving
        copy (aria-hidden, inert) and the Pause button. -->
   <section class="qbh-logos" data-qbh-marquee aria-label="Coding agents, currently supported platforms, and research collaborations">
@@ -120,9 +121,9 @@
             <p class="qbh-logo-label" id="logos-supported">Currently supported</p>
             <ul class="qbh-logo-list" aria-labelledby="logos-supported">
               <li class="qbh-logo"><img src="./media/logos/nodejs.svg" alt="Node.js 20 or newer" width="107" height="32" style="--h: 32px" decoding="async"></li>
-              <li class="qbh-logo qbh-logo-text">Linux</li>
+              <li class="qbh-logo"><span class="qbh-lockup"><img src="./media/logos/linux-tux.svg" alt="" width="24" height="28" style="--h: 28px" decoding="async"><span class="qbh-lockup-name">Linux</span></span></li>
               <li class="qbh-logo"><img src="./media/logos/docker.svg" alt="Docker" width="131" height="28" style="--h: 28px" decoding="async"></li>
-              <li class="qbh-logo qbh-logo-text">node:test</li>
+              <li class="qbh-logo"><span class="qbh-lockup"><img src="./media/logos/nodejs-icon.svg" alt="" width="22" height="25" style="--h: 25px" decoding="async"><span class="qbh-lockup-name">node:test</span></span></li>
             </ul>
           </div>
           <div class="qbh-logo-group">
@@ -274,13 +275,13 @@
   <!-- ============================================================ -->
   <!-- SECTION: HOME-PROGRESS → edit: src/home-progress.html -->
   <!-- ============================================================ -->
-  <!-- PROGRESS, dated 2026-11-19 (senior brief KAN-67 10737). Three cards only; detail lives on research.html.
+  <!-- PROGRESS, dated 2026-11-18 America/Chicago (senior brief KAN-67 10737, corrections 10750). Three cards only; detail lives on research.html.
        Sources: pair run 44211149405 (KAN-114 10715, accepted 10720); L1 diagnostic c5399f25 (KAN-106 10733, BLOCKED, 333.8 s);
-       demo milestone KAN-44 10736; research halted by the owner 2026-11-19 (KAN-114 10738). -->
+       demo milestone KAN-44 10736; rehearsal run 0e9eede7 (KAN-44 10746, evidence https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal); research halted by the owner (KAN-114 10738). -->
   <section id="progress" class="qbh-sec qbh-sec-light" aria-labelledby="progress-h">
     <div class="qbh-wrap">
       <header class="qbh-head qb-reveal">
-        <p class="qbh-eyebrow">Progress · November 19, 2026</p>
+        <p class="qbh-eyebrow">Progress · November 18, 2026</p>
         <h2 id="progress-h" class="qbh-h2">Where Quarterback stands.</h2>
       </header>
   
@@ -304,9 +305,10 @@
   
         <article class="qbh-card qb-reveal" style="--d:2">
           <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Next</p>
-          <h3 class="qbh-h3">A supervised demo on a current version</h3>
+          <h3 class="qbh-h3">One supervised rehearsal completed</h3>
           <ul>
-            <li>We are preparing one pinned, rehearsed demo with a reviewed checklist. Self-service beta is not ready.</li>
+            <li>On a Mac, with a checklist a person wrote and reviewed: verified on the first attempt in 136 seconds. Setup was assisted and the sandbox was already installed. <a href="https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal">Evidence</a></li>
+            <li>One run, not a reliability rate. Self-service beta is not ready.</li>
             <li>Research on new tasks is paused while we do this. <a href="./research.html">Evaluation notes</a></li>
           </ul>
         </article>
