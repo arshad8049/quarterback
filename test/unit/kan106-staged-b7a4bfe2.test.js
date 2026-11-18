@@ -102,7 +102,7 @@ describe('recorded model replies replayed through the fixed assembler (NOT a new
     assert.equal(c.acceptance_criteria.length, 9);   // + the requested-tests criterion
     assert.equal(new Set(c.acceptance_criteria.map((a) => a.criterion)).size, 9);
     for (const k of c.checks) assert.equal(c.acceptance_criteria.filter((a) => a.id === k.ac_id).length, 1);
-    assert.equal(c.constraints.length, 6);   // R-3: 1, R-4: 1, R-5: 4
+    assert.equal(c.constraints.length, 7);   // R-3: 1, R-4: 1, R-5: 5 (its "0" constraint shares the R-4 check)
   });
   test('REAL check runner, checks unchanged: the throw checks fail on the guard-removed base and pass on the pinned correct source; every value check passes on both', async () => {
     const { s } = await produce(recordedReplies());

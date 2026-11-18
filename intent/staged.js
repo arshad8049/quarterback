@@ -326,12 +326,18 @@ async function factsFor(ctx, role, rid, t) {
 
 const argText = (args) => args.map((a) => JSON.stringify(a)).join(', ');
 
-/** The contract object (before contractFromObject) from the roles, the accepted facts and the targets. */
+/**
+ * The contract object (before contractFromObject) from the roles, the accepted facts and the targets:
+ * { errors, raw }. Identical cases (call, args, outcome, expected value or fragment) under several
+ * requirements are one criterion and one check citing all of them (10749); a same-input conflict is an error.
+ */
 function assemble(request, roles, facts, targets, fragments) {
   const byLabel = new Map(targets.map((x) => [x.label, x]));
   const factsOf = new Map(facts.map((f) => [f.passage_id, f]));
   const requirements = []; const acs = []; const checks = []; const constraints = []; const policy = [];
   const used = new Set();
+  const errors = [];
+  const seen = new Map();   // call + args → { result, ac, check, rid } (10749: one criterion per distinct case)
   roles.forEach((r, i) => {
     const rid = `R-${i + 1}`;
     requirements.push({ id: rid, passage_ids: [r.passage_id], quote: r.text, ...(r.role === 'context' ? { disposition: 'context', reason: 'location only' } : {}) });
@@ -343,16 +349,32 @@ function assemble(request, roles, facts, targets, fragments) {
     if (r.role === 'context') return;
     for (const c of (factsOf.get(r.passage_id) || {}).cases || []) {
       const t = byLabel.get(c.call);
-      const n = acs.length + 1;
       const call = `${t.display}(${argText(c.args)})`;
       const frag = c.outcome === 'throws' && c.error_fragment !== null ? fragments[c.error_fragment].text : null;
       const kept = r.role === 'keep';
       const claim = c.outcome === 'throws'
         ? `${kept ? 'still ' : ''}throws an error${frag ? ` whose message includes ${JSON.stringify(frag)}` : ''}`
         : `${kept ? 'still ' : ''}returns ${JSON.stringify(c.expected)}`;
-      acs.push({ id: `AC-${n}`, criterion: `${call} ${claim}${kept ? ' (behaviour kept)' : ''}.`, kind: 'behavioral', requirement_ids: [rid] });
-      const check = checkFor(t, c, frag, `CHK-${n}`, `AC-${n}`);
-      if (check) { checks.push(check); used.add(t.module); }
+      // KAN-106 10749 (run b7a4bfe2): the identical case under another requirement is the SAME criterion
+      // and check, citing both requirements; the same call and args with another result is a conflict.
+      const callKey = JSON.stringify([c.call, c.args]);
+      const result = JSON.stringify(c.outcome === 'throws' ? ['throws', frag] : ['returns', c.expected]);
+      const prior = seen.get(callKey);
+      let check;
+      if (prior && prior.result !== result) {
+        errors.push(`${prior.rid} and ${rid} state conflicting results for the same call ${call}: ${prior.text} vs ${claim} (refused, not merged)`);
+        continue;
+      } else if (prior) {
+        if (!prior.ac.requirement_ids.includes(rid)) prior.ac.requirement_ids.push(rid);
+        check = prior.check;
+      } else {
+        const n = acs.length + 1;
+        const ac = { id: `AC-${n}`, criterion: `${call} ${claim}${kept ? ' (behaviour kept)' : ''}.`, kind: 'behavioral', requirement_ids: [rid] };
+        acs.push(ac);
+        check = checkFor(t, c, frag, `CHK-${n}`, `AC-${n}`);
+        if (check) { checks.push(check); used.add(t.module); }
+        seen.set(callKey, { result, ac, check, rid, text: claim });
+      }
       if (kept) {
         policy.push(check ? { constraint: constraints.length, enforced_by: [{ kind: 'check', ref: check.id }] } : { constraint: constraints.length, advisory: true });
         constraints.push(`Keep the existing behaviour (${r.passage_id} ${JSON.stringify(r.text)}): ${call} ${claim}.`);
@@ -362,7 +384,8 @@ function assemble(request, roles, facts, targets, fragments) {
   const rt = requestTargets(request);
   const allowed = [...new Set([...rt.targets.map((t) => t.path), ...[...used].filter((m) => !rt.ignored.some((x) => x.path === m && x.why !== 'mentioned'))])];
   const behaviour = acs.filter((a) => !a.adds_tests).map((a) => a.criterion);
-  return {
+  if (errors.length) return { errors, raw: null };
+  return { errors, raw: {
     goal: request.trim(),
     required_behavior: behaviour.length ? behaviour : acs.map((a) => a.criterion),
     constraints, constraint_policy: policy,
@@ -374,7 +397,7 @@ function assemble(request, roles, facts, targets, fragments) {
     ],
     relevant_context: allowed,
     ambiguity_flags: [], clarifying_question: null, proposed_defaults: [],
-  };
+  } };
 }
 
 /** The check for one case, or null when no adapter can express it (a method throw with no fragment). */
@@ -419,7 +442,9 @@ async function compileStaged(request, g, t) {
       return done('invalid', { contract: null, errors: [`${rid} (${r.passage_id}): the model's facts were refused after one repair: ${f.attempts.at(-1).errors.join('; ')}`] });
     }
   }
-  const raw = assemble(request, roles, staged.facts, targets, fragments);
+  const assembled = assemble(request, roles, staged.facts, targets, fragments);
+  if (assembled.errors.length) return done('invalid', { contract: null, errors: assembled.errors });
+  const raw = assembled.raw;
   const contract = contractFromObject(raw, request);
   if (g.api) contract.api_grounding = contractGrounding(g.api);
   const cs = t.validate(() => contractState(contract));
