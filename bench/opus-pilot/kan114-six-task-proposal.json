@@ -1,0 +1,556 @@
+{
+  "schema": "qb-kan114-six-task-proposal/1",
+  "status": "PROPOSAL ONLY - not frozen, not approved, nothing launched. KAN-114 10717.",
+  "no_hidden_content": "Only public identifiers already in bench/opus-pilot/arm-a-batch-1.json and bench/public/manifest/candidates.json. No hidden test names, gold/test patch text, FAIL_TO_PASS/PASS_TO_PASS names or problem text.",
+  "dataset": {
+    "name": "SWE-bench Multilingual",
+    "revision": "846e647b9f33 (pinned import, KAN-117 10606/10619)",
+    "grader": "SWE-bench harness @02e7a74, variant A0 (official eval script verbatim, --network none)",
+    "grader_tasks_file": "bench/opus-pilot/arm-a-grader-tasks.json sha256 508300d4d79523b183c3d159aa4d57367ba3d513140c57021606b8527e2bc93b (26 tasks, includes these)"
+  },
+  "source_pool": {
+    "candidates": "bench/public/manifest/candidates.json sha256 ce244c6f38279e64e89c4d3d7cb359fdc580393c36c33ae1f01670791cbb5177",
+    "order_file": "bench/opus-pilot/arm-a-batch-1.json sha256 7cd67ecf7b6d2d7907a0cdedb5dd35e22e5a95495175cad0bf9c0cb52e531fa0",
+    "order_rule": "existing committed order sha256(seed + NUL + task_id), seed qb-arm-a-batch-1-2026-11-14 (bench/opus-pilot/arm-a-select.mjs); selected 5 then reserve 21; NO new seed",
+    "pool_rule": "swe-bench-multilingual, npm only, no services, no workspaces, pinned image digest, not 2005/2006",
+    "pool_size": 26
+  },
+  "selection_rule_v9": [
+    "Walk the committed arm-a-batch-1 order (rank 1..26).",
+    "Skip EXPOSED tasks (axios-5892, axios-4738, axios-4731) and the 2005/2006 setup examples.",
+    "Take the first 6 that pass qualification-v9 (setup + agent-input probe + grader calibration 3x empty RESOLVED_NO / 3x gold RESOLVED_FULL + 4 isolation controls + QB research visible channel runs on the base + clean-authored reviewed contract passes the controller validators), in CI, no model.",
+    "A task that fails qualification is replaced by the next in order, reason recorded, only before any model call. Never replaced for a model result.",
+    "The unlock(s) to build must be chosen by the senior on engineering grounds BEFORE any qualification result is seen."
+  ],
+  "current_fact": "0 of 23 fresh candidates are qualified or QB-compatible today. Every task that is qualified (2005, 2006, axios-4738, axios-4731, axios-5892) is exposed. Outside this pool, no pinned-image, no-service task in candidates.json passes QB's deps gate either (swe-bench-pro-v2: 50 Jest tasks, all element-web, all setup_missing_lockfile/yarn; polybench: no pinned images).",
+  "provisional_six_if_U2_only": {
+    "note": "NOT qualified, NOT frozen. What the committed order would yield IF the senior chooses unlock U2 (browser in a new agent image for both arms + karma research channel + pattern-B root build allowance) and NOT lockfile-v1 or leak-v2, AND every task then qualifies. All are preact (one repo): low diversity, disclosed.",
+    "six": [
+      "preactjs__preact-4245",
+      "preactjs__preact-3567",
+      "preactjs__preact-3454",
+      "preactjs__preact-4436",
+      "preactjs__preact-4316",
+      "preactjs__preact-3739"
+    ],
+    "next_reserves": [
+      "preactjs__preact-4152",
+      "preactjs__preact-3689",
+      "preactjs__preact-3562"
+    ]
+  },
+  "unlock_options": {
+    "U2": "browser (Chromium) in a versioned agent image + karma research channel + reviewed pattern-B root build (run in the no-network workspace). Pool: 12 preact w/o lockfile-v1 (9 without leak-v2). 10619 estimate: up to +9 (+12 with leak-v2). Grader unchanged (parse_log_karma already mirrored).",
+    "U2+lockfile-v1": "adds preact-2757, 3062, 2927, 3010 (+2896 with leak-v2).",
+    "leak-v2": "provenance-aware briefing rule (10619 s.2): adds 3345, 3763, 4182 (and 2896, 5316 if their other blockers clear).",
+    "U3": "diagnose three.js setup_failed + a qunit research channel: up to 3 tasks, uncertain.",
+    "U1 (other dataset)": "swe-bench-pro-v2 element-web Jest (50): yarn-lockfile install + Jest research env per Node version + a new Pro grader adaptation and calibration. Largest engineering; single repo.",
+    "smaller_n": "n=0 fresh is runnable today. Seen-task engineering pairs (4731; 4738 has a gold-vs-visible conflict) need new contracts and are not effectiveness evidence; not recommended."
+  },
+  "tasks": [
+    {
+      "rank": 1,
+      "task_id": "qbt_2b0029100b75",
+      "instance_id": "preactjs__preact-2757",
+      "base_commit": "b17a932342bfdeeaf1dc0fbe4f436c83e258d6c8",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2757@sha256:fc8103f14b8cc67f19965789df6beddf7cb9576be869e228c5a06f1a8d74f41e",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: lockfile v1 (also root prepare, pattern B build)",
+        "karma: needs a browser in the agent image"
+      ]
+    },
+    {
+      "rank": 2,
+      "task_id": "qbt_04384357021d",
+      "instance_id": "preactjs__preact-3345",
+      "base_commit": "e0e17046753fe09881dfb8d5a69b44933d1fa1ea",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3345@sha256:ed733da51b0a7f17ae9121b01a5bf0ce17a20f3cea49e7a566bba7595a24b7d6",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "briefing-leak v1 refused (overlap lines all from the original problem_statement, 10619; controller saw counts only)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 3,
+      "task_id": "qbt_667f0fa7f123",
+      "instance_id": "preactjs__preact-4245",
+      "base_commit": "13b0afb7a28adb3149d7125fb2b9c16edbcf8e94",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4245@sha256:61f760a2db683681ea6fb514b581b79d1bb2c2e7856c6c8fd79ccfd27ce1f138",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 4,
+      "task_id": "qbt_ebc08e8c28b1",
+      "instance_id": "mrdoob__three.js-27395",
+      "base_commit": "b99b3fd955864f534b1e2649518112f7e50fef21",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-27395@sha256:fecf24ea6940d2894c8708b8df2327264d95a0b6e0f7d8f71dc5a3cd2aaf1356",
+      "grader_runner": [
+        "qunit"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: setup_failed (undiagnosed)",
+        "qunit: no QB research channel"
+      ]
+    },
+    {
+      "rank": 5,
+      "task_id": "qbt_7abfa3dbbd68",
+      "instance_id": "preactjs__preact-2896",
+      "base_commit": "a9f7e676dc03b5008b8483e0937fc27c1af8287f",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2896@sha256:57ecaedae64150e1e10f02ca9bfd310ec5fecf1e474595b48bc037998147a988",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: lockfile v1",
+        "briefing-leak v1 refused (10619)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 6,
+      "task_id": "qbt_72e2affc8e5d",
+      "instance_id": "axios__axios-5892",
+      "base_commit": "ae003913a39f3bdf9bbbd8f71a1ed681fd044d8b",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5892@sha256:3f29bdf1ccb7f878e1ad7e403880ab16797e75a36c2157e46f24b725c7ea587e",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ],
+      "eligible_for_v9": false,
+      "exposure": "EXPOSED",
+      "exposure_note": "seen: v6 + v8 engineering pairs (KAN-114 10686/10715); QB tuned on it (Mocha /2 env record, research scenario checks, AC-4 map, frozen exceptions); reference replayed through QB offline (KAN-117 10651/10658/10659); grader-calibration gold run (KAN-111 10625); clean-author contract sessions v1-v4",
+      "qualification": "qualified (Claude-side setup + grader calibration); QB Mocha channel runs"
+    },
+    {
+      "rank": 7,
+      "task_id": "qbt_12a50b6b1d14",
+      "instance_id": "axios__axios-4738",
+      "base_commit": "9bb016f95e6de871a44f3276fd06562704a0abb0",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-4738@sha256:92a75714e64a22d50bf456f6c99bf051360a54bf6417eb28deadedb7aae8a09b",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ],
+      "eligible_for_v9": false,
+      "exposure": "EXPOSED",
+      "exposure_note": "seen: arm-A batch 1 Claude solved + graded (KAN-114 10616); QB Mocha 8.4.0 channel built and gold-vs-visible conflict diagnosed on it (KAN-117 10621/10624); grader calibration gold runs (KAN-111 10612)",
+      "qualification": "qualified (Claude-side setup + grader calibration); QB Mocha channel runs"
+    },
+    {
+      "rank": 8,
+      "task_id": "qbt_0a263791c0e5",
+      "instance_id": "axios__axios-5316",
+      "base_commit": "65e8d1e28ce829f47a837e45129730e541950d3c",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5316@sha256:245ddca14b8418a8cabfe058686f5d83c81474a0e5a1e99510499b8333a5f589",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern A, hooks only)",
+        "briefing-leak v1 refused (10619)",
+        "grader calibration FAILED (its eval runs npm install; KAN-111 10612)"
+      ]
+    },
+    {
+      "rank": 9,
+      "task_id": "qbt_86a5bc6d4004",
+      "instance_id": "preactjs__preact-3567",
+      "base_commit": "c77e6284c199761d59467d8cc596a2f03540e72c",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3567@sha256:f72773f4981392fcacacd9bb69081592afd5dd7223caf84677f12aa6bd79fe1a",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 10,
+      "task_id": "qbt_b39623bc278c",
+      "instance_id": "preactjs__preact-3062",
+      "base_commit": "7556b61bd0d9f72bbd906c3abaebf2b1c9aeacbf",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3062@sha256:325a6d8088c712e381ab230a69c3100bc02cc5e84036bbfb7614f5e81eb44c8a",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: lockfile v1",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 11,
+      "task_id": "qbt_0fef7f32bf88",
+      "instance_id": "preactjs__preact-3454",
+      "base_commit": "00c8d1ff1498084c15408cf0014d4c7facdb5dd7",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3454@sha256:76750a54c17dcc292e7b129af32b70578f2c3b2e48dab82065489e994ba0b03b",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 12,
+      "task_id": "qbt_50364155b8a0",
+      "instance_id": "axios__axios-5085",
+      "base_commit": "85740c3e7a1fa48346dfcbd4497f463ccb1c1b05",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-5085@sha256:d0a38e17c8f11e41c3d71b46c532db321f732a27e80d57c798e38913da195def",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "grader calibration expectations NOT met (KAN-111 10612)"
+      ]
+    },
+    {
+      "rank": 13,
+      "task_id": "qbt_5808ab3322ae",
+      "instance_id": "mrdoob__three.js-25687",
+      "base_commit": "114134e195a451fdbaa8d2e9492d869d5c853814",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-25687@sha256:3cc22c9a6b7e49f24741b904a7fe44a6f35a9f8f2e1151bbe7ce85e6ddf5a39f",
+      "grader_runner": [
+        "qunit"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: setup_failed (undiagnosed)",
+        "qunit: no QB research channel"
+      ]
+    },
+    {
+      "rank": 14,
+      "task_id": "qbt_cebc89839d51",
+      "instance_id": "preactjs__preact-3763",
+      "base_commit": "e968a5a4000dfa9bec7e8d7b26543b23def6d29d",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3763@sha256:40ec5e3e9ab1f9390a1e0537800f4378d5a7f3f36d5d63098b58539b10f87d5c",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "briefing-leak v1 refused (10619)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 15,
+      "task_id": "qbt_47d9778e832a",
+      "instance_id": "preactjs__preact-4436",
+      "base_commit": "db0f4f2e7a2338ea40050f623f05505a798fc1a4",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4436@sha256:e128a63fb93027d117b05545e2e4df002eb6ab601e4abbb3f62f697d876ce91f",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build; also husky + npm-merge-driver-install)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 16,
+      "task_id": "qbt_36a83a7d8af3",
+      "instance_id": "preactjs__preact-4316",
+      "base_commit": "b820d8b73eade8bc5b3fbf7e5fe0dd5150de80e2",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4316@sha256:85212a9b88597718785e82267af9215fbf1071aa6cd2234e705bae2193485994",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 17,
+      "task_id": "qbt_7168a117b480",
+      "instance_id": "mrdoob__three.js-26589",
+      "base_commit": "8d9f8d50b923d5f8a673590ae138bc5d86a3a256",
+      "image": "swebench/sweb.eval.x86_64.mrdoob_1776_three.js-26589@sha256:02e669aad72f545274413e17f9001103c99f6aacc99c7fe8544341222e48cce3",
+      "grader_runner": [
+        "qunit"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: setup_failed (undiagnosed)",
+        "qunit: no QB research channel"
+      ]
+    },
+    {
+      "rank": 18,
+      "task_id": "qbt_d65b6ee370a0",
+      "instance_id": "axios__axios-6539",
+      "base_commit": "c6cce43cd94489f655f4488c5a50ecaf781c94f2",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-6539@sha256:a0bfe8bcd541c85cce28fc1f21c58b26d53a1cf1ea482b9b253ee80f3440d5cb",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps-root-scripts-v1 install OK, but the task's own Mocha command loads 0 tests at the base (KAN-117 10621/10623)"
+      ]
+    },
+    {
+      "rank": 19,
+      "task_id": "qbt_70dfdaf51e11",
+      "instance_id": "preactjs__preact-3739",
+      "base_commit": "2cafedee2ddf7c73795e887ef1970df4be2bca90",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3739@sha256:f7c7eb09966b118bc0bcc2cd3cfefbc40d75c3e14e022450a6a3b2f2c06e5170",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 20,
+      "task_id": "qbt_0895d85f2b60",
+      "instance_id": "preactjs__preact-4152",
+      "base_commit": "9c5a82efcc3dcbd0035c694817a3022d81264687",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4152@sha256:b421912ab8a495594d471e2670efcb8883a04e34ab0c130c0ae5b8e17e6b3d9d",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 21,
+      "task_id": "qbt_25652be28e11",
+      "instance_id": "preactjs__preact-2927",
+      "base_commit": "ee76c1eb169897412501d86fbe40122b34cd2e8d",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-2927@sha256:351126e9fc2d80d463faf409cc7fd9e007deef44c9246cd52b95d1096626308c",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: lockfile v1",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 22,
+      "task_id": "qbt_6b63bede3ae8",
+      "instance_id": "preactjs__preact-4182",
+      "base_commit": "66cb6a78776b263a2fe4d1283426e699961095d2",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-4182@sha256:19f3f1ebb548e5e0c319d961b73190e78cca782c5bd91035d6cb0ad5c7a02d9e",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "briefing-leak v1 refused (10619)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 23,
+      "task_id": "qbt_9971e70528bf",
+      "instance_id": "preactjs__preact-3689",
+      "base_commit": "9457b221fdacd1052ffdb385918e1bab4b10e833",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3689@sha256:f2731d45b5f0416c2251bfe7d3127eed58abf2d55a4fba2f149ec3ddf203458c",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 24,
+      "task_id": "qbt_cb8a80d7ff50",
+      "instance_id": "preactjs__preact-3010",
+      "base_commit": "c12331064f4ea967641cd5e419204422af050fbb",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3010@sha256:e8aa1e355221d42235e7beb1d83c902b1ca9f40112af090d4d87e60b3f69366d",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: lockfile v1",
+        "karma: needs a browser"
+      ]
+    },
+    {
+      "rank": 25,
+      "task_id": "qbt_c53e87497508",
+      "instance_id": "axios__axios-4731",
+      "base_commit": "c30252f685e8f4326722de84923fcbc8cf557f06",
+      "image": "swebench/sweb.eval.x86_64.axios_1776_axios-4731@sha256:e75f3f2f1e91fbd09a00bd14a4c807dab210d58a5d7395b595cf65314d092bb1",
+      "grader_runner": [
+        "mocha",
+        "tap"
+      ],
+      "eligible_for_v9": false,
+      "exposure": "EXPOSED",
+      "exposure_note": "seen: arm-A batch 1 Claude solved + graded (KAN-114 10616); QB Mocha 8.4.0 channel built on it (KAN-117 10621/10624); grader calibration gold runs (KAN-111 10612)",
+      "qualification": "qualified (Claude-side setup + grader calibration); QB Mocha channel runs"
+    },
+    {
+      "rank": 26,
+      "task_id": "qbt_91216e8196cb",
+      "instance_id": "preactjs__preact-3562",
+      "base_commit": "0b9a9275b47e446106e6e97c78011896f7db2a61",
+      "image": "swebench/sweb.eval.x86_64.preactjs_1776_preact-3562@sha256:97b558985eb5688efafd8f2d7c99a4e290856af429f79163415a10ffd1798eda",
+      "grader_runner": [
+        "karma"
+      ],
+      "eligible_for_v9": true,
+      "exposure": "fresh-candidate (no live model outcome; never used to tune QB)",
+      "qualification": "NOT qualified under current rules",
+      "blockers": [
+        "deps: root prepare (pattern B build)",
+        "karma: needs a browser"
+      ]
+    }
+  ],
+  "settings_proposed_v9": {
+    "same_as_v8": [
+      "model claude-opus-5-5 (served model checked per attempt)",
+      "Claude Code 2.1.322, permission dontAsk, tools Read/Glob/Grep/Edit/Write/Bash/TodoWrite, WebFetch/WebSearch disallowed",
+      "auth_route subscription_token_env, paid overage off, no billing overrides",
+      "agent --network none + egress proxy (api.anthropic.com only), identical both arms",
+      "arm A: 1 attempt, 1800 s coding",
+      "arm B: max 3 attempts in ONE shared 1800 s; QB repair feedback; memory off; context and verify deterministic (no local/judge model); frozen reviewed contract per task (L1 bypassed)",
+      "trial_total_s 5400; workflow job timeouts 120 min trial / 90 min grade",
+      "token-free independent grading after both captures; A outputs never reach B",
+      "v8 record-integrity gates: per-attempt evidence, readback exit 8, byte linkage, cleanup 0/0/0/0"
+    ],
+    "changes_from_v8": [
+      "task list: 6 tasks from the rule above (was axios-5892)",
+      "per-task env records, contracts, check sources, evidence maps, frozen-exception sets",
+      "agent image digest (new version with a browser if U2; same image for both arms)",
+      "driver/workflow generalised from pair-5892 to a per-task pair (one workflow run per task); launch branch must be one the protected environment already allows",
+      "grader tasks file pinned to the qualified 6 (calibration evidence per task)",
+      "new measurement: checklist authoring cost per task"
+    ]
+  },
+  "usage_estimate": {
+    "basis": "v8 pair 10715: A 29/2905/288851/14103 in 725 s; B 30/4800/488584/23397 in 709 s; scaled linearly to the full 1800 s",
+    "per_task_worst": {
+      "A": {
+        "input": 72,
+        "output": 7208,
+        "cache_read": 716705,
+        "cache_write": 34993
+      },
+      "B": {
+        "input": 76,
+        "output": 12183,
+        "cache_read": 1240042,
+        "cache_write": 59382
+      }
+    },
+    "six_tasks_worst": {
+      "input": 888,
+      "output": 116346,
+      "cache_read": 11740482,
+      "cache_write": 566250
+    },
+    "six_tasks_with_1.5x_margin": {
+      "input": 1332,
+      "output": 174519,
+      "cache_read": 17610723,
+      "cache_write": 849375
+    },
+    "api_list_equivalent_usd": "about 12.3 (18.5 with margin) on the Opus 4.5 list-rate basis used in 10616; nothing is charged on the subscription route; subscription limits are the real constraint",
+    "not_included": "clean-author contract sessions (one or more Claude Code sessions per task, owner-launched; token use was not recorded for 5892)",
+    "workflow_minutes": {
+      "live_expected_max_per_task": "about 80 billed job-min (A about 32, B about 40, 2 grades about 6, plan about 1); v8 actual 36 billed",
+      "live_hard_ceiling_per_task": "421 job-min (timeouts 120+120+90+90+1)",
+      "six_expected_max": "about 480",
+      "six_hard_ceiling": "about 2,526",
+      "qualification_no_model": "about 10-20 job-min per screened task (runs 43682268936/43683856507/43750792626); about 300 for 15 screened"
+    },
+    "wall_time": "per task about 1.5-2 h including two approvals and evidence review (v8: 83 min); six sequential with review gaps: 2-3 working days; compute ceiling about 33 h",
+    "protected_approvals": "12 environment approvals (trial-a and trial-b per task) plus one owner route/risk/rotation/overage confirmation before the first launch, re-confirmed if anything changes"
+  },
+  "claim_limit": "Six tasks is a small development pilot, not proof of general effectiveness; public data cannot rule out model-training exposure."
+}
