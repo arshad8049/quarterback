@@ -179,12 +179,15 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
 
 /* Sticky story (added by interactions.js only at 900px and up, with motion allowed and a panel that fits) */
 .qbh-stage[hidden] { display: none; }
-.qbh-story.is-staged { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; }
-.qbh-story.is-staged .qbh-step { min-height: 70svh; align-content: center; }
+/* Pinned (owner, 2026-11-19): the story is a tall scroll track; the step list and the stage both stay pinned,
+   vertically centred below the header, and scrolling through the track moves the active step. */
+.qbh-story.is-staged { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; height: calc(var(--qbh-n, 4) * 75svh); }
+.qbh-story.is-staged .qbh-steps, .qbh-story.is-staged .qbh-stage { position: sticky; top: var(--header); height: calc(100svh - var(--header)); display: flex; flex-direction: column; justify-content: center; }
+.qbh-story.is-staged .qbh-steps { gap: 28px; }
+.qbh-story.is-staged .qbh-step { gap: 0; }
 .qbh-story.is-staged .qbh-step-text, .qbh-story.is-staged .qbh-step-text p:last-child { color: #5c625f; transition: color 200ms ease; }
 .qbh-story.is-staged .qbh-step.is-active .qbh-step-text { color: var(--text); }
 .qbh-story.is-staged .qbh-step.is-active .qbh-step-text p:last-child { color: var(--text-2); }
-.qbh-stage { position: sticky; top: calc(var(--header) + 24px); }
 .qbh-stage-panels { display: grid; }
 .qbh-stage-panels > .qbh-panel { grid-area: 1 / 1; display: flex; flex-direction: column; }
 .qbh-stage-panels > .qbh-panel .qbh-panel-body { flex: 1; }
@@ -295,3 +298,6 @@ body:has(> .qbh) .qb-skip { font-family: "Inter", ui-sans-serif, system-ui, sans
   .qbh-btn, .qbh-btn:hover { transition: none; transform: none; }
   html:has(.qbh) { scroll-behavior: auto; }
 }
+
+/* Logo strip: a "planned" tag after a text logo (revision 6) */
+.qbh-logo-plan { margin-left: 6px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); vertical-align: middle; }
