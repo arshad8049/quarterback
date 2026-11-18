@@ -78,7 +78,7 @@ program
   .option('--save',                'Save all artifacts to disk')
   .option('--deadline <minutes>',  'Total-run deadline; in-flight work is cancelled and the run ends CANCELLED naming the stage (QB-21; env QB_RUN_DEADLINE_MS)')
   .option('--l1-budget <seconds>', 'L1 (intent) time budget over all L1 model calls, enforced with a monotonic deadline (KAN-106; env QB_L1_BUDGET_MS)')
-  .option('--l1-profile <name>',   'EXPERIMENTAL L1 time profile, e.g. qwen-14b-experimental (240 s per call, 420 s for L1); not a default (KAN-106; env QB_L1_PROFILE)')
+  .option('--l1-profile <name>',   'EXPERIMENTAL L1 time profile, e.g. qwen-14b-experimental (240 s per call, 420 s for L1), or qwen-14b-staged (same budget, staged compiler prototype); not a default (KAN-106; env QB_L1_PROFILE)')
   .option('--l1-warmup',           'Load the L1 model with one recorded warm-up call before the first draft (inside the L1 time and budget)')
   .option('--telemetry',           'Send this run\'s outcome metrics to Quarterback (opt-in; needs a telemetry token)')
   .option('--telemetry-token <t>', 'Your verified telemetry token (or QB_TELEMETRY_TOKEN); request one at /api/telemetry/request (QB-33)')
@@ -206,6 +206,21 @@ async function main() {
       }
       process.exitCode = 2;
       return;
+    }
+    // KAN-106 (staged profile only, offline prototype): every fact call's reply and refusal reasons are
+    // kept as an artifact; an invalid staged result is BLOCKED with its reasons. Other paths skip this.
+    if (s.staged) {
+      run.artifact('contract-staged', s.staged);
+      if (s.state !== 'finalized') {
+        run.event('contract.staged_invalid', { errors: s.errors || [] });
+        console.log('\n  ✗ QB couldn\'t build a reliable checklist (staged L1 prototype). No code was changed.');
+        (s.errors || []).slice(0, 5).forEach((e) => console.log(`      • ${shortText(e)}`));
+        console.log(`    Engineering details: ${run.dir} (artifact contract-staged)\n`);
+        run.finish('BLOCKED', { reason: `staged_l1_invalid: ${(s.errors || []).join('; ')}` });
+        process.exitCode = 2;
+        return;
+      }
+      log('L1', `Staged compiler: ${s.staged.facts.length} requirement fact call(s), ${s.staged.facts.filter((f) => f.attempts.length > 1).length} repaired; checklist assembled by QB`);
     }
     // KAN-103: QB corrected its own rejected draft once. Every rejected draft and its errors are
     // kept in the run record for engineering; the correction still needs the usual approval.
@@ -438,6 +453,8 @@ function reportL1Timings(run, timings) {
   const loads = (timings.calls || []).filter((c) => Number.isFinite(c.load_ms) && c.load_ms > 0).map((c) => `${c.kind} ${sec(c.load_ms)}`);
   log('L1', `Timings: ${warm}first draft ${sec(timings.initial_call_ms)} · validation ${sec(timings.validation_ms)} · repair ${repairs} · L1 total ${sec(timings.l1_ms)} (budget ${Math.round(b.ms / 1000)}s ${src}, ${b.enforced ? 'enforced' : 'not enforced'}${b.profile ? `, per call ${Math.round(b.per_call_ms / 1000)}s, experimental` : ''})${loads.length ? ` · model load reported: ${loads.join(', ')}` : ''}`);
   if (data.budget.over_budget) log('L1', `L1 took longer than its budget (${sec(timings.l1_ms)} > ${sec(b.ms)})`);
+  // KAN-106 (staged profile only): each fact call with its requirement
+  if (Array.isArray(timings.fact_call_ms)) log('L1', `Staged fact calls: ${(timings.calls || []).filter((c) => /^fact/.test(c.kind)).map((c) => `${c.requirement_id}${c.kind === 'fact_repair' ? ' repair' : ''} ${sec(c.ms)} (${c.outcome})`).join(' · ')}`);
 }
 
 function log(layer, msg) {

@@ -49,7 +49,7 @@
  */
 
 const { compile, repair, warmup } = require('./compiler');
-const { l1Deadline, monotonicMs } = require('../lib/budget');
+const { l1Deadline, monotonicMs, L1_PROFILES } = require('../lib/budget');
 const { contractState, laterStageErrors, requirementDispositions } = require('./contract-state');
 const { preservationConflicts } = require('../verify/preservation');
 const { surveyRepository, surveySummary } = require('./survey');
@@ -74,7 +74,8 @@ async function compileIntent(request, o = {}) {
   const t = l1Timer(o.now || monotonicMs, o.l1Budget || null);
   try {
     if (o.warmup) await warmupStep(t);
-    const s = await compileRounds(request, o, t);
+    // KAN-106 (owner priority after 10733): only the explicit staged profile takes the staged path.
+    const s = isStaged(o.l1Budget) ? await stagedRounds(request, o, t) : await compileRounds(request, o, t);
     return { ...s, timings: t.result() };
   } catch (e) {
     t.failed(e && e.code === 'DEADLINE' && e.kind === 'l1' ? 'l1_budget_exhausted' : 'error');
@@ -90,7 +91,17 @@ async function warmupStep(t) {
   catch (e) { if (e && e.code === 'DEADLINE' && e.kind === 'l1') throw e; t.outcome('error'); }
 }
 
-const STEP = { warmup: 'warm-up call', initial: 'first draft call', repair: 'repair call' };
+const STEP = { warmup: 'warm-up call', initial: 'first draft call', repair: 'repair call', fact: 'fact call', fact_repair: 'fact repair call' };
+
+/** KAN-106: is this L1 budget the explicit STAGED profile (intent/staged.js)? Nothing else is. */
+const isStaged = (b) => Boolean(b && b.profile && L1_PROFILES[b.profile] && L1_PROFILES[b.profile].staged === true);
+
+/** KAN-106 (option B of 10733, offline prototype): the staged compiler, with the same grounding and timer. */
+async function stagedRounds(request, { repoPath = null } = {}, t) {
+  const [survey, api] = repoPath ? t.survey(() => [surveyRepository(repoPath, request), groundApi(repoPath, request)]) : [null, null];
+  const grounding = survey ? { ...surveySummary(survey), api: apiSummary(api) } : null;
+  return require('./staged').compileStaged(request, { api, grounding }, t);
+}
 
 /** KAN-106: elapsed time of each L1 step, on one clock, and (10674) the L1 deadline on that clock. */
 function l1Timer(clock, budget = null) {
@@ -103,8 +114,8 @@ function l1Timer(clock, budget = null) {
   let survey = 0;
   return {
     now,
-    timer: (kind, round) => ({ now, limits: () => deadline.limits(STEP[kind] || kind),
-      onModelCall: (ms, info = {}) => calls.push({ kind, round, ms, outcome: null, limit_ms: info.limit_ms ?? null, load_ms: info.load_ms ?? null }) }),
+    timer: (kind, round, extra = {}) => ({ now, limits: () => deadline.limits(STEP[kind] || kind),
+      onModelCall: (ms, info = {}) => calls.push({ kind, round, ...extra, ms, outcome: null, limit_ms: info.limit_ms ?? null, load_ms: info.load_ms ?? null }) }),
     check: (step) => deadline.check(step),
     /** The outcome of the latest model call, once its draft has been read and validated. */
     outcome(kind) { const c = calls.at(-1); if (c && c.outcome === null) c.outcome = kind; },
@@ -117,7 +128,9 @@ function l1Timer(clock, budget = null) {
       const l1 = now() - start;
       return { schema: 'qb-l1-timings/1', survey_ms: survey, warmup_ms: warm ? warm.ms : null, initial_call_ms: first ? first.ms : null, validation_ms: validation,
         repair_call_ms: calls.filter((c) => c.kind === 'repair').map((c) => c.ms), l1_ms: l1, calls: calls.map((c) => ({ ...c })),
-        l1_budget: budget ? { ...budget, exhausted: Boolean(budget.enforced) && l1 >= budget.ms } : null };
+        l1_budget: budget ? { ...budget, exhausted: Boolean(budget.enforced) && l1 >= budget.ms } : null,
+        // KAN-106 (staged profile only): the per-requirement fact calls and their repairs
+        ...(calls.some((c) => c.kind === 'fact') ? { fact_call_ms: calls.filter((c) => c.kind === 'fact').map((c) => c.ms), fact_repair_call_ms: calls.filter((c) => c.kind === 'fact_repair').map((c) => c.ms) } : {}) };
     },
   };
 }

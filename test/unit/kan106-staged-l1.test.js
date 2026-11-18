@@ -330,13 +330,16 @@ describe('timing is recorded per call, inside the L1 budget', () => {
     assert.ok(t.l1_ms > 0);
     assert.equal(t.l1_budget.profile, PROFILE);
   });
-  test('an exhausted L1 budget stops before the next call; the timings travel with the error', async () => {
+  test('an exhausted L1 budget stops before the next call; the second call is capped by what is left; the timings travel with the error', async () => {
     let clock = 0;
-    const now = () => (clock += 150_000);
-    await assert.rejects(produce({ now }), (e) => {
+    const now = () => clock;
+    // each faked model call "takes" 250 s on the fake clock (the reply itself is immediate)
+    const script = () => { clock += 250_000; return undefined; };
+    await assert.rejects(produce({ now, script }), (e) => {
       assert.equal(e.code, 'DEADLINE');
       assert.equal(e.kind, 'l1');
-      assert.ok(e.l1_timings.calls.length >= 1 && e.l1_timings.calls.length < 4, String(e.l1_timings.calls.length));
+      assert.match(e.message, /exhausted before the fact call for R-4/);
+      assert.deepEqual(e.l1_timings.calls.map((c) => [c.requirement_id, c.ms, c.limit_ms]), [['R-2', 250_000, 240_000], ['R-3', 250_000, 170_000]]);
       return true;
     });
   });
