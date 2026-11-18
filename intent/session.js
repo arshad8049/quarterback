@@ -53,6 +53,7 @@ const { l1Deadline, monotonicMs } = require('../lib/budget');
 const { contractState, laterStageErrors, requirementDispositions } = require('./contract-state');
 const { preservationConflicts } = require('../verify/preservation');
 const { surveyRepository, surveySummary } = require('./survey');
+const { groundApi, apiSummary } = require('./api-grounding');
 const { parseSelection, answerText } = require('./dsa');
 const { validateDefaults } = require('./requirements');
 
@@ -122,13 +123,14 @@ function l1Timer(clock, budget = null) {
 }
 
 async function compileRounds(request, { repoPath = null, answers = [], ask = null, maxRounds = MAX_ROUNDS } = {}, t) {
-  const survey = repoPath ? t.survey(() => surveyRepository(repoPath, request)) : null;
-  const grounding = surveySummary(survey);
+  // KAN-106 (10706): with the survey, the static API grounding of the request-named modules (never executed).
+  const [survey, api] = repoPath ? t.survey(() => [surveyRepository(repoPath, request), groundApi(repoPath, request)]) : [null, null];
+  const grounding = survey ? { ...surveySummary(survey), api: apiSummary(api) } : null;
   const history = [];
   for (let round = 1; ; round++) {
     const context = survey ? survey.text : null;
     t.check('first draft call');
-    const first = await draft(() => compile(request, context, history, { timer: t.timer('initial', round) }));
+    const first = await draft(() => compile(request, context, history, { timer: t.timer('initial', round), apiGrounding: api }));
     const result = first.contract;
     const cs = first.syntax ? { state: 'invalid' } : t.validate(() => contractState(result));
     t.outcome(first.syntax ? 'syntax' : cs.state);
@@ -153,7 +155,7 @@ async function compileRounds(request, { repoPath = null, answers = [], ask = nul
         throw e;
       }
       let second;
-      try { second = await draft(() => repair(request, context, history, failure, { timer: t.timer('repair', round) })); }
+      try { second = await draft(() => repair(request, context, history, failure, { timer: t.timer('repair', round), apiGrounding: api })); }
       catch (e) {
         // Re-review 1: the correction itself failed (empty reply, network, cancellation). The first
         // draft and its errors travel with the error so the caller can keep them in the run record.

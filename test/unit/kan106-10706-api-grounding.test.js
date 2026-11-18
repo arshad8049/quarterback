@@ -97,7 +97,7 @@ describe('10706 (a): the prompt no longer asks for inferred no-regression constr
 });
 
 describe('10706 (b): static API grounding of literal export forms', () => {
-  test('the pinned serializer: default class export, its instance methods, no named exports; path + sha256 provenance', () => {
+  test('the pinned serializer: default class export, its instance methods, its one static member; path + sha256 provenance', () => {
     const g = grounding().groundSource('lib/serializer.js', PINNED);
     assert.equal(g.status, 'known');
     assert.equal(g.path, 'lib/serializer.js');
@@ -108,7 +108,8 @@ describe('10706 (b): static API grounding of literal export forms', () => {
     assert.equal(g.default.form, 'module.exports = class Serializer');
     for (const m of ['asNumber', 'asInteger', 'asBoolean', 'asString']) assert.ok(g.default.methods.includes(m), m);
     assert.ok(!g.default.methods.includes('constructor'));
-    assert.deepEqual(g.named, []);
+    // the only other name reachable on the export is the class's static method (ns.default.restoreFromState); NOT "Serializer"
+    assert.deepEqual(g.named, [{ name: 'restoreFromState', kind: 'function' }]);
   });
   test('other literal forms are known', () => {
     const G = (src, file = 'lib/x.js') => grounding().groundSource(file, src);

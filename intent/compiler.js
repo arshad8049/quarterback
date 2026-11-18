@@ -21,6 +21,7 @@ const { modelCall } = require('../lib/budget');
 const { validateChecks } = require('../verify/checks/registry');
 const { splitPassages, passageListing, resolveInRequest } = require('./passages');
 const { requestTargets } = require('./request-targets');
+const { groundingExcerpt } = require('./api-grounding');
 
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'), 'utf8');
 
@@ -44,7 +45,7 @@ async function compile(request, repoContext = null, clarification = null, o = {}
   const scopeQuestion = targetQuestion(request, bound);
   if (scopeQuestion) return scopeQuestion;
   const clar = resolveClarifications(request, bound);
-  return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry), clar, o.timer);
+  return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry, o.apiGrounding), clar, o.timer, o.apiGrounding);
 }
 
 /**
@@ -62,7 +63,7 @@ async function repair(request, repoContext, clarification, failure, o = {}) {
     : clarification ? [{ question: null, answer: String(clarification) }] : [];
   const clar = resolveClarifications(request, history.map((h) => ({ question_id: h.question_id ?? null, answer: h.answer })));
   const section = failure.kind === 'syntax' ? syntaxSection(failure.diagnostic) : repairSection(failure.contract, failure.errors, failure.later_errors || []);
-  return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar, o.timer);
+  return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry, o.apiGrounding)}\n\n${section}`, clar, o.timer, o.apiGrounding);
 }
 
 const TARGET_QUESTION = 'scope.target';
@@ -158,8 +159,12 @@ function repairSection(rejected, errors, laterErrors = []) {
   ].join('\n');
 }
 
-/** One model call for a contract draft, normalized by the same rules as every contract. */
-async function draftContract(request, userContent, clar, timer = null) {
+/**
+ * One model call for a contract draft, normalized by the same rules as every contract. KAN-106
+ * (10706): QB's static API grounding (intent/api-grounding.js) is attached to the draft by QB, never
+ * taken from the model, so the validator can refuse a check naming an export proved absent.
+ */
+async function draftContract(request, userContent, clar, timer = null, apiGrounding = null) {
   // QB-21: deadline-bound, cancellable, concurrency-bounded (lib/budget.js)
   const t0 = timer ? timer.now() : 0;
   // KAN-106 (10674 F-d): the call's limit is min(per-call cap, what is left of L1, the run deadline).
@@ -190,6 +195,8 @@ async function draftContract(request, userContent, clar, timer = null) {
   if (result && !result.clarifying_question) {
     if (clar.resolved.length) result.clarifications = clar.resolved;
     else delete result.clarifications;
+    if (apiGrounding) result.api_grounding = apiGrounding;
+    else delete result.api_grounding;
   }
   return result;
 }
@@ -217,7 +224,7 @@ async function warmup(timer = null) {
  * The compiler input. A clarification bound to a DSA question is labelled with its
  * id, and a resolved selection is given as "<choice> = <value>" (QB-17 re-review 2).
  */
-function buildUserContent(request, repoContext, history, byEntry = []) {
+function buildUserContent(request, repoContext, history, byEntry = [], apiGrounding = null) {
   let content = `REQUEST:\n${request}`;
   // KAN-106: the request as numbered passages; requirements cite these ids and QB copies the text.
   const passages = splitPassages(request);
@@ -232,6 +239,9 @@ function buildUserContent(request, repoContext, history, byEntry = []) {
     content += h.question ? `\n\nCLARIFICATION ${i + 1}:\n${q}\nA: ${answer}` : `\n\nCLARIFICATION:\n${answer}`;
   });
   if (repoContext) content += `\n\nREPOSITORY SURVEY (read-only, for grounding — the request decides what to do):\n${repoContext}`;
+  // KAN-106 (10706): the exports and methods of the request-named modules, read statically with path + sha256.
+  const api = groundingExcerpt(apiGrounding);
+  if (api) content += `\n\n${api}`;
   return content;
 }
 

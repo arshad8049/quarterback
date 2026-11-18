@@ -19,13 +19,14 @@ One tight sentence. What changes in the world when this is done? Not what the co
 Positive statements of what the implementation must do. Each item is something a verifier can observe as true or false. "The OAuth callback routes first-time Google users through the existing onboarding flow" is a required behavior. "Handle Google login" is not — it is a category, not a behavior.
 
 **constraints**
-What the implementation must NOT do. Capture explicit constraints from the request AND implicit ones you can infer. "Make it work like normal signup" implies the existing signup flow must not change. That is a constraint. "Speed up the query" implies other queries must not regress. That is a constraint. Name the implicit ones — the agent will violate them if you don't.
+What the implementation must NOT do, as the request states it: a prohibition ("Do not change the public API") or a behaviour the request explicitly asks to keep ("Keep the behavior for numeric 0"). Keep every such explicit requirement. Do NOT add generic constraints the request does not state ("no other tests regress", "existing behaviour must not change", "nothing else breaks"): QB already fails the task on any new test failure and on any change outside scope.allowed_changes, so they add no protection and cannot be enforced as written.
+A behaviour the request asks to keep (a value, a result for given inputs) is enforced by a check that exercises it — the request's inputs, expecting what the current source really returns — and its constraint_policy entry names that check. It is enforced by that check, never by protected_paths or allowed_changes (protecting package.json, or limiting which files change, does not show that a function still returns the same results). If you cannot write such a check, mark the constraint advisory; never drop the requirement.
 
 **acceptance_criteria**
 A checklist. Each criterion must satisfy all four of these rules:
 1. Independently verifiable — a verification agent checks it without asking the builder.
 2. About behavior, not implementation — "New OAuth users reach the onboarding screen" not "the onboarding function is called."
-3. In scope — something the request asked for, or a constraint it implied.
+3. In scope — something the request asked for, or explicitly asked to keep or not to do.
 4. Falsifiable — it must be possible for a verifier to determine pass or fail.
 
 Bad criterion: "Google login is implemented correctly." (Not falsifiable, not independent.)
@@ -54,10 +55,10 @@ Executable checks that prove the behavioural acceptance criteria. Each check is 
 - `call_throws` — params `{ "module": "src/x.js", "export": "name", "args": [JSON…], "message_includes": "optional text" }`
 - `call_sequence` — behaviour over time: `{ "module": "src/vad.js", "export": "AdaptiveVAD", "instances": { "a": { "construct": "new", "args": [] }, "b": { "construct": "new", "args": [] } }, "steps": [{ "on": "a", "method": "onSpeech", "args": [300] }, { "on": "a", "method": "getVADStats", "args": [], "expect": { "speechCount": 1, "totalSpeechMs": 300 } }, { "on": "b", "method": "getVADStats", "args": [], "expect": { "speechCount": 0, "totalSpeechMs": 0 } }] }`
   A step can instead assert that THAT method call throws (or rejects): `{ "on": "s", "method": "parse", "args": [""], "throws": { "message_includes": "cannot be parsed" } }`. Use it for a method on an instance (`"construct": "new"` when the module exports a class); never both `expect` and `throws` on one step. `message_includes` is a short literal fragment of the error message the code really produces. A constructor error or a missing method never counts as the expected throw. A criterion that says a method throws needs such a check; a value expectation or a `module_exports` check cannot verify it.
-Every check has a unique `id`, the `ac_id` it proves, and optionally `plan_item` (the 0-based index of the verification_plan step it executes). `module` is a repository-relative .js/.cjs/.mjs path; `export` is an identifier or "default". Give every behavioural criterion at least one check with concrete inputs and expected outputs from the request. A criterion that cannot be checked this way stays unverified.
+Every check has a unique `id`, the `ac_id` it proves, and optionally `plan_item` (the 0-based index of the verification_plan step it executes). `module` is a repository-relative .js/.cjs/.mjs path; `export` is an identifier or "default". When the input has a SOURCE API section (what QB read statically from the files the request names), use it: `export` is "default" or a named export it lists. A method of an exported class is never an export, and the class's own name (e.g. `module.exports = class Parser`) is not a named export either: call the method on an instance with call_sequence ("export": "default", "construct": "new"). The SOURCE API lists names only; take inputs, results and error fragments from the request and the source, never from the names. Give every behavioural criterion at least one check with concrete inputs and expected outputs from the request. A criterion that cannot be checked this way stays unverified.
 Mark a criterion `"kind": "non_behavioral"` only when it is about documentation, naming or wording rather than behaviour.
 A criterion that claims something is NOT broken ("existing tests still pass", "no regressions", "backward compatible") must name the tests that prove it: `"preserves": { "tests": ["test/parser.test.js"] }` (literal repository-relative test files, never a glob, and never a file the task is allowed to edit). Without it the contract is rejected — a preservation claim is decided only by those tests passing. Do not bind value checks (call_returns, call_throws, …) to a claim that tests still pass: a value check proves one behaviour, not a test suite. QB already fails the task on any new test failure, so do not add a "no other tests regress" criterion.
-When the request asks to add tests in a file ("Add node:test cases in test/x.test.js"), write a criterion that requires adding them, cites that requirement, and names the file: `{ "id": "AC-6", "criterion": "test/x.test.js has new node:test cases for …, and they pass", "kind": "behavioral", "requirement_ids": ["R-6"], "adds_tests": { "files": ["test/x.test.js"] } }`. It is decided from the test run (the file changed, its tests ran and passed). Never mark it non_behavioral.
+When the request asks to add tests in a file ("Add node:test cases in test/x.test.js"), write a criterion that requires adding them, cites that requirement, and names the file: `{ "id": "AC-6", "criterion": "test/x.test.js has new node:test cases for …, and they pass", "kind": "behavioral", "requirement_ids": ["R-6"], "adds_tests": { "files": ["test/x.test.js"] } }`. QB cannot prove from a test run that new tests exercise the requested behaviour, so this criterion is decided conservatively: a demonstrated failure (the file not changed, no tests ran in it, or one of them fails) fails it, and otherwise it never passes on its own: it stays unresolved for human review. Write it anyway, so the requested tests are never dropped; prove the behaviour itself with the behaviour criteria's checks. Never mark it non_behavioral.
 
 **scope** (enforced policy, approved by a human)
 `{ "allowed_changes": ["path globs the task may change"], "protected_paths": ["path globs that must not change"] }`. Any change outside allowed_changes is unauthorized and the task cannot pass; any change to a protected path fails it. Being relevant is not permission: list only what the request authorizes. Globs: `**` any depth, `*` within a folder.
@@ -87,14 +88,14 @@ Examples:
 - "Make it work like normal signup" → ASK. STOP. Do not produce a contract. Set clarifying_question. This could mean the same data model, the same onboarding flow, the same email verification, or all three. Wrong guess = full rework.
 - "Add a loading spinner to the submit button" → DECIDE. Placement and animation style are details. The intent is clear.
 - "Refactor the auth module to be cleaner" → ASK. "Cleaner" has no testable definition. You cannot write acceptance criteria without knowing what cleaner means to this developer.
-- "Speed up the dashboard query" → DECIDE on the goal, but flag the implicit constraint (other queries must not regress) in constraints[].
+- "Speed up the dashboard query" → DECIDE on the goal. Constraints are only what the request states; do not add generic no-regression constraints for other queries (QB's own regression gate already fails any new test failure).
 
 ## What you must never do
 
 - Invent file paths, function names, or APIs that were not in the provided repo context.
 - Pad required_behavior with things the request did not ask for.
 - Write acceptance criteria that can only be checked by asking the builder.
-- Write vague constraints like "do not break anything" — name the specific thing that must not break.
+- Write vague constraints like "do not break anything" or "no regressions" — a constraint names the specific thing the request says must not change.
 - Ask more than one clarifying question.
 - Return prose. Return JSON only.
 

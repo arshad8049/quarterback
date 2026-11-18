@@ -22,6 +22,7 @@ const { clarificationErrors } = require('./dsa');
 const { targetErrors } = require('./request-targets');
 const { addedTestsErrors } = require('../verify/added-tests');
 const { checkFidelityErrors } = require('./check-fidelity');
+const { apiGroundingErrors } = require('./api-grounding');
 
 function contractState(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c)) return { state: 'invalid', errors: ['contract is not an object'] };
@@ -52,7 +53,8 @@ function contractState(c) {
   // KAN-106 (10674): the request's own targets are allowed and unprotected, requested tests have a
   // criterion bound to them (adds_tests), and preservation bindings are real named-test evidence.
   if (!errors.length) errors.push(...policyErrors(c), ...targetErrors(c, 'scope'), ...testPolicyErrors(c), ...preservationErrors(c), ...addedTestsErrors(c),
-    ...checkFidelityErrors(c));   // KAN-106 (10690): checks that cannot be evidence for their criterion
+    ...checkFidelityErrors(c),   // KAN-106 (10690): checks that cannot be evidence for their criterion
+    ...apiGroundingErrors(c));   // KAN-106 (10706): a check naming an export proved absent from QB's static grounding
   // QB-17 re-review 2: a recorded clarification's parameterized choice carries a valid value.
   if (!errors.length) errors.push(...clarificationErrors(c));
   // QB-13: every computable example is recomputed with trusted arithmetic; a wrong
