@@ -57,7 +57,8 @@ describe('every request clause has a traceable disposition', () => {
     'an uncovered requirement':                       [traced({ acceptance_criteria: ACS.slice(0, 3) }), /requirement R-4 .* is not covered by any acceptance criterion/],
     'an unsupported addition':                        [traced({ acceptance_criteria: [...ACS, { id: 'AC-5', criterion: 'logs every frame to the console', requirement_ids: [] }] }), /AC-5 traces to no requirement \(unsupported addition\)/],
     'an unknown requirement':                         [traced({ acceptance_criteria: [...ACS.slice(0, 3), { ...ACS[3], requirement_ids: ['R-9'] }] }), /AC-4 names unknown requirement "R-9"/],
-    'a duplicate AC':                                 [traced({ acceptance_criteria: [...ACS, { id: 'AC-5', criterion: 'speechCount counts every detected speech event.', requirement_ids: ['R-2'] }] }), /AC-5 duplicates AC-2/],
+    // KAN-106 (10725): the duplicate key is the exact text, trimmed only (a trailing "." is no longer ignored)
+    'a duplicate AC':                                 [traced({ acceptance_criteria: [...ACS, { id: 'AC-5', criterion: ' speechCount counts every detected speech event ', requirement_ids: ['R-2'] }] }), /AC-5 duplicates AC-2/],
     'an implied requirement without a reason':        [traced({ requirements: [...REQS, { id: 'R-5', implied: true, text: 'existing tests keep passing' }] }), /R-5 is implied but has no text or reason/],
   };
   for (const [name, [c, re]] of Object.entries(BAD)) {

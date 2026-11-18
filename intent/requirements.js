@@ -130,7 +130,10 @@ function validateTraceability(c) {
       if (!coveredBy.has(r)) errors.push(`${ac?.id} names unknown requirement ${JSON.stringify(r)}`);
       else coveredBy.get(r).push(ac.id);
     }
-    const t = norm(ac?.criterion).replace(/[^a-z0-9 ]/g, '');
+    // KAN-106 (10725): the exact text, trimmed only. Lowercasing and stripping punctuation made
+    // "returns '0' for the input '0'" and "… for the input 0" collide (run e578f99b); quotes, case,
+    // operators and internal whitespace can be the whole difference between two criteria.
+    const t = typeof ac?.criterion === 'string' ? ac.criterion.trim() : '';
     if (t && seenText.has(t)) errors.push(`${ac.id} duplicates ${seenText.get(t)}`);
     else if (t) seenText.set(t, ac.id);
   }
