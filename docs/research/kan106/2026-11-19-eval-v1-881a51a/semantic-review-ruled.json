@@ -1,0 +1,22 @@
+{
+  "_label": "KAN-106 eval v1, batch 20261119T200955Z: the SENIOR's semantic ruling (10765 and 10770), recorded as an annotation. It does not overwrite semantic-review-proposed.json, the raw contracts or the frozen mechanical scores.",
+  "ruled_by": "senior, KAN-106 10765 (S2, S3, U2, S1/S5 rule) and 10770 (S1/S5 accepted; reviewed outcome)",
+  "items": {
+    "S1-slug": { "ruling": "acceptable", "limit": "represented, with sampled executable coverage: R-2 quotes the general rule verbatim and AC-1 links to it; the check covers the stated example only" },
+    "S2-formatter": { "ruling": "failure", "limit": "changed argument shapes; a schema/support-design failure (the staged factSchema allows scalar args only)" },
+    "S3-percent": { "ruling": "failure", "limit": "the explicitly required message text 'whole must not be zero' is missing" },
+    "S4-parsebool": { "ruling": "acceptable", "limit": "stated examples and the protection are represented" },
+    "S5-clock": { "ruling": "acceptable", "limit": "represented, with sampled executable coverage: R-2 quotes the general rule verbatim and AC-1 links to it" },
+    "S6-money": { "ruling": "acceptable", "limit": "stated examples and the requested-test criterion are represented; requested-test adequacy remains human-reviewed" },
+    "U1-userrepo": { "ruling": "intended refusal", "limit": null },
+    "U2-roundto": { "ruling": "failure", "limit": "guessed behaviour for an ambiguous request" }
+  },
+  "summary": {
+    "supported_acceptable": "4/6 under the declared rubric (S1/S5 sampled coverage; S6 requested-test adequacy human-reviewed)",
+    "intended_refusals": "1/2",
+    "mechanical_controls": "5/6",
+    "latency": "median 41.3 s, max 48.0 s, 6/6 supported items",
+    "progression_thresholds": "FAILED",
+    "scope": "a small developer-authored diagnostic; NOT a population reliability estimate, a completed coding-task success rate or beta qualification"
+  }
+}

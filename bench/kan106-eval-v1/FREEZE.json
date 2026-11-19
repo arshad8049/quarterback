@@ -1,6 +1,6 @@
 {
-  "format": "qb-kan106-eval-freeze/3",
-  "_label": "Freeze v3: a SCORING-ONLY correction after the one batch run under freeze v2. The batch is not repeated: its run records (QB 881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e, evidence 20261119T200955Z) are re-scored with this scorer. Launcher, flags, model, digest, items and controls are unchanged. Changing any listed file is a new freeze.",
+  "format": "qb-kan106-eval-freeze/4",
+  "_label": "Freeze v4: a LABELS-ONLY analysis revision (10770) after the one batch run under freeze v2. The batch is not repeated; its records are re-scored. Launcher, flags, model, digest, items, controls and every result/denominator are unchanged. Changing any listed file is a new freeze.",
   "supersedes": {
     "freeze": "qb-kan106-eval-freeze/1",
     "qb_commit": "c89ddf2292a2c244ee39f44ad910bf9fa72a8b81",
@@ -24,6 +24,9 @@
   ],
   "changes_from_v2": [
     "score.js EXIT_FOR: DRY_RUN 0 -> 1. qb.js exits 0 only on verdict pass, so every completed dry run exits 1; the v2 scorer rejected all of them as \"exit code 1 does not match outcome DRY_RUN\". Found after the batch; producer test kan106-eval-v1-exit-codes.test.js. Nothing else changed."
+  ],
+  "changes_from_v3": [
+    "score.js: the per-item field agent_launched (true for ANY manifest attempt, including a dry-run adapter attempt) is replaced by adapter_attempt_recorded (same value) and coding_agent_launched (from the recorded agent type: false for dry-run/manual, null when unknown). The intended-refusal rule still requires no adapter attempt. Senior terminology correction, KAN-106 10770."
   ],
   "order": [
     "S1-slug",
@@ -151,7 +154,7 @@
     "items/U2-roundto/request.txt": "ac6d5ead5de8f0eeb5de78965ba1b13535ed0c452121190271bb2946eb27ef5c",
     "materialize.js": "34dc00c9b515b20f201f665f3da8b48cc04763a7ac3ef3657e0be8ade6e12dd5",
     "batch.js": "77ec083d5d0918b285c5be50bd5483600f2ba3e83e1f53927eb405d1714162f6",
-    "score.js": "5d6d6679f008c797772a418039f0936b84611167034cf1ea5ae61be385843698",
+    "score.js": "dd56854f17165b148b108defdc4f3a616a9bc686a25b35af7a0d062c2ada599e",
     "validate-controls.js": "83c22f623aee3bfd5fa41799e39ac864fa99b3ae7565edf8de7ff72d0ebde3c0",
     "check-freeze.js": "c585446739446bf579a8e8439d8c7daffd24c44d05a0fdb5a382b8bfe4bb686b",
     "run-batch.sh": "ab26f686da892ea5ab4f2b17ed13bf1190d28eac3e53e244bc823df41351367b",

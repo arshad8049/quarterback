@@ -28,13 +28,14 @@ test('every published file is in HASHES.json with its published sha256; only the
     if (e.original_sha256 && e.original_sha256 !== e.published_sha256) assert.ok(/^(batch\.json|runs\/[^/]+\/(manifest\.json|events\.jsonl))$/.test(f) && e.changed, `${f}: an undeclared change`);
   }
   for (const f of ['scores.json', 'scores-v3-f907d97.json', 'runs.json', 'base-shas.json', 'semantic-review-proposed.json']) assert.equal(HASHES.files[f].changed, null, f);
+  for (const f of ['scores-freeze-v4.json', 'semantic-review-ruled.json']) assert.ok(HASHES.files[f].added_after_publication, f);
 });
 
 test('no private paths anywhere in the pack', () => {
   for (const f of walk(PACK)) assert.doesNotMatch(fs.readFileSync(path.join(PACK, f), 'utf8'), /\/Users\/|\/home\/|\/private\/var|\/var\/folders|qb-evidence\/kan106-eval-v1\/2026/, f);
 });
 
-test('generation 881a51a and analysis f907d97: the original v2 scores are kept, and re-scoring the pack offline reproduces the corrected scores byte for byte', () => {
+test('generation 881a51a; the v2 and v3 analyses are kept; re-scoring the pack offline reproduces the current (freeze v4, labels-only) scores byte for byte', () => {
   const runs = JSON.parse(fs.readFileSync(path.join(PACK, 'runs.json'), 'utf8'));
   for (const { run_id: id } of Object.values(runs)) {
     assert.equal(JSON.parse(fs.readFileSync(path.join(PACK, 'runs', id, 'manifest.json'), 'utf8')).qb_revision, '881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e');
@@ -44,10 +45,16 @@ test('generation 881a51a and analysis f907d97: the original v2 scores are kept, 
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-pack-')), 'rescore.json');
   try {
     fs.writeFileSync(out, JSON.stringify(scoreBatchDir(PACK), null, 2) + '\n');
-    assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(PACK, 'scores-v3-f907d97.json'), 'utf8'));
+    assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
   } finally { fs.rmSync(path.dirname(out), { recursive: true, force: true }); }
   const v3 = JSON.parse(fs.readFileSync(path.join(PACK, 'scores-v3-f907d97.json'), 'utf8'));
+  const v4 = JSON.parse(fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
   assert.deepEqual(v3.batch_problems, []);
+  // 10770: v4 differs from v3 ONLY by the label change (agent_launched -> adapter_attempt_recorded, + coding_agent_launched)
+  const norm = (s) => s.items.map(({ agent_launched: a, coding_agent_launched: _c, adapter_attempt_recorded: b, ...x }) => JSON.stringify({ ...x, attempt: a === undefined ? b : a }));
+  assert.deepEqual(norm(v4), norm(v3));
+  assert.deepEqual(v4.summary, v3.summary);
+  assert.ok(v4.items.every((x) => x.coding_agent_launched === false));
   assert.deepEqual(v3.items.map((x) => [x.id, x.result]), [['S1-slug', 'checklist'], ['S2-formatter', 'checklist'], ['S3-percent', 'checklist'], ['S4-parsebool', 'checklist'],
     ['S5-clock', 'checklist'], ['S6-money', 'checklist'], ['U1-userrepo', 'intended_refusal'], ['U2-roundto', 'not_refused']]);
 });
