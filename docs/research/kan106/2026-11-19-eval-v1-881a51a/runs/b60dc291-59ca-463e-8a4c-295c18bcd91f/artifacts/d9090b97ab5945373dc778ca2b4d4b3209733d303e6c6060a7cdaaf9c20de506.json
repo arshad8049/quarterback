@@ -1,0 +1,29 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    }
+  ],
+  "call_targets": [],
+  "unsupported_targets": [
+    {
+      "label": "UserRepo.find (lib/users.js)",
+      "module": "lib/users.js",
+      "kind": "method",
+      "export": "default",
+      "method": "find",
+      "grounding": "unsupported",
+      "constructor_args": "required_or_unknown",
+      "reason": "the constructor of UserRepo in lib/users.js may need arguments QB cannot supply (QB constructs with new and no arguments)"
+    }
+  ],
+  "fragments": [],
+  "fragment_list": [],
+  "facts": []
+}

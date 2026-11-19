@@ -1,0 +1,145 @@
+{
+  "id": "260a6c43-cb4e-4087-ba05-8fbfb200afd6",
+  "contract_id": "7de2f601-92a6-4660-a7bd-07ac5ed37722",
+  "execution_id": "83613667-62dc-4474-acc4-b05ac1740554",
+  "generated_at": "2026-11-19T20:11:58.482Z",
+  "verdict": "no-diff",
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "criterion": "percent(1, 3) returns 33.",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-1",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "percent(2, 3) returns 67.",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-2",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "percent(1, 0) throws an error.",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-3",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "add(2, 3) still returns 5 (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-4",
+          "status": "error"
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "test_results": null,
+  "test_outcome": {
+    "outcome": "not_run",
+    "reason": "no_test_evidence",
+    "runner": null,
+    "exit_code": null,
+    "state": null,
+    "duration_ms": null,
+    "tree": null
+  },
+  "outcomes": {
+    "execution": "dry_run",
+    "policy": "unresolved",
+    "tests": "not_run",
+    "criteria": "unknown"
+  },
+  "oracle": {
+    "approved": false,
+    "reason": "not_approved",
+    "contract_hash": "d0bac4354a6d0935b23fa528cc1a537da6281853b6e1029d6faf35acc3aef035",
+    "via": null
+  },
+  "checks": {
+    "registry": "qb-checks/2",
+    "requested": [
+      {
+        "id": "CHK-1",
+        "ac_id": "AC-1",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-2",
+        "ac_id": "AC-2",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-3",
+        "ac_id": "AC-3",
+        "adapter": "call_throws"
+      },
+      {
+        "id": "CHK-4",
+        "ac_id": "AC-4",
+        "adapter": "call_returns"
+      }
+    ],
+    "results": [],
+    "rejected": [],
+    "error": "checks_not_run"
+  },
+  "policy": {
+    "allowed_changes": [
+      "lib/math.js"
+    ],
+    "protected_paths": [],
+    "changed_files": [],
+    "out_of_scope": [],
+    "protected_touched": [],
+    "constraints": [
+      {
+        "index": 0,
+        "text": "Keep the existing behaviour (P5 \"Keep add(2, 3) returning 5.\"): add(2, 3) still returns 5.",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-4"
+        ]
+      }
+    ],
+    "effect": "unresolved"
+  },
+  "verification_plan_status": [
+    {
+      "item": "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+      "checks": [],
+      "status": "not_executed"
+    }
+  ],
+  "scope_violations": [],
+  "repair_hints": []
+}

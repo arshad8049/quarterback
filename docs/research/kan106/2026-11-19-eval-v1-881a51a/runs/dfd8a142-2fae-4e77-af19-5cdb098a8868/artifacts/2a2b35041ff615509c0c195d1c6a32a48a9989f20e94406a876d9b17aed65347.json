@@ -1,0 +1,128 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "change"
+    },
+    {
+      "passage_id": "P4",
+      "role": "keep"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "slugify (lib/slug.js)",
+      "module": "lib/slug.js",
+      "kind": "function",
+      "export": "slugify",
+      "grounding": "grounded"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "slugify (lib/slug.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"slugify (lib/slug.js)\",\n      \"args\": [\"a  b\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"a-b\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"slugify (lib/slug.js)\",\n      \"args\": [\"Hello World\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"hello-world\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 406,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "slugify (lib/slug.js)",
+          "args": [
+            "a  b"
+          ],
+          "outcome": "returns",
+          "expected": "a-b",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-2",
+          "call": "slugify (lib/slug.js)",
+          "args": [
+            "Hello World"
+          ],
+          "outcome": "returns",
+          "expected": "hello-world",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"slugify (lib/slug.js)\",\n      \"args\": [\"a  b\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"a-b\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 205,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "slugify (lib/slug.js)",
+          "args": [
+            "a  b"
+          ],
+          "outcome": "returns",
+          "expected": "a-b",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-4",
+      "passage_id": "P4",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"slugify (lib/slug.js)\",\n      \"args\": [\"Hello World\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"hello-world\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 220,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-4",
+          "call": "slugify (lib/slug.js)",
+          "args": [
+            "Hello World"
+          ],
+          "outcome": "returns",
+          "expected": "hello-world",
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

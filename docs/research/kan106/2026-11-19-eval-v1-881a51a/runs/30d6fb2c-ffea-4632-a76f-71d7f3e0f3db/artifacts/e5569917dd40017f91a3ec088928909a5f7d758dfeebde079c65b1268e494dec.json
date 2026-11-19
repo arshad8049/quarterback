@@ -1,0 +1,156 @@
+{
+  "id": "71b270cd-d9f5-48f1-b012-37ebd161da70",
+  "contract_id": "8093b7c5-f2ba-44e4-8538-9775dbbd4d70",
+  "execution_id": "6c5a132e-9672-4a15-bc4d-7e7800a5a7f1",
+  "generated_at": "2026-11-19T20:14:01.147Z",
+  "verdict": "no-diff",
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "criterion": "formatCents(123456) returns \"$1,234.56\".",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-1",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "formatCents(5) still returns \"$0.05\" (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-2",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "formatCents(99900) still returns \"$999.00\" (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-3",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "New tests are added in test/money.test.js and they pass (requested tests: decided from the test run, for human review).",
+      "met": false,
+      "method": "test-runner+change-set",
+      "evidence": "not changed by the task: test/money.test.js",
+      "repair": "Add the requested tests in test/money.test.js"
+    }
+  ],
+  "failures": [
+    "AC-4"
+  ],
+  "test_results": null,
+  "test_outcome": {
+    "outcome": "not_run",
+    "reason": "no_test_evidence",
+    "runner": null,
+    "exit_code": null,
+    "state": null,
+    "duration_ms": null,
+    "tree": null
+  },
+  "outcomes": {
+    "execution": "dry_run",
+    "policy": "unresolved",
+    "tests": "not_run",
+    "criteria": "failed"
+  },
+  "oracle": {
+    "approved": false,
+    "reason": "not_approved",
+    "contract_hash": "c370094b07d4f0793b7505de18b9157e68264dba4d276f4023b9522042074236",
+    "via": null
+  },
+  "checks": {
+    "registry": "qb-checks/2",
+    "requested": [
+      {
+        "id": "CHK-1",
+        "ac_id": "AC-1",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-2",
+        "ac_id": "AC-2",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-3",
+        "ac_id": "AC-3",
+        "adapter": "call_returns"
+      }
+    ],
+    "results": [],
+    "rejected": [],
+    "error": "checks_not_run"
+  },
+  "policy": {
+    "allowed_changes": [
+      "lib/money.js",
+      "test/money.test.js"
+    ],
+    "protected_paths": [],
+    "changed_files": [],
+    "out_of_scope": [],
+    "protected_touched": [],
+    "constraints": [
+      {
+        "index": 0,
+        "text": "Keep the existing behaviour (P4 \"Keep formatCents(5) returning \\\"$0.05\\\" and formatCents(99900) returning \\\"$999.00\\\".\"): formatCents(5) still returns \"$0.05\".",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-2"
+        ]
+      },
+      {
+        "index": 1,
+        "text": "Keep the existing behaviour (P4 \"Keep formatCents(5) returning \\\"$0.05\\\" and formatCents(99900) returning \\\"$999.00\\\".\"): formatCents(99900) still returns \"$999.00\".",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-3"
+        ]
+      }
+    ],
+    "effect": "unresolved"
+  },
+  "verification_plan_status": [
+    {
+      "item": "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+      "checks": [],
+      "status": "not_executed"
+    },
+    {
+      "item": "Run the requested test files: each must be in the change and pass (human review decides whether they test the change).",
+      "checks": [],
+      "status": "not_executed"
+    }
+  ],
+  "scope_violations": [],
+  "repair_hints": [
+    {
+      "criterion_id": "AC-4",
+      "diagnosis": "not changed by the task: test/money.test.js",
+      "suggested_fix": "Add the requested tests in test/money.test.js"
+    }
+  ]
+}

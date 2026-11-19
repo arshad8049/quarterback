@@ -1,0 +1,70 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "roundTo (lib/round.js)",
+      "module": "lib/round.js",
+      "kind": "function",
+      "export": "roundTo",
+      "grounding": "grounded"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "roundTo (lib/round.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"roundTo (lib/round.js)\",\n      \"args\": [-1.234, 2],\n      \"outcome\": \"returns\",\n      \"expected\": -1.23,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"roundTo (lib/round.js)\",\n      \"args\": [-4.567, 1],\n      \"outcome\": \"returns\",\n      \"expected\": -4.6,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 398,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "roundTo (lib/round.js)",
+          "args": [
+            -1.234,
+            2
+          ],
+          "outcome": "returns",
+          "expected": -1.23,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-2",
+          "call": "roundTo (lib/round.js)",
+          "args": [
+            -4.567,
+            1
+          ],
+          "outcome": "returns",
+          "expected": -4.6,
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "change"
+    },
+    {
+      "passage_id": "P4",
+      "role": "keep"
+    },
+    {
+      "passage_id": "P5",
+      "role": "protect",
+      "file": "lib/defaults.js"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "parseBool (lib/env.js)",
+      "module": "lib/env.js",
+      "kind": "function",
+      "export": "parseBool",
+      "grounding": "grounded"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "parseBool (lib/env.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"parseBool (lib/env.js)\",\n      \"args\": [\"yes\"],\n      \"outcome\": \"returns\",\n      \"expected\": true,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"parseBool (lib/env.js)\",\n      \"args\": [\"1\"],\n      \"outcome\": \"returns\",\n      \"expected\": true,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 387,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "parseBool (lib/env.js)",
+          "args": [
+            "yes"
+          ],
+          "outcome": "returns",
+          "expected": true,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-2",
+          "call": "parseBool (lib/env.js)",
+          "args": [
+            "1"
+          ],
+          "outcome": "returns",
+          "expected": true,
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"parseBool (lib/env.js)\",\n      \"args\": [\"yes\"],\n      \"outcome\": \"returns\",\n      \"expected\": true,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"parseBool (lib/env.js)\",\n      \"args\": [\"1\"],\n      \"outcome\": \"returns\",\n      \"expected\": true,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 387,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "parseBool (lib/env.js)",
+          "args": [
+            "yes"
+          ],
+          "outcome": "returns",
+          "expected": true,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-3",
+          "call": "parseBool (lib/env.js)",
+          "args": [
+            "1"
+          ],
+          "outcome": "returns",
+          "expected": true,
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-4",
+      "passage_id": "P4",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"parseBool (lib/env.js)\",\n      \"args\": [\"true\"],\n      \"outcome\": \"returns\",\n      \"expected\": true,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"parseBool (lib/env.js)\",\n      \"args\": [\"false\"],\n      \"outcome\": \"returns\",\n      \"expected\": false,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 393,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-4",
+          "call": "parseBool (lib/env.js)",
+          "args": [
+            "true"
+          ],
+          "outcome": "returns",
+          "expected": true,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-4",
+          "call": "parseBool (lib/env.js)",
+          "args": [
+            "false"
+          ],
+          "outcome": "returns",
+          "expected": false,
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

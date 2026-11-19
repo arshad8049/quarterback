@@ -1,0 +1,273 @@
+{
+  "id": "3e4570d8-e3fb-4e97-9fba-aac707d0b979",
+  "created_at": "2026-11-19T20:12:39.331Z",
+  "raw_request": "In lib/env.js, make parseBool() also treat \"1\" and \"yes\" as true, so parseBool(\"yes\") returns true and parseBool(\"1\") returns true. Keep parseBool(\"true\") returning true and parseBool(\"false\") returning false. Do not change lib/defaults.js.",
+  "repo_path": null,
+  "goal": "In lib/env.js, make parseBool() also treat \"1\" and \"yes\" as true, so parseBool(\"yes\") returns true and parseBool(\"1\") returns true. Keep parseBool(\"true\") returning true and parseBool(\"false\") returning false. Do not change lib/defaults.js.",
+  "required_behavior": [
+    "parseBool(\"yes\") returns true.",
+    "parseBool(\"1\") returns true.",
+    "parseBool(\"true\") still returns true (behaviour kept).",
+    "parseBool(\"false\") still returns false (behaviour kept)."
+  ],
+  "constraints": [
+    "Keep the existing behaviour (P4 \"Keep parseBool(\\\"true\\\") returning true and parseBool(\\\"false\\\") returning false.\"): parseBool(\"true\") still returns true.",
+    "Keep the existing behaviour (P4 \"Keep parseBool(\\\"true\\\") returning true and parseBool(\\\"false\\\") returning false.\"): parseBool(\"false\") still returns false.",
+    "Do not change lib/defaults.js (P5 \"Do not change lib/defaults.js.\")."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "parseBool(\"yes\") returns true.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "parseBool(\"1\") returns true.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "parseBool(\"true\") still returns true (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "parseBool(\"false\") still returns false (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments)."
+  ],
+  "relevant_context": [
+    "lib/env.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/env.js",
+        "export": "parseBool",
+        "args": [
+          "yes"
+        ],
+        "expect": true
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/env.js",
+        "export": "parseBool",
+        "args": [
+          "1"
+        ],
+        "expect": true
+      }
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/env.js",
+        "export": "parseBool",
+        "args": [
+          "true"
+        ],
+        "expect": true
+      }
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/env.js",
+        "export": "parseBool",
+        "args": [
+          "false"
+        ],
+        "expect": false
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2",
+  "scope": {
+    "allowed_changes": [
+      "lib/env.js"
+    ],
+    "protected_paths": [
+      "lib/defaults.js"
+    ]
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-4"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "protected_paths",
+          "ref": "lib/defaults.js"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/env.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make parseBool() also treat \"1\" and \"yes\" as true,"
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ],
+      "quote": "so parseBool(\"yes\") returns true and parseBool(\"1\") returns true."
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ],
+      "quote": "Keep parseBool(\"true\") returning true and parseBool(\"false\") returning false."
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ],
+      "quote": "Do not change lib/defaults.js.",
+      "disposition": "context",
+      "reason": "do-not-change file lib/defaults.js: enforced by scope.protected_paths"
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/env.js",
+        "sha256": "c0c99d19c56c3b1cc76b67c2407aac0435d3f6edb61c1019807dec2ae6c019bf",
+        "bytes": 103,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": [
+          {
+            "name": "parseBool",
+            "kind": "function"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "parseBool",
+            "kind": "definition",
+            "start_line": 3,
+            "end_line": 5,
+            "truncated": false,
+            "block_end_line": 5,
+            "source": "working tree"
+          },
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 7,
+            "end_line": 7,
+            "truncated": false,
+            "block_end_line": 7,
+            "source": "working tree"
+          }
+        ]
+      },
+      {
+        "path": "lib/defaults.js",
+        "sha256": "bb3612fc96fbc90fc16fa95106259d83f0f5700febc8a69e5880310c45d5291f",
+        "bytes": 64,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": [
+          {
+            "name": "debug",
+            "kind": "value"
+          },
+          {
+            "name": "port",
+            "kind": "value"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 3,
+            "end_line": 3,
+            "truncated": false,
+            "block_end_line": 3,
+            "source": "working tree"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "keep"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "Formatter.join (lib/formatter.js)",
+      "module": "lib/formatter.js",
+      "kind": "method",
+      "export": "default",
+      "method": "join",
+      "grounding": "grounded",
+      "constructor_args": "appears_optional"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "Formatter.join (lib/formatter.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"Formatter.join (lib/formatter.js)\",\n      \"args\": [],\n      \"outcome\": \"returns\",\n      \"expected\": \"\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"Formatter.join (lib/formatter.js)\",\n      \"args\": [\"a\", \"b\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"a,b\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 408,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "Formatter.join (lib/formatter.js)",
+          "args": [],
+          "outcome": "returns",
+          "expected": "",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-2",
+          "call": "Formatter.join (lib/formatter.js)",
+          "args": [
+            "a",
+            "b"
+          ],
+          "outcome": "returns",
+          "expected": "a,b",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"Formatter.join (lib/formatter.js)\",\n      \"args\": [\"a\", \"b\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"a,b\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 219,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "Formatter.join (lib/formatter.js)",
+          "args": [
+            "a",
+            "b"
+          ],
+          "outcome": "returns",
+          "expected": "a,b",
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

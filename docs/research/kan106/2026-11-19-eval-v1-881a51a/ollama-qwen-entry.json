@@ -1,0 +1,59 @@
+{
+  "before": [
+    {
+      "name": "qwen2.5-coder:14b",
+      "model": "qwen2.5-coder:14b",
+      "modified_at": "2026-11-04T11:45:12.81197446-06:00",
+      "size": 8988124298,
+      "digest": "9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen2",
+        "families": [
+          "qwen2"
+        ],
+        "parameter_size": "14.8B",
+        "quantization_level": "Q4_K_M",
+        "context_length": 32768,
+        "embedding_length": 5120,
+        "runner": "ggml"
+      },
+      "capabilities": [
+        "completion",
+        "tools",
+        "insert"
+      ]
+    }
+  ],
+  "before_original_sha256": "9085cd18a4c6b2a805ea293e4d6282ffe49ef0a725c4d75d72dca03f2974b1e8",
+  "after": [
+    {
+      "name": "qwen2.5-coder:14b",
+      "model": "qwen2.5-coder:14b",
+      "modified_at": "2026-11-04T11:45:12.81197446-06:00",
+      "size": 8988124298,
+      "digest": "9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen2",
+        "families": [
+          "qwen2"
+        ],
+        "parameter_size": "14.8B",
+        "quantization_level": "Q4_K_M",
+        "context_length": 32768,
+        "embedding_length": 5120,
+        "runner": "ggml"
+      },
+      "capabilities": [
+        "completion",
+        "tools",
+        "insert"
+      ]
+    }
+  ],
+  "after_original_sha256": "9085cd18a4c6b2a805ea293e4d6282ffe49ef0a725c4d75d72dca03f2974b1e8",
+  "_label": "The qwen2.5-coder:14b entry of the owner's local /api/tags listing before and after the batch, extracted; the rest of the listing (other local models) is not published. Original file hashes are given."
+}

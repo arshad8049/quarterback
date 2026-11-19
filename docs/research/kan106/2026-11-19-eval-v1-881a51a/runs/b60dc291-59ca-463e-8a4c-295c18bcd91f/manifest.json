@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "run_id": "b60dc291-59ca-463e-8a4c-295c18bcd91f",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/users.js, make UserRepo.find() return null for an unknown id instead of throwing.",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "91ca986541a81f94bdcd0c80f25c6e03668ab54f907143a6ca31afead2ee69d5",
+    "base_sha": "d60f5ce70be66d73b5ce4e99b2fed38584054315"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "7085280b032e1a7a5ff6aba51da8a823c476cac022e7ed6d1f012b4fe19cd109",
+  "contract_hash": null,
+  "sandbox_policy": null,
+  "pid": 61285,
+  "started_at": "2026-11-19T20:14:01.570Z",
+  "finished_at": "2026-11-19T20:14:01.612Z",
+  "outcome": "BLOCKED",
+  "legacy_verdict": null,
+  "outcome_reason": "staged_l1_invalid: unsupported call shape UserRepo.find (lib/users.js): the constructor of UserRepo in lib/users.js may need arguments QB cannot supply (QB constructs with new and no arguments)",
+  "attempts": [],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "d9090b97ab5945373dc778ca2b4d4b3209733d303e6c6060a7cdaaf9c20de506",
+      "path": "artifacts/d9090b97ab5945373dc778ca2b4d4b3209733d303e6c6060a7cdaaf9c20de506.json",
+      "bytes": 674
+    }
+  }
+}

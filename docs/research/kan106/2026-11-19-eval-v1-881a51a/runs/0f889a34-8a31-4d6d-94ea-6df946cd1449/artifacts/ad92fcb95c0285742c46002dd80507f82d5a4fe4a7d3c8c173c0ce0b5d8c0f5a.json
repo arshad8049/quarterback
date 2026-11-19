@@ -1,0 +1,107 @@
+{
+  "id": "82fcfb1f-5ad3-4588-a5cf-ca6064fac477",
+  "contract_id": "633e2e6b-11dc-40ee-9b9f-6b5284398b1e",
+  "execution_id": "189ca987-7c9a-4bba-ab78-f2b91bb47edc",
+  "generated_at": "2026-11-19T20:11:09.752Z",
+  "verdict": "no-diff",
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "criterion": "Formatter.join() returns \"\".",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-1",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Formatter.join(\"a\", \"b\") returns \"a,b\".",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-2",
+          "status": "error"
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "test_results": null,
+  "test_outcome": {
+    "outcome": "not_run",
+    "reason": "no_test_evidence",
+    "runner": null,
+    "exit_code": null,
+    "state": null,
+    "duration_ms": null,
+    "tree": null
+  },
+  "outcomes": {
+    "execution": "dry_run",
+    "policy": "unresolved",
+    "tests": "not_run",
+    "criteria": "unknown"
+  },
+  "oracle": {
+    "approved": false,
+    "reason": "not_approved",
+    "contract_hash": "ab5ea8a8c80d945e4d1326de43d6f8fea2cd86fba0ccd24a8d787ab8147eee1c",
+    "via": null
+  },
+  "checks": {
+    "registry": "qb-checks/2",
+    "requested": [
+      {
+        "id": "CHK-1",
+        "ac_id": "AC-1",
+        "adapter": "call_sequence"
+      },
+      {
+        "id": "CHK-2",
+        "ac_id": "AC-2",
+        "adapter": "call_sequence"
+      }
+    ],
+    "results": [],
+    "rejected": [],
+    "error": "checks_not_run"
+  },
+  "policy": {
+    "allowed_changes": [
+      "lib/formatter.js"
+    ],
+    "protected_paths": [],
+    "changed_files": [],
+    "out_of_scope": [],
+    "protected_touched": [],
+    "constraints": [
+      {
+        "index": 0,
+        "text": "Keep the existing behaviour (P3 \"Keep join([\\\"a\\\", \\\"b\\\"]) returning \\\"a,b\\\".\"): Formatter.join(\"a\", \"b\") still returns \"a,b\".",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-2"
+        ]
+      }
+    ],
+    "effect": "unresolved"
+  },
+  "verification_plan_status": [
+    {
+      "item": "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+      "checks": [],
+      "status": "not_executed"
+    }
+  ],
+  "scope_violations": [],
+  "repair_hints": []
+}

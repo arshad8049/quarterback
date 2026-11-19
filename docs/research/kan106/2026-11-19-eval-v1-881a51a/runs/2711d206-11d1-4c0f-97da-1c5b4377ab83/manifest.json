@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "run_id": "2711d206-11d1-4c0f-97da-1c5b4377ab83",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/clock.js, make formatClock() show hours once the time reaches one hour, so formatClock(3661) returns \"1:01:01\" instead of \"61:01\". Keep formatClock(59) returning \"0:59\", formatClock(60) returning \"1:00\" and formatClock(3599) returning \"59:59\".",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "1acf4a379d5eb69878df7d6e93be7600ddf7d40087039d79ee27aeb37f6dc34a",
+    "base_sha": "c19c41d92a255f677b43518bf3c966229e1587b1"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "96fc7e8298eb64aeaeb99aab416318bdb53b93e2eedc6b2463cf016880dcaef4",
+  "contract_hash": "6140410ae7a2b0fb6bdb1edbcfb773a9aac93d5705eee53b7a0f617775598a50",
+  "sandbox_policy": null,
+  "pid": 61191,
+  "started_at": "2026-11-19T20:12:40.035Z",
+  "finished_at": "2026-11-19T20:13:22.608Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:13:22.542Z",
+      "finished_at": "2026-11-19T20:13:22.589Z",
+      "base_sha": "c19c41d92a255f677b43518bf3c966229e1587b1",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "6606061b8c3ff363900a9cbb4d5fe1ae5616d8b6bf00bb630c2efb7c3bfd440c",
+      "path": "artifacts/6606061b8c3ff363900a9cbb4d5fe1ae5616d8b6bf00bb630c2efb7c3bfd440c.json",
+      "bytes": 4361
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "6140410ae7a2b0fb6bdb1edbcfb773a9aac93d5705eee53b7a0f617775598a50",
+      "path": "artifacts/6140410ae7a2b0fb6bdb1edbcfb773a9aac93d5705eee53b7a0f617775598a50.json",
+      "bytes": 6059
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "b0b94b9d2894996af7b8cc02d175629d38a5e752960d2f8fc38fcb2012ae4473",
+      "path": "artifacts/b0b94b9d2894996af7b8cc02d175629d38a5e752960d2f8fc38fcb2012ae4473.json",
+      "bytes": 3392
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "e2be159dd644abb798b005e2b445162b953129b44ab063aafd499ae95b5f48e7",
+      "path": "artifacts/e2be159dd644abb798b005e2b445162b953129b44ab063aafd499ae95b5f48e7.json",
+      "bytes": 4117
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "path": "artifacts/2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8.json",
+      "bytes": 605
+    }
+  }
+}

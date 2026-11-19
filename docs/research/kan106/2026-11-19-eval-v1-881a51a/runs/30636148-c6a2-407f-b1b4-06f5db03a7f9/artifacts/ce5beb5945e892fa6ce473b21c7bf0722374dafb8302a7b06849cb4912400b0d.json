@@ -1,0 +1,163 @@
+{
+  "id": "3dcb4c62-db3f-4a59-b3b1-c9f5594acb02",
+  "contract_id": "3e4570d8-e3fb-4e97-9fba-aac707d0b979",
+  "execution_id": "89bdd242-905b-4b0e-8771-fb275e5df2cf",
+  "generated_at": "2026-11-19T20:12:39.731Z",
+  "verdict": "no-diff",
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "criterion": "parseBool(\"yes\") returns true.",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-1",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "parseBool(\"1\") returns true.",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-2",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "parseBool(\"true\") still returns true (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-3",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "parseBool(\"false\") still returns false (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-4",
+          "status": "error"
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "test_results": null,
+  "test_outcome": {
+    "outcome": "not_run",
+    "reason": "no_test_evidence",
+    "runner": null,
+    "exit_code": null,
+    "state": null,
+    "duration_ms": null,
+    "tree": null
+  },
+  "outcomes": {
+    "execution": "dry_run",
+    "policy": "unresolved",
+    "tests": "not_run",
+    "criteria": "unknown"
+  },
+  "oracle": {
+    "approved": false,
+    "reason": "not_approved",
+    "contract_hash": "3f14df30d4ba581c3fa1b5325f24d751d0862a4c90a0fddedc96db7c6b50f236",
+    "via": null
+  },
+  "checks": {
+    "registry": "qb-checks/2",
+    "requested": [
+      {
+        "id": "CHK-1",
+        "ac_id": "AC-1",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-2",
+        "ac_id": "AC-2",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-3",
+        "ac_id": "AC-3",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-4",
+        "ac_id": "AC-4",
+        "adapter": "call_returns"
+      }
+    ],
+    "results": [],
+    "rejected": [],
+    "error": "checks_not_run"
+  },
+  "policy": {
+    "allowed_changes": [
+      "lib/env.js"
+    ],
+    "protected_paths": [
+      "lib/defaults.js"
+    ],
+    "changed_files": [],
+    "out_of_scope": [],
+    "protected_touched": [],
+    "constraints": [
+      {
+        "index": 0,
+        "text": "Keep the existing behaviour (P4 \"Keep parseBool(\\\"true\\\") returning true and parseBool(\\\"false\\\") returning false.\"): parseBool(\"true\") still returns true.",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-3"
+        ]
+      },
+      {
+        "index": 1,
+        "text": "Keep the existing behaviour (P4 \"Keep parseBool(\\\"true\\\") returning true and parseBool(\\\"false\\\") returning false.\"): parseBool(\"false\") still returns false.",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-4"
+        ]
+      },
+      {
+        "index": 2,
+        "text": "Do not change lib/defaults.js (P5 \"Do not change lib/defaults.js.\").",
+        "status": "enforced",
+        "by": [
+          "protected_paths:lib/defaults.js"
+        ]
+      }
+    ],
+    "effect": "unresolved"
+  },
+  "verification_plan_status": [
+    {
+      "item": "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+      "checks": [],
+      "status": "not_executed"
+    }
+  ],
+  "scope_violations": [],
+  "repair_hints": []
+}
