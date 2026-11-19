@@ -1,6 +1,20 @@
 {
-  "format": "qb-kan106-eval-freeze/1",
-  "_label": "FROZEN package for the KAN-106 eight-request evaluation v1 (10758). The pinned QB commit is the commit that adds this file; it is posted on KAN-106 and passed to run-batch.sh. Changing any listed file is a new freeze.",
+  "format": "qb-kan106-eval-freeze/2",
+  "_label": "FROZEN package for the KAN-106 eight-request evaluation v1, freeze v2 (10761 harness fixes). The pinned QB commit is the commit that adds this version; it is posted on KAN-106 and passed to run-batch.sh. Changing any listed file is a new freeze.",
+  "supersedes": {
+    "freeze": "qb-kan106-eval-freeze/1",
+    "qb_commit": "c89ddf2292a2c244ee39f44ad910bf9fa72a8b81",
+    "status": "never run"
+  },
+  "changes_from_v1": [
+    "request texts, base repositories, controls, reference tests and requirements: unchanged (same sha256, same base SHAs)",
+    "U1/U2 item.json: machine-readable refusal_evidence added (the L1 decision an intended refusal must record); the prose refusal field is unchanged",
+    "flags: --no-llm-verify and --l1-budget 420 added (no later model stage; the profile total passed explicitly so QB_L1_BUDGET_MS cannot override it)",
+    "batch.js (new): builds the child environment (QB_OLLAMA_URL pinned local, QB_MODEL, QB_RUNS_DIR; nothing else inherited), checks the full model digest on that endpoint before and after, records each exit code in runs.json and batch.json",
+    "score.js: all eight rows from the frozen roster with fixed denominators; failures and invalid records never count as refusals; intended refusal needs the frozen decision; each record is bound to its frozen item and artifacts are hash-verified",
+    "run-batch.sh: preflight only, then one batch.js call and scoring",
+    "budgets: max_model_minutes renamed l1_budget_sum_minutes (wall time also includes setup and scoring)"
+  ],
   "order": [
     "S1-slug",
     "S2-formatter",
@@ -12,20 +26,35 @@
     "U2-roundto"
   ],
   "model": "qwen2.5-coder:14b",
+  "model_digest": "9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849",
+  "model_digest_source": "GET http://127.0.0.1:11434/api/tags on the owner's Mac, 2026-11-19 (listing only, no inference); Ollama 0.40.16, Q4_K_M",
+  "ollama_url": "http://127.0.0.1:11434",
   "profile": "qwen-14b-staged",
   "flags": [
     "--agent",
     "dry-run",
     "--no-llm-context",
+    "--no-llm-verify",
     "--l1-profile",
     "qwen-14b-staged",
+    "--l1-budget",
+    "420",
     "--deadline",
     "15"
   ],
+  "expected_config": {
+    "agent": "dry-run",
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
   "budgets": {
     "per_call_ms": 240000,
     "l1_total_ms": 420000,
-    "max_model_minutes": 56
+    "l1_budget_sum_minutes": 56,
+    "note": "56 minutes is the sum of the eight L1 budgets; whole-batch wall time also includes setup and scoring"
   },
   "runs_per_item": 1,
   "reruns": "none",
@@ -102,20 +131,21 @@
     "items/U1-userrepo/base/package-lock.json": "39e0c8004e9be318b72cc9c50c0e1720fc2c58aff9ef32093930d812d1c5dbd5",
     "items/U1-userrepo/base/package.json": "f14e0c8675b15027a0aeb8ba2ddcb06acf7c2dbaea47321b1b88c4b63eaa5dc3",
     "items/U1-userrepo/base/test/users.test.js": "6ad3565a4aadb1d5a089ca6c3974516f742931dbed316a12cc1580017ad88686",
-    "items/U1-userrepo/item.json": "68da59e328e0d69f0237e35125f7e7afd2574cfffa789f130871535489b1a1b0",
+    "items/U1-userrepo/item.json": "36dc320103a04e78eac1f5c5902bb4de9c37f53219a752181807ade5517babf6",
     "items/U1-userrepo/request.txt": "04220ae56b22e7102107648953c7aed9cf492979b4f285e7ac8a98cc390b2591",
     "items/U2-roundto/base/lib/round.js": "3aafacd4c6041ef17dfd7fbfc3330668cc39a08f9595c97ad409516292d488d8",
     "items/U2-roundto/base/package-lock.json": "925bcfb4ec0237ba2c50e73572730a3a746c5d27026f30ee2ae3f3f3e91ef5da",
     "items/U2-roundto/base/package.json": "0862de6fd703aa7f4f7853a27889f58f0294d04a7f7c3c3e4cf27d388f47cbf7",
     "items/U2-roundto/base/test/round.test.js": "0d946020e5dd77c1d6c6df3ce980d1588b6e64a32313edce2d5207e14ac79608",
-    "items/U2-roundto/item.json": "c9692ce964b28126e5beca6ee004fe125b78d961ba03183c262f27a6e6c29a98",
+    "items/U2-roundto/item.json": "6ac7f67dd8dcf84af2e7fffd99a9fbe8cdd5ddb329fea3b77a4d05edeab5edc3",
     "items/U2-roundto/request.txt": "ac6d5ead5de8f0eeb5de78965ba1b13535ed0c452121190271bb2946eb27ef5c",
     "materialize.js": "34dc00c9b515b20f201f665f3da8b48cc04763a7ac3ef3657e0be8ade6e12dd5",
-    "score.js": "a8cc4e0f8e4130da2c4f9797a7716eb1efd0dd5b3607f7450a4bcbf0f1c218e1",
+    "batch.js": "77ec083d5d0918b285c5be50bd5483600f2ba3e83e1f53927eb405d1714162f6",
+    "score.js": "fa2b3d49a6d848e7eacd86e9908cc6935a4fe544f00918f214cec7754d8bb800",
     "validate-controls.js": "83c22f623aee3bfd5fa41799e39ac864fa99b3ae7565edf8de7ff72d0ebde3c0",
-    "check-freeze.js": "c0dbe79120dfc14ed35ecdc9da8b99c93e12170b4d4c9089d02f173e3d4d7bae",
-    "run-batch.sh": "71989387be036f7b401099114e4ecc3568c7fe47c6c9ac2a6335de72cd072a2a",
-    "rubric.md": "8ce0658cc6a1a12f9178e526b56c64fbf41056e161bb4cd576aee33ae6b411c9",
+    "check-freeze.js": "c585446739446bf579a8e8439d8c7daffd24c44d05a0fdb5a382b8bfe4bb686b",
+    "run-batch.sh": "ab26f686da892ea5ab4f2b17ed13bf1190d28eac3e53e244bc823df41351367b",
+    "rubric.md": "9430ad86168188ed1b00b0cdc4dca8091a266a089578bd1d22d9a5c1af5657df",
     "offline-control-results.json": "8bc25da4ef072817d391569218363b5dccaea17d3477ed050b96b99ecf254e16"
   }
 }

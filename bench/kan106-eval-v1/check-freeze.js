@@ -13,7 +13,7 @@ const crypto = require('crypto');
 
 const DIR = __dirname;
 const FREEZE = path.join(DIR, 'FREEZE.json');
-const HARNESS = ['materialize.js', 'score.js', 'validate-controls.js', 'check-freeze.js', 'run-batch.sh', 'rubric.md', 'offline-control-results.json'];
+const HARNESS = ['materialize.js', 'batch.js', 'score.js', 'validate-controls.js', 'check-freeze.js', 'run-batch.sh', 'rubric.md', 'offline-control-results.json'];
 const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 function walk(d, rel = '') {
   return fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))

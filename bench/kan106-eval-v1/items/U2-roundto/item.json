@@ -17,5 +17,9 @@
     "controls/",
     "reference.test.js",
     "item.json"
-  ]
+  ],
+  "refusal_evidence": {
+    "decision": "clarification",
+    "note": "the request states no expected value; only a recorded clarification/ambiguity stop counts, not a model-output failure or a different refusal"
+  }
 }

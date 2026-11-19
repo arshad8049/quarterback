@@ -17,5 +17,12 @@
     "controls/",
     "reference.test.js",
     "item.json"
-  ]
+  ],
+  "refusal_evidence": {
+    "decision": "unsupported_call_shape",
+    "target": "UserRepo",
+    "reason_includes": "constructor",
+    "max_model_calls": 0,
+    "note": "the 10758 rule: QB cannot construct UserRepo without its db, and refuses before any model call"
+  }
 }
