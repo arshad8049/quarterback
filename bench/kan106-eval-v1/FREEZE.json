@@ -1,10 +1,17 @@
 {
-  "format": "qb-kan106-eval-freeze/2",
-  "_label": "FROZEN package for the KAN-106 eight-request evaluation v1, freeze v2 (10761 harness fixes). The pinned QB commit is the commit that adds this version; it is posted on KAN-106 and passed to run-batch.sh. Changing any listed file is a new freeze.",
+  "format": "qb-kan106-eval-freeze/3",
+  "_label": "Freeze v3: a SCORING-ONLY correction after the one batch run under freeze v2. The batch is not repeated: its run records (QB 881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e, evidence 20261119T200955Z) are re-scored with this scorer. Launcher, flags, model, digest, items and controls are unchanged. Changing any listed file is a new freeze.",
   "supersedes": {
     "freeze": "qb-kan106-eval-freeze/1",
     "qb_commit": "c89ddf2292a2c244ee39f44ad910bf9fa72a8b81",
     "status": "never run"
+  },
+  "run_under": {
+    "freeze": "qb-kan106-eval-freeze/2",
+    "qb_commit": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+    "batch": "20261119T200955Z",
+    "runs_per_item": 1,
+    "reruns": "none"
   },
   "changes_from_v1": [
     "request texts, base repositories, controls, reference tests and requirements: unchanged (same sha256, same base SHAs)",
@@ -14,6 +21,9 @@
     "score.js: all eight rows from the frozen roster with fixed denominators; failures and invalid records never count as refusals; intended refusal needs the frozen decision; each record is bound to its frozen item and artifacts are hash-verified",
     "run-batch.sh: preflight only, then one batch.js call and scoring",
     "budgets: max_model_minutes renamed l1_budget_sum_minutes (wall time also includes setup and scoring)"
+  ],
+  "changes_from_v2": [
+    "score.js EXIT_FOR: DRY_RUN 0 -> 1. qb.js exits 0 only on verdict pass, so every completed dry run exits 1; the v2 scorer rejected all of them as \"exit code 1 does not match outcome DRY_RUN\". Found after the batch; producer test kan106-eval-v1-exit-codes.test.js. Nothing else changed."
   ],
   "order": [
     "S1-slug",
@@ -141,7 +151,7 @@
     "items/U2-roundto/request.txt": "ac6d5ead5de8f0eeb5de78965ba1b13535ed0c452121190271bb2946eb27ef5c",
     "materialize.js": "34dc00c9b515b20f201f665f3da8b48cc04763a7ac3ef3657e0be8ade6e12dd5",
     "batch.js": "77ec083d5d0918b285c5be50bd5483600f2ba3e83e1f53927eb405d1714162f6",
-    "score.js": "fa2b3d49a6d848e7eacd86e9908cc6935a4fe544f00918f214cec7754d8bb800",
+    "score.js": "5d6d6679f008c797772a418039f0936b84611167034cf1ea5ae61be385843698",
     "validate-controls.js": "83c22f623aee3bfd5fa41799e39ac864fa99b3ae7565edf8de7ff72d0ebde3c0",
     "check-freeze.js": "c585446739446bf579a8e8439d8c7daffd24c44d05a0fdb5a382b8bfe4bb686b",
     "run-batch.sh": "ab26f686da892ea5ab4f2b17ed13bf1190d28eac3e53e244bc823df41351367b",

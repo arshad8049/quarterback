@@ -35,7 +35,9 @@ const ITEMS = path.join(DIR, 'items');
 const FREEZE = JSON.parse(fs.readFileSync(path.join(DIR, 'FREEZE.json'), 'utf8'));
 const RUNNER = path.join(DIR, '..', '..', 'sandbox', 'agent', 'qb-check-runner.mjs');
 const LIMITS = { per_item_l1_ms: 180_000, median_l1_ms: 120_000, budget_l1_ms: 420_000 };
-const EXIT_FOR = { DRY_RUN: 0, BLOCKED: 2, ERROR: 1, CANCELLED: 3 };
+// qb.js exits 0 only on verdict `pass`, so a COMPLETED dry run (verdict no-diff) exits 1. The v2 freeze had
+// DRY_RUN: 0, found after the 881a51a batch (post-run correction, disclosed; kan106-eval-v1-exit-codes.test.js).
+const EXIT_FOR = Object.freeze({ DRY_RUN: 1, BLOCKED: 2, ERROR: 1, CANCELLED: 3 });
 
 class EvidenceError extends Error {}
 const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
@@ -318,4 +320,4 @@ if (require.main === module) {
   const text = JSON.stringify(scoreBatchDir(dir), null, 2) + '\n';
   const f = arg('--out'); if (f) fs.writeFileSync(f, text); else process.stdout.write(text);
 }
-module.exports = { scoreItem, scoreBatch, scoreBatchDir, summarize, loadRun, l1Decision, expectFrom, requestOf, settingsProblems, LIMITS, ITEMS };
+module.exports = { scoreItem, scoreBatch, scoreBatchDir, summarize, loadRun, l1Decision, expectFrom, requestOf, settingsProblems, EXIT_FOR, LIMITS, ITEMS };
