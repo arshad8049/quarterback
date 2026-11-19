@@ -192,7 +192,61 @@ function classShape(c, name = null) {
     if (m.type !== 'MethodDefinition' || m.kind === 'constructor') continue;
     (m.kind === 'method' ? methods : accessors).push(k);
   }
-  return { kind: 'class', name: name || (c.id && c.id.name) || null, methods, accessors, statics };
+  return { kind: 'class', name: name || (c.id && c.id.name) || null, methods, accessors, statics, ctor_stores: ctorStores(c) };
+}
+
+/**
+ * KAN-106 10758: for each constructor parameter stored as `this.<field> = <param>`, does any code in the class
+ * DEREFERENCE `this.<field>`? Bounded and conservative, not an analyser: a read is safe only when it is
+ * returned as is (`return this.f`) or sits in a guard position (`this.f && …`, `this.f || …`, `this.f ?? …`,
+ * `this.f?.x`, `typeof this.f`, `this.f == null`, the test of an if / ?:). Anything else (a property read, a
+ * call, passing it on, aliasing it) counts as a dereference. If `this` itself escapes (`const self = this`,
+ * `fn(this)`, `this[k]`), every stored field counts as dereferenced. A static reading is not proof that
+ * construction succeeds. Returns [{ field, param, dereferenced }].
+ */
+function ctorStores(c) {
+  const ctor = c.body.body.find((m) => m.type === 'MethodDefinition' && m.kind === 'constructor');
+  if (!ctor) return [];
+  const params = new Set(ctor.value.params.filter((x) => x.type === 'Identifier').map((x) => x.name));
+  const stores = [];
+  const visit = (n, fn, chain = []) => {
+    if (!n || typeof n.type !== 'string') return;
+    fn(n, chain);
+    for (const [k, v] of Object.entries(n)) {
+      if (k === 'loc' || k === 'start' || k === 'end') continue;
+      const next = [...chain, { node: n, key: k }];
+      if (Array.isArray(v)) v.forEach((x) => visit(x, fn, next));
+      else if (v && typeof v === 'object') visit(v, fn, next);
+    }
+  };
+  const thisField = (n) => n && n.type === 'MemberExpression' && n.object.type === 'ThisExpression' && !n.computed && n.property.type === 'Identifier' ? n.property.name : null;
+  visit(ctor.value.body, (n) => {
+    if (n.type === 'AssignmentExpression' && n.operator === '=' && thisField(n.left) && n.right.type === 'Identifier' && params.has(n.right.name)) stores.push({ field: thisField(n.left), param: n.right.name, node: n.left });
+  });
+  if (!stores.length) return [];
+  const nullish = (n) => n && ((n.type === 'Literal' && n.value === null) || (n.type === 'Identifier' && n.name === 'undefined'));
+  let escapes = false;
+  const deref = new Set();
+  const fields = new Set(stores.map((x) => x.field));
+  const storeNodes = new Set(stores.map((x) => x.node));
+  // visit methods, accessors and property initialisers, but not nested ordinary functions' own `this`
+  visit(c.body, (n, chain) => {
+    if (n.type !== 'ThisExpression') return;
+    if (chain.filter((x) => x.node.type === 'FunctionExpression' || x.node.type === 'FunctionDeclaration').length > 1) return;   // a nested ordinary function has its own `this`
+    const { node: parent, key } = chain.at(-1) || {};
+    const f = thisField(parent);
+    if (!(parent && parent.type === 'MemberExpression' && key === 'object' && !parent.computed)) { escapes = true; return; }
+    if (!fields.has(f) || storeNodes.has(parent)) return;
+    const { node: gp, key: gk } = chain.at(-2) || {};
+    const safe = (gp && gp.type === 'ReturnStatement')
+      || (gp && gp.type === 'LogicalExpression' && gk === 'left')
+      || (gp && gp.type === 'UnaryExpression' && gp.operator === 'typeof')
+      || (gp && gp.type === 'BinaryExpression' && /^[!=]==?$/.test(gp.operator) && (nullish(gp.left) || nullish(gp.right)))
+      || (gp && gp.type === 'MemberExpression' && gk === 'object' && gp.optional)
+      || (gp && /^(?:IfStatement|ConditionalExpression)$/.test(gp.type) && gk === 'test');
+    if (!safe) deref.add(f);
+  });
+  return stores.map(({ field, param }) => ({ field, param, dereferenced: escapes || deref.has(field) }));
 }
 function valueKind(v, decls) {
   if (!v) return 'value';

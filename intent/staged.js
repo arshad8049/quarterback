@@ -171,9 +171,14 @@ const asksFor = (request, name) => new RegExp(`\\b(?:export|create)\\w*\\b[^.!?]
 
 /**
  * 10749 G2: can QB construct the class with `new` and no arguments? 'none' (no constructor parameters),
- * 'optional' (every parameter has a default, is a rest parameter, or is only read behind a guard: `p && …`,
- * `p || …`, `p ?? …`, `p?.x`, `typeof p`, `p == null`, a test of `p`, or stored as `this.x = p`), or
- * 'required_or_unknown' (anything else, or the constructor could not be read).
+ * 'appears_optional' (every parameter has an INERT default, is a rest parameter, or is only read behind a guard:
+ * `p && …`, `p || …`, `p ?? …`, `p?.x`, `typeof p`, `p == null`, a test of `p`), or 'required_or_unknown'
+ * (anything else, or the constructor could not be read).
+ * 10758: a static reading is NOT proof that construction succeeds; only running the checks on the controls
+ * shows that. So the rule stays conservative and bounded (no general analyser):
+ *   - a parameter stored as `this.x = p` counts only when no code in the whole class dereferences `this.x`
+ *     (api-grounding ctorStores: returned as is or read behind a guard; if `this` escapes, nothing counts);
+ *   - a default counts only when inert (inertDefault): a default that runs code can throw.
  */
 function constructorArgs(m) {
   const blocks = m.excerpts || [];
@@ -188,13 +193,36 @@ function constructorArgs(m) {
   const params = ctor.value.params;
   if (!params.length) return 'none';
   for (const p of params) {
-    if (p.type === 'AssignmentPattern' || p.type === 'RestElement') continue;
+    if (p.type === 'RestElement') continue;
+    if (p.type === 'AssignmentPattern') { if (p.left.type === 'Identifier' && inertDefault(p.right)) continue; return 'required_or_unknown'; }
     if (p.type !== 'Identifier') return 'required_or_unknown';
-    if (!onlyGuarded(ctor.value.body, p.name)) return 'required_or_unknown';
+    if (!onlyGuarded(ctor.value.body, p.name, safeStores(m, p.name))) return 'required_or_unknown';
   }
-  return 'optional';
+  return 'appears_optional';
 }
-function onlyGuarded(body, name) {
+/** 10758: a default that cannot run code: a literal, `undefined`, a negated number, a template with no
+ *  expressions, or an object/array literal (no spread, no computed key) made only of those. */
+function inertDefault(n) {
+  if (!n) return false;
+  switch (n.type) {
+    case 'Literal': return true;
+    case 'Identifier': return n.name === 'undefined';
+    case 'UnaryExpression': return (n.operator === '-' || n.operator === '+') && n.argument.type === 'Literal' && typeof n.argument.value === 'number';
+    case 'TemplateLiteral': return n.expressions.length === 0;
+    case 'ArrayExpression': return n.elements.every((e) => e && inertDefault(e));
+    case 'ObjectExpression': return n.properties.every((q) => q.type === 'Property' && q.kind === 'init' && !q.computed && !q.method && inertDefault(q.value));
+    default: return false;
+  }
+}
+/** 10758: the fields that parameter `name` is stored in, where no code in the class dereferences them
+ *  (api-grounding ctorStores, computed over the WHOLE class, not the excerpt). Empty when unknown. */
+function safeStores(m, name) {
+  const d = m && m.default;
+  if (!d || d.kind !== 'class' || !Array.isArray(d.ctor_stores)) return new Set();
+  const mine = d.ctor_stores.filter((x) => x.param === name);
+  return new Set(mine.every((x) => !x.dereferenced) ? mine.map((x) => x.field) : []);
+}
+function onlyGuarded(body, name, safeFields = new Set()) {
   const isP = (n) => n && n.type === 'Identifier' && n.name === name;
   const nullish = (n) => n && ((n.type === 'Literal' && n.value === null) || (n.type === 'Identifier' && n.name === 'undefined'));
   let ok = true;
@@ -206,8 +234,9 @@ function onlyGuarded(body, name) {
         || (parent && parent.type === 'UnaryExpression' && parent.operator === 'typeof')
         || (parent && parent.type === 'BinaryExpression' && /^[!=]==?$/.test(parent.operator) && (nullish(parent.left) || nullish(parent.right)))
         || (parent && parent.type === 'MemberExpression' && key === 'object' && parent.optional)
-        || (parent && parent.type === 'AssignmentExpression' && key === 'right' && parent.left.type === 'MemberExpression' && parent.left.object.type === 'ThisExpression')
         || (parent && /^(?:IfStatement|ConditionalExpression)$/.test(parent.type) && key === 'test')
+        || (parent && parent.type === 'AssignmentExpression' && parent.operator === '=' && key === 'right' && parent.left.type === 'MemberExpression'
+          && parent.left.object.type === 'ThisExpression' && !parent.left.computed && safeFields.has(parent.left.property.name))
         || chain.some((c) => (c.node.type === 'LogicalExpression' && c.node.operator === '&&' && isP(c.node.left) && c.key === 'right')
           || (/^(?:IfStatement|ConditionalExpression)$/.test(c.node.type) && isP(c.node.test) && c.key === 'consequent'));
       if (!guarded) ok = false;
@@ -383,7 +412,7 @@ function factInput({ request, role, rid, targets, fragments, api }) {
     '',
     'CALL TARGETS (copy one exactly into "call"):',
     ...targets.map((t) => (t.kind === 'method'
-      ? `- ${JSON.stringify(t.label)}: instance method ${t.method} of the default export class of ${t.module}; QB constructs it with new and no arguments (${t.constructor_args === 'none' ? 'it has no constructor parameters' : 'its constructor arguments are optional'})`
+      ? `- ${JSON.stringify(t.label)}: instance method ${t.method} of the default export class of ${t.module}; QB constructs it with new and no arguments (${t.constructor_args === 'none' ? 'it has no constructor parameters' : 'a static reading found no required constructor parameter'}; not proof that construction succeeds)`
       : t.grounding === 'requested_new'
         ? `- ${JSON.stringify(t.label)}: requested NEW function export ${t.export} of ${t.module} (not in the source yet; the request asks for it)`
         : `- ${JSON.stringify(t.label)}: function export ${t.export} of ${t.module}`)),

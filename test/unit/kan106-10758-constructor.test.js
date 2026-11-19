@@ -133,7 +133,7 @@ describe('the label and wording claim no proof', () => {
       await require('../../intent/session').compileIntent(REQUEST, { repoPath: dir, l1Budget: l1Budget({ profile: 'qwen-14b-staged' }) });
     } finally { m.restore(); fs.rmSync(dir, { recursive: true, force: true }); }
     assert.ok(prompts.length >= 1);
-    const line = prompts[0].split('\n').find((l) => l.includes('Store.get'));
+    const line = prompts[0].split('\n').find((l) => l.startsWith('- ') && l.includes('instance method get'));
     assert.ok(line, prompts[0]);
     assert.doesNotMatch(line, /arguments are optional/);
     assert.match(line, /not proof that construction succeeds/);
