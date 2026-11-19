@@ -1,0 +1,237 @@
+{
+  "id": "1a7f46cc-0b49-41f6-99ce-8673a540fede",
+  "created_at": "2026-11-19T20:13:22.171Z",
+  "raw_request": "In lib/clock.js, make formatClock() show hours once the time reaches one hour, so formatClock(3661) returns \"1:01:01\" instead of \"61:01\". Keep formatClock(59) returning \"0:59\", formatClock(60) returning \"1:00\" and formatClock(3599) returning \"59:59\".",
+  "repo_path": null,
+  "goal": "In lib/clock.js, make formatClock() show hours once the time reaches one hour, so formatClock(3661) returns \"1:01:01\" instead of \"61:01\". Keep formatClock(59) returning \"0:59\", formatClock(60) returning \"1:00\" and formatClock(3599) returning \"59:59\".",
+  "required_behavior": [
+    "formatClock(3661) returns \"1:01:01\".",
+    "formatClock(59) still returns \"0:59\" (behaviour kept).",
+    "formatClock(60) still returns \"1:00\" (behaviour kept).",
+    "formatClock(3599) still returns \"59:59\" (behaviour kept)."
+  ],
+  "constraints": [
+    "Keep the existing behaviour (P4 \"Keep formatClock(59) returning \\\"0:59\\\",\"): formatClock(59) still returns \"0:59\".",
+    "Keep the existing behaviour (P5 \"formatClock(60) returning \\\"1:00\\\" and formatClock(3599) returning \\\"59:59\\\".\"): formatClock(60) still returns \"1:00\".",
+    "Keep the existing behaviour (P5 \"formatClock(60) returning \\\"1:00\\\" and formatClock(3599) returning \\\"59:59\\\".\"): formatClock(3599) still returns \"59:59\"."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "formatClock(3661) returns \"1:01:01\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "formatClock(59) still returns \"0:59\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "formatClock(60) still returns \"1:00\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "formatClock(3599) still returns \"59:59\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments)."
+  ],
+  "relevant_context": [
+    "lib/clock.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/clock.js",
+        "export": "formatClock",
+        "args": [
+          3661
+        ],
+        "expect": "1:01:01"
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/clock.js",
+        "export": "formatClock",
+        "args": [
+          59
+        ],
+        "expect": "0:59"
+      }
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/clock.js",
+        "export": "formatClock",
+        "args": [
+          60
+        ],
+        "expect": "1:00"
+      }
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/clock.js",
+        "export": "formatClock",
+        "args": [
+          3599
+        ],
+        "expect": "59:59"
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2",
+  "scope": {
+    "allowed_changes": [
+      "lib/clock.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-2"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-4"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/clock.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make formatClock() show hours once the time reaches one hour,"
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ],
+      "quote": "so formatClock(3661) returns \"1:01:01\" instead of \"61:01\"."
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ],
+      "quote": "Keep formatClock(59) returning \"0:59\","
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ],
+      "quote": "formatClock(60) returning \"1:00\" and formatClock(3599) returning \"59:59\"."
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/clock.js",
+        "sha256": "3e438e908d6ee0c66b5cd92a0fbda81150c852e46afbd8d8f6a64698e1963a08",
+        "bytes": 191,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": [
+          {
+            "name": "formatClock",
+            "kind": "function"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "formatClock",
+            "kind": "definition",
+            "start_line": 3,
+            "end_line": 7,
+            "truncated": false,
+            "block_end_line": 7,
+            "source": "working tree"
+          },
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 9,
+            "end_line": 9,
+            "truncated": false,
+            "block_end_line": 9,
+            "source": "working tree"
+          }
+        ]
+      }
+    ]
+  }
+}

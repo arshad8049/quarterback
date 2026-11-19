@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "run_id": "dfd8a142-2fae-4e77-af19-5cdb098a8868",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/slug.js, make slugify() turn each run of spaces into a single dash, so slugify(\"a  b\") returns \"a-b\" instead of \"a--b\". Keep slugify(\"Hello World\") returning \"hello-world\".",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "eaafc2f34aab1f33893c3b4bf2ba3001061fa51c94dd39848c6bf5c8ccd52967",
+    "base_sha": "088b0cb910efcb9ac9bd5e130e71b732a30822be"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "c1777957b582db581a070db2afe30f19a236e36d20fd36ce5a7c150380606520",
+  "contract_hash": "78e4a4e7b410e63b7b8bd9edb697a38b7f11ac2059a4c09e17a916aaf1303f2d",
+  "sandbox_policy": null,
+  "pid": 60973,
+  "started_at": "2026-11-19T20:09:57.300Z",
+  "finished_at": "2026-11-19T20:10:43.049Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:10:42.989Z",
+      "finished_at": "2026-11-19T20:10:43.030Z",
+      "base_sha": "088b0cb910efcb9ac9bd5e130e71b732a30822be",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "2a2b35041ff615509c0c195d1c6a32a48a9989f20e94406a876d9b17aed65347",
+      "path": "artifacts/2a2b35041ff615509c0c195d1c6a32a48a9989f20e94406a876d9b17aed65347.json",
+      "bytes": 3525
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "78e4a4e7b410e63b7b8bd9edb697a38b7f11ac2059a4c09e17a916aaf1303f2d",
+      "path": "artifacts/78e4a4e7b410e63b7b8bd9edb697a38b7f11ac2059a4c09e17a916aaf1303f2d.json",
+      "bytes": 4100
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "22918a606b45ae1918c1a5bd7bc44a940e2332bd0bcb955a88e05ac5831588c3",
+      "path": "artifacts/22918a606b45ae1918c1a5bd7bc44a940e2332bd0bcb955a88e05ac5831588c3.json",
+      "bytes": 2652
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "eff6ba1c7791a9e1c93241dc1d7ab956f51983b2718db7357d7e02c8c707f43a",
+      "path": "artifacts/eff6ba1c7791a9e1c93241dc1d7ab956f51983b2718db7357d7e02c8c707f43a.json",
+      "bytes": 2635
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1",
+      "path": "artifacts/77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1.json",
+      "bytes": 503
+    }
+  }
+}

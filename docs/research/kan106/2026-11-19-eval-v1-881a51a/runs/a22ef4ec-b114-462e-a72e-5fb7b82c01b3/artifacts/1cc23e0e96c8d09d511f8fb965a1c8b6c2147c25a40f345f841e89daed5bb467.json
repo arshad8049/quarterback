@@ -1,0 +1,196 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "change"
+    },
+    {
+      "passage_id": "P4",
+      "role": "change"
+    },
+    {
+      "passage_id": "P5",
+      "role": "keep"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "percent (lib/math.js)",
+      "module": "lib/math.js",
+      "kind": "function",
+      "export": "percent",
+      "grounding": "requested_new"
+    },
+    {
+      "label": "add (lib/math.js)",
+      "module": "lib/math.js",
+      "kind": "function",
+      "export": "add",
+      "grounding": "grounded"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "percent (lib/math.js)",
+      "pieces": []
+    },
+    {
+      "call": "add (lib/math.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"percent (lib/math.js)\",\n      \"args\": [1, 3],\n      \"outcome\": \"returns\",\n      \"expected\": 33,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"percent (lib/math.js)\",\n      \"args\": [2, 3],\n      \"outcome\": \"returns\",\n      \"expected\": 67,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"percent (lib/math.js)\",\n      \"args\": [1, 0],\n      \"outcome\": \"throws\",\n      \"expected\": null,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 563,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "percent (lib/math.js)",
+          "args": [
+            1,
+            3
+          ],
+          "outcome": "returns",
+          "expected": 33,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-2",
+          "call": "percent (lib/math.js)",
+          "args": [
+            2,
+            3
+          ],
+          "outcome": "returns",
+          "expected": 67,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-2",
+          "call": "percent (lib/math.js)",
+          "args": [
+            1,
+            0
+          ],
+          "outcome": "throws",
+          "expected": null,
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"percent (lib/math.js)\",\n      \"args\": [1, 3],\n      \"outcome\": \"returns\",\n      \"expected\": 33,\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"percent (lib/math.js)\",\n      \"args\": [2, 3],\n      \"outcome\": \"returns\",\n      \"expected\": 67,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 381,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "percent (lib/math.js)",
+          "args": [
+            1,
+            3
+          ],
+          "outcome": "returns",
+          "expected": 33,
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-3",
+          "call": "percent (lib/math.js)",
+          "args": [
+            2,
+            3
+          ],
+          "outcome": "returns",
+          "expected": 67,
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-4",
+      "passage_id": "P4",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"percent (lib/math.js)\",\n      \"args\": [1, 0],\n      \"outcome\": \"throws\",\n      \"expected\": null,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 201,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-4",
+          "call": "percent (lib/math.js)",
+          "args": [
+            1,
+            0
+          ],
+          "outcome": "throws",
+          "expected": null,
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-5",
+      "passage_id": "P5",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"add (lib/math.js)\",\n      \"args\": [2, 3],\n      \"outcome\": \"returns\",\n      \"expected\": 5,\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 195,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-5",
+          "call": "add (lib/math.js)",
+          "args": [
+            2,
+            3
+          ],
+          "outcome": "returns",
+          "expected": 5,
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

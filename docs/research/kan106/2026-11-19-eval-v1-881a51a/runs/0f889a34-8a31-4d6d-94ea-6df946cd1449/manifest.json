@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "run_id": "0f889a34-8a31-4d6d-94ea-6df946cd1449",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/formatter.js, make Formatter.join() return an empty string for an empty array instead of undefined. Keep join([\"a\", \"b\"]) returning \"a,b\".",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "fbe84f20fd3954fe1e09e80319ac02252bf38db208437f7262f76d9e3d26f400",
+    "base_sha": "8c4d4d53a2b21de2db81587868e98a6eb43d6d65"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "4549af3df8a238f276011e78eb0a78e4dcb0e1e43704aa19ca378d455b494a13",
+  "contract_hash": "a82f1fc09200e66d34706758ccf37b2a9aa917b8c01944c3169782aeff4dff2d",
+  "sandbox_policy": null,
+  "pid": 61022,
+  "started_at": "2026-11-19T20:10:43.335Z",
+  "finished_at": "2026-11-19T20:11:09.800Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:11:09.742Z",
+      "finished_at": "2026-11-19T20:11:09.786Z",
+      "base_sha": "8c4d4d53a2b21de2db81587868e98a6eb43d6d65",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "d66f549512c8aa1834a6bd6df3a198c88a6adb6e9928d346ffe2786ae3cbbaac",
+      "path": "artifacts/d66f549512c8aa1834a6bd6df3a198c88a6adb6e9928d346ffe2786ae3cbbaac.json",
+      "bytes": 2777
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "a82f1fc09200e66d34706758ccf37b2a9aa917b8c01944c3169782aeff4dff2d",
+      "path": "artifacts/a82f1fc09200e66d34706758ccf37b2a9aa917b8c01944c3169782aeff4dff2d.json",
+      "bytes": 4699
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "ae69c42d8ff0e1f847c5a0fc370994adfaa6425e3588635eadb3a95d87ab2b53",
+      "path": "artifacts/ae69c42d8ff0e1f847c5a0fc370994adfaa6425e3588635eadb3a95d87ab2b53.json",
+      "bytes": 2697
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "ad92fcb95c0285742c46002dd80507f82d5a4fe4a7d3c8c173c0ce0b5d8c0f5a",
+      "path": "artifacts/ad92fcb95c0285742c46002dd80507f82d5a4fe4a7d3c8c173c0ce0b5d8c0f5a.json",
+      "bytes": 2622
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1",
+      "path": "artifacts/77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1.json",
+      "bytes": 503
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "id": "412b0336-e5c2-4e43-9103-2d3b7c83d41c",
+  "contract_id": "1a7f46cc-0b49-41f6-99ce-8673a540fede",
+  "execution_id": "587a51ae-af2c-44ee-a50f-8189682780b3",
+  "generated_at": "2026-11-19T20:13:22.553Z",
+  "verdict": "no-diff",
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "criterion": "formatClock(3661) returns \"1:01:01\".",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-1",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "formatClock(59) still returns \"0:59\" (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-2",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "formatClock(60) still returns \"1:00\" (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-3",
+          "status": "error"
+        }
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "formatClock(3599) still returns \"59:59\" (behaviour kept).",
+      "met": null,
+      "method": "check",
+      "evidence": "Checks could not be used: checks_not_run.",
+      "check_status": "error",
+      "checks": [
+        {
+          "id": "CHK-4",
+          "status": "error"
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "test_results": null,
+  "test_outcome": {
+    "outcome": "not_run",
+    "reason": "no_test_evidence",
+    "runner": null,
+    "exit_code": null,
+    "state": null,
+    "duration_ms": null,
+    "tree": null
+  },
+  "outcomes": {
+    "execution": "dry_run",
+    "policy": "unresolved",
+    "tests": "not_run",
+    "criteria": "unknown"
+  },
+  "oracle": {
+    "approved": false,
+    "reason": "not_approved",
+    "contract_hash": "6c0869be6234fcf25dd767328f634288c36a792cdac1b5f9d037cf0bef4db0e6",
+    "via": null
+  },
+  "checks": {
+    "registry": "qb-checks/2",
+    "requested": [
+      {
+        "id": "CHK-1",
+        "ac_id": "AC-1",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-2",
+        "ac_id": "AC-2",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-3",
+        "ac_id": "AC-3",
+        "adapter": "call_returns"
+      },
+      {
+        "id": "CHK-4",
+        "ac_id": "AC-4",
+        "adapter": "call_returns"
+      }
+    ],
+    "results": [],
+    "rejected": [],
+    "error": "checks_not_run"
+  },
+  "policy": {
+    "allowed_changes": [
+      "lib/clock.js"
+    ],
+    "protected_paths": [],
+    "changed_files": [],
+    "out_of_scope": [],
+    "protected_touched": [],
+    "constraints": [
+      {
+        "index": 0,
+        "text": "Keep the existing behaviour (P4 \"Keep formatClock(59) returning \\\"0:59\\\",\"): formatClock(59) still returns \"0:59\".",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-2"
+        ]
+      },
+      {
+        "index": 1,
+        "text": "Keep the existing behaviour (P5 \"formatClock(60) returning \\\"1:00\\\" and formatClock(3599) returning \\\"59:59\\\".\"): formatClock(60) still returns \"1:00\".",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-3"
+        ]
+      },
+      {
+        "index": 2,
+        "text": "Keep the existing behaviour (P5 \"formatClock(60) returning \\\"1:00\\\" and formatClock(3599) returning \\\"59:59\\\".\"): formatClock(3599) still returns \"59:59\".",
+        "status": "unresolved",
+        "by": [
+          "check:CHK-4"
+        ]
+      }
+    ],
+    "effect": "unresolved"
+  },
+  "verification_plan_status": [
+    {
+      "item": "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+      "checks": [],
+      "status": "not_executed"
+    }
+  ],
+  "scope_violations": [],
+  "repair_hints": []
+}

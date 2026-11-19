@@ -1,0 +1,133 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "change"
+    },
+    {
+      "passage_id": "P4",
+      "role": "keep"
+    },
+    {
+      "passage_id": "P5",
+      "role": "adds_tests",
+      "file": "test/money.test.js"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "formatCents (lib/money.js)",
+      "module": "lib/money.js",
+      "kind": "function",
+      "export": "formatCents",
+      "grounding": "grounded"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "formatCents (lib/money.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"formatCents (lib/money.js)\",\n      \"args\": [123456],\n      \"outcome\": \"returns\",\n      \"expected\": \"$1,234.56\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 216,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "formatCents (lib/money.js)",
+          "args": [
+            123456
+          ],
+          "outcome": "returns",
+          "expected": "$1,234.56",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"formatCents (lib/money.js)\",\n      \"args\": [123456],\n      \"outcome\": \"returns\",\n      \"expected\": \"$1,234.56\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 216,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "formatCents (lib/money.js)",
+          "args": [
+            123456
+          ],
+          "outcome": "returns",
+          "expected": "$1,234.56",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-4",
+      "passage_id": "P4",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"formatCents (lib/money.js)\",\n      \"args\": [5],\n      \"outcome\": \"returns\",\n      \"expected\": \"$0.05\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"formatCents (lib/money.js)\",\n      \"args\": [99900],\n      \"outcome\": \"returns\",\n      \"expected\": \"$999.00\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 401,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-4",
+          "call": "formatCents (lib/money.js)",
+          "args": [
+            5
+          ],
+          "outcome": "returns",
+          "expected": "$0.05",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-4",
+          "call": "formatCents (lib/money.js)",
+          "args": [
+            99900
+          ],
+          "outcome": "returns",
+          "expected": "$999.00",
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

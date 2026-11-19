@@ -1,0 +1,308 @@
+{
+  "_label": "Every published file: its sha256 as published, and for a file whose bytes differ from the original, the original sha256 and what was redacted or filtered. Byte-identical files have published == original.",
+  "files": {
+    "runs.json": {
+      "published_sha256": "96445b70a25e0fe49ad5479f40c1ca92c61022c06f9c015bb6a0569eb165b33d",
+      "original_sha256": "96445b70a25e0fe49ad5479f40c1ca92c61022c06f9c015bb6a0569eb165b33d",
+      "changed": null
+    },
+    "base-shas.json": {
+      "published_sha256": "9e1837106326ddba6e184576e6983b49e9782d8240ab5e955e2e2de7e2920363",
+      "original_sha256": "9e1837106326ddba6e184576e6983b49e9782d8240ab5e955e2e2de7e2920363",
+      "changed": null
+    },
+    "scores.json": {
+      "published_sha256": "ef587dc9fb8f9308d18f9480c0dcfa8ceb8c6000d1465df4d16e3e9a9c53345d",
+      "original_sha256": "ef587dc9fb8f9308d18f9480c0dcfa8ceb8c6000d1465df4d16e3e9a9c53345d",
+      "changed": null
+    },
+    "scores-v3-f907d97.json": {
+      "published_sha256": "ba3106ffd869686705e5683f63f7343a4f484ac667d7c9266a2635134afd102f",
+      "original_sha256": "ba3106ffd869686705e5683f63f7343a4f484ac667d7c9266a2635134afd102f",
+      "changed": null
+    },
+    "semantic-review-proposed.json": {
+      "published_sha256": "dba269bc39f75d447d16d96a8d69d36f70a7bd79a55db71c18d78528711c9244",
+      "original_sha256": "dba269bc39f75d447d16d96a8d69d36f70a7bd79a55db71c18d78528711c9244",
+      "changed": null
+    },
+    "batch.json": {
+      "published_sha256": "ed8e56c03a489c545fb8e76a8882de1ab7eb69b7cde773b4a9062732d49404db",
+      "original_sha256": "258144d911657498d6197f8d540b000686383c12ebba96c7d12ed522f8d3f10f",
+      "changed": "settings.child_env.QB_RUNS_DIR: the owner's local evidence path replaced by \"<OUT>/runs\""
+    },
+    "ollama-qwen-entry.json": {
+      "published_sha256": "07c72033ec085a421e8ec4f47f1a9f6b6456b60b1890a999e56d0fb103828ef4"
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/manifest.json": {
+      "published_sha256": "b765e7b864b7ce17b76ad6feb95b17655db45ec92a35eed3b7c6e35d2815f8cb",
+      "original_sha256": "725fcd0a7143177ac7cc62b4858768fe49d545d3c5a3bef3eecdf356b2b2fb43",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/events.jsonl": {
+      "published_sha256": "3ad6310917d45e0d3dc239bc0cecd9451a608bb2fd6eb388bd8d67f8f4d8bd1f",
+      "original_sha256": "5e9ea0aa435fc9e4caabcbf0eee83139776f9793dbb71497baf27b9b42931e6f",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/artifacts/eff6ba1c7791a9e1c93241dc1d7ab956f51983b2718db7357d7e02c8c707f43a.json": {
+      "published_sha256": "eff6ba1c7791a9e1c93241dc1d7ab956f51983b2718db7357d7e02c8c707f43a",
+      "original_sha256": "eff6ba1c7791a9e1c93241dc1d7ab956f51983b2718db7357d7e02c8c707f43a",
+      "changed": null
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/artifacts/78e4a4e7b410e63b7b8bd9edb697a38b7f11ac2059a4c09e17a916aaf1303f2d.json": {
+      "published_sha256": "78e4a4e7b410e63b7b8bd9edb697a38b7f11ac2059a4c09e17a916aaf1303f2d",
+      "original_sha256": "78e4a4e7b410e63b7b8bd9edb697a38b7f11ac2059a4c09e17a916aaf1303f2d",
+      "changed": null
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/artifacts/22918a606b45ae1918c1a5bd7bc44a940e2332bd0bcb955a88e05ac5831588c3.json": {
+      "published_sha256": "22918a606b45ae1918c1a5bd7bc44a940e2332bd0bcb955a88e05ac5831588c3",
+      "original_sha256": "22918a606b45ae1918c1a5bd7bc44a940e2332bd0bcb955a88e05ac5831588c3",
+      "changed": null
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/artifacts/77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1.json": {
+      "published_sha256": "77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1",
+      "original_sha256": "77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1",
+      "changed": null
+    },
+    "runs/dfd8a142-2fae-4e77-af19-5cdb098a8868/artifacts/2a2b35041ff615509c0c195d1c6a32a48a9989f20e94406a876d9b17aed65347.json": {
+      "published_sha256": "2a2b35041ff615509c0c195d1c6a32a48a9989f20e94406a876d9b17aed65347",
+      "original_sha256": "2a2b35041ff615509c0c195d1c6a32a48a9989f20e94406a876d9b17aed65347",
+      "changed": null
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/manifest.json": {
+      "published_sha256": "f3eaa96986ff8233e94b76a6a632f71444c959b472e2fac606ea24818b77a0f7",
+      "original_sha256": "858f3e1d729e0b7c36d7bf21ab69d7b80df684e1388a7da9bd8855ccca095339",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/events.jsonl": {
+      "published_sha256": "a1b36316c9be7efa5ec2127ff45fa118aa79ea7a3ab3628371e618dd3e35a5c9",
+      "original_sha256": "c344b8c5444763a41976f16387a153e9de58490f4d8820b10ecc22bc15b2bfcf",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/artifacts/a82f1fc09200e66d34706758ccf37b2a9aa917b8c01944c3169782aeff4dff2d.json": {
+      "published_sha256": "a82f1fc09200e66d34706758ccf37b2a9aa917b8c01944c3169782aeff4dff2d",
+      "original_sha256": "a82f1fc09200e66d34706758ccf37b2a9aa917b8c01944c3169782aeff4dff2d",
+      "changed": null
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/artifacts/ae69c42d8ff0e1f847c5a0fc370994adfaa6425e3588635eadb3a95d87ab2b53.json": {
+      "published_sha256": "ae69c42d8ff0e1f847c5a0fc370994adfaa6425e3588635eadb3a95d87ab2b53",
+      "original_sha256": "ae69c42d8ff0e1f847c5a0fc370994adfaa6425e3588635eadb3a95d87ab2b53",
+      "changed": null
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/artifacts/77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1.json": {
+      "published_sha256": "77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1",
+      "original_sha256": "77e083011622590e95fa878d95407ffbbbf0d674124b8d25ab302f95536280e1",
+      "changed": null
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/artifacts/ad92fcb95c0285742c46002dd80507f82d5a4fe4a7d3c8c173c0ce0b5d8c0f5a.json": {
+      "published_sha256": "ad92fcb95c0285742c46002dd80507f82d5a4fe4a7d3c8c173c0ce0b5d8c0f5a",
+      "original_sha256": "ad92fcb95c0285742c46002dd80507f82d5a4fe4a7d3c8c173c0ce0b5d8c0f5a",
+      "changed": null
+    },
+    "runs/0f889a34-8a31-4d6d-94ea-6df946cd1449/artifacts/d66f549512c8aa1834a6bd6df3a198c88a6adb6e9928d346ffe2786ae3cbbaac.json": {
+      "published_sha256": "d66f549512c8aa1834a6bd6df3a198c88a6adb6e9928d346ffe2786ae3cbbaac",
+      "original_sha256": "d66f549512c8aa1834a6bd6df3a198c88a6adb6e9928d346ffe2786ae3cbbaac",
+      "changed": null
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/manifest.json": {
+      "published_sha256": "7d6532f84c65c140c7e8ed3b79c0382ef9d6dc901d47123c15fb63726100f5a2",
+      "original_sha256": "1830855329201724bdc073d2a503a2c07a8895989d54e542f91c14425f39a4c9",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/events.jsonl": {
+      "published_sha256": "a936db322ff518fbad2e19f49d134917a587f1ea0a78cb8d374d59c345845afa",
+      "original_sha256": "c5039ec4e65bcfb4d4c5b946e17670ecc94e45ecd029768bb489a400fe747d3f",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/artifacts/2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8.json": {
+      "published_sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "original_sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "changed": null
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/artifacts/20510fc235f184ca19528c3d51452a8f35c7b1202fd12b8c1e35e58078a67ce5.json": {
+      "published_sha256": "20510fc235f184ca19528c3d51452a8f35c7b1202fd12b8c1e35e58078a67ce5",
+      "original_sha256": "20510fc235f184ca19528c3d51452a8f35c7b1202fd12b8c1e35e58078a67ce5",
+      "changed": null
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/artifacts/1cc23e0e96c8d09d511f8fb965a1c8b6c2147c25a40f345f841e89daed5bb467.json": {
+      "published_sha256": "1cc23e0e96c8d09d511f8fb965a1c8b6c2147c25a40f345f841e89daed5bb467",
+      "original_sha256": "1cc23e0e96c8d09d511f8fb965a1c8b6c2147c25a40f345f841e89daed5bb467",
+      "changed": null
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/artifacts/610a96567e1038acdbcf7e172a262dbce7caf4128a0fe83e213b8de82fefd2a4.json": {
+      "published_sha256": "610a96567e1038acdbcf7e172a262dbce7caf4128a0fe83e213b8de82fefd2a4",
+      "original_sha256": "610a96567e1038acdbcf7e172a262dbce7caf4128a0fe83e213b8de82fefd2a4",
+      "changed": null
+    },
+    "runs/a22ef4ec-b114-462e-a72e-5fb7b82c01b3/artifacts/cea4bebf8ee325c769d3718600a2201a1931eff6336d91691f739c755d2ded4e.json": {
+      "published_sha256": "cea4bebf8ee325c769d3718600a2201a1931eff6336d91691f739c755d2ded4e",
+      "original_sha256": "cea4bebf8ee325c769d3718600a2201a1931eff6336d91691f739c755d2ded4e",
+      "changed": null
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/manifest.json": {
+      "published_sha256": "78e87733e51c1104296ad831844b98aae7e01b7381f769994cd6e1b075fd7704",
+      "original_sha256": "249774dabda2a0ff3c154761fd871d95e5e3c3ad7e57c8d98156e8b9d515e892",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/events.jsonl": {
+      "published_sha256": "44bf64f568b2a60261e57808b42100202f6f2b75a126d598e9b018f171764382",
+      "original_sha256": "09c2984c413d78e467a26d241d99b10998e923849f688fd87fc214c7dd229c04",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/artifacts/2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8.json": {
+      "published_sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "original_sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "changed": null
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/artifacts/6da23ece885fa0e6157f86f7f900bb6d4f0a408b3b50f792304bc6c0eb035b30.json": {
+      "published_sha256": "6da23ece885fa0e6157f86f7f900bb6d4f0a408b3b50f792304bc6c0eb035b30",
+      "original_sha256": "6da23ece885fa0e6157f86f7f900bb6d4f0a408b3b50f792304bc6c0eb035b30",
+      "changed": null
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/artifacts/fe296a14f91300f26cbcc61d264a13609935af9094520d1ad51d4ffc2970da0a.json": {
+      "published_sha256": "fe296a14f91300f26cbcc61d264a13609935af9094520d1ad51d4ffc2970da0a",
+      "original_sha256": "fe296a14f91300f26cbcc61d264a13609935af9094520d1ad51d4ffc2970da0a",
+      "changed": null
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/artifacts/1dd389cb39b2d8db71d62f87b2abf8bd235df5c31cd2b54a3ed03fa390971507.json": {
+      "published_sha256": "1dd389cb39b2d8db71d62f87b2abf8bd235df5c31cd2b54a3ed03fa390971507",
+      "original_sha256": "1dd389cb39b2d8db71d62f87b2abf8bd235df5c31cd2b54a3ed03fa390971507",
+      "changed": null
+    },
+    "runs/30636148-c6a2-407f-b1b4-06f5db03a7f9/artifacts/ce5beb5945e892fa6ce473b21c7bf0722374dafb8302a7b06849cb4912400b0d.json": {
+      "published_sha256": "ce5beb5945e892fa6ce473b21c7bf0722374dafb8302a7b06849cb4912400b0d",
+      "original_sha256": "ce5beb5945e892fa6ce473b21c7bf0722374dafb8302a7b06849cb4912400b0d",
+      "changed": null
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/manifest.json": {
+      "published_sha256": "2b0817236cb96e67c7d2d6a62a5e635df58ae97b2ea979941d824def6435dd19",
+      "original_sha256": "d25e412a1179c239e5a7563f7094bfd20620065ed213a03de5ff03c547da2d68",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/events.jsonl": {
+      "published_sha256": "c61d311de06e528a33f57935bde9d2b4656994cfab012c3b67d543bcb0621d0c",
+      "original_sha256": "82c4ffc0a6e82420516a95fe2bc4d3556125afeac136891fcdd069d41468500c",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/artifacts/e2be159dd644abb798b005e2b445162b953129b44ab063aafd499ae95b5f48e7.json": {
+      "published_sha256": "e2be159dd644abb798b005e2b445162b953129b44ab063aafd499ae95b5f48e7",
+      "original_sha256": "e2be159dd644abb798b005e2b445162b953129b44ab063aafd499ae95b5f48e7",
+      "changed": null
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/artifacts/6140410ae7a2b0fb6bdb1edbcfb773a9aac93d5705eee53b7a0f617775598a50.json": {
+      "published_sha256": "6140410ae7a2b0fb6bdb1edbcfb773a9aac93d5705eee53b7a0f617775598a50",
+      "original_sha256": "6140410ae7a2b0fb6bdb1edbcfb773a9aac93d5705eee53b7a0f617775598a50",
+      "changed": null
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/artifacts/2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8.json": {
+      "published_sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "original_sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "changed": null
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/artifacts/b0b94b9d2894996af7b8cc02d175629d38a5e752960d2f8fc38fcb2012ae4473.json": {
+      "published_sha256": "b0b94b9d2894996af7b8cc02d175629d38a5e752960d2f8fc38fcb2012ae4473",
+      "original_sha256": "b0b94b9d2894996af7b8cc02d175629d38a5e752960d2f8fc38fcb2012ae4473",
+      "changed": null
+    },
+    "runs/2711d206-11d1-4c0f-97da-1c5b4377ab83/artifacts/6606061b8c3ff363900a9cbb4d5fe1ae5616d8b6bf00bb630c2efb7c3bfd440c.json": {
+      "published_sha256": "6606061b8c3ff363900a9cbb4d5fe1ae5616d8b6bf00bb630c2efb7c3bfd440c",
+      "original_sha256": "6606061b8c3ff363900a9cbb4d5fe1ae5616d8b6bf00bb630c2efb7c3bfd440c",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/manifest.json": {
+      "published_sha256": "b55abbfdfa420676eb07f78c66e903fb9a24527bbe41b00aab05b1ffbbe9eadb",
+      "original_sha256": "01ace3a6a65806a41ae8d8cdda0b8225248cc6a9ac7052c29a39a13828837e04",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/events.jsonl": {
+      "published_sha256": "621648d23f6533f26889db0234b9bd65fe3c0f55c4abc8aaacf97f873026becd",
+      "original_sha256": "e7995c0efe70489c0871a797bc380207d5e9a0c5eba5e6b8ac6a8feb28d3bfe8",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/6f8bc042b6d98077b4e4deca9957a31ec69dbf16ea7d4155039cfd34ea5eb534.json": {
+      "published_sha256": "6f8bc042b6d98077b4e4deca9957a31ec69dbf16ea7d4155039cfd34ea5eb534",
+      "original_sha256": "6f8bc042b6d98077b4e4deca9957a31ec69dbf16ea7d4155039cfd34ea5eb534",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/9b0f128ea768872ea111e96a4d3ecfc3245934149cd8977f2fd548e59767b1fd.json": {
+      "published_sha256": "9b0f128ea768872ea111e96a4d3ecfc3245934149cd8977f2fd548e59767b1fd",
+      "original_sha256": "9b0f128ea768872ea111e96a4d3ecfc3245934149cd8977f2fd548e59767b1fd",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/f837069ebc23bb50eb10a326c2050747676f99268e3ae701e06f2b24b03d6897.json": {
+      "published_sha256": "f837069ebc23bb50eb10a326c2050747676f99268e3ae701e06f2b24b03d6897",
+      "original_sha256": "f837069ebc23bb50eb10a326c2050747676f99268e3ae701e06f2b24b03d6897",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/e5569917dd40017f91a3ec088928909a5f7d758dfeebde079c65b1268e494dec.json": {
+      "published_sha256": "e5569917dd40017f91a3ec088928909a5f7d758dfeebde079c65b1268e494dec",
+      "original_sha256": "e5569917dd40017f91a3ec088928909a5f7d758dfeebde079c65b1268e494dec",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/310e0ccb0307342b2ff8a91289339c91e3e83c3a0f7ab80f565ea80f2a00ccf0.json": {
+      "published_sha256": "310e0ccb0307342b2ff8a91289339c91e3e83c3a0f7ab80f565ea80f2a00ccf0",
+      "original_sha256": "310e0ccb0307342b2ff8a91289339c91e3e83c3a0f7ab80f565ea80f2a00ccf0",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57.json": {
+      "published_sha256": "95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57",
+      "original_sha256": "95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57",
+      "changed": null
+    },
+    "runs/30d6fb2c-ffea-4632-a76f-71d7f3e0f3db/artifacts/c9ae3d2f666c2e08e393f05d0464e70b2200a68821720232235c430ace5cb66d.json": {
+      "published_sha256": "c9ae3d2f666c2e08e393f05d0464e70b2200a68821720232235c430ace5cb66d",
+      "original_sha256": "c9ae3d2f666c2e08e393f05d0464e70b2200a68821720232235c430ace5cb66d",
+      "changed": null
+    },
+    "runs/b60dc291-59ca-463e-8a4c-295c18bcd91f/manifest.json": {
+      "published_sha256": "940284fa5c8a49b9d72a0176ea32deb09c933b7ddffbb8604cd026e1018c91a9",
+      "original_sha256": "36ee12f40daa2cb440b0dbb6b13c10926d1770ba152c477e30c59610767edc76",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/b60dc291-59ca-463e-8a4c-295c18bcd91f/events.jsonl": {
+      "published_sha256": "a702500e1d580e370ecfb8fc60c98368304ddbedec33775c40c55222e15ab2b0",
+      "original_sha256": "bd59b010e75c4de537f28f94e0d02f02227dae915f412d027fe547c8498fcdc2",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/b60dc291-59ca-463e-8a4c-295c18bcd91f/artifacts/d9090b97ab5945373dc778ca2b4d4b3209733d303e6c6060a7cdaaf9c20de506.json": {
+      "published_sha256": "d9090b97ab5945373dc778ca2b4d4b3209733d303e6c6060a7cdaaf9c20de506",
+      "original_sha256": "d9090b97ab5945373dc778ca2b4d4b3209733d303e6c6060a7cdaaf9c20de506",
+      "changed": null
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/manifest.json": {
+      "published_sha256": "4638fc00b561d403d8475417de9229f7e8e52da4337d62f8f335e2bbdca0e993",
+      "original_sha256": "3f0ffd1b090ac5c8335cfe6c22364a97e4ebf50ffab1bf051c2f2ce3ad9145ff",
+      "changed": "repo.path and config.repo (the owner's local materialized repository path) replaced; everything else, including artifact sha256s and repo.base_sha, unchanged"
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/events.jsonl": {
+      "published_sha256": "fac6bedc5aad1482fdb9fc51a149fdd60cd424ea38a1c6abdf1ca275d8bba0d9",
+      "original_sha256": "a7c9f81bd54e7210c580defce593d1b6ca5bb31831765c6a808a88a0fa36abc5",
+      "changed": "run.started and contract.grounding lines removed (they hold local paths); every other line verbatim"
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/artifacts/5797bf9500fc2fad95bc8325cc4138df33a1a46032499ad0c6b27550533bcf08.json": {
+      "published_sha256": "5797bf9500fc2fad95bc8325cc4138df33a1a46032499ad0c6b27550533bcf08",
+      "original_sha256": "5797bf9500fc2fad95bc8325cc4138df33a1a46032499ad0c6b27550533bcf08",
+      "changed": null
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/artifacts/1a193ad28bc680032ddde6703efacb3d144e32d2310d20ff9422de0b09ad8f31.json": {
+      "published_sha256": "1a193ad28bc680032ddde6703efacb3d144e32d2310d20ff9422de0b09ad8f31",
+      "original_sha256": "1a193ad28bc680032ddde6703efacb3d144e32d2310d20ff9422de0b09ad8f31",
+      "changed": null
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/artifacts/7a3171292edab5263b922e08b39b4f21b60a2ca5bc6f338f335fbed9880cc574.json": {
+      "published_sha256": "7a3171292edab5263b922e08b39b4f21b60a2ca5bc6f338f335fbed9880cc574",
+      "original_sha256": "7a3171292edab5263b922e08b39b4f21b60a2ca5bc6f338f335fbed9880cc574",
+      "changed": null
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/artifacts/8c85ce0c3a37a3fec69275045dce82ffe9232d70d56a9ae4a59e5405b0f5b875.json": {
+      "published_sha256": "8c85ce0c3a37a3fec69275045dce82ffe9232d70d56a9ae4a59e5405b0f5b875",
+      "original_sha256": "8c85ce0c3a37a3fec69275045dce82ffe9232d70d56a9ae4a59e5405b0f5b875",
+      "changed": null
+    },
+    "runs/eda9158a-14a0-408a-9f7e-8b88c54b69f0/artifacts/f0e5542a735248e69735f6d7007621b6457e8a4115b54f250791324ba4ba762c.json": {
+      "published_sha256": "f0e5542a735248e69735f6d7007621b6457e8a4115b54f250791324ba4ba762c",
+      "original_sha256": "f0e5542a735248e69735f6d7007621b6457e8a4115b54f250791324ba4ba762c",
+      "changed": null
+    }
+  }
+}

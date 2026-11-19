@@ -1,0 +1,158 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "change"
+    },
+    {
+      "passage_id": "P4",
+      "role": "keep"
+    },
+    {
+      "passage_id": "P5",
+      "role": "keep"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "formatClock (lib/clock.js)",
+      "module": "lib/clock.js",
+      "kind": "function",
+      "export": "formatClock",
+      "grounding": "grounded"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "formatClock (lib/clock.js)",
+      "pieces": []
+    }
+  ],
+  "fragment_list": [],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"formatClock (lib/clock.js)\",\n      \"args\": [3661],\n      \"outcome\": \"returns\",\n      \"expected\": \"1:01:01\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 212,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "formatClock (lib/clock.js)",
+          "args": [
+            3661
+          ],
+          "outcome": "returns",
+          "expected": "1:01:01",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"formatClock (lib/clock.js)\",\n      \"args\": [3661],\n      \"outcome\": \"returns\",\n      \"expected\": \"1:01:01\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 212,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "formatClock (lib/clock.js)",
+          "args": [
+            3661
+          ],
+          "outcome": "returns",
+          "expected": "1:01:01",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-4",
+      "passage_id": "P4",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"formatClock (lib/clock.js)\",\n      \"args\": [59],\n      \"outcome\": \"returns\",\n      \"expected\": \"0:59\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 207,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-4",
+          "call": "formatClock (lib/clock.js)",
+          "args": [
+            59
+          ],
+          "outcome": "returns",
+          "expected": "0:59",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-5",
+      "passage_id": "P5",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"formatClock (lib/clock.js)\",\n      \"args\": [60],\n      \"outcome\": \"returns\",\n      \"expected\": \"1:00\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"formatClock (lib/clock.js)\",\n      \"args\": [3599],\n      \"outcome\": \"returns\",\n      \"expected\": \"59:59\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 398,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-5",
+          "call": "formatClock (lib/clock.js)",
+          "args": [
+            60
+          ],
+          "outcome": "returns",
+          "expected": "1:00",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-5",
+          "call": "formatClock (lib/clock.js)",
+          "args": [
+            3599
+          ],
+          "outcome": "returns",
+          "expected": "59:59",
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

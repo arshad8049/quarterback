@@ -1,0 +1,19 @@
+{
+  "id": "587a51ae-af2c-44ee-a50f-8189682780b3",
+  "contract_id": "1a7f46cc-0b49-41f6-99ce-8673a540fede",
+  "context_id": "5897954c-ca85-4b3a-88c9-1fe38a62aaea",
+  "agent_used": "dry-run",
+  "status": "dry_run",
+  "duration_ms": 1,
+  "generated_at": "2026-11-19T20:13:22.550Z",
+  "briefing": "# Agent Briefing\n**Contract:** `1a7f46cc-0b49-41f6-99ce-8673a540fede`  |  **Date:** 2026-11-19\n**Context package:** `5897954c-ca85-4b3a-88c9-1fe38a62aaea`\n\n## Goal\nIn lib/clock.js, make formatClock() show hours once the time reaches one hour, so formatClock(3661) returns \"1:01:01\" instead of \"61:01\". Keep formatClock(59) returning \"0:59\", formatClock(60) returning \"1:00\" and formatClock(3599) returning \"59:59\".\n\n## Required behavior\n1. formatClock(3661) returns \"1:01:01\".\n2. formatClock(59) still returns \"0:59\" (behaviour kept).\n3. formatClock(60) still returns \"1:00\" (behaviour kept).\n4. formatClock(3599) still returns \"59:59\" (behaviour kept).\n\n## Constraints — do NOT violate these\n- Keep the existing behaviour (P4 \"Keep formatClock(59) returning \\\"0:59\\\",\"): formatClock(59) still returns \"0:59\".\n- Keep the existing behaviour (P5 \"formatClock(60) returning \\\"1:00\\\" and formatClock(3599) returning \\\"59:59\\\".\"): formatClock(60) still returns \"1:00\".\n- Keep the existing behaviour (P5 \"formatClock(60) returning \\\"1:00\\\" and formatClock(3599) returning \\\"59:59\\\".\"): formatClock(3599) still returns \"59:59\".\n\n## Scope — enforced\nYou may change only: `lib/clock.js`. Any other change cannot be accepted.\n\n## Acceptance criteria\nYou are done when **all** of these are verifiably true:\n\n- [ ] **[AC-1]** formatClock(3661) returns \"1:01:01\".\n- [ ] **[AC-2]** formatClock(59) still returns \"0:59\" (behaviour kept).\n- [ ] **[AC-3]** formatClock(60) still returns \"1:00\" (behaviour kept).\n- [ ] **[AC-4]** formatClock(3599) still returns \"59:59\" (behaviour kept).\n\n## Codebase patterns\n- Language: **javascript**\n- Test runner: **node-test**\n\n## Files to work in\n\n### `lib/clock.js` — exports: `formatClock`\nseed: symbol formatClock, symbol word clock, symbol word format, name clock (score 27)\nAssociated test (by file name): `test/clock.test.js`\n\n### `test/clock.test.js`\nseed: mentions formatclock, name clock (score 9)\nImports: `lib/clock.js`\n\n## Symbol map — where things live\n\n| Symbol | Location |\n|--------|----------|\n| `lib/clock.js#formatClock` | `lib/clock.js:3` |\n\n## Associated tests (matched by file name only)\nTest files that may relate to these files — run them after your changes (a matching name does not mean the behavior is tested):\n- `test/clock.test.js`\n\nNo associated test file was found by name for these files — add tests if you add behavior to them:\n- `test/clock.test.js`\n\n## Recent git activity\n- `lib/clock.js` — 1 commit(s), last changed 20 hours ago\n- `test/clock.test.js` — 1 commit(s), last changed 20 hours ago\n\n## Verification plan\n1. Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).\n\n---\n*Quarterback briefing — Layer 3 Agent Orchestrator*",
+  "changes": [],
+  "diff": null,
+  "unsupported_changes": [],
+  "base_tree": null,
+  "candidate_tree": null,
+  "exit_code": null,
+  "signal": null,
+  "stderr_tail": null,
+  "error": null
+}

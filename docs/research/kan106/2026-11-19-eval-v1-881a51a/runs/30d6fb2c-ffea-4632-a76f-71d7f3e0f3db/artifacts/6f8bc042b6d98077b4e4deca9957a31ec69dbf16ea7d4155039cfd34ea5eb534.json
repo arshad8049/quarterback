@@ -1,0 +1,19 @@
+{
+  "id": "49aa4990-8665-45f7-9090-2d74044a5260",
+  "contract_id": "8093b7c5-f2ba-44e4-8538-9775dbbd4d70",
+  "context_id": "734e0847-11cd-4e2c-9f00-cc3c8bce8bdc",
+  "agent_used": "dry-run",
+  "status": "dry_run",
+  "duration_ms": 0,
+  "generated_at": "2026-11-19T20:14:01.201Z",
+  "briefing": "# Agent Briefing — Repair attempt 2\n**Contract:** `8093b7c5-f2ba-44e4-8538-9775dbbd4d70`  |  **Date:** 2026-11-19\n**Context package:** `734e0847-11cd-4e2c-9f00-cc3c8bce8bdc`\n\n## ⚠ Previous attempt failed — fix these before anything else\n\n### [AC-4] not changed by the task: test/money.test.js\n**What to do:** Add the requested tests in test/money.test.js\n\n## Goal\nIn lib/money.js, make formatCents() group the dollars with commas, so formatCents(123456) returns \"$1,234.56\" instead of \"$1234.56\". Keep formatCents(5) returning \"$0.05\" and formatCents(99900) returning \"$999.00\". Add node:test cases in test/money.test.js.\n\n## Required behavior\n1. formatCents(123456) returns \"$1,234.56\".\n2. formatCents(5) still returns \"$0.05\" (behaviour kept).\n3. formatCents(99900) still returns \"$999.00\" (behaviour kept).\n\n## Constraints — do NOT violate these\n- Keep the existing behaviour (P4 \"Keep formatCents(5) returning \\\"$0.05\\\" and formatCents(99900) returning \\\"$999.00\\\".\"): formatCents(5) still returns \"$0.05\".\n- Keep the existing behaviour (P4 \"Keep formatCents(5) returning \\\"$0.05\\\" and formatCents(99900) returning \\\"$999.00\\\".\"): formatCents(99900) still returns \"$999.00\".\n\n## Scope — enforced\nYou may change only: `lib/money.js`, `test/money.test.js`. Any other change cannot be accepted.\n\n## Acceptance criteria\nYou are done when **all** of these are verifiably true:\n\n- [ ] **[AC-1]** formatCents(123456) returns \"$1,234.56\".\n- [ ] **[AC-2]** formatCents(5) still returns \"$0.05\" (behaviour kept).\n- [ ] **[AC-3]** formatCents(99900) still returns \"$999.00\" (behaviour kept).\n- [ ] **[AC-4]** New tests are added in test/money.test.js and they pass (requested tests: decided from the test run, for human review).\n\n## Codebase patterns\n- Language: **javascript**\n- Test runner: **node-test**\n\n## Files to work in\n\n### `lib/money.js` — exports: `formatCents`\nseed: symbol formatCents, symbol word format, symbol word cents, name money (score 28)\nAssociated test (by file name): `test/money.test.js`\n\n### `test/money.test.js`\nseed: mentions formatcents, name money, name test (score 14)\nImports: `lib/money.js`\n\n## Symbol map — where things live\n\n| Symbol | Location |\n|--------|----------|\n| `lib/money.js#formatCents` | `lib/money.js:3` |\n\n## Associated tests (matched by file name only)\nTest files that may relate to these files — run them after your changes (a matching name does not mean the behavior is tested):\n- `test/money.test.js`\n\nNo associated test file was found by name for these files — add tests if you add behavior to them:\n- `test/money.test.js`\n\n## Recent git activity\n- `lib/money.js` — 1 commit(s), last changed 20 hours ago\n- `test/money.test.js` — 1 commit(s), last changed 20 hours ago\n\n## Verification plan\n1. Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).\n2. Run the requested test files: each must be in the change and pass (human review decides whether they test the change).\n\n---\n*Quarterback briefing — Layer 3 Agent Orchestrator*",
+  "changes": [],
+  "diff": null,
+  "unsupported_changes": [],
+  "base_tree": null,
+  "candidate_tree": null,
+  "exit_code": null,
+  "signal": null,
+  "stderr_tail": null,
+  "error": null
+}

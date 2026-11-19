@@ -1,0 +1,19 @@
+{
+  "id": "83613667-62dc-4474-acc4-b05ac1740554",
+  "contract_id": "7de2f601-92a6-4660-a7bd-07ac5ed37722",
+  "context_id": "f99bd582-9c34-411d-802d-257f72ef8747",
+  "agent_used": "dry-run",
+  "status": "dry_run",
+  "duration_ms": 1,
+  "generated_at": "2026-11-19T20:11:58.480Z",
+  "briefing": "# Agent Briefing\n**Contract:** `7de2f601-92a6-4660-a7bd-07ac5ed37722`  |  **Date:** 2026-11-19\n**Context package:** `f99bd582-9c34-411d-802d-257f72ef8747`\n\n## Goal\nIn lib/math.js, create and export a function percent(part, whole) that returns part / whole * 100 rounded to the nearest whole number, for example percent(1, 3) returns 33 and percent(2, 3) returns 67. When whole is 0 it must throw an error whose message includes \"whole must not be zero\". Keep add(2, 3) returning 5.\n\n## Required behavior\n1. percent(1, 3) returns 33.\n2. percent(2, 3) returns 67.\n3. percent(1, 0) throws an error.\n4. add(2, 3) still returns 5 (behaviour kept).\n\n## Constraints — do NOT violate these\n- Keep the existing behaviour (P5 \"Keep add(2, 3) returning 5.\"): add(2, 3) still returns 5.\n\n## Scope — enforced\nYou may change only: `lib/math.js`. Any other change cannot be accepted.\n\n## Acceptance criteria\nYou are done when **all** of these are verifiably true:\n\n- [ ] **[AC-1]** percent(1, 3) returns 33.\n- [ ] **[AC-2]** percent(2, 3) returns 67.\n- [ ] **[AC-3]** percent(1, 0) throws an error.\n- [ ] **[AC-4]** add(2, 3) still returns 5 (behaviour kept).\n\n## Codebase patterns\n- Language: **javascript**\n- Test runner: **node-test**\n\n## Files to work in\n\n### `lib/math.js` — exports: `add`\nseed: symbol add, name math (score 24)\nAssociated test (by file name): `test/math.test.js`\n\n### `test/math.test.js`\nseed: mentions add, name math (score 8)\nImports: `lib/math.js`\n\n## Symbol map — where things live\n\n| Symbol | Location |\n|--------|----------|\n| `lib/math.js#add` | `lib/math.js:3` |\n\n## Associated tests (matched by file name only)\nTest files that may relate to these files — run them after your changes (a matching name does not mean the behavior is tested):\n- `test/math.test.js`\n\nNo associated test file was found by name for these files — add tests if you add behavior to them:\n- `test/math.test.js`\n\n## Recent git activity\n- `lib/math.js` — 1 commit(s), last changed 20 hours ago\n- `test/math.test.js` — 1 commit(s), last changed 20 hours ago\n\n## Verification plan\n1. Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).\n\n---\n*Quarterback briefing — Layer 3 Agent Orchestrator*",
+  "changes": [],
+  "diff": null,
+  "unsupported_changes": [],
+  "base_tree": null,
+  "candidate_tree": null,
+  "exit_code": null,
+  "signal": null,
+  "stderr_tail": null,
+  "error": null
+}

@@ -1,0 +1,13 @@
+{
+  "_label": "KAN-106 eval v1, batch 20261119T200955Z: PROPOSED semantic review by the junior against each FULL original request; the senior decides. Mechanical results: scores-v3-f907d97.json.",
+  "items": {
+    "S1-slug": { "proposed": "correct, with a note", "note": "both stated behaviours checked with the right call, input and expected value; the general rule 'each run of spaces' is checked only through its one stated example" },
+    "S2-formatter": { "proposed": "incorrect", "note": "wrong inputs: the request says join of an empty array and join([\"a\", \"b\"]); the checks call join() with no argument and join(\"a\", \"b\") with two strings. The correct control fails both checks (caught mechanically)" },
+    "S3-percent": { "proposed": "incorrect", "note": "the stated error message 'whole must not be zero' is missing (CHK-3 checks only that it throws; the fragment list was empty because percent is new and fragments come only from existing source), and the general rule part / whole * 100 rounded to nearest is reduced to its two examples" },
+    "S4-parsebool": { "proposed": "correct", "note": "four behaviours checked; lib/defaults.js protected and the wrong-scope control is refused by protected paths" },
+    "S5-clock": { "proposed": "correct, with a note", "note": "all four stated behaviours checked; 'once the time reaches one hour' is checked only through 3661 (no 3600 boundary case)" },
+    "S6-money": { "proposed": "correct; requested tests human-reviewed", "note": "three behaviours checked; AC-4 (requested tests) has no check, as the rubric allows" },
+    "U1-userrepo": { "proposed": "intended refusal", "note": "unsupported call shape UserRepo.find, constructor reason, 0 model calls" },
+    "U2-roundto": { "proposed": "not refused (fails)", "note": "a checklist with two invented expected values; the unchanged base already passes both checks" }
+  }
+}

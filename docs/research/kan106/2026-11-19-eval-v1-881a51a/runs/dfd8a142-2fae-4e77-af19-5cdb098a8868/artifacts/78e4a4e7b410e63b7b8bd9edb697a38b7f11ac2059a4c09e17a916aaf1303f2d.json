@@ -1,0 +1,165 @@
+{
+  "id": "cc346f7e-23b0-41db-9f40-92aeb0d19a5c",
+  "created_at": "2026-11-19T20:10:41.683Z",
+  "raw_request": "In lib/slug.js, make slugify() turn each run of spaces into a single dash, so slugify(\"a  b\") returns \"a-b\" instead of \"a--b\". Keep slugify(\"Hello World\") returning \"hello-world\".",
+  "repo_path": null,
+  "goal": "In lib/slug.js, make slugify() turn each run of spaces into a single dash, so slugify(\"a  b\") returns \"a-b\" instead of \"a--b\". Keep slugify(\"Hello World\") returning \"hello-world\".",
+  "required_behavior": [
+    "slugify(\"a  b\") returns \"a-b\".",
+    "slugify(\"Hello World\") returns \"hello-world\"."
+  ],
+  "constraints": [
+    "Keep the existing behaviour (P4 \"Keep slugify(\\\"Hello World\\\") returning \\\"hello-world\\\".\"): slugify(\"Hello World\") still returns \"hello-world\"."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "slugify(\"a  b\") returns \"a-b\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "slugify(\"Hello World\") returns \"hello-world\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-4"
+      ]
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments)."
+  ],
+  "relevant_context": [
+    "lib/slug.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/slug.js",
+        "export": "slugify",
+        "args": [
+          "a  b"
+        ],
+        "expect": "a-b"
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/slug.js",
+        "export": "slugify",
+        "args": [
+          "Hello World"
+        ],
+        "expect": "hello-world"
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2",
+  "scope": {
+    "allowed_changes": [
+      "lib/slug.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-2"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/slug.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make slugify() turn each run of spaces into a single dash,"
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ],
+      "quote": "so slugify(\"a  b\") returns \"a-b\" instead of \"a--b\"."
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ],
+      "quote": "Keep slugify(\"Hello World\") returning \"hello-world\"."
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/slug.js",
+        "sha256": "86a03f4e7613aaa2db64e2fa8fd5fbe3a80e88ba11dd68d1a1e8a662f4efbd91",
+        "bytes": 113,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": [
+          {
+            "name": "slugify",
+            "kind": "function"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "slugify",
+            "kind": "definition",
+            "start_line": 3,
+            "end_line": 5,
+            "truncated": false,
+            "block_end_line": 5,
+            "source": "working tree"
+          },
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 7,
+            "end_line": 7,
+            "truncated": false,
+            "block_end_line": 7,
+            "source": "working tree"
+          }
+        ]
+      }
+    ]
+  }
+}

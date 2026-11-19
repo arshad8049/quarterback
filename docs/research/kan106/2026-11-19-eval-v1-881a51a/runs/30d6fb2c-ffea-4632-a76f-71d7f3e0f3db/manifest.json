@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "run_id": "30d6fb2c-ffea-4632-a76f-71d7f3e0f3db",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/money.js, make formatCents() group the dollars with commas, so formatCents(123456) returns \"$1,234.56\" instead of \"$1234.56\". Keep formatCents(5) returning \"$0.05\" and formatCents(99900) returning \"$999.00\". Add node:test cases in test/money.test.js.",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "9749ee1ccecfb4623de45f6380dfcdbcd08ee659241b2592629c7609b4040e03",
+    "base_sha": "8a37c22b63e9187fd85c0fb6c3d7b64435881ba5"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "2d854d4a4d41938af55c3ea74715c369ad0d3c6216dbc707e6496282758fd79a",
+  "contract_hash": "c9ae3d2f666c2e08e393f05d0464e70b2200a68821720232235c430ace5cb66d",
+  "sandbox_policy": null,
+  "pid": 61239,
+  "started_at": "2026-11-19T20:13:22.991Z",
+  "finished_at": "2026-11-19T20:14:01.257Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:14:01.135Z",
+      "finished_at": "2026-11-19T20:14:01.181Z",
+      "base_sha": "8a37c22b63e9187fd85c0fb6c3d7b64435881ba5",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    },
+    {
+      "attempt": 2,
+      "parent_attempt": 1,
+      "repair_reason": [
+        "AC-4"
+      ],
+      "started_at": "2026-11-19T20:14:01.196Z",
+      "finished_at": "2026-11-19T20:14:01.231Z",
+      "base_sha": "8a37c22b63e9187fd85c0fb6c3d7b64435881ba5",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a2-execution",
+        "report": "a2-report",
+        "verify_input": "a2-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "9b0f128ea768872ea111e96a4d3ecfc3245934149cd8977f2fd548e59767b1fd",
+      "path": "artifacts/9b0f128ea768872ea111e96a4d3ecfc3245934149cd8977f2fd548e59767b1fd.json",
+      "bytes": 3638
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "c9ae3d2f666c2e08e393f05d0464e70b2200a68821720232235c430ace5cb66d",
+      "path": "artifacts/c9ae3d2f666c2e08e393f05d0464e70b2200a68821720232235c430ace5cb66d.json",
+      "bytes": 6164
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "310e0ccb0307342b2ff8a91289339c91e3e83c3a0f7ab80f565ea80f2a00ccf0",
+      "path": "artifacts/310e0ccb0307342b2ff8a91289339c91e3e83c3a0f7ab80f565ea80f2a00ccf0.json",
+      "bytes": 3463
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "e5569917dd40017f91a3ec088928909a5f7d758dfeebde079c65b1268e494dec",
+      "path": "artifacts/e5569917dd40017f91a3ec088928909a5f7d758dfeebde079c65b1268e494dec.json",
+      "bytes": 4223
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57",
+      "path": "artifacts/95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57.json",
+      "bytes": 606
+    },
+    "a2-execution": {
+      "name": "a2-execution",
+      "sha256": "6f8bc042b6d98077b4e4deca9957a31ec69dbf16ea7d4155039cfd34ea5eb534",
+      "path": "artifacts/6f8bc042b6d98077b4e4deca9957a31ec69dbf16ea7d4155039cfd34ea5eb534.json",
+      "bytes": 3674
+    },
+    "a2-report": {
+      "name": "a2-report",
+      "sha256": "f837069ebc23bb50eb10a326c2050747676f99268e3ae701e06f2b24b03d6897",
+      "path": "artifacts/f837069ebc23bb50eb10a326c2050747676f99268e3ae701e06f2b24b03d6897.json",
+      "bytes": 4223
+    },
+    "a2-verify-input": {
+      "name": "a2-verify-input",
+      "sha256": "95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57",
+      "path": "artifacts/95c04199d5c6314c8c3229f394355be418bf3b254f1d0f059f1478a47ff88e57.json",
+      "bytes": 606
+    }
+  }
+}

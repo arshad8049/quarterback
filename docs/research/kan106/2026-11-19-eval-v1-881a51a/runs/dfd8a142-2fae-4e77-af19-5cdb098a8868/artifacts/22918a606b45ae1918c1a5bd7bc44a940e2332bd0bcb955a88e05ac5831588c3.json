@@ -1,0 +1,19 @@
+{
+  "id": "4840b224-0c82-45ea-8342-975a6a41af23",
+  "contract_id": "cc346f7e-23b0-41db-9f40-92aeb0d19a5c",
+  "context_id": "8ba38f7b-9d5d-4471-829b-bb9bbbb83255",
+  "agent_used": "dry-run",
+  "status": "dry_run",
+  "duration_ms": 0,
+  "generated_at": "2026-11-19T20:10:42.999Z",
+  "briefing": "# Agent Briefing\n**Contract:** `cc346f7e-23b0-41db-9f40-92aeb0d19a5c`  |  **Date:** 2026-11-19\n**Context package:** `8ba38f7b-9d5d-4471-829b-bb9bbbb83255`\n\n## Goal\nIn lib/slug.js, make slugify() turn each run of spaces into a single dash, so slugify(\"a  b\") returns \"a-b\" instead of \"a--b\". Keep slugify(\"Hello World\") returning \"hello-world\".\n\n## Required behavior\n1. slugify(\"a  b\") returns \"a-b\".\n2. slugify(\"Hello World\") returns \"hello-world\".\n\n## Constraints — do NOT violate these\n- Keep the existing behaviour (P4 \"Keep slugify(\\\"Hello World\\\") returning \\\"hello-world\\\".\"): slugify(\"Hello World\") still returns \"hello-world\".\n\n## Scope — enforced\nYou may change only: `lib/slug.js`. Any other change cannot be accepted.\n\n## Acceptance criteria\nYou are done when **all** of these are verifiably true:\n\n- [ ] **[AC-1]** slugify(\"a  b\") returns \"a-b\".\n- [ ] **[AC-2]** slugify(\"Hello World\") returns \"hello-world\".\n\n## Codebase patterns\n- Language: **javascript**\n- Test runner: **node-test**\n\n## Files to work in\n\n### `lib/slug.js` — exports: `slugify`\nseed: symbol slugify, name slug (score 24)\nAssociated test (by file name): `test/slug.test.js`\n\n### `test/slug.test.js`\nseed: mentions slugify, name slug (score 8)\nImports: `lib/slug.js`\n\n## Symbol map — where things live\n\n| Symbol | Location |\n|--------|----------|\n| `lib/slug.js#slugify` | `lib/slug.js:3` |\n\n## Associated tests (matched by file name only)\nTest files that may relate to these files — run them after your changes (a matching name does not mean the behavior is tested):\n- `test/slug.test.js`\n\nNo associated test file was found by name for these files — add tests if you add behavior to them:\n- `test/slug.test.js`\n\n## Recent git activity\n- `lib/slug.js` — 1 commit(s), last changed 20 hours ago\n- `test/slug.test.js` — 1 commit(s), last changed 20 hours ago\n\n## Verification plan\n1. Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).\n\n---\n*Quarterback briefing — Layer 3 Agent Orchestrator*",
+  "changes": [],
+  "diff": null,
+  "unsupported_changes": [],
+  "base_tree": null,
+  "candidate_tree": null,
+  "exit_code": null,
+  "signal": null,
+  "stderr_tail": null,
+  "error": null
+}

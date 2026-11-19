@@ -1,0 +1,192 @@
+{
+  "id": "633e2e6b-11dc-40ee-9b9f-6b5284398b1e",
+  "created_at": "2026-11-19T20:11:08.475Z",
+  "raw_request": "In lib/formatter.js, make Formatter.join() return an empty string for an empty array instead of undefined. Keep join([\"a\", \"b\"]) returning \"a,b\".",
+  "repo_path": null,
+  "goal": "In lib/formatter.js, make Formatter.join() return an empty string for an empty array instead of undefined. Keep join([\"a\", \"b\"]) returning \"a,b\".",
+  "required_behavior": [
+    "Formatter.join() returns \"\".",
+    "Formatter.join(\"a\", \"b\") returns \"a,b\"."
+  ],
+  "constraints": [
+    "Keep the existing behaviour (P3 \"Keep join([\\\"a\\\", \\\"b\\\"]) returning \\\"a,b\\\".\"): Formatter.join(\"a\", \"b\") still returns \"a,b\"."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Formatter.join() returns \"\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Formatter.join(\"a\", \"b\") returns \"a,b\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-3"
+      ]
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments)."
+  ],
+  "relevant_context": [
+    "lib/formatter.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/formatter.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "join",
+            "args": [],
+            "expect": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/formatter.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "join",
+            "args": [
+              "a",
+              "b"
+            ],
+            "expect": "a,b"
+          }
+        ]
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2",
+  "scope": {
+    "allowed_changes": [
+      "lib/formatter.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-2"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/formatter.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make Formatter.join() return an empty string for an empty array instead of undefined."
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ],
+      "quote": "Keep join([\"a\", \"b\"]) returning \"a,b\"."
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/formatter.js",
+        "sha256": "a1bc75eaf08e7659b00cf9c9943b758ae5949a3746fafa7949789bd48ff9fda7",
+        "bytes": 242,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "class",
+          "name": "Formatter",
+          "methods": [
+            "join"
+          ],
+          "accessors": [],
+          "statics": [],
+          "ctor_stores": [],
+          "form": "module.exports = class Formatter"
+        },
+        "named": [],
+        "excerpts": [
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 3,
+            "end_line": 3,
+            "truncated": true,
+            "block_end_line": 12,
+            "source": "working tree"
+          },
+          {
+            "symbol": "constructor",
+            "kind": "constructor",
+            "start_line": 4,
+            "end_line": 6,
+            "truncated": false,
+            "block_end_line": 6,
+            "source": "working tree"
+          },
+          {
+            "symbol": "join",
+            "kind": "definition",
+            "start_line": 8,
+            "end_line": 11,
+            "truncated": false,
+            "block_end_line": 11,
+            "source": "working tree"
+          }
+        ]
+      }
+    ]
+  }
+}

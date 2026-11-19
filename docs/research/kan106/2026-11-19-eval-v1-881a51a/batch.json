@@ -1,0 +1,138 @@
+{
+  "format": "qb-kan106-eval-batch/1",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "settings": {
+    "qb_entry": "qb.js",
+    "model": "qwen2.5-coder:14b",
+    "model_digest": "9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849",
+    "ollama_url": "http://127.0.0.1:11434",
+    "profile": "qwen-14b-staged",
+    "flags": [
+      "--agent",
+      "dry-run",
+      "--no-llm-context",
+      "--no-llm-verify",
+      "--l1-profile",
+      "qwen-14b-staged",
+      "--l1-budget",
+      "420",
+      "--deadline",
+      "15"
+    ],
+    "child_env": {
+      "QB_OLLAMA_URL": "http://127.0.0.1:11434",
+      "QB_MODEL": "qwen2.5-coder:14b",
+      "QB_RUNS_DIR": "<OUT>/runs"
+    },
+    "child_env_inherited": [
+      "PATH",
+      "HOME",
+      "TMPDIR",
+      "LANG"
+    ],
+    "l1_budget_s": 420,
+    "per_call_s": 240,
+    "runs_per_item": 1,
+    "budget_note": "at most 56 minutes is the sum of the L1 budgets (8 x 420 s); whole-batch wall time also includes setup and scoring"
+  },
+  "started_utc": "2026-11-19T20:09:57Z",
+  "refused": false,
+  "items": [
+    {
+      "id": "S1-slug",
+      "run_id": "dfd8a142-2fae-4e77-af19-5cdb098a8868",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:09:57Z",
+      "finished_utc": "2026-11-19T20:10:43Z",
+      "duration_ms": 45934,
+      "log": "logs/S1-slug.log"
+    },
+    {
+      "id": "S2-formatter",
+      "run_id": "0f889a34-8a31-4d6d-94ea-6df946cd1449",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:10:43Z",
+      "finished_utc": "2026-11-19T20:11:09Z",
+      "duration_ms": 26746,
+      "log": "logs/S2-formatter.log"
+    },
+    {
+      "id": "S3-percent",
+      "run_id": "a22ef4ec-b114-462e-a72e-5fb7b82c01b3",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:11:09Z",
+      "finished_utc": "2026-11-19T20:11:58Z",
+      "duration_ms": 48738,
+      "log": "logs/S3-percent.log"
+    },
+    {
+      "id": "S4-parsebool",
+      "run_id": "30636148-c6a2-407f-b1b4-06f5db03a7f9",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:11:58Z",
+      "finished_utc": "2026-11-19T20:12:39Z",
+      "duration_ms": 41234,
+      "log": "logs/S4-parsebool.log"
+    },
+    {
+      "id": "S5-clock",
+      "run_id": "2711d206-11d1-4c0f-97da-1c5b4377ab83",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:12:39Z",
+      "finished_utc": "2026-11-19T20:13:22Z",
+      "duration_ms": 42829,
+      "log": "logs/S5-clock.log"
+    },
+    {
+      "id": "S6-money",
+      "run_id": "30d6fb2c-ffea-4632-a76f-71d7f3e0f3db",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:13:22Z",
+      "finished_utc": "2026-11-19T20:14:01Z",
+      "duration_ms": 38646,
+      "log": "logs/S6-money.log"
+    },
+    {
+      "id": "U1-userrepo",
+      "run_id": "b60dc291-59ca-463e-8a4c-295c18bcd91f",
+      "exit_code": 2,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:14:01Z",
+      "finished_utc": "2026-11-19T20:14:01Z",
+      "duration_ms": 356,
+      "log": "logs/U1-userrepo.log"
+    },
+    {
+      "id": "U2-roundto",
+      "run_id": "eda9158a-14a0-408a-9f7e-8b88c54b69f0",
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "started_utc": "2026-11-19T20:14:01Z",
+      "finished_utc": "2026-11-19T20:14:15Z",
+      "duration_ms": 14063,
+      "log": "logs/U2-roundto.log"
+    }
+  ],
+  "model_before": {
+    "digest_matches": true
+  },
+  "model_after": {
+    "digest_matches": true,
+    "problems": []
+  },
+  "finished_utc": "2026-11-19T20:14:15Z"
+}
