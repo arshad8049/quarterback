@@ -105,17 +105,17 @@ describe('G2: unsupported or ambiguous call shapes are marked, never advertised 
     const shapes = {
       none: 'class Counter {\n  next (n) { return n + 1 }\n}\nmodule.exports = Counter\n',
       defaulted: 'class Counter {\n  constructor (opts = {}) { this.step = opts.step || 1 }\n  next (n) { return n + this.step }\n}\nmodule.exports = Counter\n',
-      guarded: 'class Counter {\n  constructor (opts) { this.step = (opts && opts.step) || 1; this.o = opts }\n  next (n) { return n + this.step }\n}\nmodule.exports = Counter\n',
+      guarded: 'class Counter {\n  constructor (opts) { this.step = (opts && opts.step) || 1 }\n  next (n) { return n + this.step }\n}\nmodule.exports = Counter\n',   // 10758: a stored `this.o = opts` is no longer an exemption (kan106-10758-constructor.test.js)
     };
     for (const [kind, src] of Object.entries(shapes)) {
       const [t] = targetsOf('lib/c.js', src, request);
       assert.equal(t.grounding, 'grounded', kind);
-      assert.equal(t.constructor_args, kind === 'none' ? 'none' : 'optional', kind);
+      assert.equal(t.constructor_args, kind === 'none' ? 'none' : 'appears_optional', kind);
     }
   });
   test('the fixture: Serializer\'s constructor (options) only reads options behind a guard: grounded, optional arguments', () => {
     const [t] = targetsOf('lib/serializer.js', BASE, REQUEST);
-    assert.deepEqual([t.label, t.grounding, t.constructor_args], ['Serializer.asNumber (lib/serializer.js)', 'grounded', 'optional']);
+    assert.deepEqual([t.label, t.grounding, t.constructor_args], ['Serializer.asNumber (lib/serializer.js)', 'grounded', 'appears_optional']);
   });
   test('an unknown source (exports QB cannot read): unsupported; L1 refuses before any model call', async () => {
     const request = 'In lib/m.js, make run() return 1.';
