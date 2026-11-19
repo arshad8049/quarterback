@@ -1,0 +1,1 @@
+In lib/money.js, make formatCents() group the dollars with commas, so formatCents(123456) returns "$1,234.56" instead of "$1234.56". Keep formatCents(5) returning "$0.05" and formatCents(99900) returning "$999.00". Add node:test cases in test/money.test.js.

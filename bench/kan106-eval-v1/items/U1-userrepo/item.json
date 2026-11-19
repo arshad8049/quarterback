@@ -1,0 +1,21 @@
+{
+  "category": "unsupported: default-class method whose constructor needs a dependency that the method dereferences",
+  "expected": "refuse",
+  "requirements": [],
+  "control_expect": {},
+  "scope": {
+    "must_allow": [],
+    "must_protect": []
+  },
+  "id": "U1-userrepo",
+  "refusal": "a clear refusal naming the call shape (QB cannot construct UserRepo without its db); no finalized checklist and no agent launch",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

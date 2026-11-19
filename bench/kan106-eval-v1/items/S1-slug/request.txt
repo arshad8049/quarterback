@@ -1,0 +1,1 @@
+In lib/slug.js, make slugify() turn each run of spaces into a single dash, so slugify("a  b") returns "a-b" instead of "a--b". Keep slugify("Hello World") returning "hello-world".

@@ -1,0 +1,1 @@
+In lib/formatter.js, make Formatter.join() return an empty string for an empty array instead of undefined. Keep join(["a", "b"]) returning "a,b".

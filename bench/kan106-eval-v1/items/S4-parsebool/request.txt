@@ -1,0 +1,1 @@
+In lib/env.js, make parseBool() also treat "1" and "yes" as true, so parseBool("yes") returns true and parseBool("1") returns true. Keep parseBool("true") returning true and parseBool("false") returning false. Do not change lib/defaults.js.

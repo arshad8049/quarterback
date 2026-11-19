@@ -1,0 +1,21 @@
+{
+  "category": "ambiguous: no expected behaviour stated (\"properly\")",
+  "expected": "refuse",
+  "requirements": [],
+  "control_expect": {},
+  "scope": {
+    "must_allow": [],
+    "must_protect": []
+  },
+  "id": "U2-roundto",
+  "refusal": "a refusal or a clarifying question: the request states no expected value, so any finalized checklist has invented its expected behaviour",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

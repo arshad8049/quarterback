@@ -1,0 +1,72 @@
+{
+  "category": "requested new export (+ a throw from the request text) + keep",
+  "expected": "finalize",
+  "requirements": [
+    {
+      "id": "exported",
+      "text": "lib/math.js exports a function percent"
+    },
+    {
+      "id": "example-1",
+      "text": "percent(1, 3) returns 33"
+    },
+    {
+      "id": "example-2",
+      "text": "percent(2, 3) returns 67"
+    },
+    {
+      "id": "throws",
+      "text": "percent(n, 0) throws an error whose message includes \"whole must not be zero\""
+    },
+    {
+      "id": "keep",
+      "text": "add(2, 3) still returns 5"
+    }
+  ],
+  "control_expect": {
+    "base": {
+      "exported": "fail",
+      "example-1": "fail",
+      "example-2": "fail",
+      "throws": "fail",
+      "keep": "pass"
+    },
+    "correct": {
+      "exported": "pass",
+      "example-1": "pass",
+      "example-2": "pass",
+      "throws": "pass",
+      "keep": "pass"
+    },
+    "wrong-rounding": {
+      "exported": "pass",
+      "example-1": "pass",
+      "example-2": "fail",
+      "throws": "pass",
+      "keep": "pass"
+    },
+    "wrong-no-throw": {
+      "exported": "pass",
+      "example-1": "pass",
+      "example-2": "pass",
+      "throws": "fail",
+      "keep": "pass"
+    }
+  },
+  "scope": {
+    "must_allow": [
+      "lib/math.js"
+    ],
+    "must_protect": []
+  },
+  "id": "S3-percent",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

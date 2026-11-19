@@ -1,0 +1,230 @@
+{
+  "_label": "OFFLINE control validation (no model, no QB compiler): hand-written reference tests on each control",
+  "node": "v20.20.2",
+  "items": [
+    {
+      "id": "S1-slug",
+      "expected": "finalize",
+      "controls": {
+        "base": {
+          "results": {
+            "change": "fail",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "correct": {
+          "results": {
+            "change": "pass",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-keep": {
+          "results": {
+            "change": "pass",
+            "keep": "fail"
+          },
+          "matches_expectation": true
+        }
+      },
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "S2-formatter",
+      "expected": "finalize",
+      "controls": {
+        "base": {
+          "results": {
+            "change": "fail",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "correct": {
+          "results": {
+            "change": "pass",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-keep": {
+          "results": {
+            "change": "pass",
+            "keep": "fail"
+          },
+          "matches_expectation": true
+        }
+      },
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "S3-percent",
+      "expected": "finalize",
+      "controls": {
+        "base": {
+          "results": {
+            "exported": "fail",
+            "example-1": "fail",
+            "example-2": "fail",
+            "throws": "fail",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "correct": {
+          "results": {
+            "exported": "pass",
+            "example-1": "pass",
+            "example-2": "pass",
+            "throws": "pass",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-rounding": {
+          "results": {
+            "exported": "pass",
+            "example-1": "pass",
+            "example-2": "fail",
+            "throws": "pass",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-no-throw": {
+          "results": {
+            "exported": "pass",
+            "example-1": "pass",
+            "example-2": "pass",
+            "throws": "fail",
+            "keep": "pass"
+          },
+          "matches_expectation": true
+        }
+      },
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "S4-parsebool",
+      "expected": "finalize",
+      "controls": {
+        "base": {
+          "results": {
+            "change-yes": "fail",
+            "change-1": "fail",
+            "keep-true": "pass",
+            "keep-false": "pass"
+          },
+          "matches_expectation": true
+        },
+        "correct": {
+          "results": {
+            "change-yes": "pass",
+            "change-1": "pass",
+            "keep-true": "pass",
+            "keep-false": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-keep": {
+          "results": {
+            "change-yes": "pass",
+            "change-1": "pass",
+            "keep-true": "fail",
+            "keep-false": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-scope": {
+          "results": {
+            "change-yes": "pass",
+            "change-1": "pass",
+            "keep-true": "pass",
+            "keep-false": "pass"
+          },
+          "matches_expectation": true
+        }
+      },
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "S5-clock",
+      "expected": "finalize",
+      "controls": {
+        "base": {
+          "results": {
+            "change": "fail",
+            "keep-59": "pass",
+            "keep-60": "pass",
+            "keep-3599": "pass"
+          },
+          "matches_expectation": true
+        },
+        "correct": {
+          "results": {
+            "change": "pass",
+            "keep-59": "pass",
+            "keep-60": "pass",
+            "keep-3599": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-keep": {
+          "results": {
+            "change": "pass",
+            "keep-59": "fail",
+            "keep-60": "fail",
+            "keep-3599": "fail"
+          },
+          "matches_expectation": true
+        }
+      },
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "S6-money",
+      "expected": "finalize",
+      "controls": {
+        "base": {
+          "results": {
+            "change": "fail",
+            "keep-5": "pass",
+            "keep-99900": "pass"
+          },
+          "matches_expectation": true
+        },
+        "correct": {
+          "results": {
+            "change": "pass",
+            "keep-5": "pass",
+            "keep-99900": "pass"
+          },
+          "matches_expectation": true
+        },
+        "wrong-keep": {
+          "results": {
+            "change": "pass",
+            "keep-5": "fail",
+            "keep-99900": "fail"
+          },
+          "matches_expectation": true
+        }
+      },
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "U1-userrepo",
+      "expected": "refuse",
+      "controls": {},
+      "base_own_suite": "pass"
+    },
+    {
+      "id": "U2-roundto",
+      "expected": "refuse",
+      "controls": {},
+      "base_own_suite": "pass"
+    }
+  ],
+  "all_match": true
+}

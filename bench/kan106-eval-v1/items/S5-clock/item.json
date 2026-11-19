@@ -1,0 +1,58 @@
+{
+  "category": "preservation: one change, three kept behaviours",
+  "expected": "finalize",
+  "requirements": [
+    {
+      "id": "change",
+      "text": "formatClock(3661) returns \"1:01:01\""
+    },
+    {
+      "id": "keep-59",
+      "text": "formatClock(59) still returns \"0:59\""
+    },
+    {
+      "id": "keep-60",
+      "text": "formatClock(60) still returns \"1:00\""
+    },
+    {
+      "id": "keep-3599",
+      "text": "formatClock(3599) still returns \"59:59\""
+    }
+  ],
+  "control_expect": {
+    "base": {
+      "change": "fail",
+      "keep-59": "pass",
+      "keep-60": "pass",
+      "keep-3599": "pass"
+    },
+    "correct": {
+      "change": "pass",
+      "keep-59": "pass",
+      "keep-60": "pass",
+      "keep-3599": "pass"
+    },
+    "wrong-keep": {
+      "change": "pass",
+      "keep-59": "fail",
+      "keep-60": "fail",
+      "keep-3599": "fail"
+    }
+  },
+  "scope": {
+    "must_allow": [
+      "lib/clock.js"
+    ],
+    "must_protect": []
+  },
+  "id": "S5-clock",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

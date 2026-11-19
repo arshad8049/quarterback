@@ -1,0 +1,73 @@
+{
+  "category": "explicit protection (\"Do not change <file>.\") + change + keep",
+  "expected": "finalize",
+  "requirements": [
+    {
+      "id": "change-yes",
+      "text": "parseBool(\"yes\") returns true"
+    },
+    {
+      "id": "change-1",
+      "text": "parseBool(\"1\") returns true"
+    },
+    {
+      "id": "keep-true",
+      "text": "parseBool(\"true\") still returns true"
+    },
+    {
+      "id": "keep-false",
+      "text": "parseBool(\"false\") still returns false"
+    },
+    {
+      "id": "protect",
+      "text": "lib/defaults.js is protected (a change to it fails the task)"
+    }
+  ],
+  "control_expect": {
+    "base": {
+      "change-yes": "fail",
+      "change-1": "fail",
+      "keep-true": "pass",
+      "keep-false": "pass"
+    },
+    "correct": {
+      "change-yes": "pass",
+      "change-1": "pass",
+      "keep-true": "pass",
+      "keep-false": "pass"
+    },
+    "wrong-keep": {
+      "change-yes": "pass",
+      "change-1": "pass",
+      "keep-true": "fail",
+      "keep-false": "pass"
+    },
+    "wrong-scope": {
+      "change-yes": "pass",
+      "change-1": "pass",
+      "keep-true": "pass",
+      "keep-false": "pass"
+    }
+  },
+  "scope": {
+    "must_allow": [
+      "lib/env.js"
+    ],
+    "must_protect": [
+      "lib/defaults.js"
+    ]
+  },
+  "id": "S4-parsebool",
+  "scope_controls": {
+    "wrong-scope": "must be refused by scope.protected_paths (it changes lib/defaults.js); its behaviour is otherwise correct, so checks alone cannot catch it"
+  },
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

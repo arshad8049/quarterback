@@ -1,0 +1,44 @@
+{
+  "category": "function: change + keep (named export)",
+  "expected": "finalize",
+  "requirements": [
+    {
+      "id": "change",
+      "text": "slugify(\"a  b\") returns \"a-b\""
+    },
+    {
+      "id": "keep",
+      "text": "slugify(\"Hello World\") still returns \"hello-world\""
+    }
+  ],
+  "control_expect": {
+    "base": {
+      "change": "fail",
+      "keep": "pass"
+    },
+    "correct": {
+      "change": "pass",
+      "keep": "pass"
+    },
+    "wrong-keep": {
+      "change": "pass",
+      "keep": "fail"
+    }
+  },
+  "scope": {
+    "must_allow": [
+      "lib/slug.js"
+    ],
+    "must_protect": []
+  },
+  "id": "S1-slug",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

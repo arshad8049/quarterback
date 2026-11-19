@@ -1,0 +1,1 @@
+In lib/users.js, make UserRepo.find() return null for an unknown id instead of throwing.

@@ -1,0 +1,44 @@
+{
+  "category": "default-class method: change + keep",
+  "expected": "finalize",
+  "requirements": [
+    {
+      "id": "change",
+      "text": "new Formatter().join([]) returns \"\""
+    },
+    {
+      "id": "keep",
+      "text": "new Formatter().join([\"a\", \"b\"]) still returns \"a,b\""
+    }
+  ],
+  "control_expect": {
+    "base": {
+      "change": "fail",
+      "keep": "pass"
+    },
+    "correct": {
+      "change": "pass",
+      "keep": "pass"
+    },
+    "wrong-keep": {
+      "change": "pass",
+      "keep": "fail"
+    }
+  },
+  "scope": {
+    "must_allow": [
+      "lib/formatter.js"
+    ],
+    "must_protect": []
+  },
+  "id": "S2-formatter",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}

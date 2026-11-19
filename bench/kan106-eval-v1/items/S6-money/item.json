@@ -1,0 +1,56 @@
+{
+  "category": "added tests requested + change + keep",
+  "expected": "finalize",
+  "requirements": [
+    {
+      "id": "change",
+      "text": "formatCents(123456) returns \"$1,234.56\""
+    },
+    {
+      "id": "keep-5",
+      "text": "formatCents(5) still returns \"$0.05\""
+    },
+    {
+      "id": "keep-99900",
+      "text": "formatCents(99900) still returns \"$999.00\""
+    },
+    {
+      "id": "tests",
+      "text": "test/money.test.js gains test cases (requested tests; adequacy may stay human-reviewed)"
+    }
+  ],
+  "control_expect": {
+    "base": {
+      "change": "fail",
+      "keep-5": "pass",
+      "keep-99900": "pass"
+    },
+    "correct": {
+      "change": "pass",
+      "keep-5": "pass",
+      "keep-99900": "pass"
+    },
+    "wrong-keep": {
+      "change": "pass",
+      "keep-5": "fail",
+      "keep-99900": "fail"
+    }
+  },
+  "scope": {
+    "must_allow": [
+      "lib/money.js",
+      "test/money.test.js"
+    ],
+    "must_protect": []
+  },
+  "id": "S6-money",
+  "permitted_compiler_inputs": [
+    "request.txt",
+    "base/ (materialized as a one-commit git repository)"
+  ],
+  "never_compiler_inputs": [
+    "controls/",
+    "reference.test.js",
+    "item.json"
+  ]
+}
