@@ -122,6 +122,14 @@ function isIntendedRefusal(spec, decision, modelCalls) {
   }
   return true;
 }
+/** 10770: true only for an attempt by a coding-agent adapter (from the RECORDED agent type); null when the type is unknown. */
+function codingAgentLaunched(manifest) {
+  const attempted = Array.isArray(manifest.attempts) && manifest.attempts.length > 0;
+  const type = manifest.agent && manifest.agent.type;
+  if (!attempted) return false;
+  if (!type || type === 'unknown') return null;
+  return !['dry-run', 'manual'].includes(type);
+}
 function executionFailure(manifest, entry) {
   const reason = String(manifest.outcome_reason || '');
   if (entry.signal || manifest.outcome === 'RUNNING' || !(manifest.outcome in EXIT_FOR)) return { kind: 'crash', detail: entry.signal ? `killed by ${entry.signal}` : `outcome ${manifest.outcome}` };
@@ -182,7 +190,9 @@ function scoreItem(id, entry, { runsRoot, itemsRoot = ITEMS, expect }) {
     l1_ms: timings ? timings.l1_ms : null, calls: timings && Array.isArray(timings.calls) ? timings.calls.map((c) => ({ requirement_id: c.requirement_id, ms: c.ms, outcome: c.outcome })) : [],
     model_calls: facts.reduce((n, f) => n + (f.attempts || []).length, 0),
     repairs: facts.reduce((n, f) => n + Math.max(0, (f.attempts || []).length - 1), 0),
-    agent_launched: Array.isArray(manifest.attempts) && manifest.attempts.length > 0,
+    // 10770 (analysis v4, labels only): a dry-run adapter attempt is not a coding-agent launch.
+    adapter_attempt_recorded: Array.isArray(manifest.attempts) && manifest.attempts.length > 0,
+    coding_agent_launched: codingAgentLaunched(manifest),
     latency: null,
   });
   if (s.l1_ms !== null) s.latency = { within_item_target: s.l1_ms <= LIMITS.per_item_l1_ms, within_budget: s.l1_ms <= LIMITS.budget_l1_ms };
@@ -198,7 +208,7 @@ function scoreItem(id, entry, { runsRoot, itemsRoot = ITEMS, expect }) {
   if (item.expected === 'refuse') {
     if (finalized || manifest.outcome !== 'BLOCKED') { s.result = 'not_refused'; return s; }
     s.decision = l1Decision(manifest, staged);
-    s.result = !s.agent_launched && isIntendedRefusal(item.refusal_evidence, s.decision, s.model_calls) ? 'intended_refusal' : 'blocked_other_reason';
+    s.result = !s.adapter_attempt_recorded && isIntendedRefusal(item.refusal_evidence, s.decision, s.model_calls) ? 'intended_refusal' : 'blocked_other_reason';
     return s;
   }
   if (!finalized) { s.result = 'no_checklist'; s.decision = l1Decision(manifest, staged); return s; }
@@ -320,4 +330,4 @@ if (require.main === module) {
   const text = JSON.stringify(scoreBatchDir(dir), null, 2) + '\n';
   const f = arg('--out'); if (f) fs.writeFileSync(f, text); else process.stdout.write(text);
 }
-module.exports = { scoreItem, scoreBatch, scoreBatchDir, summarize, loadRun, l1Decision, expectFrom, requestOf, settingsProblems, EXIT_FOR, LIMITS, ITEMS };
+module.exports = { scoreItem, scoreBatch, scoreBatchDir, summarize, loadRun, l1Decision, expectFrom, requestOf, settingsProblems, codingAgentLaunched, EXIT_FOR, LIMITS, ITEMS };
