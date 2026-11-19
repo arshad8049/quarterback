@@ -159,7 +159,7 @@ describe('score.js on a TEST-ONLY item (asNumber fixture + the published 69e576f
     fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ run_id: id, qb_revision: EXPECT.qb_revision, request: REQUEST,
       repo: { base_sha: BASE_SHA }, outcome: withContract ? 'DRY_RUN' : 'BLOCKED', outcome_reason: withContract ? null : 'staged_l1_invalid: something else',
       models: { intent: 'qwen2.5-coder:14b' }, agent: { type: 'dry-run' }, config: { ...EXPECT.config }, attempts: [], artifacts }));
-    return { runs, entry: { run_id: id, exit_code: withContract ? 0 : 2, signal: null } };
+    return { runs, entry: { run_id: id, exit_code: withContract ? 1 : 2, signal: null } };   // a completed dry run exits 1 (qb.js; kan106-eval-v1-exit-codes)
   }
   const scored = (id, withContract, root) => {
     const r = record(withContract);
