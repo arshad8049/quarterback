@@ -203,6 +203,18 @@ describe('KAN-107 extraction', () => {
     assert.equal(examples[0].error_class, 'RangeError');
     assert.equal(examples[0].message, null);
   });
+  test('a bare DESCRIPTION is not a requirement (QB-30 PW-01: the bug report states the CURRENT value): unsupported, never enforced', () => {
+    const r = RX().extractExamples("Warnings don't interpolate falsy values. With const w = createWarning({ name: 'W' }), w.format(0) returns 'count=%d' instead of 'count=0'. Fix it.");
+    assert.deepEqual(r.examples, []);
+    assert.ok(r.unsupported.some((u) => /w\.format\(0\)/.test(u.excerpt) && /description/.test(u.reason)), JSON.stringify(r.unsupported));
+    assert.deepEqual(RX().extractExamples('In lib/temp.js, toF(100) should return 212.').examples.map((e) => e.expected), [212], 'should/must/still on the verb frames it as wanted');
+  });
+  test('a described current value next to the requested one: only the requested one is enforced', () => {
+    const R = "In lib/w.js, f(0) returns 'bad' instead of 'good'. Make f(0) return 'good'.";
+    const raw = draft(R, [{ criterion: "f(0) returns 'good'.", passages: ['P2', 'P3'], check: fn('lib/w.js', 'f', [0], 'good') }], { allowed: ['lib/w.js'] });
+    assert.deepEqual(RX().extractExamples(R).examples.map((e) => e.expected), ['good']);
+    assert.equal(stateOf(R, raw).state, 'finalized', errorsOf(R, raw));
+  });
   test('general rules are kept as reviewable requirements, separate from the example (S1 / S5 shapes)', () => {
     const r = RX().extractExamples('In lib/slug.js, make slugify() turn each run of spaces into a single dash, so slugify("a  b") returns "a-b" instead of "a--b".');
     assert.deepEqual(r.rules.map((x) => x.passage_id), ['P2']);
@@ -317,6 +329,18 @@ describe('KAN-107 consistency errors (decisions 1, 2, 3, 6; corrections A, C)', 
       assert.deepEqual(RX().exampleErrors(contract(request, raw)), []);
     });
   }
+  test('decision 5: a rule quoted clause by clause (legacy drafts) is retained when every overlapping requirement is cited; not when one clause is context', () => {
+    const R = 'Add a clamp(n, min, max) function to src/utils.js that bounds n to [min, max]';   // as the QB-31 demo request (no final period)
+    const base = { goal: R, required_behavior: [R], constraints: [], constraint_policy: [], verification_plan: ['Run the checks.'], relevant_context: ['src/utils.js'],
+      ambiguity_flags: [], clarifying_question: null, proposed_defaults: [], scope: { allowed_changes: ['src/utils.js'], protected_paths: [] },
+      checks: [fn('src/utils.js', 'clamp', [5, 0, 3], 3)].map((k, i) => ({ id: `CHK-${i + 1}`, ac_id: 'AC-2', ...k })),
+      acceptance_criteria: [{ id: 'AC-1', criterion: 'clamp is exported from src/utils.js.', requirement_ids: ['R-1'] }, { id: 'AC-2', criterion: 'clamp(5, 0, 3) returns 3 (n bounded to [min, max]).', requirement_ids: ['R-2'] }] };
+    const kept = { ...base, requirements: [{ id: 'R-1', quote: 'Add a clamp(n, min, max) function to src/utils.js' }, { id: 'R-2', quote: 'bounds n to [min, max]' }] };
+    assert.equal(stateOf(R, kept).state, 'finalized', errorsOf(R, kept));
+    const dropped = { ...base, requirements: [{ id: 'R-1', quote: 'Add a clamp(n, min, max) function to src/utils.js' }, { id: 'R-2', quote: 'bounds n to [min, max]', disposition: 'context', reason: 'location only' }],
+      acceptance_criteria: [base.acceptance_criteria[0], { ...base.acceptance_criteria[1], requirement_ids: ['R-1'] }] };
+    assert.match(errorsOf(R, dropped), /general rule P1 .* is not retained/);
+  });
   test('decision 3 / correction D: the error class of a throw example is shown as NOT checked (message_includes checks text only)', () => {
     const [, request, raw] = positives[2];
     const row = RX().exampleMapping(contract(request, raw)).find((x) => x.outcome === 'throws');

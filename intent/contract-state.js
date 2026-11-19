@@ -23,6 +23,7 @@ const { targetErrors } = require('./request-targets');
 const { addedTestsErrors } = require('../verify/added-tests');
 const { checkFidelityErrors } = require('./check-fidelity');
 const { apiGroundingErrors } = require('./api-grounding');
+const { exampleErrors } = require('./request-examples');
 
 function contractState(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c)) return { state: 'invalid', errors: ['contract is not an object'] };
@@ -63,7 +64,8 @@ function contractState(c) {
     for (const e of validateExamples(c).errors) errors.push(`${e.where} example is wrong: ${e.claim} (correct: ${e.correct})`);
   }
   // QB-14: every request clause traced; no uncovered requirement, unsupported addition or duplicate AC.
-  if (!errors.length) errors.push(...validateDefaults(c).errors, ...validateTraceability(c).errors, ...targetErrors(c, 'tests'));
+  if (!errors.length) errors.push(...validateDefaults(c).errors, ...validateTraceability(c).errors, ...targetErrors(c, 'tests'),
+    ...exampleErrors(c));   // KAN-107 (10766/10771): a supported request example must be the check, not a different one
   return errors.length ? { state: 'invalid', errors } : { state: 'finalized' };
 }
 
@@ -123,7 +125,7 @@ function stateReason(s) {
  * computed regardless; they never make a contract valid and never replace contractState.
  */
 function laterStageErrors(c) {
-  try { return [...validateDefaults(c).errors, ...validateTraceability(c).errors, ...targetErrors(c, 'tests')]; } catch { return []; }
+  try { return [...validateDefaults(c).errors, ...validateTraceability(c).errors, ...targetErrors(c, 'tests'), ...exampleErrors(c)]; } catch { return []; }
 }
 
 /** KAN-106 (10677): every requirement's disposition (covered / context / uncovered), for the run record. */

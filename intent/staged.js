@@ -49,13 +49,14 @@ const { groundingExcerpt, contractGrounding, requestNames, apiSummary } = requir
 const { contractFromObject } = require('./compiler');
 const { contractState } = require('./contract-state');
 const { detectAmbiguity } = require('./dsa');
+const { LIMITS, argsErrors, valueErrors, extractExamples } = require('./request-examples');
 
 const FORMAT = 'qb-staged-l1/1';
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/staged-facts.md'), 'utf8');
 const OLLAMA_URL = () => process.env.QB_OLLAMA_URL || 'http://127.0.0.1:11434';
 const MODEL = () => process.env.QB_MODEL || 'deepseek-r1:7b';
 const MAX_CASES = 6;
-const MAX_ARGS = 8;
+const MAX_ARGS = LIMITS.args;   // KAN-107 (10771 E): one set of literal limits (intent/request-examples.js)
 const MAX_FRAGMENTS = 12;
 const MAX_FRAGMENT_CHARS = 200;   // the registry's message_includes limit
 const RAW_LIMIT = 16 * 1024;
@@ -290,7 +291,7 @@ function callTargets(request, api) {
         if (asked && !asMethod) grounding = 'requested_new';
         else { grounding = 'unsupported'; reason = `${m.path} does not define ${name} and the request does not ask to create or export it, so how to call it is ambiguous`; }
       } else if (asMethod) {
-        ctorArgs = constructorArgs(m);
+        ctorArgs = (d && d.ctor_args) || constructorArgs(m);   // KAN-107: the grounding's own reading of the real constructor, when recorded
         if (ctorArgs === 'required_or_unknown') { grounding = 'unsupported'; reason = `the constructor of ${d.name || 'the default class'} in ${m.path} may need arguments QB cannot supply (QB constructs with new and no arguments)`; }
       }
       const extra = { grounding, ...(reason ? { reason } : {}), ...(ctorArgs ? { constructor_args: ctorArgs } : {}) };
@@ -302,6 +303,23 @@ function callTargets(request, api) {
         push({ label: `${name} (${m.path})`, module: m.path, kind: 'function', export: exp, display: name, pieces: literalPieces(excerptOf(m, name)), ...extra });
       }
     }
+  }
+  return out;
+}
+
+/**
+ * KAN-107 (10766 decision 3, 10771 A): the error-message text the REQUEST quotes, offered EXACTLY (never a longer
+ * invented text), bound to the one call target it belongs to (a new export included). Appended after the source
+ * pieces so their numbers do not move. The model still picks by number; it never types a message.
+ */
+function requestFragments(rx, targets) {
+  const out = [];
+  const items = [...rx.examples.filter((e) => e.message).map((e) => ({ text: e.message.fragment, name: e.name })), ...rx.messages.map((m) => ({ text: m.fragment, name: m.name }))];
+  for (const it of items) {
+    const ts = targets.filter((t) => t.export === it.name || t.method === it.name);
+    if (ts.length !== 1 || !it.text || it.text.length > MAX_FRAGMENT_CHARS) continue;
+    const f = out.find((x) => x.text === it.text);
+    if (f) { if (!f.calls.includes(ts[0].label)) f.calls.push(ts[0].label); } else out.push({ text: it.text, calls: [ts[0].label], source: 'request' });
   }
   return out;
 }
@@ -318,7 +336,14 @@ function fragmentList(targets) {
 
 // ── the fact schema and its validation ──────────────────────────────────────
 
-const SCALAR = { anyOf: [{ type: 'string', maxLength: 1000 }, { type: 'number' }, { type: 'boolean' }, { type: 'null' }] };
+const SCALAR = { anyOf: [{ type: 'string', maxLength: LIMITS.string }, { type: 'number' }, { type: 'boolean' }, { type: 'null' }] };
+/**
+ * KAN-107 (10766 decision 2, 10771 E): a BOUNDED literal: a scalar, or an array nested at most LIMITS.depth deep
+ * inside ONE argument value, at most LIMITS.items items per array. Written out non-recursively (Ollama `format`).
+ * Objects are not allowed (refused, never coerced). Total size is checked in validateFacts (LIMITS.bytes).
+ */
+const literal = (d) => (d === 0 ? SCALAR : { anyOf: [...SCALAR.anyOf, { type: 'array', maxItems: LIMITS.items, items: literal(d - 1) }] });
+const LITERAL = literal(LIMITS.depth);
 
 /** The strict JSON schema for one requirement's facts (also sent to Ollama as `format`). */
 function factSchema({ requirementId, calls, fragments }) {
@@ -334,9 +359,9 @@ function factSchema({ requirementId, calls, fragments }) {
           properties: {
             requirement: { type: 'string', enum: [requirementId] },
             call: { type: 'string', enum: [...calls] },
-            args: { type: 'array', maxItems: MAX_ARGS, items: SCALAR },
+            args: { type: 'array', maxItems: MAX_ARGS, items: LITERAL },
             outcome: { type: 'string', enum: ['returns', 'throws'] },
-            expected: SCALAR,
+            expected: LITERAL,
             error_fragment: frag,
           },
         },
@@ -384,6 +409,9 @@ function validateFacts(schema, value, fragments = null) {
     if (c.outcome === 'throws' && c.error_fragment !== null && fragments && !fragments[c.error_fragment].calls.includes(c.call)) {
       errors.push(`${at}: fragment ${c.error_fragment} is not from the source of ${c.call}`);
     }
+    // KAN-107 (10771 E): the same limits as request parsing (count, per-value depth, total bytes)
+    for (const e of argsErrors(c.args)) errors.push(`${at}.args: ${e}`);
+    if (c.expected !== null) for (const e of valueErrors(c.expected, 'expected')) errors.push(`${at}: ${e}`);
     const key = JSON.stringify([c.call, c.args]);
     if (seen.has(key)) errors.push(`${at}: the same call and arguments appear twice`);
     seen.add(key);
@@ -418,7 +446,7 @@ function factInput({ request, role, rid, targets, fragments, api }) {
         : `- ${JSON.stringify(t.label)}: function export ${t.export} of ${t.module}`)),
     '',
     fragments.length
-      ? `ERROR MESSAGE FRAGMENTS (literal pieces of the errors the shown code throws, extracted by QB; "error_fragment" is a number from this list):\n${fragments.map((f, i) => `${i}: ${JSON.stringify(f.text)}`).join('\n')}`
+      ? `ERROR MESSAGE FRAGMENTS (literal pieces of the errors the shown code throws, extracted by QB${fragments.some((f) => f.source === 'request') ? ', and the error-message text the REQUEST quotes (use it exactly where the request requires that message)' : ''}; "error_fragment" is a number from this list):\n${fragments.map((f, i) => `${i}: ${JSON.stringify(f.text)}`).join('\n')}`
       : 'ERROR MESSAGE FRAGMENTS: none. "error_fragment" is null.',
   ];
   const ex = groundingExcerpt(api);
@@ -578,7 +606,8 @@ async function compileStaged(request, g, t) {
   const roles = passageRoles(request);
   const all = callTargets(request, g.api);
   const targets = all.filter((x) => x.grounding !== 'unsupported');
-  const fragments = fragmentList(targets);
+  const rx = extractExamples(request);
+  const fragments = [...fragmentList(targets), ...requestFragments(rx, targets)];
   const rec = (x) => ({ label: x.label, module: x.module, kind: x.kind, export: x.export, ...(x.method ? { method: x.method } : {}), grounding: x.grounding,
     ...(x.constructor_args ? { constructor_args: x.constructor_args } : {}), ...(x.reason ? { reason: x.reason } : {}) });
   const staged = { format: FORMAT, roles: roles.map((r) => ({ passage_id: r.passage_id, role: r.role, ...(r.file ? { file: r.file } : {}), ...(r.reason ? { reason: r.reason } : {}) })),
@@ -592,6 +621,16 @@ async function compileStaged(request, g, t) {
   if (amb || unclear) return done('invalid', { contract: null, errors: [`the staged L1 prototype does not ask clarification questions: ${amb ? amb.clarifying_question : unclear.reason}`] });
   const unsupported = roles.filter((r) => r.role === 'unsupported');
   if (unsupported.length) return done('invalid', { contract: null, errors: unsupported.map((r) => `unsupported by the staged prototype: ${r.reason}`) });
+  // KAN-107 (10766 decision 4, 10771 D): a change that states no expected behaviour stops before any model call;
+  // nothing is invented and labelled as the user's requirement (a small, documented qualifier list).
+  if (rx.underspecified.length) {
+    return done('invalid', { contract: null, errors: rx.underspecified.map((u) => `${u.passage_id} ${JSON.stringify(u.excerpt)} states no expected behaviour (only "${u.qualifier}"): QB does not invent one. Clarify the request with an example call and its result, e.g. name(…) returns …`) });
+  }
+  // KAN-107 (Q3, decision 2): an example QB cannot express (object, template, beyond the literal limits) for a call
+  // target is refused before generation, never coerced or flattened.
+  const named = (u) => all.some((x) => x.export === u.name || x.method === u.name || x.display === u.name);
+  const shapeless = rx.unsupported.filter((u) => u.kind === 'literal' && named(u));
+  if (shapeless.length) return done('invalid', { contract: null, errors: shapeless.map((u) => `unsupported example shape ${JSON.stringify(u.excerpt)}: ${u.reason} (refused before generation; QB never coerces or flattens it)`) });
   const asks = roles.map((r, i) => ({ r, rid: `R-${i + 1}` })).filter((x) => x.r.role === 'change' || x.r.role === 'keep');
   if (asks.length && !targets.length) {
     return done('invalid', { contract: null, errors: staged.unsupported_targets.length
@@ -618,4 +657,4 @@ async function compileStaged(request, g, t) {
   return cs.state === 'finalized' ? done('finalized', { contract }) : done('invalid', { contract, errors: cs.errors || [cs.question] });
 }
 
-module.exports = { compileStaged, passageRoles, isLocationOnly, literalPieces, callTargets, fragmentList, factSchema, validateFacts, schemaErrors, assemble, apiSummary, FORMAT };
+module.exports = { compileStaged, passageRoles, isLocationOnly, literalPieces, callTargets, fragmentList, requestFragments, factSchema, validateFacts, schemaErrors, assemble, apiSummary, constructorArgs, FORMAT };

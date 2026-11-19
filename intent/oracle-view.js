@@ -10,6 +10,7 @@
 const { approvedContent, contractHash } = require('./contract-state');
 const { validateExamples } = require('./examples');
 const { validateTraceability, validateDefaults } = require('./requirements');
+const { exampleMapping } = require('./request-examples');
 
 function formatOracle(contract) {
   const c = approvedContent(contract);
@@ -21,6 +22,18 @@ function formatOracle(contract) {
   list('Requirements from your request (QB-14)', validateTraceability(contract).trace.map((t) =>
     `${t.id} ${t.implied ? '(implied) ' : ''}${JSON.stringify(t.quote ?? (c.requirements.find((r) => r.id === t.id) || {}).text)} → ${t.disposition === 'covered' ? t.covered_by.join(', ') : t.disposition.toUpperCase()}`
       + (t.disposition === 'context' || t.implied ? `  (reason: ${t.reason})` : '')));
+  // KAN-107: each literal example / quoted message / rule in the request -> the target QB tied it to -> the check
+  // that runs it, with what is NOT checked (error class, message equality, unsupported shapes) said plainly.
+  const rows = exampleMapping(contract);
+  if (rows.length) list('Request examples (KAN-107: what your request states -> the check that runs it)', rows.map((r) => {
+    if (r.status === 'unsupported') return `UNSUPPORTED (not checked) ${r.passage_id} ${JSON.stringify(r.excerpt)}: ${r.reason}`;
+    if (/^rule_/.test(r.status)) return `RULE ${r.passage_id} ${JSON.stringify(r.excerpt)} -> ${r.status === 'rule_not_retained' ? 'NOT RETAINED' : 'retained; executable coverage only sampled by its examples'}`;
+    if (r.source === 'proposed_default') return `${r.id} (QB-proposed, not in your request) ${JSON.stringify(r.excerpt)} -> ${r.check_id} (${r.status})`;
+    const notes = [r.error_class_status === 'not_checked' ? `error class ${r.error_class}: NOT CHECKED (no adapter checks error identity)` : null,
+      r.message_status === 'equality_not_checked' ? 'message equality: NOT CHECKED (only inclusion runs)' : null,
+      r.condition && r.condition.bound ? `condition ${JSON.stringify(r.condition.text)} -> argument ${r.condition.index + 1} = ${JSON.stringify(r.condition.value)}` : null].filter(Boolean);
+    return `${r.id} ${r.excerpt} -> ${r.target ? `${r.target}${Array.isArray(r.args) ? `(${JSON.stringify(r.args)})` : ''}` : 'NO SINGLE TARGET'} ${r.outcome === 'throws' ? 'throws' : `returns ${JSON.stringify(r.expected)}`} -> ${r.check_id || 'NO CHECK'} (${r.status}${notes.length ? `; ${notes.join('; ')}` : ''})`;
+  }));
   // QB-17: explicit (quoted) and implied requirements above; QB's own choices here, separately.
   const defaults = validateDefaults(contract).defaults;
   if (defaults.length) list('Proposed defaults (not in your request — QB\'s choice; approving the contract approves them)',

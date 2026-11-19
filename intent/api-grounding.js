@@ -84,10 +84,31 @@ function groundApi(repoPath, request) {
       if (!st.isFile()) return unknown({ path: rel, sha256: null, bytes: null }, 'not a regular file');
       if (st.size > MAX_BYTES) return unknown({ path: rel, sha256: null, bytes: st.size }, `larger than ${MAX_BYTES} bytes`);
       const buf = fs.readFileSync(file);
-      return withForm({ ...groundSource(rel, buf.toString('utf8'), names), sha256: sha(buf), bytes: buf.length });   // provenance: the file's own bytes
+      return withCtorArgs(withForm({ ...groundSource(rel, buf.toString('utf8'), names), sha256: sha(buf), bytes: buf.length }), buf.toString('utf8'));   // provenance: the file's own bytes
     } catch (e) { return unknown({ path: rel, sha256: null, bytes: null }, `could not be read (${e.code || 'error'})`); }
   });
   return { schema: SCHEMA, modules };
+}
+
+/**
+ * KAN-107 (10771 B): record the default class's constructor eligibility ON the grounding (default.ctor_args), so a
+ * contract's api_grounding (which carries no source text) still says whether QB may construct it with new and no
+ * arguments. The SAME bounded static reading as 10758 (staged.js constructorArgs: 'none' | 'appears_optional' |
+ * 'required_or_unknown'), applied to the class's own constructor source, not to whatever excerpt happened to be
+ * kept. Not a proof that construction succeeds.
+ */
+function withCtorArgs(r, text) {
+  if (!r || r.status !== 'known' || !r.default || r.default.kind !== 'class') return r;
+  const acorn = require('acorn');
+  let ast = null;
+  for (const sourceType of ['script', 'module']) {
+    try { ast = acorn.parse(text, { ecmaVersion: 'latest', sourceType, allowHashBang: true, allowReturnOutsideFunction: sourceType === 'script', locations: true }); break; } catch { /* try the other */ }
+  }
+  const classes = ast ? [...nodes(ast)].map(([n]) => n).filter((n) => (n.type === 'ClassDeclaration' || n.type === 'ClassExpression') && (!r.default.name || (n.id && n.id.name === r.default.name))) : [];
+  if (classes.length !== 1) return { ...r, default: { ...r.default, ctor_args: 'required_or_unknown' } };
+  const ctor = classes[0].body.body.find((x) => x.kind === 'constructor');
+  const excerpts = ctor ? [{ kind: 'constructor', symbol: 'constructor', start_line: ctor.loc.start.line, end_line: ctor.loc.end.line, text: text.slice(ctor.start, ctor.end) }] : [];
+  return { ...r, default: { ...r.default, ctor_args: ctor ? require('./staged').constructorArgs({ default: r.default, excerpts }) : 'none' } };
 }
 
 /** The exports of one module's source text (see the header for the forms read). */

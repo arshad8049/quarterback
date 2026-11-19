@@ -1,156 +1,223 @@
-# KAN-107 revised design: request-to-check consistency (for review; nothing implemented)
+# KAN-107: request-to-check consistency (implemented offline per 10771; not merged)
 
-**Goal:** QB cannot silently replace an expressible customer example with a different check.
+**Goal:** QB cannot silently replace a supported customer example with a different check. It also keeps stated rules and says plainly what it does not check.
 
-This is a narrow consistency safeguard. It is not general natural-language correctness, it does not qualify the beta, and it does not replace KAN-44, KAN-105 (protection preservation) or KAN-96 (failure classification).
+This is a narrow safeguard. It is not natural-language proof or automatic approval, and it makes no benchmark claim.
 
-**Red tests:** `test/unit/kan107-consistency.test.js`, 72 tests, all offline with a faked model.
-
-* 25 pass today. Every negative fixture is still `finalized` by today's validators, which shows the gap; every positive control is valid.
-* 47 are `todo` and fail when run with `KAN107_RED=1`.
-
-The KAN-106 eight requests appear only as **known development cases**, never as fresh validation.
+* It does not qualify the beta (KAN-44).
+* It does not replace KAN-105 (protection-preservation integration) or KAN-96 (failure classification).
 
 ## Module and where it runs
 
-`intent/request-examples.js` (new), no eval, no repository code executed:
+**`intent/request-examples.js`** (no eval; no repository code executed). Exports:
 
-* `parseLiteral(text)`
-* `extractExamples(request)`, which returns `{ examples, messages, rules, underspecified, unsupported }`
-* `exampleErrors(contract)`
-* `exampleMapping(contract)`
+* `LIMITS`, `valueErrors`, `argsErrors`;
+* `parseLiteral`, `parseArgs`;
+* `extractExamples`;
+* `exampleErrors`, `exampleMapping`.
 
-`exampleErrors` runs inside `contractState` (`intent/contract-state.js`), next to `checkFidelityErrors`. It reads the contract's own `raw_request` and QB's `api_grounding`, never model text. That one place covers every producer (decision 7).
+**Inputs:** only the contract's `raw_request` and QB's own `api_grounding`. Never model text, model assertions, check shapes or allowed files.
 
-## Supported input shapes (decisions 1, 2)
+* **`intent/contract-state.js`:** `exampleErrors` runs in the **last** validation stage, next to traceability, so earlier-stage errors are not hidden. It is also included in `laterStageErrors`, which the single legacy correction receives.
+    * One place therefore covers every producer: the legacy draft, its correction, staged assembly, and `--contract-file`.
+* **`intent/api-grounding.js`:** `groundApi` records `default.ctor_args` per class.
+    * It is the 10758 bounded static eligibility reading (`staged.js constructorArgs`), applied to the class's own constructor source: `none`, `appears_optional` or `required_or_unknown`.
+    * It is **not** a proof that construction succeeds.
+    * It is recorded because a contract's grounding carries no source text, and because a short file's export excerpt can hide the constructor.
+* **`intent/staged.js`:**
+    * bounded literal schema;
+    * the same limits in `validateFacts`;
+    * request-quoted message fragments;
+    * pre-generation stops;
+    * `ctor_args` taken from the grounding.
+* **`intent/oracle-view.js`:** the "Request examples" approval block.
 
-**An example** is a literal call in the request text, with its result in the same clause:
+## Supported shapes (Q1, decision 2, correction E)
 
-* `name(<literals>)` or `Receiver.name(<literals>)`;
-* followed by `returns` / `return` / `should return` / `returning` / `still return(s)` and a literal;
-* or by `throws` / `throw` / `should throw`, optionally with an error class and/or `whose message includes "<text>"`;
-* the only gap allowed between call and verb is `with no argument(s)`;
-* only the first value counts: `returns "a-b" instead of "a--b"` gives `"a-b"`.
+**An example** is `name(<literals>)` or `Receiver.name(<literals>)`, followed in the same clause by:
 
-**Literals:** double- or single-quoted strings with JSON escapes; numbers (sign, decimals, exponent); `true`, `false`, `null`; arrays.
+* `returns` / `return` / `returning` / `should|must|still|will|to return` and **one literal**; or
+* `throws` / `throw` / `throwing` / … optionally followed by `a <Class>Error` and/or `whose message includes "<text>"` / `whose message is "<text>"`.
 
-* Limits: depth ≤ 3; ≤ 16 items per array; ≤ 1 KiB serialized per example (within the registry's 4 KiB).
+It counts as a **requirement** only when the request frames it as wanted:
+
+* an intent word earlier in its sentence (`make`, `so`, `should`, `must`, `keep`, `still`, `ensure`, `for example`, …); or
+* `should`/`must`/`still`/`to` on the verb.
+
+A bare **description** is recorded as unsupported, shown at approval, and never enforced. Example: QB-30 PW-01's "w.format(0) returns 'count=%d' instead of 'count=0'" describes the current bug.
+
+**Q1 (three contrasting fixtures):**
+
+* "make greeting() return 'x'" is a **checked zero-argument example**;
+* "Update greeting() … so greeting("Arshad") returns …": the first `greeting()` is a **name mention** (no result follows it);
+* "make join() return '' for an empty array" is **conditional prose**: unsupported, not zero arguments.
+
+There is no blanket empty-parentheses exemption.
+
+**Literals:**
+
+* double- or single-quoted strings (JSON escapes), numbers, `true`, `false`, `null`, arrays;
 * `[]` is one empty-array argument; `["a","b"]` is one array; `"1"` is not `1`.
 
-**Not examples, recorded as `unsupported` and never guessed** (no error, no claim):
+**One set of limits (E),** used by parsing, the staged fact schema and `validateFacts`:
 
-* `make|change|update|fix|have name()`: an empty `()` after an edit verb is a **name mention**, not a zero-argument call;
-* a call or value followed by conditional prose (`for …`, `when …`, `if …`, `given …`), e.g. S2's "an empty string for an empty array" or U1's "null for an unknown id";
-* prose values ("an empty string", "thirty seconds"), identifiers or variables (`percent(part, whole)`), expressions, template strings, objects, `undefined`, approximate or regex expectations;
-* multi-step sequences ("after add(…), total() returns …").
+| Limit | Value |
+| --- | --- |
+| Nesting depth **per argument value** (the outer argument list is not a level) | 3 |
+| Items per array | 16 |
+| Arguments | 8 |
+| Characters per string | 1,000 |
+| Bytes per argument list and per value | 1,024 |
 
-## Matching rules (decisions 1, 2, 6)
+* This is stricter than the registry's 4 KiB per JSON value.
+* A test feeds identical samples to parsing and to staged validation and requires the same accept/refuse result.
+* **Round trip:** `[[]]`, a 16-item array, `[["a","b"]]`, nested arrays and a default-class method with array arguments **run through the real check runner** as one argument. The flattened forms really are different calls and fail there.
+* No claim of compatibility with every adapter is made from JSON acceptance alone.
 
-**Target resolution.** An example is tied to exactly one target:
+**Unsupported (recorded, shown at approval, never certified):**
 
-1. **Module:** the path in its own sentence ("In lib/x.js, …"); otherwise the request's only named module; otherwise the one grounded module that defines the name.
-2. **Kind:**
-    * a function export is checked with `call_returns` / `call_throws`, matched on `module` + `export`;
-    * a **method of a default class** that `api_grounding` proves exists, with a provably no-argument constructor (the 10758 rule), is checked with `call_sequence`: `export: "default"`, `construct: "new"`, `args: []`, and a step on a **fresh instance** with that `method`.
-3. **Not tied:** two candidate modules, a receiver QB cannot resolve, or a constructor that needs arguments make the example `ambiguous_target`. That is an L1 error naming the candidates (clarify or refuse), never silently certified.
+* prose values and conditional prose;
+* identifiers or variables (call signatures such as `percent(part, whole)` are kept only for condition binding);
+* expressions and template strings;
+* **objects (Q3)**: recognized and reported; staged generation refuses them and never coerces them;
+* `undefined`, values beyond the limits;
+* multi-step sequences;
+* bare descriptions.
 
-**Comparison.** An example is satisfied only when module + export/method, the argument list (deep-equal, nesting and types preserved) and the semantics all match:
+A request with no supported examples is still valid.
 
-* `returns`: the expected value deep-equals the example's;
-* `throws`: the check asserts a throw (`call_throws`, or a `throws` step).
+## Targets (Q2, correction B)
 
-**L1 errors, not warnings.** The message names the request excerpt, the target and the check id:
+**Module.** Taken from:
 
-* **contradiction:** same target and args, but a different value, or returns where the request says throws (and vice versa). Example: `CHK-1 contradicts the request's example parsePort("70000") throws`.
-* **changed argument shape:** a check whose args equal the example's args after spreading or flattening (`[]` for `[[]]`; `["a","b"]` for `[["a","b"]]`; nested arrays spread). Example: `CHK-1 changes the argument shape of the request's example first([])`.
-* **misplaced:** the example's value expected under other args. Example: `the request's example greeting("Arshad") returns "Hello, Arshad!" has no check with those arguments (CHK-1 calls greeting("test"))`.
-* **uncovered:** no check at all. Example: `the request's example toF(100) returns 212 has no executable check`.
+1. the path in the example's own sentence; otherwise
+2. the request's paths, excluding ones it says not to change; narrowed only by QB's grounding when several are named; otherwise
+3. the one grounded module that defines the name.
 
-Extra checks beyond the examples are allowed.
+Several candidates, or no module at all, is an **L1 clarify/refuse error**. The check is never used to choose.
 
-## Error messages and error classes (decision 3)
+**Default-class methods** are resolved from QB-computed grounding only. All of these are required:
 
-**Request-sourced messages.** A request-sourced message requirement is recorded as `{ span, fragment, target }`, e.g. S3's `"whole must not be zero"`.
+* the default class has the method;
+* any receiver equals the class name;
+* `ctor_args` is `none` or `appears_optional`.
 
-* **Binding:** it binds to the call target named in its sentence; otherwise to the immediately preceding sentence's only target. If neither applies, it is an L1 error ("cannot be tied to one target").
-* **New exports:** binding does not depend on the function existing, so S3's new `percent` keeps its message.
-* **Satisfied when:** some throw check on that target has `message_includes` containing the fragment.
-* **Errors:** absent, wrong text, or a `call_returns` returning the text all produce `requires an error message including "…"`.
+Missing grounding, an ungrounded or mismatched receiver, an ineligible constructor, or a name that is both an export and a method are each an L1 error.
 
-**Error classes.** An error class (`RangeError`) is recorded as `error_class` and is **not** message text.
+**A matching check** is a `call_sequence` step on a **fresh instance**: constructed with `new` and no arguments, with **no earlier step on that instance** (no setup or mutation in between). Sequences stay unsupported in v1.
 
-* No adapter checks error identity: `message_includes` checks message text only. The old draft's claim that it verifies a RangeError is removed.
-* The approval mapping shows the throw as checked and `error_class: not_checked`.
-* A contract may not claim a class is verified.
+## Comparison (decisions 1, 6; correction C)
 
-## Ambiguity and underspecified behaviour (decision 4)
+An example is satisfied by a check on the same module + export/method, with **deep-equal arguments** (nesting and types kept) and the same semantics:
 
-**No literal examples is fine.** A request with none is valid: the rule is silent and the existing validators apply.
+* **returns:** a deep-equal expected value;
+* **throws:** a throw check, and the **exact** message when one is stated.
 
-**Underspecified change passages.** `underspecified` is a **bounded list**, not a claim to solve ambiguity. It flags a `change` passage that names a target but states no example, no quoted value and no `return(s)`/`throw(s)` result, and whose behaviour is only a vague qualifier ("handle … properly / correctly / gracefully / as expected", "work right").
+**L1 errors:**
 
-* **Staged path:** stop **before any model call**, as a clarification/refusal (as for 10758's U1). U2 would have stopped with 0 calls.
-* **Legacy path, or a supplied contract:** a check citing such a passage must also cite a `proposed_defaults` entry (`D-n`, existing QB-17 mechanism). Defaults are shown in their own approval section and hashed into the approval. Otherwise the error is `P2 … states no expected behaviour: QB will not invent one as the user's requirement`.
-* Model-proposed values are therefore never labelled as user requirements.
+* **contradicted:** a check for the **same target and arguments** asserts something else. This fails **even if another check is correct** (C).
+* **changed argument shape:** only when the requested case is missing (C). Example: `CHK-1 changes the argument shape of the request's example first([])`.
+* **misplaced:** the example's result appears only under other arguments: `has no check with those arguments (CHK-1 calls greeting("test") instead)`.
+* **uncovered:** no check at all.
+
+A correct example check plus unrelated extra checks is allowed (C), even when an extra check resembles the flattened shape.
+
+## Messages and error classes (decision 3, correction A, D)
+
+**Call-example messages** are bound to that **case**: module, target, typed arguments, throw and message together.
+
+* If `f(0)` checks the wrong message while only `f(-1)` checks the requested text, that fails.
+
+**Conditional messages** (S3, "When whole is 0 it must throw an error whose message includes …") keep the condition.
+
+* **Binding:** it is bound, with provenance (`condition_span`, `signature_span`), to one parameter of the **one** call signature the request writes (`percent(part, whole)`, so `whole` is argument 2 of 2, value `0`).
+* **Satisfied only by** a throw check at arguments meeting the condition. A throw at unrelated arguments cannot certify it.
+* **Unbindable:** an unbindable condition (no signature names the parameter, or the value is not a literal) is **refused**. The fix is to state it as a call example.
+* There is no symbolic-condition engine.
+
+**"Includes":** `message_includes` must be the **exact** stated fragment.
+
+* An invented longer superstring is an error, since it could reject correct code.
+* A missing message, wrong text, or the text returned instead of thrown are all errors.
+
+**"Is":** **message equality** is distinguished from inclusion.
+
+* No adapter checks equality, so it is shown as `equality_not_checked`; only inclusion runs.
+
+**Error classes** (`RangeError`) are recorded as such and shown `error_class: not_checked`, even when the throw and message checks pass.
+
+* `message_includes` checks text, never error identity.
+* The whole requirement is never claimed verified.
+
+**Staged path:** the request-quoted fragment is offered **exactly**, bound to its one target (a new export included). It is appended after the source fragments so their numbers do not move. The model still picks by number.
+
+## Underspecified behaviour and proposed defaults (Q4, decision 4, correction D)
+
+**Underspecified passages.** A **small, documented** qualifier list flags a passage that names a call but whose sentence states no example, message or returns/throws result:
+
+* `properly`, `correctly`, `gracefully`, `as expected`;
+* `right` after `work`/`handle`.
+
+It is regression-tested both ways. There is no claim to detect arbitrary ambiguity; broader rules arrive only as reviewed changes.
+
+* **Staged path:** stop **before any model call** (U2: 0 calls).
+* **Legacy path or a supplied contract:** a check citing such a passage must also cite a proposed default `D-n` whose text **states exactly that call and result**.
+    * The default is checked with the same extractor.
+    * It is shown in the approval view's proposed-defaults section and in the mapping, and is hashed into the approval.
+    * A meaningless `D-n` citation is an error.
+    * No new default-inference system.
 
 ## General rules (decision 5)
 
-A behaviour passage that names a target and states a rule beyond its examples must be cited by a criterion. Examples: S1 "turn each run of spaces into a single dash", S5 "show hours once the time reaches one hour".
+A behaviour passage that names a call and states something beyond its examples must stay a cited, non-context requirement. Examples: S1 "turn each run of spaces into a single dash", S5, S3's general rounding rule.
 
-* Downgrading it to `context` is an error: `general rule … is not retained`.
-* The approval view shows it as **represented, executable coverage sampled by** `EX-n`/`CHK-n`. Passing examples is not shown as proof for every input.
+* Legacy drafts that quote it clause by clause are accepted when **every** overlapping requirement is cited and none is context.
+* Otherwise: `general rule … is not retained`.
+* The approval view shows it as retained, with executable coverage **only sampled** by its examples.
 
-## Integration (decision 7)
+## Integration and budgets (decision 7)
 
-All paths below use `contractState`.
+| Path | Behaviour |
+| --- | --- |
+| **Legacy** | Example errors reach the **one** existing correction (KAN-103/104). A contradictory correction stops invalid after exactly 2 calls; a fixing correction finalizes. No new loop. |
+| **`--contract-file`** (`qb.js`) | Refused **as supplied** (BLOCKED, exit 2). The file bytes are unchanged, no model call is made, and the checks are never corrected to fit. |
+| **Staged** | <ul><li>**Pre-generation stops**, with 0 calls: an underspecified passage; an object or out-of-bounds example literal for a call target.</li><li>**Fact repair:** one per requirement (an object argument means 2 calls, then invalid).</li><li>**Post-assembly:** refusal through `contractState`, with no extra call (e.g. S2's flattened facts mean 2 calls, then invalid).</li></ul> |
+| **Protection** | <ul><li>The S4 shape keeps `lib/defaults.js` in `protected_paths` while its examples are enforced.</li><li>The KAN-105 conflict (a requested file protected) still rejects.</li><li>The KAN-105 integration itself remains separate open work.</li></ul> |
+| **Approval** | Flattening an approved example check voids the approval hash, **and** the changed contract is rejected. |
 
-* **Legacy path** (`intent/compiler.js`): example errors join the existing **single** correction (KAN-103/104). The correction prompt receives them like other validator errors. There is no new call or recursive loop, and the corrected draft is validated from scratch. Requested protected paths still go through the existing `targetErrors` / KAN-105 checks on the correction, which this card does not change.
-* **`--contract-file`:** refused **as supplied**; never rewritten or corrected to fit.
-* **Staged path** (`intent/staged.js`):
-    * **Before generation:**
-        * extract examples;
-        * stop with a refusal (not a flatten) when an example tied to a target exceeds the literal bounds, or when a passage is underspecified;
-        * offer the request-sourced message fragments in the existing numbered fragment list, tagged `source: request` and bound to their target. The model still picks by number, so it never types a message.
-    * **Fact schema:** `args` items become a **bounded literal**: a scalar, or an array to depth 3 with ≤ 16 items, written out non-recursively for Ollama's `format`. This is compatible with all adapters, since they spread `args` and already accept JSON ≤ 4 KiB.
-    * **Budgets:** the per-requirement fact repair budget stays at **one**.
-    * **After assembly:** the existing final `contractState` applies `exampleErrors`. There is no extra repair.
-* **Approval view** (`intent/oracle-view.js`): a "Request examples" block, one row per example, in the form *request excerpt → module target(args) returns|throws value → CHK-n*, plus a status (`checked`, `error_class not_checked`, `proposed default D-n`, `unsupported: <reason>`). Human approval stays required; nothing is auto-approved.
+## Approval view
 
-## What it does NOT claim
+**Block:** "Request examples (KAN-107: what your request states → the check that runs it)".
 
-* It checks only literal call examples, request-quoted error messages, and the retention of stated rules.
-* A contract that passes is not "faithful" or semantically correct. Prose expectations, sequences, objects, error classes and every input beyond the stated examples are not verified.
-* The underspecified list is a small heuristic and does not detect arbitrary ambiguity.
-* S2's change sentence ("an empty string for an empty array") is prose, so it is unsupported. Only its keep example `join(["a","b"])` is checked, and that alone would have refused S2's recorded checklist.
+* **Row format:** `EX-n <excerpt> -> <module> <target>(<args JSON>) returns|throws … -> CHK-n (status; notes)`.
+* **Notes:** error class NOT CHECKED, message equality NOT CHECKED, the bound condition → argument.
+* **Other rows:**
+    * `MSG-n` rows for conditional messages;
+    * `RULE` rows (retained, coverage sampled / NOT RETAINED);
+    * `D-n (QB-proposed, not in your request)` rows;
+    * `UNSUPPORTED (not checked)` rows with their reason.
 
-## Acceptance tests (red now; `KAN107_RED=1` to run as real tests)
+## Known unsupported shapes (v1)
 
-**Required fixtures, all present:**
+* Prose values ("an empty string") and conditional prose ("for an empty array", "for an unknown id").
+* Bare descriptions without an intent word.
+* Variables, expressions, template strings, objects, `undefined`.
+* Literals beyond the limits.
+* Multi-step or stateful sequences, and instance receivers QB has not grounded.
+* Conditions not of the form "when <parameter of a request signature> is <literal>".
+* Error classes (`not_checked`) and message equality (`equality_not_checked`).
+* Any input beyond the stated examples.
+* S2's change sentence stays unsupported prose; only its keep example `join(["a","b"])` is enforced, and that alone refuses S2's recorded checklist.
 
-* the historical greeting mismatch (the KAN-104 fixture);
-* return `"Error"` versus throw;
-* a missing example;
-* zero args versus one empty array;
-* two strings versus one string array;
-* nested arrays;
-* a correct default-class method;
-* a required message absent, wrong, returned as a string, and correct, on a new export;
-* U2 versus explicitly specified rounding, plus U2 with proposed defaults;
-* duplicate export names, and their disambiguation;
-* legitimate requests with no literal examples.
+## Tests
 
-**Also covered:**
+**`test/unit/kan107-consistency.test.js`**, offline with a faked model and `QB_OLLAMA_URL` pointed at a dead port. KAN-106's eight cases are used as known regressions only.
 
-* literal bounds and refusals;
-* the one-correction integration;
-* `--contract-file` refused as supplied;
-* the approval mapping;
-* staged bounded args;
-* staged S2, S3 and U2 behaviour with a fake model.
+**Red:** `8d1ee96`, 82 unique tests. 6 passed; 76 failed:
 
-## Needs the senior's ruling
+* **35 failed only because the module did not exist** (one not-yet-built API, not 35 independent defects);
+* **41 failed on real pre-fix behaviour** (`docs/research/kan107/red-evidence.md`).
 
-1. Empty `()` after an edit verb is a name mention (so `make greeting() return "x"` is **not** a zero-argument example). Is that the right default, or should it be ambiguous and need clarification?
-2. Duplicate or unresolvable targets are an L1 **error** (clarify/refuse), not "shown as not checked". Is that acceptable?
-3. Object literals are unsupported in v1: they are recorded, not checked, and refused in the staged schema. Is that acceptable?
-4. The underspecified vague-qualifier list starts small (`properly`, `correctly`, `gracefully`, `as expected`, `right`). Should it be widened only with your review?
+**Green:** 85 tests; the 3 added during implementation are below. Existing tests changed:
+
+* **KAN-104:** the "not stopped at L1 (validator gap)" test and its TODO are replaced by one test requiring rejection. The pre-fix acceptance is cited at `d19865e`.
