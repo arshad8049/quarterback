@@ -202,13 +202,13 @@ Before the call: terminal font large, a clean terminal in `~/qb-velora` with `qb
 
 | Min | Say | Show | Expected on screen |
 |---|---|---|---|
-| 0–2 | "Quarterback runs Claude Code against a checklist a person approved, checks the result itself, and hands back a patch with the evidence. You decide whether to apply it." Then the [known limitations](#known-limitations), briefly: supervised, Mac only today, Windows not supported, Claude Code and node:test only, the checklist is written and reviewed by a person. | — | — |
+| 0–2 | "Quarterback runs Claude Code against a checklist a person approved, checks the result itself, and hands back a patch with the evidence. You decide whether to apply it." Then the [known limitations](#known-limitations), briefly: supervised; the validated platform is Ubuntu 24.04 on x86_64, and this Mac has one successful rehearsal, not general Mac support; Windows not supported; Claude Code and node:test only, the checklist is written and reviewed by a person. | — | — |
 | 2–4 | "Here is a tiny public repository. Today it shows 30 seconds as `0m 30s`. We want `30s`. Its own test only checks `1m 30s`, so it passes either way." | `cat velora-sample/src/duration.js`, then `cat velora-sample/test/duration.test.js` | the code and the single test |
 | 4–6 | "This is the checklist. A person wrote it and reviewed it before the call. It says what must be true, which files Claude may touch, and which it must not. Passing this file is the approval." | `cat velora-duration-contract.json` (scroll to `checks` and `scope`) | seven checks; `allowed_changes`, `protected_paths` |
 | 6–10 | "Now Claude Code works in an isolated sandbox. Our checkout is not touched." | the run command from [the rehearsal](#the-rehearsal-run) | `[L1]` reviewed contract file, `[L2]`, `[L3]` Claude Code, `[L4] Verdict: ✓ PASS`, `outcome=VERIFIED` (about 2 minutes, the images are already built) |
 | 10–12 | "Quarterback, not Claude, ran these checks on the exact change. Here is the evidence, and a replay of the verdict from the stored record." | `git -C velora-sample status --porcelain`, `qb show <run_id>`, `qb replay <run_id>` | empty status; the run record (SHA, base, outcome, attempt evidence); `reproduced` |
 | 12–14 | "The change comes back as a patch. Nothing was applied. We read it and check that it applies cleanly." | `qb patch <run_id> --out velora.patch`, `cat velora.patch`, `git -C velora-sample apply --check ../velora.patch`; then the target tests on `velora-review` | a few-line diff; nothing from `--check`; `# fail 0`; `0s | 30s | 1m 30s` |
-| 14–15 | "What is next: Windows and Linux support, other test runners, reliable drafting from plain language. Nothing with your code until you consent and we review the data flow together." | — | — |
+| 14–15 | "What is next: Windows support, other test runners, reliable drafting from plain language. Nothing with your code until you consent and we review the data flow together." | — | — |
 
 If anything on screen differs from "Expected", go to [recovery](#recovery-and-fallback). Say what happened; do not hide a failure.
 
@@ -233,7 +233,9 @@ General rule: say plainly what happened, then switch to the fallback within one 
 
 **Fallback A (preferred): the rehearsal's own run.** It used the same pinned candidate, sample and checklist. Show `qb show <rehearsal_run_id>`, `qb replay <rehearsal_run_id>` (it recomputes the verdict from the stored evidence and calls no agent), `qb patch <rehearsal_run_id> --out velora-fallback.patch`, `git -C velora-sample apply --check ../velora-fallback.patch`, and the target tests on a throwaway copy as in the rehearsal.
 
-**Fallback B: the replayable recording** (60–90 s, from the rehearsal, with a caption giving the SHA, the date and the run id). Not yet recorded.
+**Fallback B: the recorded terminal playback** of the rehearsal (about 55 s, labelled "RECORDED PLAYBACK, not a live run"; accepted as the fallback in KAN-44 10756): `open ~/qb-velora/FALLBACK-velora-rehearsal-playback.html` and share the browser tab. Source: `docs/demo/fallback/velora-rehearsal-playback.html`.
+
+**Demo-day preflight:** `zsh ~/qb-velora/demo-day-preflight.sh` (copy of `docs/demo/demo-day-preflight.sh`). No model call; checks the pins, Docker, Ollama, sign-in and `qb doctor`, then prints the run and fallback commands.
 
 **Fallback C: the published 2026-10-15 run** on the same sample (`landing_page/evidence/2026-10-15-hero-run/`, QB `3fc08fd`, run `e01b3273-…`, VERIFIED). Its contract is smaller (two checks) and older; say so.
 
