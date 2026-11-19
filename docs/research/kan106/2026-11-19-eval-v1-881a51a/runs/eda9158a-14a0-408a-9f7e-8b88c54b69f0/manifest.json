@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "run_id": "eda9158a-14a0-408a-9f7e-8b88c54b69f0",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/round.js, make roundTo() handle negative numbers properly.",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "92b2389185c69d2bc88fa6d37f1e50141a3870cadf3bfa54289d3e4e1bfc2453",
+    "base_sha": "5bcbb5dec61d33167eaff468e9f573df4686ab05"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "1148b5ffd55462e686de11b756dc46516146c452d40c02755875de1e0bedb6c1",
+  "contract_hash": "7a3171292edab5263b922e08b39b4f21b60a2ca5bc6f338f335fbed9880cc574",
+  "sandbox_policy": null,
+  "pid": 61294,
+  "started_at": "2026-11-19T20:14:01.780Z",
+  "finished_at": "2026-11-19T20:14:15.683Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:14:15.624Z",
+      "finished_at": "2026-11-19T20:14:15.666Z",
+      "base_sha": "5bcbb5dec61d33167eaff468e9f573df4686ab05",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "f0e5542a735248e69735f6d7007621b6457e8a4115b54f250791324ba4ba762c",
+      "path": "artifacts/f0e5542a735248e69735f6d7007621b6457e8a4115b54f250791324ba4ba762c.json",
+      "bytes": 1804
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "7a3171292edab5263b922e08b39b4f21b60a2ca5bc6f338f335fbed9880cc574",
+      "path": "artifacts/7a3171292edab5263b922e08b39b4f21b60a2ca5bc6f338f335fbed9880cc574.json",
+      "bytes": 3180
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "8c85ce0c3a37a3fec69275045dce82ffe9232d70d56a9ae4a59e5405b0f5b875",
+      "path": "artifacts/8c85ce0c3a37a3fec69275045dce82ffe9232d70d56a9ae4a59e5405b0f5b875.json",
+      "bytes": 2319
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "1a193ad28bc680032ddde6703efacb3d144e32d2310d20ff9422de0b09ad8f31",
+      "path": "artifacts/1a193ad28bc680032ddde6703efacb3d144e32d2310d20ff9422de0b09ad8f31.json",
+      "bytes": 2301
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "5797bf9500fc2fad95bc8325cc4138df33a1a46032499ad0c6b27550533bcf08",
+      "path": "artifacts/5797bf9500fc2fad95bc8325cc4138df33a1a46032499ad0c6b27550533bcf08.json",
+      "bytes": 495
+    }
+  }
+}

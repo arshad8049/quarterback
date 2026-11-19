@@ -1,0 +1,19 @@
+{
+  "id": "e9d63daf-4325-451f-a7ef-19c31adb8e28",
+  "contract_id": "63961fc1-edb3-41c9-bb4b-8e89ef7309e0",
+  "context_id": "4c97fbd6-fb5d-4947-8fae-830d8d704c68",
+  "agent_used": "dry-run",
+  "status": "dry_run",
+  "duration_ms": 0,
+  "generated_at": "2026-11-19T20:14:15.631Z",
+  "briefing": "# Agent Briefing\n**Contract:** `63961fc1-edb3-41c9-bb4b-8e89ef7309e0`  |  **Date:** 2026-11-19\n**Context package:** `4c97fbd6-fb5d-4947-8fae-830d8d704c68`\n\n## Goal\nIn lib/round.js, make roundTo() handle negative numbers properly.\n\n## Required behavior\n1. roundTo(-1.234, 2) returns -1.23.\n2. roundTo(-4.567, 1) returns -4.6.\n\n## Scope — enforced\nYou may change only: `lib/round.js`. Any other change cannot be accepted.\n\n## Acceptance criteria\nYou are done when **all** of these are verifiably true:\n\n- [ ] **[AC-1]** roundTo(-1.234, 2) returns -1.23.\n- [ ] **[AC-2]** roundTo(-4.567, 1) returns -4.6.\n\n## Codebase patterns\n- Language: **javascript**\n- Test runner: **node-test**\n\n## Files to work in\n\n### `lib/round.js` — exports: `roundTo`\nseed: symbol roundTo, symbol word round, name round (score 25)\nAssociated test (by file name): `test/round.test.js`\n\n### `test/round.test.js`\nseed: mentions roundto, name round (score 8)\nImports: `lib/round.js`\n\n## Symbol map — where things live\n\n| Symbol | Location |\n|--------|----------|\n| `lib/round.js#roundTo` | `lib/round.js:3` |\n\n## Associated tests (matched by file name only)\nTest files that may relate to these files — run them after your changes (a matching name does not mean the behavior is tested):\n- `test/round.test.js`\n\nNo associated test file was found by name for these files — add tests if you add behavior to them:\n- `test/round.test.js`\n\n## Recent git activity\n- `lib/round.js` — 1 commit(s), last changed 20 hours ago\n- `test/round.test.js` — 1 commit(s), last changed 20 hours ago\n\n## Verification plan\n1. Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).\n\n---\n*Quarterback briefing — Layer 3 Agent Orchestrator*",
+  "changes": [],
+  "diff": null,
+  "unsupported_changes": [],
+  "base_tree": null,
+  "candidate_tree": null,
+  "exit_code": null,
+  "signal": null,
+  "stderr_tail": null,
+  "error": null
+}

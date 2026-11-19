@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "run_id": "30636148-c6a2-407f-b1b4-06f5db03a7f9",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/env.js, make parseBool() also treat \"1\" and \"yes\" as true, so parseBool(\"yes\") returns true and parseBool(\"1\") returns true. Keep parseBool(\"true\") returning true and parseBool(\"false\") returning false. Do not change lib/defaults.js.",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "65c2054b2bd7408eca8f86f762d784c178b22918de8f066047412680decde08b",
+    "base_sha": "32223e8b876138e389d9f70db095c1f6a18c6dd9"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "3863393b21e703fba08d642db45ee7c97201716e42424f22eddf5185fa1d5f0d",
+  "contract_hash": "6da23ece885fa0e6157f86f7f900bb6d4f0a408b3b50f792304bc6c0eb035b30",
+  "sandbox_policy": null,
+  "pid": 61141,
+  "started_at": "2026-11-19T20:11:58.870Z",
+  "finished_at": "2026-11-19T20:12:39.777Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:12:39.720Z",
+      "finished_at": "2026-11-19T20:12:39.760Z",
+      "base_sha": "32223e8b876138e389d9f70db095c1f6a18c6dd9",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "1dd389cb39b2d8db71d62f87b2abf8bd235df5c31cd2b54a3ed03fa390971507",
+      "path": "artifacts/1dd389cb39b2d8db71d62f87b2abf8bd235df5c31cd2b54a3ed03fa390971507.json",
+      "bytes": 4456
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "6da23ece885fa0e6157f86f7f900bb6d4f0a408b3b50f792304bc6c0eb035b30",
+      "path": "artifacts/6da23ece885fa0e6157f86f7f900bb6d4f0a408b3b50f792304bc6c0eb035b30.json",
+      "bytes": 6824
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "fe296a14f91300f26cbcc61d264a13609935af9094520d1ad51d4ffc2970da0a",
+      "path": "artifacts/fe296a14f91300f26cbcc61d264a13609935af9094520d1ad51d4ffc2970da0a.json",
+      "bytes": 3569
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "ce5beb5945e892fa6ce473b21c7bf0722374dafb8302a7b06849cb4912400b0d",
+      "path": "artifacts/ce5beb5945e892fa6ce473b21c7bf0722374dafb8302a7b06849cb4912400b0d.json",
+      "bytes": 4084
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "path": "artifacts/2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8.json",
+      "bytes": 605
+    }
+  }
+}

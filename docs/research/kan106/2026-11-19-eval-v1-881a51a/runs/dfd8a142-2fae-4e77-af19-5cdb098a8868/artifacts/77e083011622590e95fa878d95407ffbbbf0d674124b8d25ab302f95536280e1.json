@@ -1,0 +1,27 @@
+{
+  "rules": 6,
+  "oracleApproved": false,
+  "policyEffect": "unresolved",
+  "hasDiff": false,
+  "criteriaResults": [
+    {
+      "id": "AC-1",
+      "met": null
+    },
+    {
+      "id": "AC-2",
+      "met": null
+    }
+  ],
+  "testResults": null,
+  "executionStatus": "dry_run",
+  "unsupportedChanges": false,
+  "verification": {
+    "status": "not_run",
+    "reason": "no_test_evidence",
+    "state": null,
+    "exit_code": null,
+    "outcome": "not_run",
+    "outcome_reason": "no_test_evidence"
+  }
+}

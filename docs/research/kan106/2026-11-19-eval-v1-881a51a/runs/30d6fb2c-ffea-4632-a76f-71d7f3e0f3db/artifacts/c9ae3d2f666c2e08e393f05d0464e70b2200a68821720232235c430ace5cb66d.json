@@ -1,0 +1,232 @@
+{
+  "id": "8093b7c5-f2ba-44e4-8538-9775dbbd4d70",
+  "created_at": "2026-11-19T20:13:59.853Z",
+  "raw_request": "In lib/money.js, make formatCents() group the dollars with commas, so formatCents(123456) returns \"$1,234.56\" instead of \"$1234.56\". Keep formatCents(5) returning \"$0.05\" and formatCents(99900) returning \"$999.00\". Add node:test cases in test/money.test.js.",
+  "repo_path": null,
+  "goal": "In lib/money.js, make formatCents() group the dollars with commas, so formatCents(123456) returns \"$1,234.56\" instead of \"$1234.56\". Keep formatCents(5) returning \"$0.05\" and formatCents(99900) returning \"$999.00\". Add node:test cases in test/money.test.js.",
+  "required_behavior": [
+    "formatCents(123456) returns \"$1,234.56\".",
+    "formatCents(5) still returns \"$0.05\" (behaviour kept).",
+    "formatCents(99900) still returns \"$999.00\" (behaviour kept)."
+  ],
+  "constraints": [
+    "Keep the existing behaviour (P4 \"Keep formatCents(5) returning \\\"$0.05\\\" and formatCents(99900) returning \\\"$999.00\\\".\"): formatCents(5) still returns \"$0.05\".",
+    "Keep the existing behaviour (P4 \"Keep formatCents(5) returning \\\"$0.05\\\" and formatCents(99900) returning \\\"$999.00\\\".\"): formatCents(99900) still returns \"$999.00\"."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "formatCents(123456) returns \"$1,234.56\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "formatCents(5) still returns \"$0.05\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "formatCents(99900) still returns \"$999.00\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "New tests are added in test/money.test.js and they pass (requested tests: decided from the test run, for human review).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/money.test.js"
+        ]
+      }
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+    "Run the requested test files: each must be in the change and pass (human review decides whether they test the change)."
+  ],
+  "relevant_context": [
+    "lib/money.js",
+    "test/money.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/money.js",
+        "export": "formatCents",
+        "args": [
+          123456
+        ],
+        "expect": "$1,234.56"
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/money.js",
+        "export": "formatCents",
+        "args": [
+          5
+        ],
+        "expect": "$0.05"
+      }
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/money.js",
+        "export": "formatCents",
+        "args": [
+          99900
+        ],
+        "expect": "$999.00"
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2",
+  "scope": {
+    "allowed_changes": [
+      "lib/money.js",
+      "test/money.test.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-2"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/money.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make formatCents() group the dollars with commas,"
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ],
+      "quote": "so formatCents(123456) returns \"$1,234.56\" instead of \"$1234.56\"."
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ],
+      "quote": "Keep formatCents(5) returning \"$0.05\" and formatCents(99900) returning \"$999.00\"."
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ],
+      "quote": "Add node:test cases in test/money.test.js."
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/money.js",
+        "sha256": "43698e4a6ae945c558d1eafb24129bc35e6b5d85108aab0f5c584cc633245d00",
+        "bytes": 206,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": [
+          {
+            "name": "formatCents",
+            "kind": "function"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "formatCents",
+            "kind": "definition",
+            "start_line": 3,
+            "end_line": 7,
+            "truncated": false,
+            "block_end_line": 7,
+            "source": "working tree"
+          },
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 9,
+            "end_line": 9,
+            "truncated": false,
+            "block_end_line": 9,
+            "source": "working tree"
+          }
+        ]
+      },
+      {
+        "path": "test/money.test.js",
+        "sha256": "b4c94689f6cc52d3051e114a0dfee2d9dd663f9285411d83c3f8803b73f17261",
+        "bytes": 217,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": []
+      }
+    ]
+  }
+}

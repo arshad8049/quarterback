@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "run_id": "a22ef4ec-b114-462e-a72e-5fb7b82c01b3",
+  "kind": "qb",
+  "qb_revision": "881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e",
+  "request": "In lib/math.js, create and export a function percent(part, whole) that returns part / whole * 100 rounded to the nearest whole number, for example percent(1, 3) returns 33 and percent(2, 3) returns 67. When whole is 0 it must throw an error whose message includes \"whole must not be zero\". Keep add(2, 3) returning 5.",
+  "repo": {
+    "path": "<redacted: owner local path>",
+    "identity": "73080898be95b9668350cdbee11031368127438466aae39d5dbf2a20a2648718",
+    "base_sha": "92e576a8b4d73eeb85acfbccc74c61ad5ea7e2fa"
+  },
+  "agent": {
+    "type": "dry-run",
+    "version": "builtin",
+    "isolation": "none"
+  },
+  "models": {
+    "intent": "qwen2.5-coder:14b",
+    "context": "qwen2.5-coder:14b",
+    "judge": "qwen2.5-coder:14b"
+  },
+  "config": {
+    "repo": "<redacted: owner local path>",
+    "agent": "dry-run",
+    "maxRetries": 3,
+    "clarify": [],
+    "llmContext": false,
+    "llmVerify": false,
+    "l1Profile": "qwen-14b-staged",
+    "l1Budget": "420",
+    "deadline": "15"
+  },
+  "config_hash": "a3eb1ff569d20fc17ed90ed31b47e96ac438c5eee13a7af02f54933fa35551ac",
+  "contract_hash": "610a96567e1038acdbcf7e172a262dbce7caf4128a0fe83e213b8de82fefd2a4",
+  "sandbox_policy": null,
+  "pid": 61066,
+  "started_at": "2026-11-19T20:11:10.151Z",
+  "finished_at": "2026-11-19T20:11:58.536Z",
+  "outcome": "DRY_RUN",
+  "legacy_verdict": "no-diff",
+  "outcome_reason": null,
+  "attempts": [
+    {
+      "attempt": 1,
+      "parent_attempt": null,
+      "repair_reason": [],
+      "started_at": "2026-11-19T20:11:58.471Z",
+      "finished_at": "2026-11-19T20:11:58.514Z",
+      "base_sha": "92e576a8b4d73eeb85acfbccc74c61ad5ea7e2fa",
+      "patch_sha256": null,
+      "execution_status": "dry_run",
+      "verdict": "no-diff",
+      "checks": [],
+      "artifacts": {
+        "execution": "a1-execution",
+        "report": "a1-report",
+        "verify_input": "a1-verify-input"
+      }
+    }
+  ],
+  "artifacts": {
+    "contract-staged": {
+      "name": "contract-staged",
+      "sha256": "1cc23e0e96c8d09d511f8fb965a1c8b6c2147c25a40f345f841e89daed5bb467",
+      "path": "artifacts/1cc23e0e96c8d09d511f8fb965a1c8b6c2147c25a40f345f841e89daed5bb467.json",
+      "bytes": 5441
+    },
+    "contract": {
+      "name": "contract",
+      "sha256": "610a96567e1038acdbcf7e172a262dbce7caf4128a0fe83e213b8de82fefd2a4",
+      "path": "artifacts/610a96567e1038acdbcf7e172a262dbce7caf4128a0fe83e213b8de82fefd2a4.json",
+      "bytes": 5397
+    },
+    "a1-execution": {
+      "name": "a1-execution",
+      "sha256": "20510fc235f184ca19528c3d51452a8f35c7b1202fd12b8c1e35e58078a67ce5",
+      "path": "artifacts/20510fc235f184ca19528c3d51452a8f35c7b1202fd12b8c1e35e58078a67ce5.json",
+      "bytes": 2828
+    },
+    "a1-report": {
+      "name": "a1-report",
+      "sha256": "cea4bebf8ee325c769d3718600a2201a1931eff6336d91691f739c755d2ded4e",
+      "path": "artifacts/cea4bebf8ee325c769d3718600a2201a1931eff6336d91691f739c755d2ded4e.json",
+      "bytes": 3392
+    },
+    "a1-verify-input": {
+      "name": "a1-verify-input",
+      "sha256": "2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8",
+      "path": "artifacts/2a5ad9a983c5386b388b4fba0e2d39d45885f1c7f4697e20e260104abe3b0cd8.json",
+      "bytes": 605
+    }
+  }
+}

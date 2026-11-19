@@ -1,0 +1,139 @@
+{
+  "id": "63961fc1-edb3-41c9-bb4b-8e89ef7309e0",
+  "created_at": "2026-11-19T20:14:15.371Z",
+  "raw_request": "In lib/round.js, make roundTo() handle negative numbers properly.",
+  "repo_path": null,
+  "goal": "In lib/round.js, make roundTo() handle negative numbers properly.",
+  "required_behavior": [
+    "roundTo(-1.234, 2) returns -1.23.",
+    "roundTo(-4.567, 1) returns -4.6."
+  ],
+  "constraints": [],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "roundTo(-1.234, 2) returns -1.23.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "roundTo(-4.567, 1) returns -4.6.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments)."
+  ],
+  "relevant_context": [
+    "lib/round.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/round.js",
+        "export": "roundTo",
+        "args": [
+          -1.234,
+          2
+        ],
+        "expect": -1.23
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/round.js",
+        "export": "roundTo",
+        "args": [
+          -4.567,
+          1
+        ],
+        "expect": -4.6
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2",
+  "scope": {
+    "allowed_changes": [
+      "lib/round.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/round.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make roundTo() handle negative numbers properly."
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/round.js",
+        "sha256": "3aafacd4c6041ef17dfd7fbfc3330668cc39a08f9595c97ad409516292d488d8",
+        "bytes": 133,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": [
+          {
+            "name": "roundTo",
+            "kind": "function"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "roundTo",
+            "kind": "definition",
+            "start_line": 3,
+            "end_line": 6,
+            "truncated": false,
+            "block_end_line": 6,
+            "source": "working tree"
+          },
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 8,
+            "end_line": 8,
+            "truncated": false,
+            "block_end_line": 8,
+            "source": "working tree"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "89bdd242-905b-4b0e-8771-fb275e5df2cf",
+  "contract_id": "3e4570d8-e3fb-4e97-9fba-aac707d0b979",
+  "context_id": "d02213ea-eef2-4bf6-8a35-119e9de696a8",
+  "agent_used": "dry-run",
+  "status": "dry_run",
+  "duration_ms": 1,
+  "generated_at": "2026-11-19T20:12:39.729Z",
+  "briefing": "# Agent Briefing\n**Contract:** `3e4570d8-e3fb-4e97-9fba-aac707d0b979`  |  **Date:** 2026-11-19\n**Context package:** `d02213ea-eef2-4bf6-8a35-119e9de696a8`\n\n## Goal\nIn lib/env.js, make parseBool() also treat \"1\" and \"yes\" as true, so parseBool(\"yes\") returns true and parseBool(\"1\") returns true. Keep parseBool(\"true\") returning true and parseBool(\"false\") returning false. Do not change lib/defaults.js.\n\n## Required behavior\n1. parseBool(\"yes\") returns true.\n2. parseBool(\"1\") returns true.\n3. parseBool(\"true\") still returns true (behaviour kept).\n4. parseBool(\"false\") still returns false (behaviour kept).\n\n## Constraints — do NOT violate these\n- Keep the existing behaviour (P4 \"Keep parseBool(\\\"true\\\") returning true and parseBool(\\\"false\\\") returning false.\"): parseBool(\"true\") still returns true.\n- Keep the existing behaviour (P4 \"Keep parseBool(\\\"true\\\") returning true and parseBool(\\\"false\\\") returning false.\"): parseBool(\"false\") still returns false.\n- Do not change lib/defaults.js (P5 \"Do not change lib/defaults.js.\").\n\n## Scope — enforced\nYou may change only: `lib/env.js`. Any other change cannot be accepted.\nNever change: `lib/defaults.js`.\n\n## Acceptance criteria\nYou are done when **all** of these are verifiably true:\n\n- [ ] **[AC-1]** parseBool(\"yes\") returns true.\n- [ ] **[AC-2]** parseBool(\"1\") returns true.\n- [ ] **[AC-3]** parseBool(\"true\") still returns true (behaviour kept).\n- [ ] **[AC-4]** parseBool(\"false\") still returns false (behaviour kept).\n\n## Codebase patterns\n- Language: **javascript**\n- Test runner: **node-test**\n\n## Files to work in\n\n### `lib/env.js` — exports: `parseBool`\nseed: symbol parseBool, mentions true, symbol word parse, symbol word bool (score 28)\nAssociated test (by file name): `test/env.test.js`\n\n### `test/env.test.js`\nseed: mentions parsebool, mentions false (score 9)\nImports: `lib/env.js`\n\n### `lib/defaults.js` — exports: `debug`, `port`\nseed: mentions false, name defaults (score 7)\n\n## Symbol map — where things live\n\n| Symbol | Location |\n|--------|----------|\n| `lib/env.js#parseBool` | `lib/env.js:3` |\n| `lib/defaults.js#debug` | `lib/defaults.js:3` |\n| `lib/defaults.js#port` | `lib/defaults.js:3` |\n\n## Associated tests (matched by file name only)\nTest files that may relate to these files — run them after your changes (a matching name does not mean the behavior is tested):\n- `test/env.test.js`\n\nNo associated test file was found by name for these files — add tests if you add behavior to them:\n- `test/env.test.js`\n- `lib/defaults.js`\n\n## Recent git activity\n- `lib/env.js` — 1 commit(s), last changed 20 hours ago\n- `test/env.test.js` — 1 commit(s), last changed 20 hours ago\n- `lib/defaults.js` — 1 commit(s), last changed 20 hours ago\n\n## Verification plan\n1. Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).\n\n---\n*Quarterback briefing — Layer 3 Agent Orchestrator*",
+  "changes": [],
+  "diff": null,
+  "unsupported_changes": [],
+  "base_tree": null,
+  "candidate_tree": null,
+  "exit_code": null,
+  "signal": null,
+  "stderr_tail": null,
+  "error": null
+}

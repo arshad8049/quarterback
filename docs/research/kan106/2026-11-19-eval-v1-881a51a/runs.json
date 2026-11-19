@@ -1,0 +1,50 @@
+{
+  "S1-slug": {
+    "run_id": "dfd8a142-2fae-4e77-af19-5cdb098a8868",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  },
+  "S2-formatter": {
+    "run_id": "0f889a34-8a31-4d6d-94ea-6df946cd1449",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  },
+  "S3-percent": {
+    "run_id": "a22ef4ec-b114-462e-a72e-5fb7b82c01b3",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  },
+  "S4-parsebool": {
+    "run_id": "30636148-c6a2-407f-b1b4-06f5db03a7f9",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  },
+  "S5-clock": {
+    "run_id": "2711d206-11d1-4c0f-97da-1c5b4377ab83",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  },
+  "S6-money": {
+    "run_id": "30d6fb2c-ffea-4632-a76f-71d7f3e0f3db",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  },
+  "U1-userrepo": {
+    "run_id": "b60dc291-59ca-463e-8a4c-295c18bcd91f",
+    "exit_code": 2,
+    "signal": null,
+    "timed_out": false
+  },
+  "U2-roundto": {
+    "run_id": "eda9158a-14a0-408a-9f7e-8b88c54b69f0",
+    "exit_code": 1,
+    "signal": null,
+    "timed_out": false
+  }
+}
