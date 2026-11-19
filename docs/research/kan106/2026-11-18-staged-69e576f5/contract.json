@@ -1,0 +1,534 @@
+{
+  "id": "73ea03df-6539-4170-bc64-205678f96989",
+  "created_at": "2026-11-18T23:21:07.383Z",
+  "raw_request": "In lib/serializer.js, make Serializer.asNumber() throw a number conversion error for an empty string or a string containing only whitespace instead of returning 0. Keep the behavior for numeric 0, string \"0\", and valid numeric strings. Add node:test cases in test/asNumber.test.js.",
+  "repo_path": null,
+  "goal": "In lib/serializer.js, make Serializer.asNumber() throw a number conversion error for an empty string or a string containing only whitespace instead of returning 0. Keep the behavior for numeric 0, string \"0\", and valid numeric strings. Add node:test cases in test/asNumber.test.js.",
+  "required_behavior": [
+    "Serializer.asNumber(\"\") throws an error whose message includes \"cannot be converted to a number.\".",
+    "Serializer.asNumber(\"   \") throws an error whose message includes \"cannot be converted to a number.\".",
+    "Serializer.asNumber(0) still returns \"0\" (behaviour kept).",
+    "Serializer.asNumber(\"0\") still returns \"0\" (behaviour kept).",
+    "Serializer.asNumber(\"42\") still returns \"42\" (behaviour kept).",
+    "Serializer.asNumber(\"-42\") still returns \"-42\" (behaviour kept).",
+    "Serializer.asNumber(\"3.14\") still returns \"3.14\" (behaviour kept).",
+    "Serializer.asNumber(\"-3.14\") still returns \"-3.14\" (behaviour kept)."
+  ],
+  "constraints": [
+    "Keep the existing behaviour (P3 \"Keep the behavior for numeric 0,\"): Serializer.asNumber(0) still returns \"0\".",
+    "Keep the existing behaviour (P4 \"string \\\"0\\\",\"): Serializer.asNumber(\"0\") still returns \"0\".",
+    "Keep the existing behaviour (P5 \"and valid numeric strings.\"): Serializer.asNumber(\"0\") still returns \"0\".",
+    "Keep the existing behaviour (P5 \"and valid numeric strings.\"): Serializer.asNumber(\"42\") still returns \"42\".",
+    "Keep the existing behaviour (P5 \"and valid numeric strings.\"): Serializer.asNumber(\"-42\") still returns \"-42\".",
+    "Keep the existing behaviour (P5 \"and valid numeric strings.\"): Serializer.asNumber(\"3.14\") still returns \"3.14\".",
+    "Keep the existing behaviour (P5 \"and valid numeric strings.\"): Serializer.asNumber(\"-3.14\") still returns \"-3.14\"."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Serializer.asNumber(\"\") throws an error whose message includes \"cannot be converted to a number.\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Serializer.asNumber(\"   \") throws an error whose message includes \"cannot be converted to a number.\".",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Serializer.asNumber(0) still returns \"0\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Serializer.asNumber(\"0\") still returns \"0\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-4",
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Serializer.asNumber(\"42\") still returns \"42\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "criterion": "Serializer.asNumber(\"-42\") still returns \"-42\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "criterion": "Serializer.asNumber(\"3.14\") still returns \"3.14\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-8",
+      "criterion": "Serializer.asNumber(\"-3.14\") still returns \"-3.14\" (behaviour kept).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-9",
+      "criterion": "New tests are added in test/asNumber.test.js and they pass (requested tests: decided from the test run, for human review).",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    }
+  ],
+  "verification_plan": [
+    "Run the checks QB assembled for each criterion against the changed code (the model chose only inputs, expected values and fragments).",
+    "Run the requested test files: each must be in the change and pass (human review decides whether they test the change)."
+  ],
+  "relevant_context": [
+    "lib/serializer.js",
+    "test/asNumber.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              ""
+            ],
+            "throws": {
+              "message_includes": "cannot be converted to a number."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "   "
+            ],
+            "throws": {
+              "message_includes": "cannot be converted to a number."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              0
+            ],
+            "expect": "0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "0"
+            ],
+            "expect": "0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-5",
+      "ac_id": "AC-5",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "42"
+            ],
+            "expect": "42"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-6",
+      "ac_id": "AC-6",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "-42"
+            ],
+            "expect": "-42"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-7",
+      "ac_id": "AC-7",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "3.14"
+            ],
+            "expect": "3.14"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-8",
+      "ac_id": "AC-8",
+      "adapter": "call_sequence",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "default",
+        "instances": {
+          "s": {
+            "construct": "new",
+            "args": []
+          }
+        },
+        "steps": [
+          {
+            "on": "s",
+            "method": "asNumber",
+            "args": [
+              "-3.14"
+            ],
+            "expect": "-3.14"
+          }
+        ]
+      }
+    }
+  ],
+  "checks_rejected": [],
+  "checks_registry": "qb-checks/2.1",
+  "scope": {
+    "allowed_changes": [
+      "lib/serializer.js",
+      "test/asNumber.test.js"
+    ],
+    "protected_paths": []
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-3"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-4"
+        }
+      ]
+    },
+    {
+      "constraint": 2,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-4"
+        }
+      ]
+    },
+    {
+      "constraint": 3,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-5"
+        }
+      ]
+    },
+    {
+      "constraint": 4,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-6"
+        }
+      ]
+    },
+    {
+      "constraint": 5,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-7"
+        }
+      ]
+    },
+    {
+      "constraint": 6,
+      "enforced_by": [
+        {
+          "kind": "check",
+          "ref": "CHK-8"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ],
+      "quote": "In lib/serializer.js,",
+      "disposition": "context",
+      "reason": "location only"
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ],
+      "quote": "make Serializer.asNumber() throw a number conversion error for an empty string or a string containing only whitespace instead of returning 0."
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ],
+      "quote": "Keep the behavior for numeric 0,"
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ],
+      "quote": "string \"0\","
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ],
+      "quote": "and valid numeric strings."
+    },
+    {
+      "id": "R-6",
+      "passage_ids": [
+        "P6"
+      ],
+      "quote": "Add node:test cases in test/asNumber.test.js."
+    }
+  ],
+  "proposed_defaults": [],
+  "api_grounding": {
+    "schema": "qb-api-grounding/1",
+    "modules": [
+      {
+        "path": "lib/serializer.js",
+        "sha256": "ae9d3d2fdfcfea0477c3802d2e80ea2c15126aad073629d3ef8711ee36e80c5e",
+        "bytes": 5365,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "class",
+          "name": "Serializer",
+          "methods": [
+            "asInteger",
+            "asNumber",
+            "asBoolean",
+            "asDateTime",
+            "asDate",
+            "asTime",
+            "asString",
+            "asUnsafeString",
+            "asPlainStringArray",
+            "getState"
+          ],
+          "accessors": [],
+          "statics": [
+            {
+              "name": "restoreFromState",
+              "kind": "function"
+            }
+          ],
+          "form": "module.exports = class Serializer"
+        },
+        "named": [
+          {
+            "name": "restoreFromState",
+            "kind": "function"
+          }
+        ],
+        "excerpts": [
+          {
+            "symbol": "export",
+            "kind": "export",
+            "start_line": 43,
+            "end_line": 43,
+            "truncated": true,
+            "block_end_line": 181,
+            "source": "working tree"
+          },
+          {
+            "symbol": "constructor",
+            "kind": "constructor",
+            "start_line": 44,
+            "end_line": 61,
+            "truncated": false,
+            "block_end_line": 61,
+            "source": "working tree"
+          },
+          {
+            "symbol": "asNumber",
+            "kind": "definition",
+            "start_line": 79,
+            "end_line": 91,
+            "truncated": false,
+            "block_end_line": 91,
+            "source": "working tree"
+          }
+        ]
+      },
+      {
+        "path": "test/asNumber.test.js",
+        "sha256": "7ed38f4f700a1ddf5bb760f4e59206185d3ab4e3777280468ef285e31228d263",
+        "bytes": 297,
+        "format": "commonjs",
+        "status": "known",
+        "default": {
+          "kind": "object"
+        },
+        "named": []
+      }
+    ]
+  }
+}

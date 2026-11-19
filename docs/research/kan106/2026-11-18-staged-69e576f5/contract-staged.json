@@ -1,0 +1,211 @@
+{
+  "format": "qb-staged-l1/1",
+  "roles": [
+    {
+      "passage_id": "P1",
+      "role": "context"
+    },
+    {
+      "passage_id": "P2",
+      "role": "change"
+    },
+    {
+      "passage_id": "P3",
+      "role": "keep"
+    },
+    {
+      "passage_id": "P4",
+      "role": "keep"
+    },
+    {
+      "passage_id": "P5",
+      "role": "keep"
+    },
+    {
+      "passage_id": "P6",
+      "role": "adds_tests",
+      "file": "test/asNumber.test.js"
+    }
+  ],
+  "call_targets": [
+    {
+      "label": "Serializer.asNumber (lib/serializer.js)",
+      "module": "lib/serializer.js",
+      "kind": "method",
+      "export": "default",
+      "method": "asNumber",
+      "grounding": "grounded",
+      "constructor_args": "optional"
+    }
+  ],
+  "unsupported_targets": [],
+  "fragments": [
+    {
+      "call": "Serializer.asNumber (lib/serializer.js)",
+      "pieces": [
+        "The value",
+        "cannot be converted to a number."
+      ]
+    }
+  ],
+  "fragment_list": [
+    "The value",
+    "cannot be converted to a number."
+  ],
+  "facts": [
+    {
+      "requirement_id": "R-2",
+      "passage_id": "P2",
+      "role": "change",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"\"],\n      \"outcome\": \"throws\",\n      \"expected\": null,\n      \"error_fragment\": 1\n    },\n    {\n      \"requirement\": \"R-2\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"   \"],\n      \"outcome\": \"throws\",\n      \"expected\": null,\n      \"error_fragment\": 1\n    }\n  ]\n}",
+          "raw_bytes": 412,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-2",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            ""
+          ],
+          "outcome": "throws",
+          "expected": null,
+          "error_fragment": 1
+        },
+        {
+          "requirement": "R-2",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "   "
+          ],
+          "outcome": "throws",
+          "expected": null,
+          "error_fragment": 1
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-3",
+      "passage_id": "P3",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-3\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [0],\n      \"outcome\": \"returns\",\n      \"expected\": \"0\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 216,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-3",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            0
+          ],
+          "outcome": "returns",
+          "expected": "0",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-4",
+      "passage_id": "P4",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-4\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"0\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"0\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 218,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-4",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "0"
+          ],
+          "outcome": "returns",
+          "expected": "0",
+          "error_fragment": null
+        }
+      ]
+    },
+    {
+      "requirement_id": "R-5",
+      "passage_id": "P5",
+      "role": "keep",
+      "attempts": [
+        {
+          "kind": "fact",
+          "model": "qwen2.5-coder:14b",
+          "raw": "{\n  \"cases\": [\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"0\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"0\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"42\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"42\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"-42\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"-42\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"3.14\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"3.14\",\n      \"error_fragment\": null\n    },\n    {\n      \"requirement\": \"R-5\",\n      \"call\": \"Serializer.asNumber (lib/serializer.js)\",\n      \"args\": [\"-3.14\"],\n      \"outcome\": \"returns\",\n      \"expected\": \"-3.14\",\n      \"error_fragment\": null\n    }\n  ]\n}",
+          "raw_bytes": 1034,
+          "errors": []
+        }
+      ],
+      "cases": [
+        {
+          "requirement": "R-5",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "0"
+          ],
+          "outcome": "returns",
+          "expected": "0",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-5",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "42"
+          ],
+          "outcome": "returns",
+          "expected": "42",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-5",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "-42"
+          ],
+          "outcome": "returns",
+          "expected": "-42",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-5",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "3.14"
+          ],
+          "outcome": "returns",
+          "expected": "3.14",
+          "error_fragment": null
+        },
+        {
+          "requirement": "R-5",
+          "call": "Serializer.asNumber (lib/serializer.js)",
+          "args": [
+            "-3.14"
+          ],
+          "outcome": "returns",
+          "expected": "-3.14",
+          "error_fragment": null
+        }
+      ]
+    }
+  ]
+}

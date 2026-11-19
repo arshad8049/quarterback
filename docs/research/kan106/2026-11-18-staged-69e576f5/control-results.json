@@ -1,0 +1,184 @@
+{
+  "_label": "CONTROL RESULTS: the generated checks of run 69e576f5 (contract.json, unchanged) run by the real check runner on two controls. No model call. Re-executed 2026-11-19 by the junior.",
+  "runner": {
+    "path": "sandbox/agent/qb-check-runner.mjs",
+    "sha256": "110edca43d8aa67d99b84ce5c129427fc4e2744893829368ccb85b33156733d2",
+    "node": "v20.20.2"
+  },
+  "controls": {
+    "base": {
+      "what": "the target repository lib/serializer.js at 2c71f484 (no blank-string guard)",
+      "sha256": "ae9d3d2fdfcfea0477c3802d2e80ea2c15126aad073629d3ef8711ee36e80c5e"
+    },
+    "correct": {
+      "what": "pinned upstream fast-json-stringify 07d7196 lib/serializer.js (test/fixtures/kan106/pinned-fast-json-stringify/serializer-07d7196.js)",
+      "sha256": "fee151015f95210ecec03840b813db048c77c4bec13fd46f0acd782e964184c5"
+    }
+  },
+  "results": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          ""
+        ],
+        "throws": {
+          "message_includes": "cannot be converted to a number."
+        }
+      },
+      "base": {
+        "status": "fail",
+        "detail": "step 0: s.asNumber(…) returned '0' instead of throwing"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched; step 0: s.asNumber(…) threw as expected: The value \"\" cannot be converted to a number."
+      }
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          "   "
+        ],
+        "throws": {
+          "message_includes": "cannot be converted to a number."
+        }
+      },
+      "base": {
+        "status": "fail",
+        "detail": "step 0: s.asNumber(…) returned '0' instead of throwing"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched; step 0: s.asNumber(…) threw as expected: The value \"   \" cannot be converted to a number."
+      }
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          0
+        ],
+        "expect": "0"
+      },
+      "base": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      }
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          "0"
+        ],
+        "expect": "0"
+      },
+      "base": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      }
+    },
+    {
+      "id": "CHK-5",
+      "ac_id": "AC-5",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          "42"
+        ],
+        "expect": "42"
+      },
+      "base": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      }
+    },
+    {
+      "id": "CHK-6",
+      "ac_id": "AC-6",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          "-42"
+        ],
+        "expect": "-42"
+      },
+      "base": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      }
+    },
+    {
+      "id": "CHK-7",
+      "ac_id": "AC-7",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          "3.14"
+        ],
+        "expect": "3.14"
+      },
+      "base": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      }
+    },
+    {
+      "id": "CHK-8",
+      "ac_id": "AC-8",
+      "step": {
+        "on": "s",
+        "method": "asNumber",
+        "args": [
+          "-3.14"
+        ],
+        "expect": "-3.14"
+      },
+      "base": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      },
+      "correct": {
+        "status": "pass",
+        "detail": "1 step(s) on 1 instance(s) matched"
+      }
+    }
+  ]
+}
