@@ -79,14 +79,15 @@ describe('materialize and freeze', () => {
     assert.deepEqual(check(), []);
     assert.deepEqual(Object.keys(current()).sort(), Object.keys(FREEZE.files).sort());
   });
-  test('the frozen settings: one run per item, no reruns, the staged profile and its budgets', () => {
+  test('the frozen settings: one run per item, no reruns, the staged profile, its budgets passed explicitly (10761)', () => {
     assert.equal(FREEZE.model, 'qwen2.5-coder:14b');
-    assert.deepEqual(FREEZE.flags, ['--agent', 'dry-run', '--no-llm-context', '--l1-profile', 'qwen-14b-staged', '--deadline', '15']);
+    assert.deepEqual(FREEZE.flags, ['--agent', 'dry-run', '--no-llm-context', '--no-llm-verify', '--l1-profile', 'qwen-14b-staged', '--l1-budget', '420', '--deadline', '15']);
     const { l1Budget } = require('../../lib/budget');
-    const b = l1Budget({ profile: 'qwen-14b-staged' });
+    const b = l1Budget({ flagMs: 420 * 1000, profile: 'qwen-14b-staged' });
     assert.equal(b.ms, FREEZE.budgets.l1_total_ms);
     assert.equal(b.per_call_ms, FREEZE.budgets.per_call_ms);
-    assert.equal(FREEZE.budgets.max_model_minutes, (8 * FREEZE.budgets.l1_total_ms) / 60_000);
+    assert.equal(FREEZE.budgets.l1_budget_sum_minutes, (8 * FREEZE.budgets.l1_total_ms) / 60_000);
+    assert.match(FREEZE.budgets.note, /wall time .* setup and scoring/);
     assert.equal(FREEZE.runs_per_item, 1);
   });
 });
@@ -94,15 +95,17 @@ describe('materialize and freeze', () => {
 describe('run-batch.sh (not run: inspected, and its refusals exercised without a model)', () => {
   const SH = path.join(EVAL, 'run-batch.sh');
   const y = fs.readFileSync(SH, 'utf8');
-  test('one pass over the frozen order, the exact frozen command, no retry loop, evidence under ~/qb-evidence', () => {
-    assert.match(y, /^ITEMS=\(S1-slug S2-formatter S3-percent S4-parsebool S5-clock S6-money U1-userrepo U2-roundto\)$/m);
-    assert.match(y, /QB_MODEL=\$MODEL node qb\.js "\$\(cat bench\/kan106-eval-v1\/items\/\$id\/request\.txt\)" --repo "\$OUT\/repos\/\$id" --agent dry-run --no-llm-context --l1-profile qwen-14b-staged --deadline 15 /);
-    assert.equal((y.match(/node qb\.js/g) || []).length, 1);
-    assert.equal((y.match(/^for id in \$ITEMS; do$/gm) || []).length, 1);
+  test('preflight, then ONE batch.js call (one pass, pinned child settings: kan106-eval-v1-10761.test.js), then scoring; no retry loop', () => {
     const code = y.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-    assert.doesNotMatch(code, /\b(while|until)\b|--agent claude|ANTHROPIC|CLAUDE_CODE/);
+    assert.equal((code.match(/node bench\/kan106-eval-v1\/batch\.js "\$OUT" "\$EXPECTED_SHA"/g) || []).length, 1);
+    assert.doesNotMatch(code, /node qb\.js/, 'the shell never launches QB itself');
+    assert.doesNotMatch(code, /\b(while|until|for)\b|--agent claude|ANTHROPIC|CLAUDE_CODE|ollama pull/);
+    assert.match(code, /node bench\/kan106-eval-v1\/score\.js --batch-dir "\$OUT" --out "\$OUT\/scores\.json"/);
     assert.match(y, /OUT=~\/qb-evidence\/kan106-eval-v1\//);
     assert.equal(spawnSync('zsh', ['-n', SH]).status, 0);
+    const b = fs.readFileSync(path.join(EVAL, 'batch.js'), 'utf8').split('\n').filter((l) => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+    assert.doesNotMatch(b, /\b(while|until)\b|retry|--agent claude|ANTHROPIC|CLAUDE_CODE|\/api\/(pull|chat|generate)/);
+    assert.equal((b.match(/for \(const id of items\)/g) || []).length, 1);
   });
   test('refuses before any run without the frozen SHA, or at a different SHA', () => {
     let r = spawnSync('zsh', [SH], { encoding: 'utf8' });
@@ -118,7 +121,10 @@ describe('score.js on a TEST-ONLY item (asNumber fixture + the published 69e576f
   const GUARD = "    // reject blank strings, which Number() would coerce to 0\n    if (typeof i === 'string' && i.trim() === '') {\n      throw new Error(`The value \"${i}\" cannot be converted to a number.`)\n    }\n";
   const BASE = PINNED.replace(GUARD, '');
   const PACK = path.join(ROOT, 'docs', 'research', 'kan106', '2026-11-18-staged-69e576f5');
-  const { scoreItem, summarize } = require('../../bench/kan106-eval-v1/score');
+  const { scoreItem, summarize, expectFrom } = require('../../bench/kan106-eval-v1/score');
+  const crypto = require('crypto');
+  const BASE_SHA = 'b'.repeat(40);
+  const REQUEST = 'test-only request (ASN fixture)';
   const w = (root, rel, body) => { fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true }); fs.writeFileSync(path.join(root, rel), body); };
   function itemsRoot({ mustProtect = [], scopeControl = false } = {}) {
     const root = tmp('kan106-score-items-');
@@ -128,22 +134,44 @@ describe('score.js on a TEST-ONLY item (asNumber fixture + the published 69e576f
     w(d, 'controls/wrong-trunc/lib/serializer.js', PINNED.replace("return '' + num", "return '' + Math.trunc(num)"));
     w(d, 'controls/wrong-passes-all/lib/serializer.js', PINNED.replace('// fast cast to number', '// fast cast to number (cosmetic edit: passes every check by design)'));
     if (scopeControl) { w(d, 'controls/wrong-scope/lib/serializer.js', PINNED); w(d, 'controls/wrong-scope/package.json', '{"name":"changed"}'); }
+    w(d, 'request.txt', REQUEST + '\n');
     w(d, 'item.json', JSON.stringify({ id: 'ASN', category: 'test-only', expected: 'finalize', requirements: [{ id: 'r', text: 'x' }],
       scope: { must_allow: ['lib/serializer.js'], must_protect: mustProtect }, ...(scopeControl ? { scope_controls: { 'wrong-scope': 'refused by protected paths' } } : {}) }));
-    w(root, 'REF/item.json', JSON.stringify({ id: 'REF', category: 'test-only', expected: 'refuse', requirements: [], scope: { must_allow: [], must_protect: [] } }));
+    w(root, 'REF/request.txt', REQUEST + '\n');
+    w(root, 'REF/item.json', JSON.stringify({ id: 'REF', category: 'test-only', expected: 'refuse', requirements: [], scope: { must_allow: [], must_protect: [] },
+      refusal_evidence: { decision: 'unsupported_call_shape', target: 'Nothing', reason_includes: 'constructor', max_model_calls: 0 } }));
     return root;
   }
-  const run = (withContract = true) => ({
-    manifest: { run_id: 'fake', qb_revision: 'fake', outcome: withContract ? 'DRY_RUN' : 'BLOCKED', models: { intent: 'qwen2.5-coder:14b' }, agent: { type: 'dry-run' } },
-    staged: JSON.parse(fs.readFileSync(path.join(PACK, 'contract-staged.json'), 'utf8')),
-    contract: withContract ? JSON.parse(fs.readFileSync(path.join(PACK, 'contract.json'), 'utf8')) : null,
-    timings: JSON.parse(fs.readFileSync(path.join(PACK, 'l1-timings.event.json'), 'utf8')).data,
-  });
+  const EXPECT = { ...expectFrom({ qbRevision: 'f'.repeat(40) }), base_shas: { ASN: BASE_SHA, REF: BASE_SHA } };
+  /** The published 69e576f5 replies/contract as a run record, re-labelled with this batch's identity (10761). */
+  function record(withContract = true) {
+    const runs = tmp('kan106-score-runs-');
+    const id = crypto.randomUUID();
+    const dir = path.join(runs, id);
+    fs.mkdirSync(path.join(dir, 'artifacts'), { recursive: true });
+    const artifacts = {};
+    const put = (name, file) => { const buf = fs.readFileSync(path.join(PACK, file)); const h = crypto.createHash('sha256').update(buf).digest('hex'); fs.writeFileSync(path.join(dir, 'artifacts', h + '.json'), buf); artifacts[name] = { name, sha256: h, path: `artifacts/${h}.json`, bytes: buf.length }; };
+    put('contract-staged', 'contract-staged.json');
+    if (withContract) put('contract', 'contract.json');
+    const ev = JSON.parse(fs.readFileSync(path.join(PACK, 'l1-timings.event.json'), 'utf8'));
+    ev.data.l1_budget = { ...ev.data.l1_budget, source: '--l1-budget' };
+    fs.writeFileSync(path.join(dir, 'events.jsonl'), JSON.stringify(ev) + '\n');
+    fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ run_id: id, qb_revision: EXPECT.qb_revision, request: REQUEST,
+      repo: { base_sha: BASE_SHA }, outcome: withContract ? 'DRY_RUN' : 'BLOCKED', outcome_reason: withContract ? null : 'staged_l1_invalid: something else',
+      models: { intent: 'qwen2.5-coder:14b' }, agent: { type: 'dry-run' }, config: { ...EXPECT.config }, attempts: [], artifacts }));
+    return { runs, entry: { run_id: id, exit_code: withContract ? 0 : 2, signal: null } };
+  }
+  const scored = (id, withContract, root) => {
+    const r = record(withContract);
+    try { return scoreItem(id, r.entry, { runsRoot: r.runs, itemsRoot: root, expect: EXPECT }); } finally { fs.rmSync(r.runs, { recursive: true, force: true }); }
+  };
 
   test('a finalized checklist: controls run unchanged; correct passes, base is distinguished, a wrong control that passes everything is flagged', () => {
     const root = itemsRoot();
     try {
-      const s = scoreItem('ASN', run(), { itemsRoot: root });
+      const s = scored('ASN', true, root);
+      assert.deepEqual(s.problems, []);
+      assert.equal(s.result, 'checklist');
       assert.equal(s.structural, 'finalized');
       assert.equal(s.correct_passes_all, true);
       assert.equal(s.base_distinguished, true);
@@ -160,7 +188,7 @@ describe('score.js on a TEST-ONLY item (asNumber fixture + the published 69e576f
   test('scope: a required protection missing from the checklist, and a scope control not refused, are both reported', () => {
     const root = itemsRoot({ mustProtect: ['package.json'], scopeControl: true });
     try {
-      const s = scoreItem('ASN', run(), { itemsRoot: root });
+      const s = scored('ASN', true, root);
       assert.deepEqual(s.scope.missing_allow, []);
       assert.deepEqual(s.scope.missing_protect, ['package.json']);
       assert.equal(s.scope.scope_controls['wrong-scope'].refused_by_protected_paths, false);
@@ -168,15 +196,15 @@ describe('score.js on a TEST-ONLY item (asNumber fixture + the published 69e576f
       assert.deepEqual(summarize([s]).supported.protected_scope_weakened, ['ASN']);
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
-  test('a refusal item: no finalized checklist is a safe refusal; a finalized one is not; counted separately', () => {
+  test('a refusal item: a finalized checklist is not refused; a block for an undeclared reason is not an intended refusal; counted separately', () => {
     const root = itemsRoot();
     try {
-      const refused = scoreItem('REF', run(false), { itemsRoot: root });
-      const finalized = scoreItem('REF', run(true), { itemsRoot: root });
-      assert.equal(refused.safe_refusal, true);
-      assert.equal(finalized.safe_refusal, false);
-      const sum = summarize([refused, finalized]);
-      assert.deepEqual([sum.unsupported.total, sum.unsupported.safe_refusals, sum.supported.total], [2, 1, 0]);
+      const blocked = scored('REF', false, root);
+      const finalized = scored('REF', true, root);
+      assert.equal(blocked.result, 'blocked_other_reason');
+      assert.equal(finalized.result, 'not_refused');
+      const sum = summarize([blocked, finalized]);
+      assert.deepEqual([sum.unsupported.total, sum.unsupported.intended_refusals, sum.unsupported.blocked_other_reason, sum.unsupported.not_refused, sum.supported.total], [2, 0, 1, 1, 0]);
       assert.match(sum.note, /never in a combined percentage/);
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
