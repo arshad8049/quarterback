@@ -169,7 +169,10 @@ describe('10706 (b): through the producer (compileIntent, model faked), the 0ae9
     assert.match(prompts[1], /YOUR PREVIOUS REPLY WAS NOT VALID JSON/);
     assert.equal(s.state, 'invalid');
     assert.equal(s.repair.rejected[0].kind, 'syntax');
-    assert.equal(s.repair.rejected[0].diagnostic, RECORDED.syntax.diagnostic);
+    // The recorded diagnostic is Node 20's V8 wording; V8 in Node 22+ appends " (line N column M)" to the
+    // same message (CI red on unit 22/24 only). The parser's text is passed through as is, so allow exactly that suffix.
+    const esc = RECORDED.syntax.diagnostic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.match(s.repair.rejected[0].diagnostic, new RegExp(`^${esc}( \\(line \\d+ column \\d+\\))?$`));
     // the recorded errors are still there…
     for (const e of RECORDED.repair_errors) assert.ok(s.errors.includes(e), e);
     // …and every check naming export asNumber is refused, explaining the real API
