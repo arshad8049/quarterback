@@ -1,0 +1,160 @@
+{
+  "schema": "qb-kan106-replay/1",
+  "pack": "2026-11-19-eval-v1-881a51a",
+  "pack_commit": "e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0",
+  "validators_commit": "19da0cce80d68c6d32be9cff3f22cbdc387ce114",
+  "items": {
+    "S1-slug": {
+      "run_id": "dfd8a142-2fae-4e77-af19-5cdb098a8868",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 2,
+        "unsupported": 0,
+        "underspecified": []
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "finalized"
+      },
+      "regrounded": {
+        "state": "finalized"
+      }
+    },
+    "S2-formatter": {
+      "run_id": "0f889a34-8a31-4d6d-94ea-6df946cd1449",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 1,
+        "unsupported": 1,
+        "underspecified": []
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "invalid",
+        "errors": [
+          "the request's example join([\"a\", \"b\"]) returns \"a,b\" (P3) cannot be tied to one target: the constructor of Formatter in lib/formatter.js may need arguments QB cannot supply (bounded static eligibility reading, 10758: unknown; not a proof either way)"
+        ]
+      },
+      "regrounded": {
+        "state": "invalid",
+        "errors": [
+          "CHK-2 changes the argument shape of the request's example join([\"a\", \"b\"]) returns \"a,b\" (P3): it calls join(\"a\", \"b\") with 2 argument(s), the request passes 1: [\"a\",\"b\"] (nesting is never flattened)"
+        ]
+      }
+    },
+    "S3-percent": {
+      "run_id": "a22ef4ec-b114-462e-a72e-5fb7b82c01b3",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 3,
+        "unsupported": 1,
+        "underspecified": []
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "invalid",
+        "errors": [
+          "the request requires an error message including \"whole must not be zero\" (P4: \"When whole is 0\"): CHK-3 checks no message"
+        ]
+      },
+      "regrounded": {
+        "state": "invalid",
+        "errors": [
+          "the request requires an error message including \"whole must not be zero\" (P4: \"When whole is 0\"): CHK-3 checks no message"
+        ]
+      }
+    },
+    "S4-parsebool": {
+      "run_id": "30636148-c6a2-407f-b1b4-06f5db03a7f9",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 4,
+        "unsupported": 0,
+        "underspecified": []
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "finalized"
+      },
+      "regrounded": {
+        "state": "finalized"
+      }
+    },
+    "S5-clock": {
+      "run_id": "2711d206-11d1-4c0f-97da-1c5b4377ab83",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 4,
+        "unsupported": 0,
+        "underspecified": []
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "finalized"
+      },
+      "regrounded": {
+        "state": "finalized"
+      }
+    },
+    "S6-money": {
+      "run_id": "30d6fb2c-ffea-4632-a76f-71d7f3e0f3db",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 3,
+        "unsupported": 0,
+        "underspecified": []
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "finalized"
+      },
+      "regrounded": {
+        "state": "finalized"
+      }
+    },
+    "U1-userrepo": {
+      "run_id": "b60dc291-59ca-463e-8a4c-295c18bcd91f",
+      "recorded_exit": 2,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 0,
+        "unsupported": 1,
+        "underspecified": []
+      },
+      "contract": null
+    },
+    "U2-roundto": {
+      "run_id": "eda9158a-14a0-408a-9f7e-8b88c54b69f0",
+      "recorded_exit": 1,
+      "request_matches_manifest": true,
+      "request_examples": {
+        "supported": 0,
+        "unsupported": 0,
+        "underspecified": [
+          "make roundTo() handle negative numbers properly."
+        ]
+      },
+      "contract_sha256_ok": true,
+      "recorded": {
+        "state": "invalid",
+        "errors": [
+          "P2 \"make roundTo() handle negative numbers properly.\" states no expected behaviour (only \"properly\"): CHK-1 (AC-1) expects roundTo(-1.234, 2) returns -1.23, which the request never states. QB will not invent it as your requirement: clarify the request, or propose it as a default D-n that states exactly this call and result, for your explicit approval",
+          "P2 \"make roundTo() handle negative numbers properly.\" states no expected behaviour (only \"properly\"): CHK-2 (AC-2) expects roundTo(-4.567, 1) returns -4.6, which the request never states. QB will not invent it as your requirement: clarify the request, or propose it as a default D-n that states exactly this call and result, for your explicit approval"
+        ]
+      },
+      "regrounded": {
+        "state": "invalid",
+        "errors": [
+          "P2 \"make roundTo() handle negative numbers properly.\" states no expected behaviour (only \"properly\"): CHK-1 (AC-1) expects roundTo(-1.234, 2) returns -1.23, which the request never states. QB will not invent it as your requirement: clarify the request, or propose it as a default D-n that states exactly this call and result, for your explicit approval",
+          "P2 \"make roundTo() handle negative numbers properly.\" states no expected behaviour (only \"properly\"): CHK-2 (AC-2) expects roundTo(-4.567, 1) returns -4.6, which the request never states. QB will not invent it as your requirement: clarify the request, or propose it as a default D-n that states exactly this call and result, for your explicit approval"
+        ]
+      }
+    }
+  }
+}
