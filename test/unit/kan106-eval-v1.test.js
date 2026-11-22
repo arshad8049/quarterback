@@ -94,6 +94,11 @@ describe('materialize and freeze', () => {
 
 describe('run-batch.sh (not run: inspected, and its refusals exercised without a model)', () => {
   const SH = path.join(EVAL, 'run-batch.sh');
+  // run-batch.sh is a zsh script for the owner's Mac. GitHub's ubuntu runners have no zsh, where spawnSync
+  // returns status null (CI red at 881a51a..c577812). Only the parts that EXECUTE zsh skip there, visibly;
+  // the static inspection below runs everywhere.
+  const ZSH = spawnSync('zsh', ['-c', 'exit 0']).status === 0;
+  const NO_ZSH = !ZSH && 'zsh is not installed (GitHub ubuntu runners); run-batch.sh is a zsh script for the owner\'s Mac';
   const y = fs.readFileSync(SH, 'utf8');
   test('preflight, then ONE batch.js call (one pass, pinned child settings: kan106-eval-v1-10761.test.js), then scoring; no retry loop', () => {
     const code = y.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -102,12 +107,13 @@ describe('run-batch.sh (not run: inspected, and its refusals exercised without a
     assert.doesNotMatch(code, /\b(while|until|for)\b|--agent claude|ANTHROPIC|CLAUDE_CODE|ollama pull/);
     assert.match(code, /node bench\/kan106-eval-v1\/score\.js --batch-dir "\$OUT" --out "\$OUT\/scores\.json"/);
     assert.match(y, /OUT=~\/qb-evidence\/kan106-eval-v1\//);
-    assert.equal(spawnSync('zsh', ['-n', SH]).status, 0);
+    if (ZSH) assert.equal(spawnSync('zsh', ['-n', SH]).status, 0);
     const b = fs.readFileSync(path.join(EVAL, 'batch.js'), 'utf8').split('\n').filter((l) => !/^\s*(\/\/|\*)/.test(l)).join('\n');
     assert.doesNotMatch(b, /\b(while|until)\b|retry|--agent claude|ANTHROPIC|CLAUDE_CODE|\/api\/(pull|chat|generate)/);
     assert.equal((b.match(/for \(const id of items\)/g) || []).length, 1);
   });
-  test('refuses before any run without the frozen SHA, or at a different SHA', () => {
+  test('zsh parses run-batch.sh', { skip: NO_ZSH }, () => assert.equal(spawnSync('zsh', ['-n', SH]).status, 0));
+  test('refuses before any run without the frozen SHA, or at a different SHA', { skip: NO_ZSH }, () => {
     let r = spawnSync('zsh', [SH], { encoding: 'utf8' });
     assert.equal(r.status, 2); assert.match(r.stdout, /usage/);
     r = spawnSync('zsh', [SH, '0'.repeat(40)], { encoding: 'utf8' });
