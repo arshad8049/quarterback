@@ -22,7 +22,7 @@ const text = (html) => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
 
 describe('QB-32: public descriptions match the data flows', () => {
   test('no page or email claims the source never leaves the machine, or that metrics are anonymous (pre-fix: both did)', () => {
-    for (const f of ['landing_page/privacy.html', 'landing_page/index.html', 'landing_page/src/beta-cta.html', 'landing_page/src/positioning.html', 'landing_page/_worker.js']) {
+    for (const f of ['landing_page/privacy.html', 'landing_page/index.html', 'landing_page/src/beta-cta.html', 'landing_page/src/supported.html', 'landing_page/_worker.js']) {
       const t = text(read(f));
       assert.doesNotMatch(t, /source (code )?(never leaves|stays on) your machine|never leaves your machine|Anonymi[sz]ed metrics|anonymous run metrics|Everything runs locally/i, f);
     }

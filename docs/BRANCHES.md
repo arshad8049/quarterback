@@ -11,21 +11,25 @@
 - **Delete a branch once its PR merges.** GitHub's "Automatically delete head branches"
   setting does this for you.
 - **`gh-pages`** is the generated preview site
-  (https://arshad8049.github.io/quaterback/, noindex). It is never merged into main.
+  (https://arshad8049.github.io/quarterback/, noindex). It is never merged into main.
 
-## Open branches (2026-10-18)
+## Open branches (2026-11-08)
 | Branch | Card | Base | Merge when |
 |---|---|---|---|
-| `qb30-gh-runner` | KAN-65, accepted (also holds Phase 4, QB-27 to QB-30) | main | the senior has reviewed the full 37-commit PR, including the commits no card accepted (73d3405, 0fa061b, the pilot and reproduce workflows). Integration on a trial merge with main is green ([run 39006256145](https://github.com/arshad8049/quaterback/actions/runs/39006256145)) |
-| `kan71-dev-requalify` | KAN-71, reviewed; dev-r2 frozen at 22be7d0 | `qb30-gh-runner` | after `qb30-gh-runner` |
-| `site-progress-2026-10-14` | KAN-67 | main | the senior signs off and the owner approves |
-| `docs-bench-refresh` | bench docs brought up to date | `kan71-dev-requalify` (with `docs-refresh` merged in) | after `kan71-dev-requalify` |
-| `trial-merge-qb30-main` | KAN-65 pre-merge check only | `qb30-gh-runner` + main | never; delete after the review |
-
-Merged and ready to delete: `qb31-runner-preflight` (PR #16), `repo-branch-policy` (PR #15) and `docs-refresh`.
+| `kan105-impossible-scope` | KAN-105, In Review | main (PR #23 merged; 2 review commits after it) | follow-up PR reviewed. Trial merge with main: 960 pass, 0 fail |
+| `kan71-dev-requalify` → `kan74-dev-r2-tooling` → `kan76-pipefail` | KAN-71/74/76, Accepted in Jira | main (a stack: each contains the one before) | reviewed as one PR from `kan76-pipefail`. "Accepted" is not merge approval. Trial merge: 953 pass, 0 fail |
+| `kan75-checker-replay` | KAN-75, Accepted | `kan71-dev-requalify` | after the stack. Trial merge: 961 pass, 0 fail |
+| `docs-bench-refresh` | bench docs (85b04fb) | `kan71-dev-requalify` | after the stack; its docs commit describes the kan71 state and is not on main |
+| `kan73-compile-rate`, `kan99-scenario-checks` | KAN-73, KAN-99, In Progress | main | when the cards finish |
+| `kan70-fy04-reference` | KAN-70, Pending | main | when the card finishes |
+| `real-run` | none (owner's branch) | main | the owner decides |
 
 ## Archive
-The branch clean-up of 2026-10-16 deleted 17 GitHub branches:
+The branch clean-up of 2026-11-08 (owner-approved) deleted 11 branches, after rechecking each against `origin/main`:
+- merged, no unique patches: `kan103-l1-contract-repair` 6fe0d38 (#19), `kan104-l1-malformed-json` c6a7bb5 (#20), `kan103-104-review-fixes` ef57874 (#21), `kan106-l1-live-eval` 75f9cd8 (#22), `qb30-gh-runner` 308ff2a (#17), `readme-beta-testers` 9c36a91 (#18), plus the local-only `docs-refresh` 6b37cae, `qb31-runner-preflight` f747418 (#16) and `repo-branch-policy` c17f824 (#15);
+- not for merging: `trial-merge-qb30-main` c136b2a (0 unique patches) and `kan76-control-v1` e5b9926 (2 control commits, tagged `archive/kan76-control-v1`).
+
+Earlier: the branch clean-up of 2026-10-16 deleted 17 GitHub branches:
 - 14 already merged into main;
 - `phase-4-evaluation`, which is contained in `qb30-gh-runner` and tagged
   `archive/phase-4-evaluation`;

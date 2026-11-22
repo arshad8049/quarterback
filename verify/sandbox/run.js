@@ -1,4 +1,4 @@
-// Layer 4 sandbox — run from quaterback/ root:
+// Layer 4 sandbox — run from the repository root:
 //   node verify/sandbox/run.js              (uses saved contract + mock diff)
 //   node verify/sandbox/run.js --no-llm     (DSA only, instant)
 //   node verify/sandbox/run.js --real-diff  (uses actual git diff of this repo)

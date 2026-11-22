@@ -7,7 +7,7 @@
 #   logs/         one redacted log per step
 #
 # Usage (on the fresh VM, as a normal user with sudo):
-#   curl -fsSL https://raw.githubusercontent.com/arshad8049/quaterback/<ref>/scripts/qb31-walkthrough.sh -o qb31.sh
+#   curl -fsSL https://raw.githubusercontent.com/arshad8049/quarterback/<ref>/scripts/qb31-walkthrough.sh -o qb31.sh
 #   bash qb31.sh --ref <ref>                 # the commit SHA you were given
 #   bash qb31.sh --ref <ref> --from 4        # resume at step 4 (e.g. after re-login for docker)
 #   bash qb31.sh --ref <ref> --with-checkpoint   # also rerun the Phase 4 Docker checkpoint
@@ -36,9 +36,9 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$REF" ] || { echo "--ref <commit> is required: the QB commit you were given"; exit 2; }
 
-REPO_URL="https://github.com/arshad8049/quaterback.git"
+REPO_URL="https://github.com/arshad8049/quarterback.git"
 CHECKPOINT_REF="99682a6e83dc61ddcc4fbef99942b4ecde890970"
-WORK="$HOME/qb31"; QBDIR="$WORK/quaterback"; DEMO="$WORK/qb-demo"
+WORK="$HOME/qb31"; QBDIR="$WORK/quarterback"; DEMO="$WORK/qb-demo"
 EV="${QB31_EVIDENCE:-$HOME/qb31-evidence}"; LOGS="$EV/logs"; STEPS="$EV/steps.tsv"; RUNS="$EV/run-ids.txt"
 QB_MODEL="${QB_MODEL:-deepseek-r1:7b}"
 mkdir -p "$WORK" "$LOGS"; touch "$STEPS" "$RUNS"
@@ -194,7 +194,7 @@ s6() {
 
 demo_run() {  # demo_run <log name> → prints the new run id, or "none" if no run record was created
   local before; before=$(newest_run)
-  rec "$1" "cd '$WORK' && node '$QBDIR/qb.js' 'Add a clamp(n, min, max) function to src/utils.js that bounds n to [min, max]' --repo qb-demo --agent claude-code --contract-file quaterback/docs/demo/clamp-contract.json" >&2   # show progress and any question on the terminal; stdout carries only the id
+  rec "$1" "cd '$WORK' && node '$QBDIR/qb.js' 'Add a clamp(n, min, max) function to src/utils.js that bounds n to [min, max]' --repo qb-demo --agent claude-code --contract-file quarterback/docs/demo/clamp-contract.json" >&2   # show progress and any question on the terminal; stdout carries only the id
   local after; after=$(newest_run)
   if [ -n "$after" ] && [ "$after" != "$before" ]; then echo "$after"; else echo none; fi
 }

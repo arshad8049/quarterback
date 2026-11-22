@@ -90,7 +90,7 @@ Highlights, each with a failing pre-fix reproduction and a passing regression:
 - **QB-16:** executable checks. Registry `qb-checks/1`, sandbox stage ⑥; behavioural ACs need executed checks.
 - **QB-22:** a no-change run passes only on independent evidence from the same tested tree. Sent back twice: the live checkout was read, then newline paths could be split. Both fixed.
 
-**Pending: QB-36.** The repository fix is done. The retired Netlify site is left running by owner decision. The live site is Cloudflare only: https://quaterback.velorallc.workers.dev/.
+**Pending: QB-36.** The repository fix is done. The retired Netlify site is left running by owner decision. The live site is Cloudflare only: https://quarterback.velorallc.workers.dev/ (the Worker was renamed from `quaterback` on 2026-11-05).
 
 **Seeded TODOs:** all three Phase 2 false-PASS recipes are now real tests, so no seeded TODOs remain. That is a statement about the seeded list, not a claim that all defects are fixed.
 

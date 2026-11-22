@@ -208,7 +208,7 @@ mocha-config exit 2 model calls 1 agent launches 0 run records 1
 - **Verdict:** PASS. The runner preflight fix resolves the finding in 10276. Together with the attempt-4 walkthrough above, it satisfies QB-31's supported onboarding and adapter scope.
 - **Reviewer's checks:**
   - `node --test test/unit/qb31-*.test.js` at the reviewed SHA: 74 passed.
-  - Exact-SHA CI [run 38270867037](https://github.com/arshad8049/quaterback/actions/runs/38270867037), attempt 2: green. Attempt 1 failed on the disclosed OOM-classification flake, and the rerun passed.
+  - Exact-SHA CI [run 38270867037](https://github.com/arshad8049/quarterback/actions/runs/38270867037), attempt 2: green. Attempt 1 failed on the disclosed OOM-classification flake, and the rerun passed.
 - **Limits the review kept:**
   - No cross-platform qualification.
   - No QB-30 effectiveness claim.

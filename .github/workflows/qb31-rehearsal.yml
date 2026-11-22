@@ -41,7 +41,7 @@ jobs:
           bash scripts/qb31-walkthrough.sh --ref "$GITHUB_SHA" --no-agent $flag
       - name: Model memory is released before admission (real Ollama, 16 GB)
         run: |
-          cd ~/qb31/quaterback
+          cd ~/qb31/quarterback
           mem() { awk '/MemAvailable/{printf "%.1f GiB", $2/1048576}' /proc/meminfo; }
           before=$(mem)
           curl -s http://127.0.0.1:11434/api/generate -d '{"model":"deepseek-r1:7b","prompt":"Reply OK.","stream":false,"options":{"num_predict":4}}' >/dev/null

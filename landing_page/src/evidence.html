@@ -1,0 +1,51 @@
+<!-- EVIDENCE: a few dated, linked results with denominators and limitations -->
+<section id="evidence" class="qb-sec" aria-labelledby="evidence-h">
+  <div class="qb-wrap">
+    <div class="qb-eyebrow">Evidence</div>
+    <h2 id="evidence-h" class="qb-h2">The numbers so far, with their limits.</h2>
+    <p class="qb-body">Each result gives its denominator, method, date and revision, and links to the data. None of these numbers measures customer benefit.</p>
+    <div class="qb-table-wrap">
+      <table class="qb-table qb-table-ev">
+        <thead><tr><th scope="col">What was measured</th><th scope="col">Result</th><th scope="col">Method, date and revision</th><th scope="col">Limits</th></tr></thead>
+        <tbody>
+          <tr>
+            <th scope="row">Drafted contracts that passed Quarterback’s validation</th>
+            <td><strong>deepseek-r1:7b: 3 / 30</strong><br><strong>qwen2.5-coder:14b: 12 / 30</strong></td>
+            <td>6 small JavaScript tasks × 5 drafts per model, on a local Ollama on one Mac (Apple silicon, 18 GB). November 4, 2026. Drafting code as on main at <code>d946ff3</code>; it predates the impossible-scope guard. <a href="https://github.com/arshad8049/quarterback/blob/main/bench/results/l1-eval/2026-11-04/summary.md" target="_blank" rel="noopener">Results</a> · <a href="https://github.com/arshad8049/quarterback/blob/main/bench/results/l1-eval/2026-11-04/PROVENANCE.md" target="_blank" rel="noopener">Provenance</a></td>
+            <td>Exploratory, with a small task set on one machine. Two different models on the same tasks, not an improvement over time, and not a measure of current reliability. Passing validation does not mean the contract is correct.</td>
+          </tr>
+          <tr>
+            <th scope="row">Drafted contracts that also contained every expected check</th>
+            <td><strong>deepseek-r1:7b: 2 / 30</strong><br><strong>qwen2.5-coder:14b: 12 / 30</strong></td>
+            <td>The same 60 drafts, scored against the checks each task is expected to have. <a href="https://github.com/arshad8049/quarterback/blob/main/bench/results/l1-eval/2026-11-04/summary.md" target="_blank" rel="noopener">Results</a></td>
+            <td><strong>Proxy pass: not correctness or coding success.</strong> It doesn’t penalise extra, meaningless checks, and no code was written.</td>
+          </tr>
+          <tr>
+            <th scope="row">Fresh-machine onboarding walkthrough</th>
+            <td><strong>Passed once</strong>, including a real Claude Code run and a recovery drill</td>
+            <td>GitHub Codespace, Ubuntu 24.04, 4-core / 16 GB, at commit <code>54c2f24</code>. October 12, 2026. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/review/qb31-walkthrough/attempt-4-2026-10-12-codespaces/evidence.md" target="_blank" rel="noopener">Record</a></td>
+            <td>Historical: it validates that commit in that environment only. Qualifying a current commit is pending.</td>
+          </tr>
+          <tr>
+            <th scope="row">A demo run on macOS</th>
+            <td><strong>1 run passed</strong> (4 of 4 checks)</td>
+            <td>Mac with Docker Desktop, Quarterback <code>ca45764</code>, the setup guide’s clamp demo. November 7, 2026. Recorded on Jira KAN-37.</td>
+            <td>A single run on an environment that is not validated. It is not platform qualification.</td>
+          </tr>
+          <tr>
+            <th scope="row">Findings from the original engineering review</th>
+            <td><strong>36 of 38</strong> fixed and accepted</td>
+            <td>Internal review, each fix with a failing test written first. As of November 7, 2026. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/review/issue-register.md" target="_blank" rel="noopener">Issue register</a></td>
+            <td>Engineering fixes, not a measure of product effectiveness or customer benefit.</td>
+          </tr>
+          <tr>
+            <th scope="row">Benefit to developers: less review time, more tasks accepted</th>
+            <td><strong>Not yet established</strong></td>
+            <td>Two exploratory comparisons of Claude Code alone against Claude Code with Quarterback. <a href="./research.html">Evaluation</a></td>
+            <td>Neither showed a measured advantage for Quarterback. A controlled evaluation with independently checked tasks is planned.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

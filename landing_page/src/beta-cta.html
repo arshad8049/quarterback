@@ -1,26 +1,28 @@
-<!-- BETA CTA -->
-<div id="beta" style="padding: 112px 80px; border-top: 1px solid #222A27;">
-  <div style="max-width: 1180px; margin: 0 auto; display: flex; gap: 72px; align-items: flex-start;">
-    <div style="flex-grow: 1; flex-basis: 0;">
-      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #6FBF9F; margin-bottom: 26px;">Private beta · first cohort</div>
-      <h2 style="margin: 0 0 22px 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 56px; line-height: 1.1; font-weight: 400; color: #F4F1EA;">We are recruiting 10–20 developers.</h2>
-      <p style="margin: 0 0 26px 0; font-size: 19px; line-height: 1.65; color: #9AA5A0;">You use Claude Code, Cursor or Codex daily on a non-trivial repository. You delegate real multi-file work. You can tell the difference between a task that compiles and a task that is actually done.</p>
-      <p style="margin: 0; font-size: 19px; line-height: 1.65; color: #9AA5A0;">We measure your baseline first, then run the same work through the runtime, and show you the delta on your own tasks. Metrics are opt-in, tied to your account (not anonymous), deletable by you, and we publish nothing without your say-so.</p>
+<!-- TRY QUARTERBACK: the one CTA and the working signup form (ids used by interactions.js) -->
+<section id="beta" class="qbx-sec qbx-try" aria-labelledby="beta-h">
+  <div class="qbx-wrap qbx-try-grid">
+    <div class="qb-reveal">
+      <p class="qbx-eyebrow">Supervised demos</p>
+      <h2 id="beta-h" class="qbx-h2">Request a guided demo.</h2>
+      <p class="qbx-sub">Sign up and we email you the setup guide. Reply at any step and we’ll help you try it on a real task.</p>
+      <ul class="qbx-compat">
+        <li><span>Assistant</span>Claude Code, with your own Claude subscription or API key</li>
+        <li><span>Projects</span>JavaScript or Node.js, tested with node:test</li>
+        <li><span>Computer</span>Ubuntu 24.04 with Docker and 16 GB of memory is validated. macOS: limited successful runs; not a validated supported environment. No Windows.</li>
+      </ul>
+      <p class="qbx-links"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener">Read the setup guide</a> <a href="./developers">For developers</a></p>
     </div>
 
-    <div class="qb-glass" style="flex-grow: 1; flex-basis: 0; padding: 40px 42px; border-radius: 12px;">
+    <div class="qbx-form-card qb-reveal">
       <form id="beta-form" name="beta-access" method="POST">
-        <div style="margin-bottom: 24px;">
-          <label for="email" style="display: block; font-size: 15px; font-weight: 500; color: #C6CFCB; margin-bottom: 10px;">Work email</label>
-          <input id="email" name="email" type="email" required placeholder="you@company.com" style="width: 100%; box-sizing: border-box; height: 52px; padding: 0 16px; background: #0D100F; border: 1px solid #3A4441; border-radius: 4px; color: #F4F1EA; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px;">
-        </div>
-        <div style="margin-bottom: 28px;">
-          <label for="stack" style="display: block; font-size: 15px; font-weight: 500; color: #C6CFCB; margin-bottom: 10px;">Which agent do you run most?</label>
-          <input id="stack" name="agent" type="text" placeholder="Claude Code, Cursor, Codex…" style="width: 100%; box-sizing: border-box; height: 52px; padding: 0 16px; background: #0D100F; border: 1px solid #3A4441; border-radius: 4px; color: #F4F1EA; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px;">
-        </div>
-        <button type="submit" style="width: 100%; height: 54px; background: #E08A4C; border: none; border-radius: 4px; color: #0D100F; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer;">Request access</button>
-        <p id="form-feedback" style="margin: 20px 0 0 0; font-size: 15px; line-height: 1.6; color: #8A948F;">Quarterback runs on your machine; the Claude Code agent sends your task and the code it reads to Anthropic under your account. <a href="/privacy.html" style="color:#6FBF9F;">Data flows</a>.</p>
+        <label for="email" class="qbx-label">Work email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" class="qbx-input">
+        <label for="stack" class="qbx-label">Which coding assistant do you use most?</label>
+        <input id="stack" name="agent" type="text" placeholder="Claude Code" class="qbx-input">
+        <button type="submit" class="qbx-btn qbx-btn-primary qbx-btn-block">Send me the setup guide</button>
+        <p id="form-feedback" role="status" class="qbx-form-note">Quarterback runs on your machine. During a run, Claude Code sends your task and the code it reads to Anthropic under your account. <a href="./privacy.html">Data and privacy</a></p>
       </form>
+      <p id="form-status" role="status" style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;"></p>
     </div>
   </div>
-</div>
+</section>

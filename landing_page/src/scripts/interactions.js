@@ -1,7 +1,298 @@
 (function () {
   'use strict';
 
-  /* ── Sticky nav blur on scroll ── */
+  /* ── Motion: honour prefers-reduced-motion at load AND when it changes mid-session ── */
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Read .matches only at load and inside its change event. Chromium updates a MediaQueryList's cached
+  // state whenever .matches is read, so polling it from a pointer or rAF loop can swallow the change
+  // event and leave motion on after the user turns it off.
+  let motionReduced = motionQuery.matches;
+  const reduced = () => motionReduced;
+  const orbits = Array.from(document.querySelectorAll('.qb-orbit')).filter((o) => !o.closest('[data-qbh-hero]'));
+  let driftOn = false;
+  const drift = () => {
+    // Slow vertical drift of the hero orbit while scrolling: transform only, one frame per event
+    const y = Math.min(window.scrollY, 900) * 0.18;
+    orbits.forEach((o) => { o.style.transform = 'translate3d(0,' + y.toFixed(1) + 'px,0)'; });
+  };
+  let ticking = false;
+  const onScrollDrift = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; drift(); });
+  };
+  function applyMotion(e) {
+    motionReduced = e && typeof e.matches === 'boolean' ? e.matches : motionQuery.matches;
+    const off = motionReduced;
+    document.documentElement.classList.toggle('qb-motion-off', off);
+    // SVG SMIL animations ignore CSS: pause and resume them explicitly
+    orbits.forEach((o) => { if (o.pauseAnimations) (off ? o.pauseAnimations() : o.unpauseAnimations()); });
+    if (off && driftOn) { window.removeEventListener('scroll', onScrollDrift); driftOn = false; orbits.forEach((o) => { o.style.transform = ''; }); }
+    if (!off && !driftOn && orbits.length) { window.addEventListener('scroll', onScrollDrift, { passive: true }); driftOn = true; drift(); }
+    if (off) document.querySelectorAll('.qb-reveal').forEach((el) => el.classList.add('qb-visible'));
+  }
+  applyMotion();
+  if (motionQuery.addEventListener) motionQuery.addEventListener('change', applyMotion);
+  else if (motionQuery.addListener) motionQuery.addListener(applyMotion);
+
+  /* ── Scroll reveal (content is visible without JavaScript: see .qb-js in the CSS) ── */
+  document.documentElement.classList.add('qb-js');
+  const reveals = document.querySelectorAll('.qb-reveal');
+  if ('IntersectionObserver' in window && !reduced()) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('qb-visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0, rootMargin: '0px 0px -15% 0px' });
+    reveals.forEach((el) => obs.observe(el));
+  } else {
+    reveals.forEach((el) => el.classList.add('qb-visible'));
+  }
+
+
+  /* ── Homepage pointer (revision 4, 2026-11-10). One rAF loop drives two things:
+     1. a soft copper light that follows a fine pointer anywhere on the page (owner decision 2026-11-10;
+        it replaces the hero-only light). It is drawn under text, never over it: one fixed disc for the
+        warm-white page, and one clipped disc inside each dark surface. It fades out when the pointer
+        leaves the window.
+     2. the hero image wrapper, which follows the pointer over the hero by at most 10px across and 6px
+        down, with no rotation; the headline does not move.
+     Time-based damping of ~120ms; only transform and opacity are written; passive listeners; layout is
+     read before anything is written in a frame. The loop stops when settled. Everything is off on touch
+     and coarse pointers, under reduced motion (at load or toggled mid-session) and on hidden tabs. ── */
+  const qbhRoot = document.querySelector('.qbh');
+  const hero = document.querySelector('[data-qbh-hero]');
+  if (qbhRoot) {
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const move = hero && hero.querySelector('[data-qbh-art-move]');
+    const disc = (cls) => { const d = document.createElement('div'); d.className = 'qbh-glow ' + cls; d.setAttribute('aria-hidden', 'true'); return d; };
+    const pageDisc = disc('qbh-glow-light');
+    qbhRoot.appendChild(pageDisc);
+    // Dark surfaces each get a clipped disc of their own, so the light reads on them without covering text
+    const surfaces = Array.from(document.querySelectorAll('.qbh-hero, .qbh-sec-ink, .qbh-panel, .qbh-result-card, .qbh .qbx-form-card')).map((el) => {
+      const clip = document.createElement('div');
+      clip.className = 'qbh-glow-clip'; clip.setAttribute('aria-hidden', 'true');
+      const d = disc('qbh-glow-dark'); clip.appendChild(d); el.appendChild(clip);
+      return { el, d, x: 0, y: 0, on: false };
+    });
+    let heroInView = true, raf = 0, last = 0, placed = false, measure = true;
+    const tgt = { gx: 0, gy: 0, op: 0, ax: 0, ay: 0 };
+    const cur = { gx: 0, gy: 0, op: 0, ax: 0, ay: 0 };
+    const active = () => fine.matches && !reduced() && !document.hidden;
+    const frame = (t) => {
+      raf = 0;
+      const dt = last ? Math.min(t - last, 64) : 16; last = t;
+      const k = 1 - Math.exp(-dt / 120);
+      let moving = false;
+      for (const key in tgt) {
+        const d = tgt[key] - cur[key];
+        const eps = key === 'gx' || key === 'gy' ? 0.2 : 0.002;
+        if (Math.abs(d) > eps) { cur[key] += d * k; moving = true; } else cur[key] = tgt[key];
+      }
+      // Read: surface positions (only after a scroll, resize or pointer move), then write transforms
+      if (measure) {
+        measure = false;
+        const vh = window.innerHeight;
+        surfaces.forEach((s) => { const r = s.el.getBoundingClientRect(); s.on = r.bottom > -320 && r.top < vh + 320 && r.width > 0; s.x = r.left; s.y = r.top; });
+      }
+      const o = cur.op.toFixed(3);
+      pageDisc.style.transform = 'translate3d(' + cur.gx.toFixed(1) + 'px,' + cur.gy.toFixed(1) + 'px,0)';
+      pageDisc.style.opacity = o;
+      surfaces.forEach((s) => {
+        if (!s.on) { if (s.d.style.opacity !== '0') s.d.style.opacity = '0'; return; }
+        s.d.style.transform = 'translate3d(' + (cur.gx - s.x).toFixed(1) + 'px,' + (cur.gy - s.y).toFixed(1) + 'px,0)';
+        s.d.style.opacity = o;
+      });
+      if (move) {
+        move.style.setProperty('--ax', (cur.ax * 10).toFixed(2) + 'px');
+        move.style.setProperty('--ay', (cur.ay * 6).toFixed(2) + 'px');
+      }
+      if (moving && active()) raf = requestAnimationFrame(frame); else last = 0;
+    };
+    const kick = () => { if (!raf && active()) raf = requestAnimationFrame(frame); };
+    const clear = () => {
+      if (raf) cancelAnimationFrame(raf); raf = 0; last = 0; placed = false;
+      Object.assign(tgt, { op: 0, ax: 0, ay: 0 }); Object.assign(cur, { op: 0, ax: 0, ay: 0 });
+      pageDisc.removeAttribute('style'); surfaces.forEach((s) => s.d.removeAttribute('style'));
+      if (move) move.removeAttribute('style');
+    };
+    const clamp = (v) => Math.max(-1, Math.min(1, v));
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !active()) return;
+      tgt.gx = e.clientX; tgt.gy = e.clientY; tgt.op = 1; measure = true;
+      // First move after a reset: start the light under the pointer instead of sliding in from a corner
+      if (!placed) { cur.gx = tgt.gx; cur.gy = tgt.gy; placed = true; }
+      if (move && heroInView) {
+        const h = hero.getBoundingClientRect();
+        const inHero = e.clientX >= h.left && e.clientX <= h.right && e.clientY >= h.top && e.clientY <= h.bottom;
+        tgt.ax = inHero ? clamp(((e.clientX - h.left) / h.width - 0.5) * 2) : 0;
+        tgt.ay = inHero ? clamp(((e.clientY - h.top) / h.height - 0.5) * 2) : 0;
+      }
+      kick();
+    }, { passive: true });
+    // Content moves under a still pointer while scrolling: re-measure the surfaces in the next frame
+    const remeasure = () => { if (cur.op > 0 || tgt.op > 0) { measure = true; kick(); } };
+    window.addEventListener('scroll', remeasure, { passive: true });
+    window.addEventListener('resize', remeasure, { passive: true });
+    // Fade out when the pointer leaves the window or the window loses focus
+    const fadeOut = () => { tgt.op = 0; tgt.ax = 0; tgt.ay = 0; kick(); };
+    document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) fadeOut(); }, { passive: true });
+    window.addEventListener('blur', fadeOut);
+    // Hero coil (2026-11-10): magnifies toward the viewer as the hero scrolls away. Scroll-linked, so it also runs on
+    // touch; off under reduced motion (at load or toggled). One rAF per scroll burst; reads layout, then writes.
+    const pop = hero && hero.querySelector('[data-qbh-pin-pop]');
+    if (pop) {
+      let popRaf = 0;
+      const popUpdate = () => {
+        popRaf = 0;
+        if (reduced()) { pop.style.removeProperty('--pop'); return; }
+        const r = hero.getBoundingClientRect();
+        const p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height * 0.8)));
+        pop.style.setProperty('--pop', p.toFixed(3));
+      };
+      const popKick = () => { if (!popRaf) popRaf = requestAnimationFrame(popUpdate); };
+      window.addEventListener('scroll', popKick, { passive: true });
+      window.addEventListener('resize', popKick, { passive: true });
+      if (motionQuery.addEventListener) motionQuery.addEventListener('change', popKick);
+      popKick();
+    }
+    const sync = () => { if (!active()) clear(); };
+    if (hero && 'IntersectionObserver' in window) new IntersectionObserver((es) => {
+      heroInView = es[0].isIntersecting;
+      if (!heroInView) { tgt.ax = 0; tgt.ay = 0; cur.ax = 0; cur.ay = 0; if (move) move.removeAttribute('style'); }
+    }).observe(hero);
+    document.addEventListener('visibilitychange', sync);
+    [motionQuery, fine].forEach((q) => (q.addEventListener ? q.addEventListener('change', sync) : q.addListener && q.addListener(sync)));
+    sync();
+  }
+
+  /* ── Logo strip (revision 5): a slow right-to-left loop over two identical sets. The second set is
+     aria-hidden and inert. A visible Pause button, hover and keyboard focus pause it; it also pauses off
+     screen. Under reduced motion (at load or toggled) it stays a static, wrapped row. ── */
+  const strip = document.querySelector('[data-qbh-marquee]');
+  if (strip) {
+    const track = strip.querySelector('.qbh-marquee-track');
+    const set = track.querySelector('.qbh-marquee-set');
+    const btn = strip.querySelector('[data-qbh-marquee-btn]');
+    const copy = set.cloneNode(true);
+    copy.setAttribute('aria-hidden', 'true');
+    copy.setAttribute('inert', '');
+    copy.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    copy.querySelectorAll('[aria-labelledby]').forEach((el) => el.removeAttribute('aria-labelledby'));
+    copy.querySelectorAll('img').forEach((img) => { img.alt = ''; });
+    track.appendChild(copy);
+    let paused = false;
+    const syncStrip = () => {
+      const on = !reduced();
+      strip.classList.toggle('is-animated', on);
+      btn.hidden = !on;
+    };
+    btn.addEventListener('click', () => {
+      paused = !paused;
+      strip.classList.toggle('is-paused', paused);
+      btn.textContent = paused ? 'Play' : 'Pause';
+      btn.setAttribute('aria-label', paused ? 'Play the logo strip' : 'Pause the logo strip');
+    });
+    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { strip.classList.toggle('is-offscreen', !es[0].isIntersecting); }).observe(strip);
+    if (motionQuery.addEventListener) motionQuery.addEventListener('change', syncStrip);
+    else if (motionQuery.addListener) motionQuery.addListener(syncStrip);
+    syncStrip();
+  }
+
+  /* ── One real run: at 900px and up with motion allowed, the panels move into one sticky stage.
+     The active step is the one at the viewport's vertical centre, measured from real positions.
+     The stage is used only if it fits the viewport below the header; otherwise, on small screens,
+     under reduced motion and without JavaScript, each panel stays under its own step. ── */
+  const story = document.querySelector('[data-qbh-story]');
+  if (story) {
+    const stage = story.querySelector('[data-qbh-stage]');
+    const holder = stage.querySelector('[data-qbh-stage-panels]');
+    const steps = Array.from(story.querySelectorAll('.qbh-step'));
+    const panels = steps.map((st) => st.querySelector('[data-panel]'));
+    const buttons = Array.from(stage.querySelectorAll('[data-goto]'));
+    const wide = window.matchMedia('(min-width: 900px)');
+    const header = document.querySelector('.qbh-header');
+    const headerH = () => (header ? header.offsetHeight : 0);
+    let staged = false, active = -1, ticking = false;
+    const setActive = (i) => {
+      if (i === active) return; active = i;
+      steps.forEach((st, k) => st.classList.toggle('is-active', k === i));
+      panels.forEach((p, k) => p.classList.toggle('is-active', k === i));
+      buttons.forEach((b, k) => (k === i ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')));
+    };
+    const compute = () => {
+      ticking = false;
+      if (!staged) return;
+      // Pinned track: progress through the story's extra height picks the step.
+      const r = story.getBoundingClientRect();
+      const travel = Math.max(1, story.offsetHeight - (window.innerHeight - headerH()));
+      const t = Math.min(0.9999, Math.max(0, (headerH() - r.top) / travel));
+      setActive(Math.floor(t * steps.length));
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(compute); } };
+    const list = story.querySelector('.qbh-steps');
+    const content = (el) => Array.from(el.children).reduce((h, c) => h + c.offsetHeight, 0);
+    const fits = () => {
+      const room = window.innerHeight - headerH() - 48;
+      return holder.offsetHeight + 60 <= room && content(list) + 20 * (steps.length - 1) <= room;
+    };
+    const enter = () => {
+      staged = true; active = -1;
+      panels.forEach((p) => holder.appendChild(p));
+      story.style.setProperty('--qbh-n', String(steps.length));
+      stage.hidden = false; story.classList.add('is-staged');
+      window.addEventListener('scroll', onScroll, { passive: true });
+      compute();
+    };
+    const leave = () => {
+      staged = false; active = -1;
+      window.removeEventListener('scroll', onScroll);
+      story.classList.remove('is-staged', 'is-compact'); stage.hidden = true;
+      panels.forEach((p, k) => { p.classList.remove('is-active'); steps[k].appendChild(p); });
+      steps.forEach((st) => st.classList.remove('is-active'));
+    };
+    const decide = () => {
+      const want = wide.matches;
+      if (want && !staged) enter();
+      if (staged) {
+        story.classList.remove('is-compact');
+        if (!fits()) story.classList.add('is-compact');
+        if (!want || !fits()) leave();
+      }
+      if (staged) compute();
+    };
+    buttons.forEach((b, i) => b.addEventListener('click', () => {
+      const travel = Math.max(1, story.offsetHeight - (window.innerHeight - headerH()));
+      const y = window.scrollY + story.getBoundingClientRect().top - headerH() + travel * (i + 0.5) / steps.length;
+      window.scrollTo({ top: Math.max(0, y), behavior: reduced() ? 'auto' : 'smooth' });
+      setActive(i);
+    }));
+    let resizeT = 0;
+    window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(decide, 120); }, { passive: true });
+    [motionQuery, wide].forEach((q) => (q.addEventListener ? q.addEventListener('change', decide) : q.addListener && q.addListener(decide)));
+    decide();
+    // Recompute once fonts and images have settled, since both change step heights
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(decide);
+    window.addEventListener('load', decide);
+  }
+
+  /* ── Homepage header: border after scrolling; menu toggle below 900px ── */
+  const qhHeader = document.querySelector('.qbh-header');
+  if (qhHeader) {
+    const onScrollH = () => qhHeader.classList.toggle('is-scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScrollH, { passive: true }); onScrollH();
+    const qnav = qhHeader.querySelector('.qbh-nav');
+    const qtoggle = qhHeader.querySelector('.qbh-nav-toggle');
+    const setOpenH = (open) => {
+      qnav.classList.toggle('is-open', open);
+      qtoggle.setAttribute('aria-expanded', String(open));
+      qtoggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+    };
+    qtoggle.addEventListener('click', () => setOpenH(!qnav.classList.contains('is-open')));
+    qnav.querySelectorAll('.qbh-link').forEach((l) => l.addEventListener('click', () => setOpenH(false)));
+    qnav.addEventListener('keydown', (e) => { if (e.key === 'Escape' && qnav.classList.contains('is-open')) { setOpenH(false); qtoggle.focus(); } });
+    qnav.addEventListener('focusout', (e) => { if (qnav.classList.contains('is-open') && e.relatedTarget && !qnav.contains(e.relatedTarget)) setOpenH(false); });
+  }
+
+  /* ── Sticky nav background after scrolling ── */
   const nav = document.querySelector('.qb-nav');
   if (nav) {
     const onScroll = () => nav.classList.toggle('qb-nav--scrolled', window.scrollY > 40);
@@ -9,186 +300,63 @@
     onScroll();
   }
 
-  /* ── Scroll reveal ── */
-  const revealObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          // Small delay so batched siblings stagger naturally
-          requestAnimationFrame(() => e.target.classList.add('qb-visible'));
-          revealObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -48px 0px' }
-  );
-  document.querySelectorAll('.qb-reveal').forEach((el) => revealObs.observe(el));
-
-  /* ── Auto-reveal section children ── */
-  const sectionDivs = document.querySelectorAll(
-    '#problem, #metric, #loop, #verification, #beta, #footer'
-  );
-  const autoRevealObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const kids = e.target.querySelectorAll(
-            'h2, p, [style*="display: grid"] > div, [style*="display: flex; flex-direction: column; gap"] > div'
-          );
-          kids.forEach((k, i) => {
-            // Stagger: 60ms between items, capped at 400ms total delay
-            k.style.transitionDelay = Math.min(i * 0.06, 0.4) + 's';
-            k.classList.add('qb-reveal');
-            requestAnimationFrame(() => requestAnimationFrame(() => k.classList.add('qb-visible')));
-          });
-          autoRevealObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.05 }
-  );
-  sectionDivs.forEach((s) => autoRevealObs.observe(s));
-
-  /* ── Bar animation trigger ── */
-  const barObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('qb-bar--run');
-          barObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.4 }
-  );
-  document.querySelectorAll('.qb-bar').forEach((b) => barObs.observe(b));
-
-  /* ── Counter animation ── */
-  function animateCount(el, target, duration) {
-    const start = performance.now();
-    function tick(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = (eased * target).toFixed(1);
-      if (p < 1) requestAnimationFrame(tick);
-      else {
-        el.textContent = target.toFixed(1);
-        el.classList.add('qb-lit');
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-
-  const countObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const target = parseFloat(e.target.dataset.target);
-          if (!isNaN(target)) animateCount(e.target, target, 1400);
-          countObs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.6 }
-  );
-
-  /* Tag metric numbers with data-target so the counter knows what to count to */
-  document.querySelectorAll('.qb-count').forEach((el) => countObs.observe(el));
-
-  /* Auto-detect the four metric numbers by their known values */
-  const METRIC_VALS = [7.4, 2.1, 1.4, 0.8];
-  document.querySelectorAll('[style*="font-size: 26px"][style*="font-weight: 600"]').forEach((el) => {
-    const v = parseFloat(el.textContent);
-    if (METRIC_VALS.includes(v)) {
-      el.dataset.target = v;
-      el.classList.add('qb-count');
-      el.textContent = '0.0';
-      countObs.observe(el);
-    }
-  });
-
-  /* ── Terminal cursor ── */
-  const terminalCmd = document.querySelector('[style*="color: #6FBF9F"]');
-  if (terminalCmd && terminalCmd.textContent.trim().startsWith('$')) {
-    terminalCmd.classList.add('qb-cursor');
-  }
-
-  /* ── Card hover class injection ── */
-  /* Cards are divs with a specific border + background pattern */
-  document.querySelectorAll(
-    '[style*="background: #121615"][style*="border: 1px solid #262E2B"]'
-  ).forEach((el) => el.classList.add('qb-card'));
-
-  /* ── Smooth anchor scroll (override default jump on older browsers) ── */
+  /* ── In-page links: move focus to the target so keyboard users continue from there ── */
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
       const id = link.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if (target) {
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      const target = id && document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' });
+      if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      history.replaceState(null, '', '#' + id);
     });
   });
-
-  /* ── Gap section X-icon hover tint ── */
-  document.querySelectorAll('[style*="background: #0D100F"][style*="padding: 30px 34px"]').forEach((el) => {
-    el.style.transition = 'background 0.25s ease';
-    el.addEventListener('mouseenter', () => { el.style.background = '#101310'; });
-    el.addEventListener('mouseleave', () => { el.style.background = '#0D100F'; });
-  });
-
-  /* ── GitHub star count (live fetch, silent fail) ── */
-  const starEl = document.getElementById('qb-stars');
-  if (starEl) {
-    fetch('https://api.github.com/repos/arshad8049/quaterback', {
-      headers: { 'Accept': 'application/vnd.github.v3+json' }
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data && typeof data.stargazers_count === 'number') {
-          const n = data.stargazers_count;
-          starEl.textContent = n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
-        }
-      })
-      .catch(() => {});
-  }
-
-  /* ── GitHub link hover ── */
-  const ghLink = document.querySelector('.qb-github-link');
-  if (ghLink) {
-    ghLink.addEventListener('mouseenter', () => {
-      ghLink.style.borderColor = '#4A5C56';
-      ghLink.style.color = '#C6CFCB';
-    });
-    ghLink.addEventListener('mouseleave', () => {
-      ghLink.style.borderColor = '#2E3C38';
-      ghLink.style.color = '#8A948F';
-    });
-  }
-
 
   /* ── Hamburger nav toggle ── */
   const navToggle = document.querySelector('.qb-nav-toggle');
   const navEl = document.querySelector('.qb-nav');
   if (navToggle && navEl) {
-    navToggle.addEventListener('click', () => {
-      const isOpen = navEl.classList.toggle('qb-nav-open');
+    const setOpen = (isOpen) => {
+      navEl.classList.toggle('qb-nav-open', isOpen);
       navToggle.setAttribute('aria-expanded', String(isOpen));
+      navToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
       document.body.style.overflow = isOpen ? 'hidden' : '';
-    });
+    };
+    navToggle.addEventListener('click', () => setOpen(!navEl.classList.contains('qb-nav-open')));
     navEl.querySelectorAll('.qb-nav-link, .qb-cta-btn').forEach((link) => {
-      link.addEventListener('click', () => {
-        navEl.classList.remove('qb-nav-open');
-        navToggle.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      });
+      link.addEventListener('click', () => setOpen(false));
+    });
+    // Keyboard: Escape closes and returns to the button; tabbing out of the menu closes it, so
+    // focus never lands on page links hidden behind the open panel
+    navEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navEl.classList.contains('qb-nav-open')) { setOpen(false); navToggle.focus(); }
+    });
+    navEl.addEventListener('focusout', (e) => {
+      if (navEl.classList.contains('qb-nav-open') && e.relatedTarget && !navEl.contains(e.relatedTarget)) setOpen(false);
     });
   }
 
   /* ── Beta form submission ── */
   const betaForm = document.getElementById('beta-form');
-  if (betaForm) {
+  // Where sign-ups go, by the host serving this page. Unknown hosts fail closed: the form is
+  // disabled, never silently pointed at production. The preview (GitHub Pages) uses staging,
+  // whose database and email are separate and which never sends real email.
+  const SIGNUP_API = {
+    'quarterback.velorallc.workers.dev': '',
+    'quarterback-staging.velorallc.workers.dev': '',
+    'arshad8049.github.io': 'https://quarterback-staging.velorallc.workers.dev',
+    'localhost': '',
+    '127.0.0.1': '',
+  };
+  const signupBase = Object.prototype.hasOwnProperty.call(SIGNUP_API, location.hostname) ? SIGNUP_API[location.hostname] : null;
+  if (betaForm && signupBase === null) {
+    betaForm.querySelectorAll('input, button').forEach((el) => { el.disabled = true; });
+    const fb = document.getElementById('form-feedback');
+    if (fb) fb.innerHTML = 'This copy of the page can’t take sign-ups. Please use the form on <a href="https://quarterback.velorallc.workers.dev/#beta" style="color:#E08A4C;">quarterback.velorallc.workers.dev</a>.';
+  }
+  if (betaForm && signupBase !== null) {
     betaForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = betaForm.querySelector('button[type="submit"]');
@@ -202,7 +370,7 @@
       // pending retry; invalid input; rate limited) — show exactly that.
       let res = null, data = null;
       try {
-        res = await fetch('/api/beta-access', {
+        res = await fetch(signupBase + '/api/beta-access', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: emailVal, agent: agentVal.slice(0, 80) }),
@@ -211,11 +379,18 @@
       } catch (_) {}
 
       if (res && res.ok && data && data.registered) {
+        const NOTES = {
+          sent: 'confirmation email sent',
+          simulated: 'saved in the test environment (preview): no email is sent',
+          not_sent: 'you are registered; we could not send a confirmation email, and we will contact you directly',
+        };
         const note = data.duplicate ? 'you were already on the list'
-          : data.welcome_email === 'sent' ? 'confirmation email sent'
-            : 'you are registered — the confirmation email is delayed and will be retried';
+          : NOTES[data.welcome_email] || 'you are registered; the confirmation email is delayed and will be retried';
         betaForm.innerHTML =
           '<div style="text-align:center;padding:48px 0;font-family:\'IBM Plex Mono\',monospace;font-size:15px;color:#6FBF9F;letter-spacing:0.06em;">✓ request received<br><span style="font-size:13px;color:#8A948F;letter-spacing:0.04em;display:block;margin-top:12px;">' + note + '</span></div>';
+        // KAN-67: announce the outcome; #form-status is outside the form, so it survives the replacement
+        const status = document.getElementById('form-status');
+        if (status) status.textContent = 'Request received: ' + note + '.';
         return;
       }
 
@@ -231,4 +406,77 @@
     });
   }
 
+
+  /* ── Hero coil (owner decision 2026-11-10): an original generative drawing, no background. A stack of
+     halftone-dotted discs (mint rim, blue body, violet base) rides a slow travelling wave, so the discs bunch
+     and spread like a coil. Each disc is pre-rendered once; a frame is only drawImage calls. Runs only while
+     the hero is on screen and the tab is visible; under reduced motion one still frame is drawn. ── */
+  const coil = document.querySelector('[data-qbh-coil]');
+  if (coil && coil.getContext) {
+    const ctx = coil.getContext('2d');
+    const N = 14;
+    let sprites = [], dpr = 1, cw = 0, ch = 0, sw = 0, sh = 0, raf2 = 0, onScreen = true, t0 = 0;
+    const lerp = (a, b, k) => a + (b - a) * k;
+    const rgb = (a, b, k) => 'rgb(' + a.map((v, i) => Math.round(lerp(v, b[i], k))).join(',') + ')';
+    const MINT = [226, 250, 236], SKY = [70, 170, 255], BLUE = [64, 72, 255], VIOLET = [72, 18, 230], DEEP = [40, 12, 150];
+    const build = () => {
+      const r = coil.getBoundingClientRect();
+      if (!r.width) return false;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      cw = Math.round(r.width * dpr); ch = Math.round(r.height * dpr);
+      coil.width = cw; coil.height = ch;
+      sw = Math.round(cw * 0.92); sh = Math.round(sw * 0.6);
+      const cell = Math.max(3, Math.round(3.4 * dpr));
+      const pc = document.createElement('canvas'); pc.width = pc.height = cell;
+      const pg = pc.getContext('2d'); pg.fillStyle = '#000'; pg.beginPath(); pg.arc(cell / 2, cell / 2, cell * 0.34, 0, Math.PI * 2); pg.fill();
+      sprites = [];
+      for (let i = 0; i < N; i++) {
+        const k = i / (N - 1); // 0 = back layer, 1 = front layer
+        const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+        const g = c.getContext('2d');
+        const lg = g.createLinearGradient(0, 0, 0, sh);
+        lg.addColorStop(0, rgb(SKY, MINT, 0.5 + k * 0.5));
+        lg.addColorStop(0.16, rgb(BLUE, SKY, 0.3 + k * 0.7));
+        lg.addColorStop(0.55, rgb(DEEP, BLUE, 0.2 + k * 0.6));
+        lg.addColorStop(1, rgb(DEEP, VIOLET, k));
+        g.fillStyle = lg; g.beginPath(); g.ellipse(sw / 2, sh / 2, sw / 2 - 2, sh / 2 - 2, 0, 0, Math.PI * 2); g.fill();
+        const hl = g.createRadialGradient(sw / 2, sh * 0.16, 0, sw / 2, sh * 0.16, sw * 0.5);
+        hl.addColorStop(0, 'rgba(236,255,240,' + (0.25 + k * 0.5).toFixed(2) + ')'); hl.addColorStop(1, 'rgba(236,255,240,0)');
+        g.fillStyle = hl; g.fill();
+        g.globalCompositeOperation = 'destination-in'; g.fillStyle = g.createPattern(pc, 'repeat'); g.fillRect(0, 0, sw, sh);
+        // Solid rim on top of the dots: bright along the upper edge, violet along the lower, so every disc reads
+        g.globalCompositeOperation = 'source-over';
+        const rim = g.createLinearGradient(0, 0, 0, sh);
+        rim.addColorStop(0, rgb(SKY, MINT, 0.4 + k * 0.6)); rim.addColorStop(0.5, rgb(BLUE, SKY, k)); rim.addColorStop(1, rgb(DEEP, VIOLET, 0.5 + k * 0.5));
+        g.strokeStyle = rim; g.lineWidth = Math.max(1.5, 1.6 * dpr);
+        g.beginPath(); g.ellipse(sw / 2, sh / 2, sw / 2 - 2, sh / 2 - 2, 0, 0, Math.PI * 2); g.stroke();
+        sprites.push(c);
+      }
+      return true;
+    };
+    const draw = (t) => {
+      ctx.clearRect(0, 0, cw, ch);
+      const travel = ch - sh;
+      for (let i = 0; i < N; i++) {
+        const ph = t * 0.00055 - i * 0.2;
+        const y = travel * (0.5 - 0.5 * Math.cos(ph));      // eases at both ends, so the discs bunch there
+        const s = 0.9 + 0.1 * Math.sin(ph);
+        const w = sw * s, h = sh * s;
+        ctx.drawImage(sprites[i], (cw - w) / 2, y + (sh - h) / 2, w, h);
+      }
+    };
+    const loop = (t) => { raf2 = 0; if (!t0) t0 = t; draw(t - t0 + 2600); if (running()) raf2 = requestAnimationFrame(loop); };
+    const running = () => onScreen && !document.hidden && !reduced();
+    const start = () => {
+      if (!sprites.length && !build()) return;
+      if (running()) { if (!raf2) raf2 = requestAnimationFrame(loop); }
+      else { if (raf2) cancelAnimationFrame(raf2); raf2 = 0; draw(2600); }
+    };
+    let rs = 0;
+    window.addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => { sprites = []; start(); }, 150); }, { passive: true });
+    document.addEventListener('visibilitychange', start);
+    if (motionQuery.addEventListener) motionQuery.addEventListener('change', start);
+    if ('IntersectionObserver' in window) new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; start(); }).observe(coil);
+    start();
+  }
 })();

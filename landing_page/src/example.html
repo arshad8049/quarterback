@@ -1,0 +1,43 @@
+<!-- REAL EXAMPLE: request → reviewed checks → actual verdict → patch (run of October 15, 2026) -->
+<section id="example" class="qb-sec" aria-labelledby="example-h">
+  <div class="qb-wrap">
+    <div class="qb-eyebrow">A real run</div>
+    <h2 id="example-h" class="qb-h2">From a request to a patch you can check.</h2>
+    <p class="qb-body">One run on a two-file sample project, recorded on October 15, 2026. Nothing below is a mock-up: each part links to the files from the run.</p>
+
+    <ol class="qb-example">
+      <li class="qb-panel">
+        <div class="qb-step-label"><span>1</span> The request</div>
+        <p class="qb-quote">“formatDuration should show durations under one minute as seconds only, for example 30000 ms as "30s" instead of "0m 30s". Durations of one minute or more keep the current format.”</p>
+      </li>
+      <li class="qb-panel">
+        <div class="qb-step-label"><span>2</span> The reviewed checks</div>
+        <p class="qb-small">The contract was drafted by the local model on October 14, then reviewed and edited by a person before approval.</p>
+        <div class="qb-table-wrap">
+          <table class="qb-table">
+            <thead><tr><th scope="col">Check</th><th scope="col">Call</th><th scope="col">Must return</th></tr></thead>
+            <tbody>
+              <tr><td>CHK-1</td><td><code>formatDuration(30000)</code></td><td><code>"30s"</code></td></tr>
+              <tr><td>CHK-2</td><td><code>formatDuration(90000)</code></td><td><code>"1m 30s"</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="qb-small">Only <code>src/duration.js</code> may change.</p>
+      </li>
+      <li class="qb-panel qb-panel-wide">
+        <div class="qb-step-label"><span>3</span> The verdict</div>
+        <ul class="qb-check">
+          <li><code>[AC-1] formatDuration(30000)</code> returned <code>"30s"</code></li>
+          <li><code>[AC-2] formatDuration(90000)</code> returned <code>"1m 30s"</code></li>
+          <li><code>RESULT: ✓ PASS</code>, attempt 1 of 3, 111.4 s; the terminal output is at the <a href="#main">top of this page</a></li>
+        </ul>
+      </li>
+      <li class="qb-panel qb-panel-wide">
+        <div class="qb-step-label"><span>4</span> The patch, proposed and not applied</div>
+        <pre class="qb-diff" aria-label="The proposed patch to src/duration.js"><span class="qb-diff-meta">--- a/src/duration.js</span>&#10;<span class="qb-diff-meta">+++ b/src/duration.js</span>&#10;<span class="qb-diff-del">-/** Formats a duration in milliseconds for the status line, e.g. 90000 -&gt; "1m 30s". */</span>&#10;<span class="qb-diff-add">+/** Formats a duration in milliseconds for the status line, e.g. 90000 -&gt; "1m 30s", 30000 -&gt; "30s". */</span>&#10; function formatDuration(ms) {&#10;   const minutes = Math.floor(ms / 60000);&#10;   const seconds = Math.floor((ms % 60000) / 1000);&#10;<span class="qb-diff-add">+  if (minutes === 0) return `${seconds}s`;</span>&#10;   return `${minutes}m ${seconds}s`;&#10; }</pre>
+      </li>
+    </ol>
+
+    <p class="qb-caption">Claude Code 2.1.288 in Quarterback’s Docker sandbox, Quarterback at main as of October 15, 2026 (<code>3fc08fd</code>), local model <code>deepseek-r1:7b</code>. On main the local model did not produce a usable contract for this request in 22 attempts, which is why this run uses the reviewed one. The command line is abbreviated, and a cut in the output is marked “…”. A PASS means these checks and the project’s tests passed; it does not rule out every bug. <a href="./evidence/2026-10-15-hero-run/hero-run.log">Full log</a> · <a href="./evidence/2026-10-15-hero-run/README.md">Contract, patch and run bundle</a></p>
+  </div>
+</section>
