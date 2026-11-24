@@ -1,0 +1,37 @@
+name: kan96-oom-diagnostic
+
+# KAN-96, approved in 10807: ONE bounded diagnostic batch on this branch only. Evidence, not a fix and not a rerun until
+# green. No secrets, no model, no deployment. A workflow file that is not on the default branch cannot be started with
+# workflow_dispatch, so a commit to run-request.txt on this branch starts it (the repository's existing pattern).
+# The other workflows are removed on THIS branch so that commit starts nothing else. This branch is never merged.
+on:
+  push:
+    branches: [kan96-oom-diagnostic]
+    paths: [bench/kan96-oom-diagnostic/run-request.txt]
+
+permissions:
+  contents: read
+
+concurrency: { group: kan96-oom-diagnostic, cancel-in-progress: false }
+
+jobs:
+  diagnose:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Diagnostic (at most 50 sequential iterations)
+        run: node bench/kan96-oom-diagnostic/run.js --out out --n 50 --budget-min 22
+      - name: Publish (readable without a token)
+        if: always()
+        run: node bench/kan96-oom-diagnostic/publish.js out
+      - name: Remove this run's labelled containers
+        if: always()
+        run: docker ps -aq --filter "label=qb.diag" --filter "name=kan96-${GITHUB_RUN_ID}-" | xargs -r docker rm -f
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: kan96-oom-diagnostic, path: out }
