@@ -1,6 +1,6 @@
-# KAN-96: OOM evidence (narrow design, not implemented)
+# KAN-96: OOM evidence
 
-For review before any change to `lib/sandbox/docker.js` (KAN-96 comment 10807).
+The decision part was approved in 10813 and is implemented in `lib/sandbox/states.js`. **Nothing produces cgroup evidence in the product yet**, so every stage reads `inspect` or `unavailable`: the observer is one approved experiment (option A), and adopting it waits for that batch's review.
 
 ## What the diagnostic showed
 
@@ -18,11 +18,11 @@ Run [45503431684](https://github.com/arshad8049/quarterback/actions/runs/4550343
 | Containers, networks and volumes left behind | 0 |
 
 **Reading:**
-1. In these four runs the Docker signal was **missing**, not late. `settleOom` waits about 600 ms; 5 s did not help either. More polling is not a fix.
+1. In these four runs Docker had not reported the kill within the observed five seconds. That is not proof it could never report it later. `settleOom` waits about 600 ms.
 2. The container's own counter was right in all 50.
 3. **The counter does not outlive the container.** In the recorded rows the last good read came 0 to 2.0 ms after the kill was first seen; then the cgroup was gone, before `docker rm`. My earlier idea (10803) of reading it before `docker rm` **does not work**.
 
-**Limits:** one batch on one runner image; 4/50 is not a general rate. The fixture is close to the worst case, because its main process exits at once after the kill. The sampler polled every 0.5 ms on its own thread for under a second, which is not a production design.
+**Limits:** one batch on one runner image; 4/50 is this sample, not customer incidence. The fixture is close to the worst case, because its main process exits at once after the kill. The sampler polled every 0.5 ms on its own thread for under a second, which is not a production design.
 
 ## Decision part (failing fixture: `test/unit/kan96-oom-evidence.test.js`)
 
@@ -31,10 +31,10 @@ Run [45503431684](https://github.com/arshad8049/quarterback/actions/runs/4550343
 | `oom_signal` | Meaning |
 |---|---|
 | `inspect+cgroup`, `cgroup`, `inspect` | OOM, and which evidence said so |
-| `none` | counters read for this container, delta 0, and inspect false |
-| `unavailable` | counters not read, malformed, for another container, or without a pre-workload baseline; `oom_unavailable` says why |
+| `none` | delta 0 for this container, read **after** its cgroup reported it was empty, and inspect false |
+| `unavailable` | counters not read, malformed, reset, for another container, without a pre-workload baseline, or without a final observation; `oom_unavailable` says why |
 
-OOM is: `OOMKilled` true, **or** a positive `oom_kill` delta for this exact container. Exit 137 alone is not evidence. Precedence (`infra_error`, `timeout`, `cancelled`, then `oom`) is unchanged. `unavailable` is recorded and never shown as "no OOM".
+OOM is: `OOMKilled` true, **or** a positive `oom_kill` delta for this exact container. Exit 137 alone is not evidence. Precedence (`infra_error`, `timeout`, `cancelled`, then `oom`) is unchanged, and the evidence is kept beside any of them. A positive delta stays even if the cgroup disappears or the observer fails later. `oom_killed` keeps meaning Docker's own flag. `unavailable` is recorded and never shown as "no OOM".
 
 ## Observation part: needs your choice
 
