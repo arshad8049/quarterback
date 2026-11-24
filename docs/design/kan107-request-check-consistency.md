@@ -39,12 +39,29 @@ This is a narrow safeguard. It is not natural-language proof or automatic approv
 * `returns` / `return` / `returning` / `should|must|still|will|to return` and **one literal**; or
 * `throws` / `throw` / `throwing` / … optionally followed by `a <Class>Error` and/or `whose message includes "<text>"` / `whose message is "<text>"`.
 
-It counts as a **requirement** only when the request frames it as wanted:
+It counts as a **requirement** only when an explicit positive clause asks for it (polarity; senior 10805, ruling 1). This replaces the first version's "any intent word earlier in the sentence", which enforced the bug value in "fix the bug where f(1) returns 2 instead of 3" and the forbidden value in "do not make f(1) return 2".
 
-* an intent word earlier in its sentence (`make`, `so`, `should`, `must`, `keep`, `still`, `ensure`, `for example`, …); or
-* `should`/`must`/`still`/`to` on the verb.
+**Enforced:**
 
-A bare **description** is recorded as unsupported, shown at approval, and never enforced. Example: QB-30 PW-01's "w.format(0) returns 'count=%d' instead of 'count=0'" describes the current bug.
+* an imperative that directly governs it: `make|ensure|keep|preserve|retain|maintain` f(1) return 3;
+* `f(1) should|must (still) return 3`; `change f(1) to return 3`; `I want f(1) to return 3`;
+* an edit instruction followed by `so` / `so that` ("update f so f(1) returns 3"), unless the words in between are a description of their own ("fix f, it rounds down so …");
+* a build instruction (`make|create|add|implement|write|ensure`) followed by `for example`, also in the next sentence;
+* a list sharing one of these ("make f(1) return 3 and f(2) return 4").
+
+**Not enforced** (recorded as unsupported, shown at approval with the wording to use instead, never turned into a check):
+
+| Reading | Example |
+| --- | --- |
+| current behaviour | "fix the bug where f(1) returns 2", "f(1) returns 2 today", "Actual: f(1) returns 2" |
+| negated | "do not make f(1) return 2", "never …", "rather than f(1) returning 2" |
+| condition or question | "make sure that if f(1) returns 2 …", "should f(1) return 2?" |
+| unresolved | a bare "f(1) returns 2." (v1 limitation), "f(1) still returns 2.", "fix f, for example f(1) returns 2." |
+| two different results for the same call | "Make f(1) return 3. Make f(1) return 2." |
+
+**Clauses:** `;`, `but`, `while` and similar start a new clause, so "f(1) returns 2 today; make f(1) return 3" enforces only 3. **Quoted error messages** outside a call example follow the same rule.
+
+**Limits:** this is a short list of wordings, not an understanding of intent. A positive request in other words is shown as not enforced, so its check is reviewed by the human and not by QB. A deliberately misleading sentence can still be misread.
 
 **Q1 (three contrasting fixtures):**
 
@@ -94,7 +111,9 @@ A request with no supported examples is still valid.
 2. the request's paths, excluding ones it says not to change; narrowed only by QB's grounding when several are named; otherwise
 3. the one grounded module that defines the name.
 
-Several candidates, or no module at all, is an **L1 clarify/refuse error**. The check is never used to choose.
+Several candidates, or no resolvable module, is an **L1 clarify/refuse error** that asks "Which file contains f?". The check and the allowed files are never used to choose.
+
+**A request that names no file** is not invalid in itself (senior 10805, ruling 3). If QB's own grounding holds exactly one module that defines the name, that module is used. Today `groundApi` reads only the modules a request names, so such a request normally has no grounding and QB asks. That is a limitation of the producer, not a ban on no-file requests; v1 adds no repository-wide discovery.
 
 **Default-class methods** are resolved from QB-computed grounding only. All of these are required:
 
@@ -200,7 +219,7 @@ A behaviour passage that names a call and states something beyond its examples m
 ## Known unsupported shapes (v1)
 
 * Prose values ("an empty string") and conditional prose ("for an empty array", "for an unknown id").
-* Bare descriptions without an intent word.
+* Bare descriptions, and any positive wording outside the list above (polarity).
 * Variables, expressions, template strings, objects, `undefined`.
 * Literals beyond the limits.
 * Multi-step or stateful sequences, and instance receivers QB has not grounded.

@@ -13,6 +13,9 @@
  *     reporting it as unbound (refused);
  *   - records general rules (a behaviour passage beyond its examples) and underspecified passages (a SMALL
  *     vague-qualifier list; no claim to detect arbitrary ambiguity);
+ *   - enforces an example or a quoted message only when an explicit positive desired-result clause governs it
+ *     (polarity, senior 10805 ruling 1): current-bug descriptions, negated clauses and unresolved wording are
+ *     shown as not enforced;
  *   - records unsupported shapes (prose values, conditional prose, variables, expressions, objects, templates,
  *     out-of-bounds literals), never guessed and never certified;
  *   - checks a contract: every supported example tied to ONE target needs a check making that exact call (module
@@ -26,7 +29,8 @@
  *
  * Not claimed: semantic correctness of a contract that passes. Prose expectations, sequences, objects, error
  * CLASSES (no adapter checks error identity; shown as not_checked) and message EQUALITY (only inclusion runs;
- * shown as equality_not_checked) are not verified, nor is any input beyond the stated examples.
+ * shown as equality_not_checked) are not verified, nor is any input beyond the stated examples. The polarity rule
+ * is a short list of wordings, not an understanding of intent: what it cannot place is not enforced, and said so.
  */
 const { isDeepStrictEqual: deq } = require('util');
 const { splitPassages } = require('./passages');
@@ -35,6 +39,8 @@ const LIMITS = Object.freeze({ depth: 3, items: 16, args: 8, bytes: 1024, string
 const show = (v) => JSON.stringify(v);
 const bytes = (v) => Buffer.byteLength(JSON.stringify(v) ?? '');
 const argText = (args) => args.map((a) => JSON.stringify(a)).join(', ');
+
+const sameResult = (a, b) => a.outcome === b.outcome && (a.outcome === 'returns' ? deq(a.expected, b.expected) : deq(a.message && [a.message.mode, a.message.fragment], b.message && [b.message.mode, b.message.fragment]));
 
 // ── literals ─────────────────────────────────────────────────────────────────
 
@@ -196,23 +202,136 @@ function sentences(s) {
   if (from < s.length && s.slice(from).trim()) out.push({ start: from, end: s.length });
   return out.map((x) => { let a = x.start; while (a < x.end && /\s/.test(s[a])) a++; return { start: a, end: x.end, text: s.slice(a, x.end) }; });
 }
-const RET = /^\s+(?:(?:that|which)\s+)?(?:still\s+|should\s+|must\s+|will\s+|to\s+)?(?:returns?|returning)\b/i;
-const THR = /^\s+(?:(?:that|which)\s+)?(?:still\s+|should\s+|must\s+|will\s+|to\s+)?(?:throws?|throwing|raises?|raising)\b/i;
+const RET = /^\s+(?:(?:that|which)\s+)?(?:(?:should|must|will|to)\s+)?(?:still\s+)?(?:returns?|returning)\b/i;
+const THR = /^\s+(?:(?:that|which)\s+)?(?:(?:should|must|will|to)\s+)?(?:still\s+)?(?:throws?|throwing|raises?|raising)\b/i;
 const GAP = /^\s+with\s+no\s+arguments?\b/i;
 const CLASS = /^\s+(?:an?\s+)?(?:([A-Z][\w$]*(?:Error|Exception))|error|exception)\b/;
 const MSG = /^\s*,?\s*(?:whose\s+message|with\s+(?:a\s+|an\s+|the\s+)?(?:error\s+)?message|and\s+(?:its|the)\s+message)\s+(?:(includes|including|contains|containing)|(is|equals|equal\s+to|of))?\s*(?=["'])/i;
 const OK_END = /^\s*(?:$|[.,;:!?()]|(?:instead|and|but|rather|so|as\s+before|as\s+today|again|too|also|today|now|unchanged)\b)/i;
 const COND_END = /^\s*(?:for|when|if|given|unless|once|after|before|while|with|on|in\s+case|whenever)\b/i;
 const LOCATION = /^in\s+`?[\w./@-]+`?\s*,$/i;
-// A call example is a REQUIREMENT only when the request frames it as wanted. A bare statement ("w.format(0) returns
-// 'count=%d' instead of 'count=0'" in a bug report, QB-30 PW-01) may describe the CURRENT behaviour: it is recorded
-// as unsupported (shown at approval, never enforced) instead of being turned into a check for the bug.
-const INTENT = /\b(?:make|makes|making|so|should|must|keep|keeps|still|ensure|expect|expected|want|wants|need|needs|change|update|fix|for\s+example|e\.g\.|such\s+that|to\s+(?:return|throw))\b/i;
-const VERB_INTENT = /\b(?:still|should|must|will|to)\s/i;
+// ── polarity (senior 10805, ruling 1) ─────────────────────────────────────────
+// A call example is a REQUIREMENT only when an explicit positive clause asks for it. A bare statement
+// ("w.format(0) returns 'count=%d' instead of 'count=0'", QB-30 PW-01) may describe the CURRENT behaviour, and
+// "fix the bug where f(1) returns 2" does. Anything below that is not clearly positive is recorded as unsupported
+// (shown at approval, never enforced). Deliberately small; no claim to understand arbitrary wording.
+const IMPERATIVE = 'make|ensure|keep|preserve|retain|maintain';
+const BUILD = 'make|create|add|implement|write|ensure';
+const EDIT = 'change|update|fix|modify|create|add|implement|write|export|have|let|refactor|rewrite|extend';
+const NEGATION = /\b(?:not|never|no\s+longer|cannot|neither|nor|without|avoid|prevent|stops?|rather\s+than|instead\s+of)\b|n't\b/i;
+const CURRENT = /\b(?:where|because|since|causing|causes?|currently|presently|today|right\s+now|at\s+(?:present|the\s+moment)|previously|used\s+to|already|actual(?:ly)?|wrong(?:ly)?|incorrect(?:ly)?|mistakenly|broken|buggy|why)\b|\b(?:bugs?|issues?|problems?|defects?|regressions?)\s*(?::|\b(?:that|in\s+which|when|is|was|makes?|lets?|means)\b)/i;
+const CONDITION = /\b(?:if|unless|until|when|whenever|once|after|before)\b/i;
+const CONTRAST = /(?:;|\b(?:but|yet|however|whereas|although|though|while)\b)/gi;
+const TAIL_NOT_WANTED = /^\s*(?:,?\s*(?:today|now|currently|unchanged\s+today)\b)/i;
+const OLD_RESULT = /^\s*,?\s*(?:instead\s+of|rather\s+than|(?:and\s+)?not)\s+(?:(?:returning|throwing)\s*)?(?:an?\s+error|-?[\d.]+|\[[^\]]*\]|true|false|null|undefined)?(?=[\s,.;)]|$)/i;
+const MODAL_VERB = /\b(?:should|must)\s/i;
+
+/** Text with quoted strings and closed code spans blanked (same length): words inside a literal are not wording. */
+function maskQuotes(t) {
+  return t.replace(/’/g, "'").replace(/"(?:\\.|[^"\\\n])*"|`[^`\n]*`|(?<!\w)'(?:\\.|[^'\\\n])*'(?!\w)/g, (q) => ' '.repeat(q.length));
+}
+/** The sentence without its leading "In <path>," location. */
+const headOf = (t) => t.replace(/^\s*(?:(?:please|also|then|and)\s+)*(?:in|for)\s+`?[\w@-]*[./][\w./@-]*`?\s*,?\s*/i, '').replace(/^\s*(?:(?:please|also|then|and)\s+)+/i, '');
+const STARTS = (words) => new RegExp(`^\\s*(?:${words})\\b`, 'i');
+const LEAD = new RegExp(`(?:^|[,;:(]|\\b(?:and|but|then|please|to)\\s)\\s*(?:(?:please|also|then|and|but|instead)\\s+)*(${IMPERATIVE})\\b(?!.*\\b(?:${IMPERATIVE})\\b)`, 'i');
+const EDIT_CALL = /(?:^|[,;:(]|\b(?:and|but|then|please)\s)\s*(?:change|update|modify|fix|have|get)\s+(?:the\s+)?`?$/i;
+const WANT = /\b(?:I|we|you|they|users?|customers?|callers?)\s+(?:want|need|expect|would\s+like)\b[^,;:]*$|\bexpected(?:\s+(?:result|behaviou?r|output))?\s*:\s*`?$|\bit\s+is\s+expected\s+that\s+`?$/i;
+const EXAMPLE = /\b(?:for\s+example|e\.g\.|for\s+instance)\s*[,:]?\s*`?$/i;
+const SO = /\b(?:so|so\s+that|such\s+that)\s+(?:that\s+)?`?$/i;
+
+/**
+ * The polarity of a statement at [start, close] of sentence `sent`: 'desired', or why it is not enforced
+ * ('current' | 'negated' | 'conditional' | 'question' | 'unresolved').
+ * `verb` is the text of the result verb; `prior` the last statement of the same sentence: { end, polarity }.
+ */
+function polarity(s, sent, start, verb, rest, prior = null, before = null) {
+  if (/\?\s*$/.test(sent.text)) return 'question';
+  if (TAIL_NOT_WANTED.test(rest)) return 'current';
+  const modal = MODAL_VERB.test(verb);
+  let left = maskQuotes(s.slice(sent.start, start));
+  if (prior) {
+    // "… instead of 2" after the previous result belongs to that result, not to this one
+    const between = maskQuotes(s.slice(prior.end, start));
+    const gap = between.replace(OLD_RESULT, '');
+    // a list: "make f(1) return 3 and f(2) return 4" shares one polarity
+    if (!modal && gap.trim() && /^[\s,`]*(?:(?:and|or|then)\s+)?`?$/i.test(gap)) return prior.polarity;
+    if (prior.polarity === 'desired') left = gap;
+  }
+  // a contrast (";", "but", "while" …) starts a new clause: what came before it neither asks for nor forbids this
+  let cut = 0;
+  for (const m of left.matchAll(CONTRAST)) cut = m.index + m[0].length;
+  const opening = headOf(left);
+  let clause = cut ? left.slice(cut) : opening;
+  clause = headOf(clause);
+  const lead = LEAD.exec(clause);
+  const edits = STARTS(`${IMPERATIVE}|${EDIT}`).test(clause);
+  // negation: anywhere in the clause before the statement. "without <gerund>, make …" constrains the edit, not the result.
+  const constraint = clause.replace(/\bwithout\s+[a-z]+ing\b/gi, ' ');
+  if (NEGATION.test(constraint)) return 'negated';
+  // the imperative that governs it, with nothing in between that turns it into a description
+  if (lead) {
+    const after = clause.slice(lead.index + lead[0].length);
+    // a condition inside the rule ("show hours once …, so f(1) returns …") is the rule's, not this call's
+    if (CONDITION.test(after) && !SO.test(clause)) return 'conditional';
+    if (!CURRENT.test(after)) return governs(after) ? 'desired' : 'unresolved';
+    return 'current';
+  }
+  if (CURRENT.test(clause)) return 'current';
+  if (modal) return 'desired';
+  if (CONDITION.test(clause) && !SO.test(clause)) return 'conditional';
+  if (/\bto\s/i.test(verb) && (EDIT_CALL.test(clause) || WANT.test(clause))) return 'desired';
+  if (WANT.test(clause)) return 'desired';
+  if (edits && leadIn(clause)) return 'desired';
+  if (EXAMPLE.test(clause) && /^\s*$/.test(clause.replace(EXAMPLE, '')) && before) {
+    // "For example, f(1) returns 3." takes the polarity of the instruction it illustrates
+    const prev = maskQuotes(before.text);
+    if (STARTS(BUILD).test(headOf(prev)) && !NEGATION.test(prev) && !CURRENT.test(prev) && !CONDITION.test(prev)) return 'desired';
+  }
+  return 'unresolved';
+}
+/** "<edit> … so <call>" / "<build> … for example <call>": true unless the words in between start a description of their
+ *  own ("fix f, it rounds down so f(1) returns 2", "fix the function that rounds down, for example f(1) returns 2"). */
+function leadIn(clause) {
+  const so = SO.exec(clause); const eg = so ? null : EXAMPLE.exec(clause);
+  if (!so && !eg) return false;
+  const builds = STARTS(BUILD).test(clause);
+  if (eg && !builds) return false;
+  const between = clause.slice(0, (so || eg).index).replace(/^\s*\w+(?:\s+and\s+\w+)*(?:\s+(?:it|this))?/, '');
+  if (/\b(?:it|this|they)\b/i.test(between)) return false;
+  return builds || !(/\b(?:that|which|who)\b/i.test(between) || /,\s*\S/.test(between));
+}
+/** The words between an imperative and the statement: a plain lead-in ("sure that", "the existing", a rule and "so"). */
+function governs(after) {
+  if (/^[\s`(]*$/.test(after) || leadIn(`make${after}`)) return true;
+  return /^\s+(?:sure\s+)?(?:that\s+)?(?:(?:the|both|a|an|existing|current|method|function|call|calling|behaviou?r|result|of|for|class|static)\s+)*(?:that\s+)?[:`(]*\s*$/i.test(after);
+}
+const NOT_WANTED = {
+  current: 'it reads as the current behaviour',
+  negated: 'it reads as something the request rules out',
+  conditional: 'it reads as a condition',
+  question: 'it is part of a question',
+  unresolved: 'it may be the current behaviour',
+};
+const notEnforced = (why, call, result) => `stated as a description (${NOT_WANTED[why]}), not as the requested result: QB does not enforce it; if it is the requirement, write "make ${call} ${result}"`;
 const PROTECT = /^(?:do\s+not|don't|never)\s+(?:change|modify|edit|touch)\b/i;
 const VAGUE = /\b(properly|correctly|gracefully|as\s+expected)\b|\b(?:works?|handles?)\b[^.]*?\b(right)\b/i;
 const STATED = /\b(?:returns?|returning|throws?|throwing|raises?)\b/i;
 
+/** The polarity of a throw clause that is not a call example ("When whole is 0 it must throw …"). Its own "when"
+ *  condition is bound separately; only explicit "must/should throw" or an imperative makes it a requirement. */
+function messagePolarity(s, sent, at, verb) {
+  if (/\?\s*$/.test(sent.text)) return 'question';
+  let left = maskQuotes(s.slice(sent.start, at));
+  let cut = 0;
+  for (const m of left.matchAll(CONTRAST)) cut = m.index + m[0].length;
+  const clause = headOf(cut ? left.slice(cut) : left);
+  if (NEGATION.test(clause.replace(/\bwithout\s+[a-z]+ing\b/gi, ' '))) return 'negated';
+  if (CURRENT.test(clause)) return 'current';
+  if (/\b(?:must|should)\s+(?:also\s+|still\s+)?$/i.test(clause)) return 'desired';
+  if (/^throws?$/i.test(verb) && /(?:^|[,:]\s*|\b(?:and|then)\s+)$/i.test(clause) && !/s$/i.test(verb)) return 'desired';
+  if (STARTS(`${IMPERATIVE}|${EDIT}`).test(clause)) return 'desired';
+  return 'unresolved';
+}
 /** Message clause after a throw: { mode, fragment, span, end } or null. */
 function readMessage(s, i) {
   const m = MSG.exec(s.slice(i));
@@ -236,6 +355,7 @@ function extractExamples(request, { statements = false } = {}) {
   const passageAt = (i) => (passages.find((p) => i >= p.start && i < p.end) || passages[passages.length - 1] || { id: 'P1' }).id;
   const sentenceAt = (i) => Math.max(0, sents.findIndex((x) => i >= x.start && i < x.end));
   const examples = []; const unsupported = []; const signatures = []; const consumed = [];
+  let last = null;   // the previous statement, for lists that share one polarity
   const skip = (what, start, end, reason, kind, name = null) => unsupported.push({ passage_id: passageAt(start), excerpt: s.slice(start, end).trim(), reason, kind, name });
   CALL_G.lastIndex = 0;
   let m;
@@ -279,9 +399,17 @@ function extractExamples(request, { statements = false } = {}) {
       const msg = readMessage(s, j); if (msg) { ex.message = { mode: msg.mode, fragment: msg.fragment, span: msg.span }; j = msg.end; }
     }
     const rest = s.slice(j);
-    const sentHere = sents[sentenceAt(start)] || { start: 0 };
-    if (!statements && !INTENT.test(s.slice(sentHere.start, start)) && !VERB_INTENT.test(s.slice(close + 1, close + 1 + (ret || thr)[0].length + (gap ? gap[0].length : 0)))) {
-      skip(call, start, Math.min(s.length, j + 20), 'stated as a description (it may be the current behaviour), not as the requested result: QB does not enforce it; write "make … return …" if it is the requirement', 'described', name);
+    const si = sentenceAt(start);
+    const sentHere = sents[si] || { start: 0, text: s };
+    const verb = s.slice(close + 1, close + 1 + (ret || thr)[0].length + (gap ? gap[0].length : 0));
+    const prior = last && last.sentence_index === si ? last : null;
+    const pol = polarity(s, sentHere, start, verb, rest, prior, si > 0 ? sents[si - 1] : null);
+    // a proposed default (statements) is model text read as a plain statement; a negated or current one states no result
+    const wanted = pol === 'desired' || (statements && pol === 'unresolved');
+    last = { end: j, polarity: pol, sentence_index: si };
+    if (!wanted) {
+      skip(call, start, Math.min(s.length, j + 20), notEnforced(pol, call, ret ? 'return …' : 'throw …'), 'described', name);
+      consumed.push([start, j]);   // its quoted message is not a separate requirement either
       continue;
     }
     if (!OK_END.test(rest)) {
@@ -295,6 +423,15 @@ function extractExamples(request, { statements = false } = {}) {
     consumed.push([start, j]);
     CALL_G.lastIndex = j;
   }
+
+  // two different results asked for the same call: neither is guessed
+  for (const ex of [...examples]) {
+    const other = examples.find((o) => o !== ex && o.receiver === ex.receiver && o.name === ex.name && deq(o.args, ex.args) && !sameResult(o, ex));
+    if (other) ex.conflict = other;
+  }
+  for (const ex of examples.filter((e) => e.conflict)) skip(ex.call, ex.span[0], ex.span[1], `the request states two different results for ${ex.call}: QB does not enforce it; keep one, and write "make ${ex.call} ${ex.outcome === 'returns' ? 'return' : 'throw'} …"`, 'described', ex.name);
+  for (let i = examples.length - 1; i >= 0; i--) if (examples[i].conflict) examples.splice(i, 1);
+  examples.forEach((e, i) => { e.id = `EX-${i + 1}`; });
 
   // request-quoted message requirements outside call examples (S3), with their condition
   const messages = [];
@@ -310,6 +447,12 @@ function extractExamples(request, { statements = false } = {}) {
       const msg = readMessage(s, j);
       if (!msg) continue;
       const before = s.slice(sent.start, at);
+      const pol = messagePolarity(s, sent, at, t[0]);
+      if (pol !== 'desired') {
+        skip('', sent.start + sent.text.search(/\S/), msg.end, notEnforced(pol, 'name(…)', `throw an error whose message ${msg.mode === 'equals' ? 'is' : 'includes'} ${show(msg.fragment)}`), 'described', null);
+        consumed.push([at, msg.end]);
+        continue;
+      }
       const cm = /\b(when|if)\s+(?:the\s+)?([A-Za-z_$][\w$]*)\s+(?:is\s+equal\s+to|is|equals|===?)\s+/i.exec(before);
       let condition = null;
       if (cm) {
@@ -374,12 +517,15 @@ function resolveTarget(item, request, grounding, sents) {
   let cands = here.length ? here : all;
   if (cands.length > 1) {
     const narrowed = cands.filter((p) => defines(mods.find((x) => x.path === p)));
-    if (narrowed.length !== 1) return { ok: false, why: `${cands.join(' and ')} could each be meant${narrowed.length > 1 ? `, and QB's grounding shows ${narrowed.length} of them define ${item.name}` : ''}; say which module` };
+    if (narrowed.length !== 1) return { ok: false, why: `${cands.join(' and ')} could each be meant${narrowed.length > 1 ? `, and QB's grounding shows ${narrowed.length} of them define ${item.name}` : ''}. Which file contains ${item.name}?` };
     cands = narrowed;
   }
   if (!cands.length) {
     const definers = mods.filter(defines);
-    if (definers.length !== 1) return { ok: false, why: 'the request names no module for it; say which file' };
+    // A request that names no file is not invalid in itself: one unique QB-grounded definition is accepted. Today the
+    // producer (groundApi) reads only request-named modules, so such a request normally has no grounding and QB asks
+    // (a producer limitation, 10805 ruling 3). The checks and allowed files never choose the module.
+    if (definers.length !== 1) return { ok: false, why: `the request names no file for it${definers.length ? `, and QB's grounding shows ${definers.length} definitions: ${definers.map((m) => m.path).join(', ')}` : ''}. Which file contains ${item.name}?` };
     cands = [definers[0].path];
   }
   const module = cands[0];
