@@ -1,0 +1,122 @@
+/* KAN-67 visual experiment (preview only): "Open the run" and "Inspect the evidence". Homepage only.
+   Neutral paper, near-black text, one accent token. Motion uses transform and opacity only. */
+.qbh { --accent: #6eb696; --accent-ink: #1f6146; }
+.qbh .qbo, .qbh .qbi { scroll-margin-top: calc(var(--header) + 8px); }
+.qbo [id^="or-"] { scroll-margin-top: calc(var(--header) + 24px); }
+.qbh main .qbo-rail a { color: var(--text-2) !important; text-decoration: none !important; }
+.qbh main .qbo-rail a:hover { color: var(--text) !important; }
+
+/* ── Open the run: plain list by default ── */
+.qbo-pin { max-width: 1280px; margin: 0 auto; }
+.qbo-side { margin-bottom: 32px; }
+.qbo-h { margin: 0; font-size: clamp(32px, 3.7vw, 52px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; }
+.qbo-rail { display: flex; flex-wrap: wrap; gap: 0 20px; margin: 16px 0 0; padding: 0; list-style: none; counter-reset: or; }
+.qbo-rail li { counter-increment: or; }
+.qbo-rail a { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 16px; font-weight: 500; }
+.qbo-rail a::before { content: counter(or); font-size: 13px; color: var(--muted); }
+.qbo-note { margin: 12px 0 0; max-width: 52ch; font-size: 15px; line-height: 1.5; color: var(--text-2); }
+.qbo-links, .qbo-video-btn { display: none; }
+.qbo-canvas { display: grid; gap: 16px; }
+.qbo-panel { position: relative; display: flex; flex-direction: column; min-width: 0; margin: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--text); overflow: hidden; }
+.qbo-bar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin: 0; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 400; line-height: 1.4; }
+.qbo-bar strong { font-weight: 600; }
+.qbo-bar span { font-size: 13px; color: var(--muted); }
+.qbo-frame { background: var(--ink); color: var(--on-ink); border-color: var(--ink-line); }
+.qbo-frame .qbo-bar { border-bottom-color: var(--ink-line); }
+.qbo-frame .qbo-bar span { color: var(--on-ink-muted); }
+.qbo-term { flex: 1; min-height: 0; margin: 0; padding: 14px 18px; overflow: auto; font-size: 13px; line-height: 1.6; white-space: pre; }
+.qbo-frame .qbo-term { color: #d9dfdc; }
+.qbo-diff ins { display: inline-block; text-decoration: none; background: rgba(110, 182, 150, 0.24); color: var(--accent-ink); font-weight: 600; }
+.qbo-rows { flex: 1; margin: 0; padding: 4px 18px; list-style: none; }
+.qbo-rows li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 6px 0; border-bottom: 1px solid #ecece6; font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.qbo-rows li:last-child { border-bottom: 0; }
+.qbo-rows b { font-weight: 600; color: var(--accent-ink); }
+.qbo-src { margin: 0; padding: 8px 18px 10px; font-size: 13px; line-height: 1.45; color: var(--text-2); }
+.qbo-final { margin: 0; padding: 14px 18px; border-top: 3px solid var(--accent); font-size: clamp(20px, 2vw, 28px); font-weight: 500; letter-spacing: -0.01em; }
+@media (min-width: 900px) {
+  .qbo-canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .qbo-frame, .qbo-canvas > [data-qbo-panel="patch"] { grid-column: 1 / -1; }
+}
+
+/* Pinned stage: evidence.js adds .is-live only when it fits (900px and up, motion allowed) */
+.qbo.is-live { padding-top: 0; padding-bottom: 0; }
+.qbo.is-live .qbo-track { height: 200svh; }
+.qbo.is-live .qbo-pin { position: sticky; top: var(--header); height: calc(100svh - var(--header)); display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 48px; align-items: center; padding: 20px 0; }
+.qbo.is-live .qbo-side { margin: 0; }
+.qbo.is-live .qbo-h { font-size: clamp(30px, 2.8vw, 40px); }
+.qbo.is-live .qbo-rail { display: block; }
+.qbo.is-live .qbo-rail a { display: flex; border-left: 3px solid var(--line); padding-left: 14px; }
+.qbh main .qbo.is-live .qbo-rail a[aria-current="step"] { border-left-color: var(--accent); color: var(--text) !important; font-weight: 600; }
+.qbo.is-live .qbo-canvas { position: relative; display: block; height: min(100%, 600px); }
+.qbo.is-live .qbo-panel { position: absolute; will-change: transform, opacity; transform: translate3d(0, calc((1 - var(--v, 1)) * 28px), 0); opacity: var(--v, 1); }
+.qbo.is-live .qbo-panel[data-off] { visibility: hidden; }
+.qbo.is-live .qbo-frame { inset: 0; opacity: 1; transform-origin: 0 0; transform: scale(calc(1 - 0.57 * var(--r, 0))); }
+.qbo.is-live [data-qbo-panel="run"] { left: 0; width: 43%; top: 51%; height: 49%; }
+.qbo.is-live [data-qbo-panel="checklist"] { left: 49%; width: 51%; top: 0; height: 49%; }
+.qbo.is-live [data-qbo-panel="checks"] { left: 49%; width: 51%; top: 53%; height: 47%; }
+.qbo.is-live [data-qbo-panel="patch"] { left: 49%; width: 51%; top: 0; height: 100%; }
+.qbo.is-live .qbo-final { opacity: var(--f, 1); }
+.qbo.is-live .qbo-links { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+.qbo-links path { stroke: var(--accent-ink); stroke-width: 2; opacity: var(--v, 0); }
+.qbo-diff del { text-decoration: none; color: #8a3f10; }
+/* Short laptop windows: tighter rows so the stage still pins */
+@media (max-height: 720px) {
+  .qbo.is-live .qbo-pin { padding: 12px 0; }
+  .qbo.is-live .qbo-bar { padding: 8px 16px; }
+  .qbo.is-live .qbo-rows { padding: 2px 16px; }
+  .qbo.is-live .qbo-rows li { padding: 4px 0; font-size: 13px; }
+  .qbo.is-live .qbo-src { padding: 4px 16px 8px; line-height: 1.35; }
+  .qbo.is-live .qbo-final { padding: 10px 16px; }
+}
+.qbo-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.qbo-video-btn:not([hidden]) { display: inline-flex; position: absolute; right: 12px; bottom: 12px; z-index: 2; align-items: center; }
+
+/* ── Inspect the evidence: blueprint and grid by default ── */
+.qbi-head { margin-bottom: 24px; }
+.qbi-h { margin: 0; font-size: clamp(32px, 3.7vw, 52px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; }
+.qbi-live { display: none; }
+.qbi-words { display: inline-grid; justify-items: start; }
+.qbi-words > span { grid-area: 1 / 1; opacity: 0; transition: opacity 220ms linear; padding-bottom: 2px; border-bottom: 4px solid var(--accent); }
+.qbi-words > span.is-on { opacity: 1; }
+.qbi-blueprint { display: block; width: 100%; max-width: 760px; height: auto; margin: 0 auto 24px; }
+.qbi-blueprint ellipse { fill: none; stroke: #b9b9b1; stroke-width: 1.5; stroke-dasharray: 4 5; }
+.qbi-blueprint circle { fill: var(--accent); stroke: var(--ink); stroke-width: 1.5; }
+.qbi-blueprint text { font: 500 15px var(--sans); fill: var(--text); text-anchor: middle; }
+.qbi-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 232px), 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.qbi-card { position: relative; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.qbi-card h3 { margin: 0 0 10px; font-size: 17px; font-weight: 600; }
+.qbi-crop { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--paper-2); font: 13px/1.5 var(--mono); color: var(--text); overflow-wrap: anywhere; }
+.qbi-detail { margin-top: 12px; font-size: 15px; color: var(--text-2); }
+.qbi-detail p { margin: 0 0 8px; }
+.qbi-controls { display: flex; gap: 10px; margin-top: 20px; }
+.qbi.is-orbit .qbi-controls { position: absolute; top: 0; right: 0; margin: 0; }
+.qbi-controls .qbh-marquee-btn { min-height: 44px; }
+.qbi-controls[hidden], .qbi-controls [hidden] { display: none; }
+.qbi-open { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; cursor: pointer; }
+.qbi-open span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.qbi-card:has(.qbi-open:hover), .qbi-card:has(.qbi-open:focus-visible) { border-color: var(--ink); }
+.qbi.is-orbit .qbi-card .qbi-detail, .qbi.is-row .qbi-card .qbi-detail, .qbi.is-orbit .qbi-blueprint, .qbi.is-row .qbi-blueprint { display: none; }
+/* Orbit */
+.qbi.is-orbit .qbi-stage { position: relative; height: clamp(470px, calc(100svh - var(--header) - 96px), 620px); }
+.qbi.is-orbit .qbi-live { pointer-events: none; }
+.qbi.is-orbit .qbh-wrap { position: relative; }
+.qbi.is-orbit .qbi-head { margin-bottom: 8px; }
+.qbi.is-orbit { padding-top: 64px; padding-bottom: 64px; }
+.qbi.is-orbit .qbi-static { font-size: 22px; letter-spacing: -0.01em; }
+.qbi.is-orbit .qbi-live { display: block; font-size: clamp(32px, 3.7vw, 52px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; position: absolute; left: 50%; top: 50%; width: 5.6em; transform: translate(-50%, -50%); text-align: center; }
+.qbi.is-orbit .qbi-words { display: grid; justify-items: center; }
+.qbi.is-orbit .qbi-cards { display: block; position: absolute; inset: 0; }
+.qbi.is-orbit .qbi-card { position: absolute; left: 50%; top: 50%; width: 232px; height: 128px; margin: -64px 0 0 -116px; padding: 12px 14px; will-change: transform; }
+.qbi.is-orbit .qbi-card h3 { margin-bottom: 6px; font-size: 15px; }
+.qbi.is-orbit .qbi-crop { padding: 0; font-size: 12px; background: transparent; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+/* Row */
+.qbi.is-row .qbi-cards { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 4px 12px; }
+.qbi.is-row .qbi-card { flex: 0 0 min(84%, 320px); scroll-snap-align: start; scroll-margin-left: 4px; }
+/* Detail dialog */
+.qbi-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100svh - 48px); padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--text); font-family: var(--sans); }
+.qbi-dialog::backdrop { background: rgba(12, 14, 14, 0.5); }
+.qbi-dialog h3 { margin: 0 0 12px; font-size: 24px; font-weight: 500; }
+.qbi-dialog .qbi-detail { font-size: 16px; }
+.qbi-dialog .qbh-btn { margin-top: 8px; border: 0; cursor: pointer; font-family: var(--sans); }
+@media (prefers-reduced-motion: reduce) { .qbi-words > span { transition: none; } }
+@media (max-width: 640px) { .qbo-term { font-size: 12px; padding: 12px 14px; } }
