@@ -14,7 +14,7 @@ const PAGES = [
     path: '/',
     title: 'Quarterback: review AI-written code with evidence',
     description: 'Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review. Supervised demos.',
-    sections: ['home-nav', 'home-hero', 'home-logos', 'home-run', 'home-result', 'home-open-run', 'home-inspect', 'home-progress', 'beta-cta', 'footer'],
+    sections: ['home-nav', 'home-hero', 'home-logos', 'home-open-run', 'home-inspect', 'home-result', 'home-progress', 'beta-cta', 'footer'],
     // Homepage design (2026-11-09): warm-white shell, Inter, its own stylesheet
     shell: 'class="qbh"',
     preloads: ['src/fonts/inter/inter-latin-wght.woff2'],

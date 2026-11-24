@@ -120,3 +120,6 @@
 .qbi-dialog .qbh-btn { margin-top: 8px; border: 0; cursor: pointer; font-family: var(--sans); }
 @media (prefers-reduced-motion: reduce) { .qbi-words > span { transition: none; } }
 @media (max-width: 640px) { .qbo-term { font-size: 12px; padding: 12px 14px; } }
+
+/* old #run links land on the section that replaced it */
+.qbo-anchor { display: block; height: 0; }
