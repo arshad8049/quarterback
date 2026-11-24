@@ -43,7 +43,7 @@
     const rail = Array.from(run.querySelectorAll('[data-qbo-rail] a'));
     const names = ['frame', 'checklist', 'run', 'checks', 'patch'];
     const STOPS = [0, 0.45, 0.6, 0.75, 1];          // where a step is fully shown
-    const STARTS = [0, 0.2, 0.45, 0.58, 0.78];      // where it becomes the current step
+    const STARTS = [0, 0.2, 0.49, 0.62, 0.83];      // where it becomes the current step
     let live = false, near = true, shown = -1;
 
     const travel = () => Math.max(1, track.offsetHeight - (window.innerHeight - headerH()));
