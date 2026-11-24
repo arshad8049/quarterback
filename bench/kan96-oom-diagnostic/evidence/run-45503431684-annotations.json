@@ -1,0 +1,807 @@
+{
+ "schema": "kan96-diagnostic-annotations/1",
+ "run": 45503431684,
+ "job": 138832357218,
+ "commit": "b6618720f9fac86831acf017770d5a99c18f52f8",
+ "note": "copied from the public check-run annotations; the full iterations.jsonl is in the run artifact (signed-in download)",
+ "annotations": {
+  "kan96 agreeing example 1": {
+   "i": 1,
+   "run": "kan96-45503431684-2266-1",
+   "started": "2026-11-24T22:42:53.743Z",
+   "stage": {
+    "state": "oom",
+    "reason": "OOMKilled (main process exited 0)",
+    "exit_code": 0,
+    "oom_killed": true,
+    "stdout": "child exit 137",
+    "stderr": "Killed",
+    "duration_ms": 493
+   },
+   "inspect_after_stage": {
+    "OOMKilled": true,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:42:54.25914814Z"
+   },
+   "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "complete": true
+   },
+   "docker_events": [
+    {
+     "action": "create",
+     "time_nano": 1795560173784051200,
+     "exit": null
+    },
+    {
+     "action": "attach",
+     "time_nano": 1795560173797537300,
+     "exit": null
+    },
+    {
+     "action": "start",
+     "time_nano": 1795560174244591000,
+     "exit": null
+    },
+    {
+     "action": "oom",
+     "time_nano": 1795560174256108500,
+     "exit": null
+    },
+    {
+     "action": "die",
+     "time_nano": 1795560174277592600,
+     "exit": "0"
+    }
+   ],
+   "sample": {
+    "container": "1232f7a5ad6ac43aa7516ff3dc98b313197f26a4f974c9f1a68546d60cf49c11",
+    "resolved": {
+     "pid": 2439,
+     "rel": "/system.slice/docker-1232f7a5ad6ac43aa7516ff3dc98b313197f26a4f974c9f1a68546d60cf49c11.scope",
+     "dir": "/sys/fs/cgroup/system.slice/docker-1232f7a5ad6ac43aa7516ff3dc98b313197f26a4f974c9f1a68546d60cf49c11.scope",
+     "name_has_full_id": true,
+     "pid_listed": true,
+     "procs_error": null,
+     "at_ms": 423.70999999999185
+    },
+    "resolve_attempts": 397,
+    "files": {},
+    "reads": 79,
+    "readings": [
+     {
+      "at_ms": 423.83499999999185,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 469.46600000000035,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 21,
+       "oom": 1,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 21,
+       "oom": 1,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 471.6750000000029,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 32,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 32,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     }
+    ],
+    "first": {
+     "at_ms": 423.83499999999185,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "last": {
+     "at_ms": 471.6750000000029,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 32,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 32,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "ended": "cgroup gone (ENOENT) after 79 reads",
+    "oom_group": "0",
+    "memory_max": "max"
+   },
+   "cgroup": {
+    "oom_kill": 1,
+    "baseline": 0,
+    "delta": 1,
+    "baseline_before_workload": true,
+    "why": "baseline 0 read while alive"
+   },
+   "outcome": {
+    "child_exit_137": true,
+    "inspect_oom": true,
+    "cgroup_oom_kill": 1,
+    "docker_oom_event": true
+   },
+   "disagree": false
+  },
+  "kan96 disagreement 30": {
+   "i": 30,
+   "run": "kan96-45503431684-2266-30",
+   "started": "2026-11-24T22:43:11.210Z",
+   "stage": {
+    "state": "completed",
+    "reason": "exit 0",
+    "exit_code": 0,
+    "oom_killed": false,
+    "stdout": "child exit 137",
+    "stderr": "Killed",
+    "duration_ms": 92
+   },
+   "inspect_after_stage": {
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:43:11.299661696Z"
+   },
+   "inspect_5s_later": {
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:43:11.299661696Z"
+   },
+   "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "complete": true
+   },
+   "docker_events": [
+    {
+     "action": "create",
+     "time_nano": 1795560191223506400,
+     "exit": null
+    },
+    {
+     "action": "attach",
+     "time_nano": 1795560191234620000,
+     "exit": null
+    },
+    {
+     "action": "start",
+     "time_nano": 1795560191286239500,
+     "exit": null
+    },
+    {
+     "action": "die",
+     "time_nano": 1795560191315426300,
+     "exit": "0"
+    }
+   ],
+   "sample": {
+    "container": "695ea0905550a3b87da9d2b32587ff6f06246db5ae1a947d63bb7aebe6c6c132",
+    "resolved": {
+     "pid": 7073,
+     "rel": "/system.slice/docker-695ea0905550a3b87da9d2b32587ff6f06246db5ae1a947d63bb7aebe6c6c132.scope",
+     "dir": "/sys/fs/cgroup/system.slice/docker-695ea0905550a3b87da9d2b32587ff6f06246db5ae1a947d63bb7aebe6c6c132.scope",
+     "name_has_full_id": true,
+     "pid_listed": true,
+     "procs_error": null,
+     "at_ms": 33.3300000000163
+    },
+    "resolve_attempts": 27,
+    "files": {},
+    "reads": 68,
+    "readings": [
+     {
+      "at_ms": 33.36600000000908,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 73.80600000001141,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 37,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 37,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     }
+    ],
+    "first": {
+     "at_ms": 33.36600000000908,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "last": {
+     "at_ms": 74.98600000000442,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 37,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 37,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "ended": "cgroup gone (ENOENT) after 68 reads",
+    "oom_group": "0",
+    "memory_max": "max"
+   },
+   "cgroup": {
+    "oom_kill": 1,
+    "baseline": 0,
+    "delta": 1,
+    "baseline_before_workload": true,
+    "why": "baseline 0 read while alive"
+   },
+   "outcome": {
+    "child_exit_137": true,
+    "inspect_oom": false,
+    "cgroup_oom_kill": 1,
+    "docker_oom_event": false
+   },
+   "disagree": true
+  },
+  "kan96 disagreement 20": {
+   "i": 20,
+   "run": "kan96-45503431684-2266-20",
+   "started": "2026-11-24T22:43:03.569Z",
+   "stage": {
+    "state": "completed",
+    "reason": "exit 0",
+    "exit_code": 0,
+    "oom_killed": false,
+    "stdout": "child exit 137",
+    "stderr": "Killed",
+    "duration_ms": 89
+   },
+   "inspect_after_stage": {
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:43:03.653037089Z"
+   },
+   "inspect_5s_later": {
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:43:03.653037089Z"
+   },
+   "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "complete": true
+   },
+   "docker_events": [
+    {
+     "action": "create",
+     "time_nano": 1795560183582427100,
+     "exit": null
+    },
+    {
+     "action": "attach",
+     "time_nano": 1795560183593279500,
+     "exit": null
+    },
+    {
+     "action": "start",
+     "time_nano": 1795560183641151000,
+     "exit": null
+    },
+    {
+     "action": "die",
+     "time_nano": 1795560183671435500,
+     "exit": "0"
+    }
+   ],
+   "sample": {
+    "container": "5ca5fd1ef1fecbd95392a61b87d4703fad39a77486a5e40ebdd0a58bb4373c97",
+    "resolved": {
+     "pid": 5468,
+     "rel": "/system.slice/docker-5ca5fd1ef1fecbd95392a61b87d4703fad39a77486a5e40ebdd0a58bb4373c97.scope",
+     "dir": "/sys/fs/cgroup/system.slice/docker-5ca5fd1ef1fecbd95392a61b87d4703fad39a77486a5e40ebdd0a58bb4373c97.scope",
+     "name_has_full_id": true,
+     "pid_listed": true,
+     "procs_error": null,
+     "at_ms": 29.872999999992317
+    },
+    "resolve_attempts": 25,
+    "files": {},
+    "reads": 65,
+    "readings": [
+     {
+      "at_ms": 29.8980000000156,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 66.25,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 3,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 3,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 66.8300000000163,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 36,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 36,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 68.87299999999232,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 53,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 53,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     }
+    ],
+    "first": {
+     "at_ms": 29.8980000000156,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "last": {
+     "at_ms": 68.87299999999232,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 53,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 53,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "ended": "cgroup gone (ENOENT) after 65 reads",
+    "oom_group": "0",
+    "memory_max": "max"
+   },
+   "cgroup": {
+    "oom_kill": 1,
+    "baseline": 0,
+    "delta": 1,
+    "baseline_before_workload": true,
+    "why": "baseline 0 read while alive"
+   },
+   "outcome": {
+    "child_exit_137": true,
+    "inspect_oom": false,
+    "cgroup_oom_kill": 1,
+    "docker_oom_event": false
+   },
+   "disagree": true
+  },
+  "kan96 disagreement 6": {
+   "i": 6,
+   "run": "kan96-45503431684-2266-6",
+   "started": "2026-11-24T22:42:55.157Z",
+   "stage": {
+    "state": "completed",
+    "reason": "exit 0",
+    "exit_code": 0,
+    "oom_killed": false,
+    "stdout": "child exit 137",
+    "stderr": "Killed",
+    "duration_ms": 98
+   },
+   "inspect_after_stage": {
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:42:55.253711614Z"
+   },
+   "inspect_5s_later": {
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Status": "exited",
+    "FinishedAt": "2026-11-24T22:42:55.253711614Z"
+   },
+   "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "complete": true
+   },
+   "docker_events": [
+    {
+     "action": "create",
+     "time_nano": 1795560175170761200,
+     "exit": null
+    },
+    {
+     "action": "attach",
+     "time_nano": 1795560175182368500,
+     "exit": null
+    },
+    {
+     "action": "start",
+     "time_nano": 1795560175239570000,
+     "exit": null
+    },
+    {
+     "action": "die",
+     "time_nano": 1795560175268736000,
+     "exit": "0"
+    }
+   ],
+   "sample": {
+    "container": "5954fc89767e71545217e0e859204f0fb9d24c2d918aa18c3d8ac6ee8c9ca8e0",
+    "resolved": {
+     "pid": 3227,
+     "rel": "/system.slice/docker-5954fc89767e71545217e0e859204f0fb9d24c2d918aa18c3d8ac6ee8c9ca8e0.scope",
+     "dir": "/sys/fs/cgroup/system.slice/docker-5954fc89767e71545217e0e859204f0fb9d24c2d918aa18c3d8ac6ee8c9ca8e0.scope",
+     "name_has_full_id": true,
+     "pid_listed": true,
+     "procs_error": null,
+     "at_ms": 38.995999999999185
+    },
+    "resolve_attempts": 32,
+    "files": {},
+    "reads": 68,
+    "readings": [
+     {
+      "at_ms": 39.029999999998836,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 0,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 78.25199999999313,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 3,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 3,
+       "oom": 0,
+       "oom_kill": 0,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     },
+     {
+      "at_ms": 80.11999999999534,
+      "events": {
+       "low": 0,
+       "high": 0,
+       "max": 38,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      },
+      "local": {
+       "low": 0,
+       "high": 0,
+       "max": 38,
+       "oom": 1,
+       "oom_kill": 1,
+       "oom_group_kill": 0,
+       "sock_throttled": 0
+      }
+     }
+    ],
+    "first": {
+     "at_ms": 39.029999999998836,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "last": {
+     "at_ms": 80.7280000000028,
+     "events": {
+      "low": 0,
+      "high": 0,
+      "max": 38,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     },
+     "local": {
+      "low": 0,
+      "high": 0,
+      "max": 38,
+      "oom": 1,
+      "oom_kill": 1,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+     }
+    },
+    "ended": "cgroup gone (ENOENT) after 68 reads",
+    "oom_group": "0",
+    "memory_max": "max"
+   },
+   "cgroup": {
+    "oom_kill": 1,
+    "baseline": 0,
+    "delta": 1,
+    "baseline_before_workload": true,
+    "why": "baseline 0 read while alive"
+   },
+   "outcome": {
+    "child_exit_137": true,
+    "inspect_oom": false,
+    "cgroup_oom_kill": 1,
+    "docker_oom_event": false
+   },
+   "disagree": true
+  },
+  "kan96 iterations 26-50": "26:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n27:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=65/clean=true\n28:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=69/clean=true\n29:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n30:completed/ex0/insp=false/cg=1(base 0)/ev=0/reads=68/clean=true\n31:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=75/clean=true\n32:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=65/clean=true\n33:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=68/clean=true\n34:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=68/clean=true\n35:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n36:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n37:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=66/clean=true\n38:completed/ex0/insp=false/cg=1(base 0)/ev=0/reads=68/clean=true\n39:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=68/clean=true\n40:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n41:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=71/clean=true\n42:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=69/clean=true\n43:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n44:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=65/clean=true\n45:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n46:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=66/clean=true\n47:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=71/clean=true\n48:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n49:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=69/clean=true\n50:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true",
+  "kan96 iterations 1-25": "1:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=79/clean=true\n2:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=63/clean=true\n3:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=68/clean=true\n4:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n5:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=64/clean=true\n6:completed/ex0/insp=false/cg=1(base 0)/ev=0/reads=68/clean=true\n7:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=69/clean=true\n8:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n9:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=69/clean=true\n10:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n11:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=66/clean=true\n12:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n13:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=69/clean=true\n14:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n15:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n16:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n17:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n18:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=65/clean=true\n19:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n20:completed/ex0/insp=false/cg=1(base 0)/ev=0/reads=65/clean=true\n21:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=71/clean=true\n22:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=67/clean=true\n23:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n24:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=70/clean=true\n25:oom/ex0/insp=true/cg=1(base 0)/ev=1/reads=71/clean=true",
+  "kan96 summary": {
+   "planned": 50,
+   "ran": 50,
+   "stopped_by": null,
+   "classified_oom": 46,
+   "classified_other": 4,
+   "errors": 0,
+   "child_exit_137": 50,
+   "inspect_false_but_137": 4,
+   "cgroup_positive": 50,
+   "cgroup_zero": 0,
+   "cgroup_unknown": 0,
+   "baseline_zero_read": 50,
+   "path_validated": 50,
+   "disagreements": [
+    6,
+    20,
+    30,
+    38
+   ],
+   "later_inspect_true": [],
+   "docker_oom_event": 46,
+   "cleanup_complete": 50
+  },
+  "kan96 environment": "{\"commit\":\"b6618720f9fac86831acf017770d5a99c18f52f8\",\"branch\":\"kan96-oom-diagnostic\",\"github_run\":\"45503431684\",\"runner_image\":\"ubuntu24 20261116.133.1\",\"kernel\":\"7.0.0-1014-aws\",\"arch\":\"x64\",\"os\":\"Linux #14~24.04.1-Ubuntu SMP PREEMPT Fri Sep 18 21:24:59 UTC 2026\",\"cpus\":4,\"node\":\"v22.23.5\",\"docker\":{\"engine\":\"28.0.4\",\"containerd\":\"v2.4.2\",\"runc\":\"1.5.3\",\"init\":\"0.19.0\"},\"cgroup\":\"2 systemd\",\"runtime\":\"runc {\\\"io.containerd.runc.v2\\\":{\\\"path\\\":\\\"runc\\\",\\\"status\\\":{\\\"org.opencontainers.runtime-spec.features\\\":\\\"{\\\\\\\"ociVersionMin\\\\\\\":\\\\\\\"1.0.0\\\\\\\",\\\\\\\"ociVersionMax\\\\\\\":\\\\\\\"1.3.0\\\\\\\",\\\\\\\"hooks\\\\\\\":[\\\\\\\"prestart\\\\\\\",\\\\\\\"createRuntime\\\\\\\",\\\\\\\"createContainer\\\\\\\",\\\\\\\"startContainer\\\\\\\",\\\\\\\"poststart\\\\\\\",\\\\\\\"poststop\\\\\\\"],\\\\\\\"mountOptions\\\\\\\":[\\\\\\\"async\\\\\\\",\\\\\\\"atime\\\\\\\",\\\\\\\"bind\\\\\\\",\\\\\\\"defaults\\\\\\\",\\\\\\\"dev\\\\\\\",\\\\\\\"diratime\\\\\\\",\\\\\\\"dirsync\\\\\\\",\\\\\\\"exec\\\\\\\",\\\\\\\"iversion\\\\\\\",\\\\\\\"lazytime\\\\\\\",\\\\\\\"loud\\\\\\\",\\\\\\\"mand\\\\\\\",\\\\\\\"noatime\\\\\\\",\\\\\\\"nodev\\\\\\\",\\\\\\\"nodiratime\\\\\\\",\\\\\\\"noexec\\\\\\\",\\\\\\\"noiversion\\\\\\\",\\\\\\\"nolazytime\\\\\\\",\\\\\\\"nomand\\\\\\\",\\\\\\\"norelatime\\\\\\\",\\\\\\\"nostrictatime\\\\\\\",\\\\\\\"nosuid\\\\\\\",\\\\\\\"nosymfollow\\\\\\\",\\\\\\\"private\\\\\\\",\\\\\\\"ratime\\\\\\\",\\\\\\\"rbind\\\\\\\",\\\\\\\"rdev\\\\\\\",\\\\\\\"rdiratime\\\\\\\",\\\\\\\"relatime\\\\\\\",\\\\\\\"remount\\\\\\\",\\\\\\\"rexec\\\\\\\",\\\\\\\"rnoatime\\\\\\\",\\\\\\\"rnodev\\\\\\\",\\\\\\\"rnodiratime\\\\\\\",\\\\\\\"rnoexec\\\\\\\",\\\\\\\"rnorelatime\\\\\\\",\\\\\\\"rnostrictatime\\\\\\\",\\\\\\\"rnosuid\\\\\\\",\\\\\\\"rnosymfollow\\\\\\\",\\\\\\\"ro\\\\\\\",\\\\\\\"rprivate\\\\\\\",\\\\\\\"rrelatime\\\\\\\",\\\\\\\"rro\\\\\\\",\\\\\\\"rrw\\\\\\\",\\\\\\\"rshared\\\\\\\",\\\\\\\"rslave\\\\\\\",\\\\\\\"rstrictatime\\\\\\\",\\\\\\\"rsuid\\\\\\\",\\\\\\\"rsymfollow\\\\\\\",\\\\\\\"runbindable\\\\\\\",\\\\\\\"rw\\\\\\\",\\\\\\\"shared\\\\\\\",\\\\\\\"silent\\\\\\\",\\\\\\\"slave\\\\\\\",\\\\\\\"strictatime\\\\\\\",\\\\\\\"suid\\\\\\\",\\\\\\\"symfollow\\\\\\\",\\\\\\\"sync\\\\\\\",\\\\\\\"tmpcopyup\\\\\\\",\\\\\\\"unbindable\\\\\\\"],\\\\\\\"linux\\\\\\\":{\\\\\\\"namespaces\\\\\\\":[\\\\\\\"cgroup\\\\\\\",\\\\\\\"ipc\\\\\\\",\\\\\\\"mount\\\\\\\",\\\\\\\"network\\\\\\\",\\\\\\\"pid\\\\\\\",\\\\\\\"time\\\\\\\",\\\\\\\"user\\\\\\\",\\\\\\\"uts\\\\\\\"],\\\\\\\"capabilities\\\\\\\":[\\\\\\\"CAP_CHOWN\\\\\\\",\\\\\\\"CAP_DAC_OVERRIDE\\\\\\\",\\\\\\\"CAP_DAC_READ_SEARCH\\\\\\\",\\\\\\\"CAP_FOWNER\\\\\\\",\\\\\\\"CAP_FSETID\\\\\\\",\\\\\\\"CAP_KILL\\\\\\\",\\\\\\\"CAP_SETGID\\\\\\\",\\\\\\\"CAP_SETUID\\\\\\\",\\\\\\\"CAP_SETPCAP\\\\\\\",\\\\\\\"CAP_LINUX_IMMUTABLE\\\\\\\",\\\\\\\"CAP_NET_BIND_SERVICE\\\\\\\",\\\\\\\"CAP_NET_BROADCAST\\\\\\\",\\\\\\\"CAP_NET_ADMIN\\\\\\\",\\\\\\\"CAP_NET_RAW\\\\\\\",\\\\\\\"CAP_IPC_LOCK\\\\\\\",\\\\\\\"CAP_IPC_OWNER\\\\\\\",\\\\\\\"CAP_SYS_MODULE\\\\\\\",\\\\\\\"CAP_SYS_RAWIO\\\\\\\",\\\\\\\"CAP_SYS_CHROOT\\\\\\\",\\\\\\\"CAP_SYS_PTRACE\\\\\\\",\\\\\\\"CAP_SYS_PACCT\\\\\\\",\\\\\\\"CAP_SYS_ADMIN\\\\\\\",\\\\\\\"CAP_SYS_BOOT\\\\\\\",\\\\\\\"CAP_SYS_NICE\\\\\\\",\\\\\\\"CAP_SYS_RESOURCE\\\\\\\",\\\\\\\"CAP_SYS_TIME\\\\\\\",\\\\\\\"CAP_SYS_TTY_CONFIG\\\\\\\",\\\\\\\"CAP_MKNOD\\\\\\\",\\\\\\\"CAP_LEASE\\\\\\\",\\\\\\\"CAP_AUDIT_WRITE\\\\\\\",\\\\\\\"CAP_AUDIT_CONTROL\\\\\\\",\\\\\\\"CAP_SETFCAP\\\\\\\",\\\\\\\"CAP_MAC_OVERRIDE\\\\\\\",\\\\\\\"CAP_MAC_ADMIN\\\\\\\",\\\\\\\"CAP_SYSLOG\\\\\\\",\\\\\\\"CAP_WAKE_ALARM\\\\\\\",\\\\\\\"CAP_BLOCK_SUSPEND\\\\\\\",\\\\\\\"CAP_AUDIT_READ\\\\\\\",\\\\\\\"CAP_PERFMON\\\\\\\",\\\\\\\"CAP_BPF\\\\\\\",\\\\\\\"CAP_CHECKPOINT_RESTORE\\\\\\\"],\\\\\\\"cgroup\\\\\\\":{\\\\\\\"v1\\\\\\\":true,\\\\\\\"v2\\\\\\\":true,\\\\\\\"systemd\\\\\\\":true,\\\\\\\"systemdUser\\\\\\\":true,\\\\\\\"rdma\\\\\\\":true},\\\\\\\"seccomp\\\\\\\":{\\\\\\\"enabled\\\\\\\":true,\\\\\\\"actions\\\\\\\":[\\\\\\\"SCMP_ACT_ALLOW\\\\\\\",\\\\\\\"SCMP_ACT_ERRNO\\\\\\\",\\\\\\\"SCMP_ACT_KILL\\\\\\\",\\\\\\\"SCMP_ACT_KILL_PROCESS\\\\\\\",\\\\\\\"SCMP_ACT_KILL_THREAD\\\\\\\",\\\\\\\"SCMP_ACT_LOG\\\\\\\",\\\\\\\"SCMP_ACT_NOTIFY\\\\\\\",\\\\\\\"SCMP_ACT_TRACE\\\\\\\",\\\\\\\"SCMP_ACT_TRAP\\\\\\\"],\\\\\\\"operators\\\\\\\":[\\\\\\\"SCMP_CMP_EQ\\\\\\\",\\\\\\\"SCMP_CMP_GE\\\\\\\",\\\\\\\"SCMP_CMP_GT\\\\\\\",\\\\\\\"SCMP_CMP_LE\\\\\\\",\\\\\\\"SCMP_CMP_LT\\\\\\\",\\\\\\\"SCMP_CMP_MASKED_EQ\\\\\\\",\\\\\\\"SCMP_CMP_NE\\\\\\\"],\\\\\\\"archs\\\\\\\":[\\\\\\\"SCMP_ARCH_AARCH64\\\\\\\",\\\\\\\"SCMP_ARCH_ARM\\\\\\\",\\\\\\\"SCMP_ARCH_LOONGARCH64\\\\\\\",\\\\\\\"SCMP_ARCH_MIPS\\\\\\\",\\\\\\\"SCMP_ARCH_MIPS64\\\\\\\",\\\\\\\"SCMP_ARCH_MIPS64N32\\\\\\\",\\\\\\\"SCMP_ARCH_MIPSEL\\\\\\\",\\\\\\\"SCMP_ARCH_MIPSEL64\\\\\\\",\\\\\\\"SCMP_ARCH_MIPSEL64N32\\\\\\\",\\\\\\\"SCMP_ARCH_PPC\\\\\\\",\\\\\\\"SCMP_ARCH_PPC64\\\\\\\",\\\\\\\"SCMP_ARCH_PPC64LE\\\\\\\",\\\\\\\"SCMP_ARCH_RISCV64\\\\\\\",\\\\\\\"SCMP_ARCH_S390\\\\\\\",\\\\\\\"SCMP_ARCH_S390X\\\\\\\",\\\\\\\"SCMP_ARCH_X32\\\\\\\",\\\\\\\"SCMP_ARCH_X86\\\\\\\",\\\\\\\"SCMP_ARCH_X86_64\\\\\\\"],\\\\\\\"knownFlags\\\\\\\":[\\\\\\\"SECCOMP_FILTER_FLAG_TSYNC\\\\\\\",\\\\\\\"SECCOMP_FILTER_FLAG_SPEC_ALLOW\\\\\\\",\\\\\\\"SECCOMP_FILTER_FLAG_LOG\\\\\\\",\\\\\\\"SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV\\\\\\\"],\\\\\\\"supportedFlags\\\\\\\":[\\\\\\\"SECCOMP_FILTER_FLAG_TSYNC\\\\\\\",\\\\\\\"SECCOMP_FILTER_FLAG_SPEC_ALLOW\\\\\\\",\\\\\\\"SECC"
+ }
+}
