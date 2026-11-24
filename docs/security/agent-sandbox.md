@@ -1,12 +1,61 @@
 # Execution sandbox: threat model and design (QB-02)
 
-Status: **v3.1: approved as the working design for experiments E1–E4 and incremental implementation. EXPERIMENTAL; not final; the sandbox is not shipped.** ([v2 review](reviews/agent-sandbox-v2-review.md), [v3 review](reviews/agent-sandbox-v3-review.md).) Every claim that depends on Docker/kernel behaviour not yet observed is gated on an experiment in §11.1 and marked **[gated: En]**. QB-02 is complete only when E1–E4 pass, their results are folded in here, and the implementation passes §11.2. v3.1 applies the eight targeted corrections from the v3 review (§0.1).
-Ticket: QB-02 (High, Phase 1). Review reference: p.10, Phase 1 exit gate p.23.
-Platform claims are limited to **Linux x86_64 + Docker Engine** until §11 validation passes. macOS (Docker Desktop) is unsupported until it is validated separately.
+**Status (2026-11-24, `main` 0970e1c): the sandbox is implemented and is the only way QB runs a coding agent. It was accepted on 2026-10-03 for a narrow Linux scope (KAN-2 comment 10063). It is not qualified for a general beta, and it is not a guarantee against malicious code or a stolen credential.** Read "Current status" below first. §0 and §13 are history; §1–§12 are the design, and where they differ from "Current status", "Current status" is right.
+
+Ticket: QB-02 (KAN-2). Reviews: [v2](reviews/agent-sandbox-v2-review.md), [v3](reviews/agent-sandbox-v3-review.md).
 
 ---
 
-## 0. Review response (v2 → v3)
+## Current status
+
+### What is true today
+
+| Statement | Basis |
+|---|---|
+| A coding agent runs only in the sandbox. Host agent execution, host capture and host test runs are removed. | `lib/sandbox/pipeline.js`; `test/unit/qb02-no-agent-override.test.js` |
+| During the agent stage the only reachable host is `api.anthropic.com`, through a per-run proxy. Dependency install reaches only `registry.npmjs.org`. Sign-in containers reach the four Anthropic hosts in `POLICIES.AUTH` and never hold repository code. | `lib/sandbox/egress.js`; `test/integration/qb02-sandbox-network.test.js` |
+| The agent container runs as uid 10001 with a read-only root, no capabilities and no Docker socket. | same test; no socket mount in `lib/sandbox` or `sandbox/` |
+| The user's checkout is mounted read-only, only in the seed reader, and is never written. Changes come back as a patch the user applies. | `test/integration/qb02-sandbox-pipeline.test.js`; `qb patch` |
+| Deadlines and cleanup are enforced by a detached host supervisor; a stopped Docker daemon is handled and recorded. | `test/integration/qb02-sandbox-lifecycle.test.js`, `test/daemon/` |
+| Nothing an agent run writes becomes persistent sign-in state. | `test/integration/qb02-sandbox-auth.test.js` (fake credentials) |
+| These integration suites pass in CI on `ubuntu-24.04` for `main` 0970e1c. | `ci` run 44419576321 |
+
+**Platform.** Linux x86_64 with Docker Engine is the validated platform. macOS with Docker Desktop has limited successful runs and is not a validated environment; there QB cannot measure host memory, and admission is then skipped (`memory_checked: false`). Windows is not supported. See [support.md](../support.md).
+
+**Commits.** `54c2f24` is the only commit with a recorded fresh-machine walkthrough (Ubuntu 24.04, a real subscription sign-in). `lib/sandbox/docker.js` and `lib/sandbox/pipeline.js` have changed since, so that walkthrough does not qualify `main`. The pinned demo commit `2f01d93` and `main` 0970e1c have identical `lib/sandbox/` and `sandbox/` trees.
+
+**Agent image.** Claude Code `2.1.288`, pinned in `sandbox/agent/Dockerfile`, run as `claude -p --dangerously-skip-permissions`. The container is the boundary; Claude Code's own permission prompts are off. The managed settings deny `WebFetch` and `WebSearch` and turn hooks and project MCP servers off. A test checks that the file is installed, **not** that the pinned binary enforces each key (see T-POLICY).
+
+### What a customer must be told
+
+- **Code in the agent container can read the Claude credential it runs with** (§5.4). This is by design of the current authentication, not a defect that a setting turns off. It can be sent only to `api.anthropic.com` over the network, but it can also be written into the patch, generated files or logs.
+- **Your code goes to Anthropic** under your account ([data flows](../privacy/data-flows.md)).
+- **Use a disposable copy of the repository with no production secrets**, and review the patch before applying it.
+- A dedicated Claude account or workspace for QB is recommended.
+
+The credential arrangement used for the KAN-109 research runs was a separate, owner-accepted exception on a research branch. Its isolation test failed (KAN-113 comment 10614), it is not in `main`, and **it is not part of the customer posture**.
+
+### Open before a customer uses private code
+
+| Item | What is known | What is missing |
+|---|---|---|
+| **T-POLICY** | *Partly evidenced.* The real pinned binary completed tasks through the INFERENCE proxy in the `54c2f24` walkthrough (two verified runs, subscription sign-in), and in one supervised rehearsal at `2f01d93` on macOS. | A recorded proxy log showing only the policy host; the same for Mode K; evidence that 2.1.288 enforces each managed-settings key. Never run as the defined test. |
+| **Mode S decision (E1)** | The 2026-10-02 watch (§0.2) showed a stored sign-in lasting about one access-token lifetime, then failing. `main` refuses a run unless the token outlives the agent stage (30 min) plus 10 min (`AUTH_REFRESH_REQUIRED`), and the agent stage cannot reach the refresh host. From reading the code, that should avoid the situation the watch failed in (runs near expiry, refresh inside a run). No repeat watch has tested it. | The reviewer's choice between the three options in §0.2, and a repeat watch. Until then, expect to sign in again about once per token lifetime. Mode K is unaffected. |
+| **§5.5 authentication obligations** | No conclusion with sources is recorded. An owner decision to accept a risk for research does not answer it. | The check itself, recorded in §5.5. It is a beta blocker for Mode S. |
+| **Copied-secret reporting** (§5.4, T-AUTH) | **Not implemented.** There is no credential scan of the patch, and `qb patch` reports none. The run record redacts a few known key formats in text artifacts; the exact patch bytes are stored and exported unredacted. | Implement the scan and its T-AUTH test, or withdraw the promise. |
+| **`live-restore` warning** (G5c, §12) | **Not implemented.** QB does not check the Docker setting. | Implement it or withdraw it. |
+| **OOM classification** (§8.4) | A child killed for memory can be recorded as `completed` when Docker's `OOMKilled` flag is late (KAN-96; 4 of 16 `main` CI runs from 2026-10-24 to 2026-11-22). It is not recorded as a passed task: verification still decides. | KAN-96 diagnostic and fix. |
+| **Release candidate** | None is pinned. | On the pinned candidate: no host or Docker socket access, mount and network policy, and cancellation, timeout and crash cleanup, with dummy secrets (KAN-44 comment 10798), plus a fresh-machine walkthrough. |
+
+### What this document does not claim
+
+It is a design and status record, not a penetration test. Passing tests show the tested cases only. Residual risks are in §12.
+
+---
+
+## 0. History: review response (v2 → v3)
+
+> History, kept for the record. It describes the state on the dates given and is not the current status.
 
 ### Decisions
 
@@ -42,7 +91,7 @@ Platform claims are limited to **Linux x86_64 + Docker Engine** until §11 valid
 - **"No network interface"** was wrong. `--network none` leaves loopback.
 - **"Containers run one at a time"** was wrong. The proxy (and the keeper, if E2 needs one) run alongside workloads.
 
-### 0.1 v3 review: rulings and v3.1 corrections
+### 0.1 History: v3 review, rulings and v3.1 corrections
 
 | Decision (§13) | Ruling | Where it's reflected |
 |---|---|---|
@@ -64,7 +113,7 @@ Platform claims are limited to **Linux x86_64 + Docker Engine** until §11 valid
 | 7. Export must not harm the checkout | Default artifact dir, no overwrite, no following destination symlinks, diagnostics on stderr, honest status label, safe recovery advice | §9.3 |
 | 8. DNS fallback contradiction | The fallback rejects the whole answer set if any answer is denied | §4.1 |
 
-### 0.2 Implementation status (2026-10-03)
+### 0.2 History: implementation status (2026-10-03)
 
 The sandbox is implemented in `lib/sandbox/` and `sandbox/`, in seven reviewable commits on the hardening branch, now merged into `main` (tag `phase-0-2-accepted`):
 
@@ -126,14 +175,16 @@ Done since the step-7 commit (all on Linux CI, ubuntu-24.04 + Docker Engine; uni
   - (b) a guarded write-back of a *rotated refresh token only*, under the auth lock;
   - (c) refresh well before expiry (more than ~15 min of margin), so a run never starts on a nearly expired token and copies never refresh in-run.
 
-**Still open:**
+**Still open on 2026-10-03** (for today, see Current status):
 - **T-POLICY:** the real Claude binary through the INFERENCE proxy, plus validating the managed-settings keys. It needs a working login (`qb auth login` / `run.sh login`) after the E1 result above.
 - **The Mode S decision** above (E1).
 - **§5.5:** the authentication-obligations check (beta blocker).
 
-### Still open from v2 (QB-03)
+### History: open from v2 (QB-03), closed by step 3
 
-`agent/capture.js` runs `git add` on the host using the workspace's own `.git/config`. Two attacks were reproduced against it: an agent-written `core.fsmonitor`, and a clean-filter plus `.gitattributes`. They are executable reproductions in `test/unit/hostile-tree-seeds.test.js` and are reported as **demonstrated defects**, not passing regressions. They become passing security regressions only when the §6 capture replaces `agent/capture.js`, and **QB-03 cannot close before then** (§11.2 T-TREE).
+> Resolved. `agent/capture.js` was deleted in step 7 and the §6 capture replaced it. The paragraph below describes the state before that.
+
+`agent/capture.js` ran `git add` on the host using the workspace's own `.git/config`. Two attacks were reproduced against it: an agent-written `core.fsmonitor`, and a clean-filter plus `.gitattributes`. They are executable reproductions in `test/unit/hostile-tree-seeds.test.js` and are reported as **demonstrated defects**, not passing regressions. They become passing security regressions only when the §6 capture replaces `agent/capture.js`, and **QB-03 cannot close before then** (§11.2 T-TREE).
 
 **Host-execution paths: removed (step 7).** The agent runs only through `lib/sandbox/pipeline.js`, `verify/checker.js` reads test results from the sandbox's verify stage, and `agent/capture.js` is deleted. `test/unit/qb02-no-agent-override.test.js` guards all three.
 
@@ -176,7 +227,7 @@ Inside an untrusted container the adversary has full control of every process ru
 |---|---|
 | G1 | No repository-originated code executes on the host. |
 | G2 | Untrusted containers have no external network interface. Their only egress is the per-run proxy, which connects only to policy-listed hostnames at public addresses. |
-| G3 | QB provisions no host secrets to untrusted containers, and provisions the Claude credential only to the agent container (§5). Files the agent produces may contain copied secrets; detection is best-effort (§5.4). Nothing an agent run writes ever becomes persistent authentication state. |
+| G3 | QB provisions no host secrets to untrusted containers, and provisions the Claude credential only to the agent container (§5). Files the agent produces may contain copied secrets; detection is designed but not implemented (§5.4). Nothing an agent run writes ever becomes persistent authentication state. |
 | G4 | The user's checkout is preserved (§9.1) on every success, failure and crash path. |
 | G5 | See below. |
 
@@ -186,7 +237,7 @@ Inside an untrusted container the adversary has full control of every process ru
 |---|---|
 | **G5a: termination** | While the supervisor and Docker daemon are running, a `docker kill` is issued to every workload container of a run no later than `T_end + KILL_GRACE`, and the containers are confirmed stopped within a further `DOCKER_OP_TIMEOUT`. `T_end` is the **earlier of** the stage deadline and the last lease renewal + `LEASE_TIMEOUT`. Defaults: `KILL_GRACE` 10 s, `LEASE_TIMEOUT` 30 s, `DOCKER_OP_TIMEOUT` 30 s. This is the one bound E4 and T-LIFE test. Nothing inside a container can extend it, and lease renewal cannot extend a stage deadline (§8.3). |
 | **G5b: removal** | Stopped containers, the per-run network and all per-run volumes are removed by the supervisor as soon as the run is terminal. If the supervisor is not running, removal is **eventual**: at the next `qb` start, or by `qb doctor --reap`. |
-| **G5c: Docker unavailable** | Nothing can be killed or removed. The supervisor retries with backoff and records `infra_error`. Under daemon `live-restore`, workloads can keep running until the daemon returns; QB warns at start if `live-restore` is enabled (§12). |
+| **G5c: Docker unavailable** | Nothing can be killed or removed. The supervisor retries with backoff and records `infra_error`. Under daemon `live-restore`, workloads can keep running until the daemon returns; QB was to warn at start if `live-restore` is enabled; not implemented (§12). |
 | **G5d: intentionally retained** | The `qb-claude-auth` volume (until `qb auth logout`), QB images, and run records under `run/`. Nothing else. |
 | **G5e: recorded end** | Every run ends in a recorded terminal state. A run found by the reaper with no terminal state is marked `ABANDONED`. |
 
@@ -505,7 +556,7 @@ Code inside ③ can read the credential, and Claude Code's own documentation war
 
 - **Network:** send it only to INFERENCE hosts, and use it there for any operation the credential allows (§4.1).
 - **Output channels:** write it into the workspace, and so into the patch or generated files, or into stdout/stderr and logs that the user later reads or exports. The network policy does not cover these.
-  - Mitigation: the captured patch, the capture manifest and exported logs get a best-effort scan for known credential formats. Matches are reported in the run record and by `qb patch` (on stderr). This is detection, not prevention.
+  - Mitigation (**designed, not implemented**; see Current status): the captured patch, the capture manifest and exported logs get a best-effort scan for known credential formats. Matches are reported in the run record and by `qb patch` (on stderr). This is detection, not prevention.
 - **Other stages:** QB does not intentionally provision credentials to ①, ②, ④ or ⑤. But agent-produced files may contain copied secrets, and those files are read by ④ and checked out for ⑤. Detection is best-effort.
 - **Recommendation:** a dedicated account or workspace for QB use, stated in user docs.
 
@@ -1146,7 +1197,7 @@ The E4 cases, as regressions.
 
 - **Provisioning.** QB mounts or passes no credential to ①②④⑤. Checked by inspecting each container's mounts and environment, not by searching contents.
 - **No write-back.** Nothing written to `qb-<id>-cred` during a run is present in `qb-claude-auth` afterwards. A fixture overwrites every auth file with well-formed attacker values, and the next run uses the original credential.
-- **Copied-secret reporting.** A fixture agent writes a fake credential, in a known format, into a source file and into stdout. The run record and `qb patch` report both. The patch is still exported, because the scan is detection, not a block.
+- **Copied-secret reporting (not implemented; no such test exists yet).** A fixture agent writes a fake credential, in a known format, into a source file and into stdout. The run record and `qb patch` report both. The patch is still exported, because the scan is detection, not a block.
 - **Mode K.** QB writes no env file or other credential file on the host.
 - **Lock.** Login during a run's refresh+copy waits, or fails with `auth_busy`. Concurrent runs follow E1 case 5.
 
@@ -1168,10 +1219,10 @@ The shipped CLI ignores `QB_AGENT_COMMAND` and `NODE_ENV=test` (§10).
   - the npm registry during deps: request paths;
   - **output channels:** the patch, generated files, stdout/stderr and logs, including a stolen credential written into them (§5.4).
 
-  Mitigated by the workspace containing only the repository, per-policy scoping, the best-effort credential scan, user review of the patch, and the dedicated-account recommendation.
+  Mitigated by the workspace containing only the repository, per-policy scoping, user review of the patch (the credential scan of §5.4 is not implemented), and the dedicated-account recommendation.
 - **Credential theft within the agent container** (§5.4).
 - **tmpfs-backed caps consume host RAM.** Contents may reach host swap (§8.2). Bounded by admission (§8.1), which is per installation and point-in-time: other users, other installations, and unrelated applications can still push the host into memory pressure.
-- **Docker `live-restore`.** Workloads can outlive a daemon outage beyond G5a's bound (G5c). QB warns when it is enabled.
+- **Docker `live-restore`.** Workloads can outlive a daemon outage beyond G5a's bound (G5c). QB was designed to warn when it is enabled; **that warning is not implemented**.
 - **Supervisor killed by the user or a host-level fault.** Cleanup becomes eventual (G5b).
 - **Manual patch application** is not atomic (§9.3).
 - **Dependency builds that read application source** are not detected (§3.2). Stale artifacts behind a matching fingerprint are possible for such packages.
@@ -1179,7 +1230,9 @@ The shipped CLI ignores `QB_AGENT_COMMAND` and `NODE_ENV=test` (§10).
 
 ---
 
-## 13. Status of decisions and next evidence
+## 13. History: status of decisions and next evidence (v3.1)
+
+> History. Items 1–5 were done by 2026-10-03; the last line still holds. See Current status.
 
 All six v3 decisions were ruled on in the v3 review (§0.1). There are no open architecture questions this round.
 
