@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quarterback: review AI-written code with evidence</title>
+  <meta name="description" content="Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review. Supervised demos.">
+  <link rel="canonical" href="https://quarterback.velorallc.workers.dev/">
+
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+  <meta property="og:type"         content="website">
+  <meta property="og:site_name"    content="Quarterback">
+  <meta property="og:url"          content="https://quarterback.velorallc.workers.dev/">
+  <meta property="og:title"        content="Quarterback: review AI-written code with evidence">
+  <meta property="og:description"  content="Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review. Supervised demos.">
+  <meta property="og:image"        content="https://quarterback.velorallc.workers.dev/og-image.png">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt"    content="Quarterback: review AI-written code with evidence. Early beta.">
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="Quarterback: review AI-written code with evidence">
+  <meta name="twitter:description" content="Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review. Supervised demos.">
+  <meta name="twitter:image"       content="https://quarterback.velorallc.workers.dev/og-image.png">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Quarterback",
+    "description": "Approve the requirements. Quarterback runs Claude Code, checks the change, and gives you a patch to review. Supervised demos.",
+    "url": "https://quarterback.velorallc.workers.dev/",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Linux",
+    "author": { "@type": "Organization", "name": "Velora", "url": "https://velorallc.netlify.app/" }
+  }
+  </script>
+
+  <link rel="preload" href="./src/fonts/inter/inter-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./src/styles/fonts.css">
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/home.css">
+  <link rel="stylesheet" href="./src/styles/evidence.css">
+</head>
+<body>
+<a class="qb-skip" href="#main">Skip to content</a>
+<div class="qbh">
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-NAV → edit: src/home-nav.html -->
+  <!-- ============================================================ -->
+  <!-- HOMEPAGE HEADER: warm-white shell, 72px. The toggle and links are wired in interactions.js. -->
+  <header class="qbh-header">
+    <nav class="qbh-nav" aria-label="Main">
+      <a href="./" class="qbh-brand"><img src="./logo-mark.svg" alt="" width="40" height="19"><span>Quarterback</span></a>
+      <button class="qbh-nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="qbh-links"><span></span><span></span></button>
+      <div class="qbh-links" id="qbh-links">
+        <a href="#open-run" class="qbh-link">Product</a>
+        <a href="#progress" class="qbh-link">Progress</a>
+        <a href="./developers" class="qbh-link">Developers</a>
+        <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener noreferrer" class="qbh-link">GitHub</a>
+        <a href="#beta" class="qbh-btn qbh-btn-dark qbh-link">Try Quarterback</a>
+      </div>
+    </nav>
+  </header>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-HERO → edit: src/home-hero.html -->
+  <!-- ============================================================ -->
+  <main id="main" tabindex="-1">
+  <!-- HOMEPAGE HERO: dark inset stage. Copy at left; an original generative "coil" (canvas, drawn by interactions.js)
+       at right (desktop) or below the copy (under 900px). Owner decision 2026-11-10: no background, magnifies as
+       the page scrolls (--pop). Static under reduced motion. Decoration only; carries no product claims. -->
+  <section class="qbh-hero" data-qbh-hero aria-labelledby="hero-h">
+    <div class="qbh-hero-copy">
+      <p class="qbh-label"><span class="qbh-dot" aria-hidden="true"></span>Supervised demos</p>
+      <h1 id="hero-h" class="qbh-h1">Review <span class="qbh-nowrap">AI-written</span> changes with evidence.</h1>
+      <p class="qbh-lead">Approve the requirements. Inspect the checks and patch. Decide what to apply.</p>
+      <div class="qbh-actions">
+        <a href="#beta" class="qbh-btn qbh-btn-light">Request a guided demo</a>
+        <a href="#open-run" class="qbh-btn qbh-btn-outline">See a real run</a>
+      </div>
+    </div>
+    <div class="qbh-coil-wrap" aria-hidden="true">
+      <div class="qbh-coil-move" data-qbh-art-move>
+        <div class="qbh-coil-pop" data-qbh-pin-pop>
+          <canvas class="qbh-coil" data-qbh-coil width="380" height="600"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-LOGOS → edit: src/home-logos.html -->
+  <!-- ============================================================ -->
+  <!-- LOGO STRIP (revision 6, owner decision 2026-11-19). Coding agents: Claude Code is supported today; Cursor, Codex and
+       Gemini are planned adapters, labelled "planned" and linked to docs/support.md#agents---agent. Cursor, Codex
+       (OpenAI mark) and Gemini use logo files (see SOURCES.md). GitHub Copilot removed for now (owner, 2026-11-19).
+       "Currently supported" (owner, 2026-11-19) mirrors docs/support.md: Node.js 20+, Linux x86_64, Docker, node:test.
+       Owner rule (2026-11-19): every item in this strip is a logo or a mark+name lockup; no plain text items. Not an endorsement; see media/logos/SOURCES.md. The group labels stay visible.
+       Without JavaScript or under reduced motion it is a static, wrapped row. interactions.js adds the moving
+       copy (aria-hidden, inert) and the Pause button. -->
+  <section class="qbh-logos" data-qbh-marquee aria-label="Coding agents, currently supported platforms, and research collaborations">
+    <div class="qbh-marquee">
+      <div class="qbh-marquee-track">
+        <div class="qbh-marquee-set">
+          <div class="qbh-logo-group">
+            <p class="qbh-logo-label" id="logos-works">Coding agents</p>
+            <ul class="qbh-logo-list" aria-labelledby="logos-works">
+              <li class="qbh-logo"><img src="./media/logos/claude-code.svg" alt="Claude Code (supported)" width="160" height="22" style="--h: 22px" decoding="async"></li>
+              <li class="qbh-logo"><a class="qbh-logo-link" href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#agents---agent" aria-label="Cursor: planned, see supported agents"><img src="./media/logos/cursor.svg" alt="Cursor" width="101" height="24" style="--h: 24px" decoding="async"><span class="qbh-logo-plan">planned</span></a></li>
+              <li class="qbh-logo"><a class="qbh-logo-link qbh-lockup" href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#agents---agent" aria-label="OpenAI Codex: planned, see supported agents"><img src="./media/logos/openai.svg" alt="" width="22" height="22" style="--h: 22px" decoding="async"><span class="qbh-lockup-name">Codex</span><span class="qbh-logo-plan">planned</span></a></li>
+              <li class="qbh-logo"><a class="qbh-logo-link qbh-lockup" href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#agents---agent" aria-label="Gemini: planned, see supported agents"><img src="./media/logos/gemini.png" alt="" width="22" height="22" style="--h: 22px" decoding="async"><span class="qbh-lockup-name">Gemini</span><span class="qbh-logo-plan">planned</span></a></li>
+            </ul>
+          </div>
+          <div class="qbh-logo-group">
+            <p class="qbh-logo-label" id="logos-supported">Currently supported</p>
+            <ul class="qbh-logo-list" aria-labelledby="logos-supported">
+              <li class="qbh-logo"><img src="./media/logos/nodejs.svg" alt="Node.js 20 or newer" width="107" height="32" style="--h: 32px" decoding="async"></li>
+              <li class="qbh-logo"><span class="qbh-lockup"><img src="./media/logos/linux-tux.svg" alt="" width="24" height="28" style="--h: 28px" decoding="async"><span class="qbh-lockup-name">Linux</span></span></li>
+              <li class="qbh-logo"><img src="./media/logos/docker.svg" alt="Docker" width="131" height="28" style="--h: 28px" decoding="async"></li>
+              <li class="qbh-logo"><span class="qbh-lockup"><img src="./media/logos/nodejs-icon.svg" alt="" width="22" height="25" style="--h: 25px" decoding="async"><span class="qbh-lockup-name">node:test</span></span></li>
+            </ul>
+          </div>
+          <div class="qbh-logo-group">
+            <p class="qbh-logo-label" id="logos-research">Research collaborations</p>
+            <ul class="qbh-logo-list" aria-labelledby="logos-research">
+              <li class="qbh-logo qbh-logo-text">George Mason University</li>
+              <li class="qbh-logo qbh-logo-text">Harvard University</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="qbh-marquee-btn" type="button" data-qbh-marquee-btn hidden aria-label="Pause the logo strip">Pause</button>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-OPEN-RUN → edit: src/home-open-run.html -->
+  <!-- ============================================================ -->
+  <!-- OPEN THE RUN (KAN-67 visual experiment, preview only). Run 0e9eede7, 2026-11-18, Quarterback 2f01d93, evidence pinned at
+       d30deb8 (branch kan44-demo-prep): the recorded terminal output, velora-duration-contract.json, manifest.redacted.json,
+       candidate.diff, replay.txt, README.md. Every line of text below is an excerpt of those files; "…" marks a cut; long lines are re-wrapped and whole lines are left out.
+       No video exists yet: the frame is a text poster. Set data-qbo-video to a file to add one; the poster and the overlays do
+       not depend on it. Desktop with motion: evidence.js pins the stage. Otherwise (and without JavaScript) it is a plain list. -->
+  <span id="run" class="qbo-anchor"></span>
+  <section id="open-run" class="qbh-sec qbo" aria-labelledby="open-run-h">
+    <div class="qbo-track" data-qbo>
+      <div class="qbo-pin">
+        <header class="qbo-side">
+          <p class="qbh-eyebrow">A recorded rehearsal · November 18, 2026</p>
+          <h2 id="open-run-h" class="qbo-h">Open the run.</h2>
+          <ol class="qbo-rail" data-qbo-rail>
+            <li><a href="#or-request">Request</a></li>
+            <li><a href="#or-checklist">Reviewed checklist</a></li>
+            <li><a href="#or-run">Isolated run</a></li>
+            <li><a href="#or-checks">Checks</a></li>
+            <li><a href="#or-patch">Patch</a></li>
+          </ol>
+          <p class="qbo-note">One supervised run on a Mac, 0e9eede7 at Quarterback 2f01d93. Setup was assisted. It is not a reliability rate.</p>
+        </header>
+  
+        <div class="qbo-canvas">
+          <svg class="qbo-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path data-qbo-link="a" d="M43 22H49" vector-effect="non-scaling-stroke"/>
+            <path data-qbo-link="b" d="M43 76H49" vector-effect="non-scaling-stroke"/>
+            <path data-qbo-link="c" d="M75 47V53" vector-effect="non-scaling-stroke"/>
+          </svg>
+  
+          <figure class="qbo-panel qbo-frame" id="or-request" data-qbo-panel="frame" data-qbo-video="">
+            <figcaption class="qbo-bar"><strong>Request</strong><span>Interaction prototype; recording pending. Text poster of the recorded terminal.</span></figcaption>
+            <pre class="qbo-term" tabindex="0" aria-label="Recorded terminal output, excerpt">  QUARTERBACK&#10;  Request: "Show durations under one minute as seconds&#10;  only, for example 30000 ms as "30s" instead of "0m 30s".&#10;  Durations of one minute or more keep the current&#10;  format, for example 90000 ms stays "1m 30s"."&#10;  Repo:    ~/qb-velora/velora-sample&#10;  Agent:   claude-code  (sandboxed: …)&#10;&#10;  [L1]   Contract ready  (7ms)&#10;  [L1]   Oracle approved (contract-file)&#10;  [L2]   Context ready  (30238ms)&#10;  [L3]   Execution done  (105756ms)  status=completed&#10;  [L4]   Verdict: ✓ PASS  (67ms)&#10;&#10;  Attempts: 1 / 3&#10;  Total time: 136.3s&#10;  Run:      …  outcome=VERIFIED</pre>
+          </figure>
+  
+          <article class="qbo-panel" id="or-checklist" data-qbo-panel="checklist" aria-labelledby="or-checklist-h">
+            <h3 class="qbo-bar" id="or-checklist-h"><strong>Reviewed checklist</strong><span>3 criteria, 7 checks</span></h3>
+            <ul class="qbo-rows">
+              <li><b>AC-1</b><span><code>formatDuration</code> is still exported as a function</span></li>
+              <li><b>AC-2</b><span>30000, 1000 and 0 return <code>"30s"</code>, <code>"1s"</code>, <code>"0s"</code></span></li>
+              <li><b>AC-3</b><span>90000, 60000, 3600000 return <code>"1m 30s"</code>, <code>"1m 0s"</code>, <code>"60m 0s"</code></span></li>
+              <li><b>Scope</b><span><code>src/duration.js</code> and <code>test/**</code></span></li>
+            </ul>
+            <p class="qbo-src">Hand-written and reviewed before the run. The owner signed it off <strong>after</strong> this rehearsal. “Oracle approved (contract-file)” in the log is the tool accepting the supplied file. <a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/velora-duration-contract.json">Checklist file</a></p>
+          </article>
+  
+          <article class="qbo-panel" id="or-run" data-qbo-panel="run" aria-labelledby="or-run-h">
+            <h3 class="qbo-bar" id="or-run-h"><strong>Isolated run</strong><span>Docker sandbox</span></h3>
+            <ul class="qbo-rows">
+              <li><b>Agent</b><span>Claude Code 2.1.288</span></li>
+              <li><b>Attempt</b><span>1 of 3, status completed</span></li>
+              <li><b>Checkout</b><span>Unmodified after the run</span></li>
+            </ul>
+            <p class="qbo-src"><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/manifest.redacted.json">Redacted manifest</a></p>
+          </article>
+  
+          <article class="qbo-panel" id="or-checks" data-qbo-panel="checks" aria-labelledby="or-checks-h">
+            <h3 class="qbo-bar" id="or-checks-h"><strong>Checks</strong><span>Outcome: VERIFIED</span></h3>
+            <ul class="qbo-rows">
+              <li><b>Pass</b><span>All 3 acceptance criteria</span></li>
+              <li><b>Pass</b><span>Project tests, <code>npm test</code> in the sandbox</span></li>
+              <li><b>Replay</b><span>Re-checks the stored verdict: reproduced. It does not run Claude or the tests again.</span></li>
+            </ul>
+            <p class="qbo-src">Test files were editable in this run. <a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/replay.txt">Replay output</a></p>
+          </article>
+  
+          <article class="qbo-panel" id="or-patch" data-qbo-panel="patch" aria-labelledby="or-patch-h">
+            <h3 class="qbo-bar" id="or-patch-h"><strong>Patch</strong><span>src/duration.js, excerpt</span></h3>
+            <pre class="qbo-term qbo-diff" tabindex="0" aria-label="The proposed change to src/duration.js, excerpt">@@ -1,9 +1,10 @@&#10; 'use strict';&#10;&#10;<del>-/** Formats a duration … e.g. 90000 -&gt; "1m 30s". */</del>&#10;<ins>+/** … e.g. 30000 -&gt; "30s", 90000 -&gt; "1m 30s". */</ins>&#10; function formatDuration(ms) {&#10;   const minutes = Math.floor(ms / 60000);&#10;   const seconds = Math.floor((ms % 60000) / 1000);&#10;<ins>+  if (minutes === 0) return `${seconds}s`;</ins>&#10;   return `${minutes}m ${seconds}s`;&#10; }</pre>
+            <p class="qbo-src">Comment lines shortened. The change also adds 16 test lines. <a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/candidate.diff">Full diff</a></p>
+            <p class="qbo-final" data-qbo-final>You review and apply it.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-INSPECT → edit: src/home-inspect.html -->
+  <!-- ============================================================ -->
+  <!-- INSPECT THE EVIDENCE (KAN-67 visual experiment, preview only). Same run and pinned evidence as #open-run. Crops are text copied
+       from the files; "…" marks a cut. Without JavaScript or with reduced motion: a blueprint and a grid with every detail visible.
+       evidence.js: orbit (wide, fine pointer), or a scroll-snap row with Previous/Next (small or coarse). -->
+  <section id="inspect" class="qbh-sec qbi" aria-labelledby="inspect-h" data-qbi>
+    <div class="qbh-wrap">
+      <header class="qbi-head">
+        <p class="qbh-eyebrow">The same run, file by file</p>
+        <h2 id="inspect-h" class="qbi-h"><span class="qbi-static">Inspect the evidence.</span><span class="qbi-live" aria-hidden="true">Inspect the <span class="qbi-words"><span data-w="0">request</span><span data-w="1">checklist</span><span data-w="2">checks</span><span data-w="3">patch</span><span data-w="4">run</span></span></span></h2>
+      </header>
+      <div class="qbi-controls" data-qbi-controls hidden>
+        <button type="button" class="qbh-marquee-btn" data-qbi-prev>Previous</button>
+        <button type="button" class="qbh-marquee-btn" data-qbi-next>Next</button>
+        <button type="button" class="qbh-marquee-btn" data-qbi-play>Pause</button>
+      </div>
+  
+      <svg class="qbi-blueprint" viewBox="0 0 640 150" role="img" aria-label="Request, checklist, checks, patch and run are five records of one run.">
+        <ellipse cx="320" cy="68" rx="270" ry="42"/>
+        <g><circle cx="320" cy="26" r="5"/><circle cx="577" cy="55" r="5"/><circle cx="479" cy="102" r="5"/><circle cx="161" cy="102" r="5"/><circle cx="63" cy="55" r="5"/></g>
+        <g><text x="320" y="15">Request</text><text x="577" y="40">Checklist</text><text x="479" y="126">Checks</text><text x="161" y="126">Patch</text><text x="63" y="40">Run</text><text x="320" y="73">Run 0e9eede7</text></g>
+      </svg>
+  
+      <div class="qbi-stage">
+        <ul class="qbi-cards" data-qbi-cards>
+          <li class="qbi-card" data-word="0">
+            <h3>Request</h3>
+            <p class="qbi-crop">"request": "Show durations under one minute as seconds only, for example 30000 ms as \"30s\" …"</p>
+            <div class="qbi-detail"><p>The plain-language request, stored word for word in the run manifest. It names one example to change and one to keep.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/manifest.redacted.json">Evidence: manifest.redacted.json</a></p></div>
+          </li>
+          <li class="qbi-card" data-word="1">
+            <h3>Checklist</h3>
+            <p class="qbi-crop">{ "id": "CHK-30S", "ac_id": "AC-2", "adapter": "call_returns", … "args": [30000], "expect": "30s" … }</p>
+            <div class="qbi-detail"><p>Seven checks for three criteria, plus the files that may change. It was hand-written and reviewed. The owner signed it off after this rehearsal, not before.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/velora-duration-contract.json">Evidence: velora-duration-contract.json</a></p></div>
+          </li>
+          <li class="qbi-card" data-word="2">
+            <h3>Checks</h3>
+            <p class="qbi-crop">attempt 1: recorded=pass replayed=pass OK … outcome=VERIFIED  reproduced</p>
+            <div class="qbi-detail"><p>Replaying the record reproduces the stored verdict. It does not run Claude or the tests again. A pass covers only the checks that ran, and test files were editable in this run.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/replay.txt">Evidence: replay.txt</a></p></div>
+          </li>
+          <li class="qbi-card" data-word="3">
+            <h3>Patch</h3>
+            <p class="qbi-crop">+  if (minutes === 0) return `${seconds}s`;</p>
+            <div class="qbi-detail"><p>The captured change to <code>src/duration.js</code> and its test file. Quarterback never applied it. A person reviews it and applies it.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/candidate.diff">Evidence: candidate.diff</a></p></div>
+          </li>
+          <li class="qbi-card" data-word="4">
+            <h3>Run</h3>
+            <p class="qbi-crop">Outcome | VERIFIED, attempt 1 of 3, 136.3 s. …</p>
+            <div class="qbi-detail"><p>One supervised rehearsal on the owner's Mac. Setup time, sign-in and checklist preparation are not in the 136.3 seconds. It does not qualify macOS or self-service use.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/README.md">Evidence: README.md</a></p></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-RESULT → edit: src/home-result.html -->
+  <!-- ============================================================ -->
+  <!-- WHAT THE RESULT TELLS YOU. An earlier run (e01b3273), not the one in #open-run. Its evidence links come from the old "A real run" walkthrough (src/home-run.html, no longer built here). -->
+  <section id="result" class="qbh-sec qbh-sec-ink" aria-labelledby="result-h">
+    <div class="qbh-wrap qbh-result">
+      <header class="qbh-head qb-reveal">
+        <p class="qbh-eyebrow">Reading the result</p>
+        <h2 id="result-h" class="qbh-h2">What it tells you, and what it doesn’t.</h2>
+        <p class="qbh-sub">A different, earlier run: October 15, 2026, at Quarterback commit 3fc08fd. A pass covers the checks that ran, nothing more.</p>
+        <p class="qbh-more"><a href="./developers#example">How checks and outcomes work</a></p>
+        <p class="qbh-sub">An earlier attempt that day stopped as <strong>blocked</strong> because another run held the lock, so nothing was checked.</p>
+        <p class="qbh-more"><a href="https://github.com/arshad8049/quarterback/tree/main/landing_page/evidence/2026-10-15-hero-run">Full record of that run</a></p>
+      </header>
+  
+      <div class="qbh-result-card qb-reveal">
+        <p class="qbh-result-head"><span class="qbh-verdict">Verified</span><span class="qbh-dim">Run e01b3273 · October 15, 2026</span></p>
+        <dl class="qbh-result-list">
+          <div><dt>Checked</dt><dd>The project’s tests and the two approved checks. Nothing else was tested.</dd></div>
+          <div><dt>Outcome</dt><dd>3 passed, 0 failed. A failure would name the check and what the code returned.</dd></div>
+          <div class="qbh-flag"><dt>Not checked</dt><dd>The 0 ms edge case had no check. Review anything without one yourself.</dd></div>
+          <div><dt>Patch</dt><dd><code>src/duration.js</code>, +2 −1, inside the allowed scope. Not applied.</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: HOME-PROGRESS → edit: src/home-progress.html -->
+  <!-- ============================================================ -->
+  <!-- PROGRESS, dated 2026-11-24. Three current cards, then earlier evidence. Copy approved for KAN-67; every public link is pinned.
+       1 Checklist safeguards: branch kan107-consistency-design @ 2150ab6 (not merged; nothing about its CI is claimed here).
+       2 Memory failures: run 45503431684 (b661872), annotations copied at 277de65. One batch of 50; 4 (iterations 6, 20, 30, 38) not reported within the 5 s observed.
+         A diagnostic sample, not a customer failure rate and not a shipped fix. Never "Docker could not report it".
+       3 Beta safety: docs/security/agent-sandbox.md @ e7a6a69 (branch kan44-sandbox-status, not merged). The credential scan and the live-restore check do not exist.
+       Earlier evidence: pair run 44211149405 (2026-11-18 00:50 UTC, Nov 17 America/Chicago); rehearsal run 0e9eede7; diagnostic c5399f25 (333.8 s, the OLD whole-checklist method, KAN-67 10757; no public record).
+       Not mentioned on purpose: PR #27 (merged as 7f938da, not a user-visible release), any success rate, any newer single-run time. -->
+  <section id="progress" class="qbh-sec qbh-sec-light" aria-labelledby="progress-h">
+    <div class="qbh-wrap">
+      <header class="qbh-head qb-reveal">
+        <p class="qbh-eyebrow">Progress · November 24, 2026</p>
+        <h2 id="progress-h" class="qbh-h2">Where Quarterback stands.</h2>
+        <p class="qbh-sub">Nothing on these three cards has shipped. Each links to the public record it describes.</p>
+      </header>
+  
+      <div class="qbh-cards">
+        <article class="qbh-card qb-reveal" style="--d:0" aria-labelledby="pg-1">
+          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#a8501a" stroke-width="1.5"/><path d="M6 1.75a4.25 4.25 0 0 1 0 8.5z" fill="#a8501a"/></svg><span>Status: <strong>In review</strong></span></p>
+          <h3 class="qbh-h3" id="pg-1">Checklist safeguards</h3>
+          <p class="qbh-card-text">We added checks for mismatched examples and unclear targets. Integration testing continues. Automatic checklist drafting is not reliable enough for self-service use.</p>
+          <dl class="qbh-facts">
+            <div><dt>Date</dt><dd><time datetime="2026-11-24">November 24, 2026</time></dd></div>
+            <div><dt>Scope</dt><dd>On a review branch. Not merged into main.</dd></div>
+            <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/commit/2150ab6690c4444c7cc5b9ba45e375d00d5e36a3">Commit 2150ab6</a>, <a href="https://github.com/arshad8049/quarterback/compare/main...kan107-consistency-design">branch changes</a></dd></div>
+          </dl>
+        </article>
+  
+        <article class="qbh-card qb-reveal" style="--d:1" aria-labelledby="pg-2">
+          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#2f5f7d"/></svg><span>Status: <strong>Diagnosed</strong></span></p>
+          <h3 class="qbh-h3" id="pg-2">Memory failures</h3>
+          <p class="qbh-card-text">We reproduced a case where Docker misses a memory-killed process. A more direct check is being tested.</p>
+          <dl class="qbh-facts">
+            <div><dt>Date</dt><dd><time datetime="2026-11-24">November 24, 2026</time></dd></div>
+            <div><dt>Scope</dt><dd>A diagnostic, not a shipped fix and not a customer failure rate.</dd></div>
+            <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/actions/runs/45503431684">Diagnostic run</a>, <a href="https://github.com/arshad8049/quarterback/blob/277de6588baf7f481489af44c7ed2c504b033c56/bench/kan96-oom-diagnostic/evidence/run-45503431684-annotations.json">recorded results</a></dd></div>
+          </dl>
+          <details class="qbh-more-info">
+            <summary>What the diagnostic measured</summary>
+            <p>One batch of 50 iterations on ubuntu-24.04 (x86_64) with Docker 28.0.4. In 4 of them, Docker had not reported the kill within the five seconds we observed. It says nothing about how often this happens in real use.</p>
+          </details>
+        </article>
+  
+        <article class="qbh-card qb-reveal" style="--d:2" aria-labelledby="pg-3">
+          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg><span>Status: <strong>In preparation</strong></span></p>
+          <h3 class="qbh-h3" id="pg-3">Beta safety</h3>
+          <p class="qbh-card-text">We documented current sandbox limits and identified remaining credential-output and cleanup checks. Private-code beta qualification is still open.</p>
+          <dl class="qbh-facts">
+            <div><dt>Date</dt><dd><time datetime="2026-11-24">November 24, 2026</time></dd></div>
+            <div><dt>Scope</dt><dd>Documentation on a review branch. The remaining checks are not in Quarterback yet.</dd></div>
+            <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/blob/e7a6a69c90617d56621e84d6480df4b69ae442ad/docs/security/agent-sandbox.md#current-status">Sandbox status</a>, <a href="https://github.com/arshad8049/quarterback/blob/e7a6a69c90617d56621e84d6480df4b69ae442ad/docs/security/agent-sandbox.md#open-before-a-customer-uses-private-code">open items</a></dd></div>
+          </dl>
+        </article>
+      </div>
+  
+      <div class="qbh-history qb-reveal" id="progress-history" role="group" aria-labelledby="history-h">
+        <h3 class="qbh-h3" id="history-h">Earlier evidence</h3>
+        <ul>
+          <li>
+            <p class="qbh-history-what"><time datetime="2026-11-18">November 18, 2026</time><strong>One supervised rehearsal</strong></p>
+            <p>On a Mac, with a hand-written checklist: verified on the first attempt in 136 seconds. Setup was assisted and the sandbox was already installed. The owner signed off the checklist after the run. One run, not a reliability rate. <a href="https://github.com/arshad8049/quarterback/tree/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal">Redacted evidence</a></p>
+          </li>
+          <li>
+            <p class="qbh-history-what"><time datetime="2026-11-17">November 17, 2026</time><strong>One side-by-side comparison</strong></p>
+            <p>On one task we had already worked on, Claude Code alone and Claude Code with Quarterback both passed an independent grader. This does not show an advantage for Quarterback. The checklist was written by a model and reviewed by an AI reviewer. Research on new tasks is paused. <a href="https://github.com/arshad8049/quarterback/actions/runs/44211149405">Run</a>, <a href="../../research.html">evaluation notes</a></p>
+          </li>
+          <li>
+            <p class="qbh-history-what"><time datetime="2026-11">November 2026</time><strong>An older drafting method</strong></p>
+            <p>A diagnostic of the older method, which wrote the whole checklist in one model reply: a test request was still blocked after about 334 seconds. It is not a current speed. Its raw record is not public; the published <a href="./developers#evidence">drafting measurements</a> are from November 4.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: BETA-CTA → edit: src/beta-cta.html -->
+  <!-- ============================================================ -->
+  <!-- TRY QUARTERBACK: the one CTA and the working signup form (ids used by interactions.js) -->
+  <section id="beta" class="qbx-sec qbx-try" aria-labelledby="beta-h">
+    <div class="qbx-wrap qbx-try-grid">
+      <div class="qb-reveal">
+        <p class="qbx-eyebrow">Supervised demos</p>
+        <h2 id="beta-h" class="qbx-h2">Request a guided demo.</h2>
+        <p class="qbx-sub">Sign up and we email you the setup guide. Reply at any step and we’ll help you try it on a real task.</p>
+        <ul class="qbx-compat">
+          <li><span>Assistant</span>Claude Code, with your own Claude subscription or API key</li>
+          <li><span>Projects</span>JavaScript or Node.js, tested with node:test</li>
+          <li><span>Computer</span>Ubuntu 24.04 with Docker and 16 GB of memory is validated. macOS: limited successful runs; not a validated supported environment. No Windows.</li>
+        </ul>
+        <p class="qbx-links"><a href="https://github.com/arshad8049/quarterback/blob/main/docs/onboarding.md" target="_blank" rel="noopener">Read the setup guide</a> <a href="./developers">For developers</a></p>
+      </div>
+  
+      <div class="qbx-form-card qb-reveal">
+        <form id="beta-form" name="beta-access" method="POST">
+          <label for="email" class="qbx-label">Work email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" class="qbx-input">
+          <label for="stack" class="qbx-label">Which coding assistant do you use most?</label>
+          <input id="stack" name="agent" type="text" placeholder="Claude Code" class="qbx-input">
+          <button type="submit" class="qbx-btn qbx-btn-primary qbx-btn-block">Send me the setup guide</button>
+          <p id="form-feedback" role="status" class="qbx-form-note">Quarterback runs on your machine. During a run, Claude Code sends your task and the code it reads to Anthropic under your account. <a href="../../privacy.html">Data and privacy</a></p>
+        </form>
+        <p id="form-status" role="status" style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;"></p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- SECTION: FOOTER → edit: src/footer.html -->
+  <!-- ============================================================ -->
+  </main>
+  <!-- FOOTER -->
+  <footer style="padding: 44px 80px; border-top: 1px solid #222A27; background: #0A0D0C;">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #C6CFCB;">Quarterback</span>
+        <span style="font-size: 14px; color: #A7B0AB;">· pre-release, in supervised evaluation · a <a href="https://velorallc.netlify.app/" target="_blank" rel="noopener" class="qb-velora-link" style="color: #A7B0AB; text-decoration: none; border-bottom: 1px solid rgba(138,148,143,0.35);">Velora</a> product</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+        <a href="../../privacy.html" class="qb-foot-link">Privacy</a>
+        <a href="../../privacy.html" class="qb-foot-link">Contact</a>
+        <a href="./developers" class="qb-foot-link">For developers</a>
+        <a href="../../engineering.html" class="qb-foot-link">Engineering</a>
+        <a href="../../research.html" class="qb-foot-link">Evaluation</a>
+        <a href="https://github.com/arshad8049/quarterback" target="_blank" rel="noopener" class="qb-foot-link">GitHub</a>
+        <span style="font-size: 13px; color: #A7B0AB;">© 2026 Velora</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script src="./src/scripts/interactions.js" defer></script>
+<script src="./src/scripts/evidence.js" defer></script>
+</body>
+</html>
