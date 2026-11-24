@@ -1,0 +1,36 @@
+name: kan96-observer
+
+# KAN-96, approved in 10813: ONE additional bounded batch (at most 50 sequential iterations), this branch only, no rerun.
+# Started by a commit to run-request.txt (workflow_dispatch needs the file on the default branch). No secrets, no model.
+# Other workflows stay removed on THIS branch only. Never merged.
+on:
+  push:
+    branches: [kan96-oom-diagnostic]
+    paths: [bench/kan96-observer/run-request.txt]
+
+permissions:
+  contents: read
+
+concurrency: { group: kan96-observer, cancel-in-progress: false }
+
+jobs:
+  observe:
+    if: github.run_attempt == 1 && github.ref == 'refs/heads/kan96-oom-diagnostic'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Observer batch (at most 50 sequential iterations)
+        run: node bench/kan96-observer/run.js --out out --budget-min 20
+      - name: Publish (readable without a token)
+        if: always()
+        run: node bench/kan96-observer/publish.js out
+      - name: Remove this run's labelled containers
+        if: always()
+        run: docker ps -aq --filter "label=qb.diag" --filter "name=kan96o-${GITHUB_RUN_ID}-" | xargs -r docker rm -f
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: kan96-observer, path: out }
