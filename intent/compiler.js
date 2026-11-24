@@ -150,12 +150,12 @@ function repairSection(rejected, errors, laterErrors = []) {
     '- Fix every validation error above.',
     '- Cite request passages by id in each requirement\'s passage_ids (QB copies their exact text); do not retype the request. Every passage P1…Pn must be cited by at least one requirement; one passage may support several requirements.',
     '- Keep every part of the request. Add nothing the request does not ask for.',
-    '- A scope error about a file the request asks to change: keep that file in scope.allowed_changes and remove or narrow the protected_paths glob that covers it. Never fix a scope conflict by dropping requested work or its criterion.',
+    '- A scope error about a file the request asks to change: keep that file in scope.allowed_changes. Remove or narrow a protected_paths glob that covers it only when no constraint_policy entry is enforced by that glob; otherwise leave it as it is (QB stops and asks the user). Never fix a scope conflict by dropping requested work or its criterion.',
     '- Keep the criterion that requires adding the requested tests, with "adds_tests": { "files": [<the test file>] }. Do not mark that requirement "context", and do not mark the criterion non_behavioral.',
     '- A passage that only names a file location: list its requirement in requirement_ids of the criteria that test that file, or mark it disposition "context" with a reason "location only".',
     '- A criterion that says tests still pass names literal test files in preserves.tests that the task does not edit, and has no value checks bound to it.',
     '- Remove every proposed default that was "not covered by any acceptance criterion". Do NOT add criteria to justify it, and do not add new or reworded defaults.',
-    '- If an allowed change is "entirely covered by scope.protected_paths", remove or narrow that allowed_changes entry. Keep every protected path a constraint is enforced by; never remove a protection to make room for a change.',
+    '- If an allowed change is "entirely covered by scope.protected_paths" and the request does not ask to change that file, remove or narrow that allowed_changes entry. Keep every protected path a constraint is enforced by; never remove a protection to make room for a change.',
     '- Do not ask a clarifying question; set clarifying_question to null.',
   ].join('\n');
 }

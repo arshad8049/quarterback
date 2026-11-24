@@ -344,7 +344,7 @@ function readMessage(s, i) {
 }
 
 /**
- * Everything QB reads from the request text: { examples, messages, rules, underspecified, unsupported, signatures }.
+ * Everything QB reads from the request text: { examples, messages, rules, underspecified, unsupported, conflicts, signatures }.
  * `examples`: [{ id, passage_id, sentence_index, span, excerpt, call, receiver, name, args, outcome, expected,
  *   error_class, message: { mode: 'includes'|'equals', fragment, span } | null, message_includes, kept }]
  */
@@ -429,7 +429,14 @@ function extractExamples(request, { statements = false } = {}) {
     const other = examples.find((o) => o !== ex && o.receiver === ex.receiver && o.name === ex.name && deq(o.args, ex.args) && !sameResult(o, ex));
     if (other) ex.conflict = other;
   }
-  for (const ex of examples.filter((e) => e.conflict)) skip(ex.call, ex.span[0], ex.span[1], `the request states two different results for ${ex.call}: QB does not enforce it; keep one, and write "make ${ex.call} ${ex.outcome === 'returns' ? 'return' : 'throw'} …"`, 'described', ex.name);
+  const conflicts = [];
+  for (const ex of examples.filter((e) => e.conflict)) {
+    let c = conflicts.find((x) => x.call === ex.call);
+    if (!c) conflicts.push(c = { call: ex.call, name: ex.name, passage_id: ex.passage_id, results: [] });
+    const r = claimOf(ex);
+    if (!c.results.includes(r)) c.results.push(r);
+    skip(ex.call, ex.span[0], ex.span[1], `the request states two different results for ${ex.call}: QB does not enforce it; keep one, and write "make ${ex.call} ${ex.outcome === 'returns' ? 'return' : 'throw'} …"`, 'described', ex.name);
+  }
   for (let i = examples.length - 1; i >= 0; i--) if (examples[i].conflict) examples.splice(i, 1);
   examples.forEach((e, i) => { e.id = `EX-${i + 1}`; });
 
@@ -491,7 +498,7 @@ function extractExamples(request, { statements = false } = {}) {
     if (vague && !sentenceStates) { underspecified.push({ passage_id: p.id, excerpt: text, qualifier: (vague[1] || vague[2]).replace(/\s+/g, ' ') }); continue; }
     rules.push({ passage_id: p.id, text });
   }
-  return { examples, messages, rules, underspecified, unsupported, signatures };
+  return { examples, messages, rules, underspecified, unsupported, conflicts, signatures };
 }
 
 // ── targets: QB-computed grounding only ──────────────────────────────────────
@@ -591,6 +598,9 @@ function checkCall(k) {
   return `${p.export}(${argText(p.args || [])}) returns ${show(p.expect)}`;
 }
 
+/** 10812: the request contradicts itself about one call: which result is wanted? (contract errors; the staged stop) */
+const conflictErrors = (rx) => rx.conflicts.map((c) => `the request states different results for ${c.call}: ${c.results.join(' and ')}. Which one is wanted? QB does not choose; keep one in the request`);
+
 // ── the contract analysis ─────────────────────────────────────────────────────
 
 function analyse(c) {
@@ -604,6 +614,8 @@ function analyse(c) {
   const grounding = c.api_grounding || null;
   const errors = []; const rows = [];
 
+  // 10812: two results for one call are for the human to resolve before approval; QB never picks one
+  errors.push(...conflictErrors(rx));
   for (const ex of rx.examples) {
     const claim = claimOf(ex);
     const row = { id: ex.id, source: 'request', passage_id: ex.passage_id, excerpt: `${ex.call} ${claim}`, outcome: ex.outcome, args: ex.args, expected: ex.expected, message: ex.message,
@@ -720,4 +732,4 @@ const exampleErrors = (c) => analyse(c).errors;
 /** The approval mapping rows (request excerpt -> target -> check, with statuses). */
 const exampleMapping = (c) => analyse(c).rows;
 
-module.exports = { LIMITS, valueErrors, argsErrors, parseLiteral, parseArgs, extractExamples, exampleErrors, exampleMapping, sentences };
+module.exports = { LIMITS, valueErrors, argsErrors, parseLiteral, parseArgs, extractExamples, exampleErrors, exampleMapping, conflictErrors, sentences };

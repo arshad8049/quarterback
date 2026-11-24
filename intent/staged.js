@@ -49,7 +49,7 @@ const { groundingExcerpt, contractGrounding, requestNames, apiSummary } = requir
 const { contractFromObject } = require('./compiler');
 const { contractState } = require('./contract-state');
 const { detectAmbiguity } = require('./dsa');
-const { LIMITS, argsErrors, valueErrors, extractExamples } = require('./request-examples');
+const { LIMITS, argsErrors, valueErrors, extractExamples, conflictErrors } = require('./request-examples');
 
 const FORMAT = 'qb-staged-l1/1';
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/staged-facts.md'), 'utf8');
@@ -626,6 +626,7 @@ async function compileStaged(request, g, t) {
   if (rx.underspecified.length) {
     return done('invalid', { contract: null, errors: rx.underspecified.map((u) => `${u.passage_id} ${JSON.stringify(u.excerpt)} states no expected behaviour (only "${u.qualifier}"): QB does not invent one. Clarify the request with an example call and its result, e.g. name(…) returns …`) });
   }
+  if (rx.conflicts.length) return done('invalid', { contract: null, errors: conflictErrors(rx) });   // 10812: before any model call
   // KAN-107 (Q3, decision 2): an example QB cannot express (object, template, beyond the literal limits) for a call
   // target is refused before generation, never coerced or flattened.
   const named = (u) => all.some((x) => x.export === u.name || x.method === u.name || x.display === u.name);

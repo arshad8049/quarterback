@@ -26,6 +26,8 @@ const REQUEST = fs.readFileSync(path.join(FIX, 'request.txt'), 'utf8').trim();
 const INITIAL = fs.readFileSync(path.join(FIX, 'eba7015e-initial.json'), 'utf8');
 const REPAIRED = fs.readFileSync(path.join(FIX, 'eba7015e-repair.json'), 'utf8');
 const FAITHFUL = fs.readFileSync(path.join(FIX, 'faithful-draft.json'), 'utf8');
+// 10812: a SYNTHETIC first draft with a consistent scope (test/fixtures/kan107/synthetic/README.md), not model output
+const SYNTHETIC_FIRST = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'kan107', 'synthetic', 'consistent-scope-first-draft.json'), 'utf8');
 const SMOKE = JSON.parse(fs.readFileSync(path.join(FIX, 'eba7015e-errors.json'), 'utf8'));
 
 // Loaded per test, so a missing module fails each test on its own (red phase).
@@ -120,7 +122,8 @@ describe('10674: the eba7015e drafts, reproduced offline through compile()', () 
     assert.match(last, /the request asks to change test\/asNumber\.test\.js .* protects it: keep test\/asNumber\.test\.js in allowed_changes and narrow the protection \(a scope conflict is never resolved by dropping requested work\)/);
     // The repair prompt explains the conflict and keeps the test-writing requirement.
     const sent = prompts[1].map((m) => m.content).join('\n');
-    assert.match(sent, /keep that file in scope\.allowed_changes and remove or narrow the protected_paths glob that covers it\. Never fix a scope conflict by dropping requested work/);
+    // 10812: the repair may not be told to remove a protection a constraint relies on (KAN-105 refuses that)
+    assert.match(sent, /keep that file in scope\.allowed_changes\. Remove or narrow a protected_paths glob that covers it only when no constraint_policy entry is enforced by that glob; otherwise leave it as it is \(QB stops and asks the user\)\. Never fix a scope conflict by dropping requested work/);
     assert.match(sent, /Keep the criterion that requires adding the requested tests, with "adds_tests"/);
     assert.match(sent, /Do not mark that requirement "context"/);
   });
@@ -170,6 +173,7 @@ describe('10674 F-b: missing test-writing criteria cannot be disguised', () => {
   test('the prompt states the scope, location and adds_tests rules, and its example no longer protects test/**', () => {
     const sys = fs.readFileSync(path.join(__dirname, '..', '..', 'intent', 'prompts', 'system.md'), 'utf8');
     assert.match(sys, /Never protect a path you allow/);
+    assert.match(sys, /Protect a path only when the request says not to change it .*it never protects a path\./);
     assert.match(sys, /"adds_tests": \{ "files": \["test\/x\.test\.js"\] \}/);
     assert.match(sys, /an instruction such as "Add tests in …" never is/);
     assert.doesNotMatch(sys, /"protected_paths": \["test\/\*\*"\]/);
@@ -312,11 +316,21 @@ describe('10674 F-d: L1 time limits (experimental Qwen profile, enforced, monoto
 
   test('fake clock: each call gets min(per-call cap, remaining L1 time); the repair gets only what is left', async () => {
     let clock = 0;
-    const { s } = await compileWith([INITIAL, FAITHFUL], { session: { now: () => clock, l1Budget: PROFILE }, onCall: (k) => { clock += k === 0 ? 400_000 : 15_000; } });
+    const { s } = await compileWith([SYNTHETIC_FIRST, FAITHFUL], { session: { now: () => clock, l1Budget: PROFILE }, onCall: (k) => { clock += k === 0 ? 400_000 : 15_000; } });
     assert.equal(s.state, 'finalized', JSON.stringify(s.errors));
     assert.deepEqual(s.timings.calls.map((c) => [c.kind, c.ms, c.limit_ms]), [['initial', 400_000, 240_000], ['repair', 15_000, 20_000]]);
     assert.equal(s.timings.l1_ms, 415_000);
     assert.deepEqual({ ...s.timings.l1_budget, exhausted: s.timings.l1_budget.exhausted }, { ...PROFILE, exhausted: false });
+  });
+  test('10812: the RECORDED first draft (eba7015e, protects test/** for behaviour constraints) is blocked when the correction drops it; the same limits apply', async () => {
+    for (const l1Budget of [PROFILE, { ms: 360_000, source: 'provisional_default', enforced: false, per_call_ms: 180_000, profile: null }]) {
+      let clock = 0;
+      const { s, calls } = await compileWith([INITIAL, FAITHFUL], { session: { now: () => clock, l1Budget }, onCall: (k) => { clock += l1Budget.enforced ? (k === 0 ? 400_000 : 15_000) : 300_000; } });
+      assert.equal(calls, 2);
+      assert.equal(s.state, 'invalid');
+      assert.match(s.errors.join('\n'), /protected path "test\/\*\*" enforces constraint 0 .*a correction may not remove it/);
+      assert.deepEqual(s.timings.calls.map((c) => c.limit_ms), l1Budget.enforced ? [240_000, 20_000] : [180_000, 180_000]);
+    }
   });
   test('fake clock: once L1 time is spent no repair starts; the timeout reason is clear and the timings and the rejected draft are kept', async () => {
     let clock = 0;
@@ -350,7 +364,7 @@ describe('10674 F-d: L1 time limits (experimental Qwen profile, enforced, monoto
   });
   test('an unenforced (provisional) budget never cancels; the old per-call limit applies', async () => {
     let clock = 0;
-    const { s } = await compileWith([INITIAL, FAITHFUL], { session: { now: () => clock, l1Budget: { ms: 360_000, source: 'provisional_default', enforced: false, per_call_ms: 180_000, profile: null } }, onCall: () => { clock += 300_000; } });
+    const { s } = await compileWith([SYNTHETIC_FIRST, FAITHFUL], { session: { now: () => clock, l1Budget: { ms: 360_000, source: 'provisional_default', enforced: false, per_call_ms: 180_000, profile: null } }, onCall: () => { clock += 300_000; } });
     assert.equal(s.state, 'finalized');
     assert.deepEqual(s.timings.calls.map((c) => c.limit_ms), [180_000, 180_000]);
   });

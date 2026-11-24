@@ -103,10 +103,33 @@ describe('KAN-107 10805 ruling 1: extraction polarity', () => {
       for (const x of u) assert.match(x.reason, /QB does not enforce it.*write "make /, 'a useful clarification');
     });
   }
-  test('the conflicting case: two results stated as wanted for the same call are both not checked, never one guessed', () => {
-    const r = 'In lib/x.js, make f(1) return 3. Make f(1) return 2.';
-    assert.deepEqual(values(r), []);
-    assert.match(not_checked(r).map((u) => u.reason).join('\n'), /two different results/);
+  describe('two results asked for the same call (10812): surfaced for the human, never one picked', () => {
+    const R = 'In lib/x.js, make f(1) return 3. Make f(1) return 2.';
+    test('neither is an example; both stay visible as not checked', () => {
+      assert.deepEqual(values(R), []);
+      assert.equal(not_checked(R).filter((u) => /two different results/.test(u.reason)).length, 2);
+    });
+    for (const v of [2, 3]) {
+      test(`a contract that picks ${v} is refused before approval, and the error asks which result is wanted`, () => {
+        const s = stateOf(R, one(R, fn('lib/x.js', 'f', [1], v)));
+        assert.equal(s.state, 'invalid');
+        assert.match(why(s), /the request states different results for f\(1\): returns 3 and returns 2\. Which one is wanted\?/);
+      });
+    }
+    test('return versus throw for the same call is a conflict too; the same result twice is not', () => {
+      assert.equal(RX.extractExamples('In lib/x.js, make f(1) return 3. Make f(1) throw an error.').conflicts.length, 1);
+      const same = RX.extractExamples('In lib/x.js, make f(1) return 3. Keep f(1) returning 3.');
+      assert.equal(same.conflicts.length, 0);
+      assert.equal(same.examples.length, 2);
+    });
+    test('staged: stops before any model call; a bug-report sentence beside the wanted one is not a conflict', async () => {
+      const { compileStaged } = require('../../intent/staged');
+      const never = { validate: (f) => f(), check: () => {}, timer: () => { throw new Error('a model call was attempted'); }, outcome: () => {} };
+      const s = await compileStaged(R, { api: null, grounding: null }, never);
+      assert.equal(s.state, 'invalid');
+      assert.match(s.errors.join('\n'), /Which one is wanted\?/);
+      assert.deepEqual(RX.extractExamples(MIXED).conflicts, []);
+    });
   });
 
   // positives that must keep working

@@ -1,4 +1,4 @@
-# KAN-107: request-to-check consistency (implemented offline per 10771; not merged)
+# KAN-107: request-to-check consistency (implemented offline per 10771, 10805 and 10812)
 
 **Goal:** QB cannot silently replace a supported customer example with a different check. It also keeps stated rules and says plainly what it does not check.
 
@@ -57,7 +57,7 @@ It counts as a **requirement** only when an explicit positive clause asks for it
 | negated | "do not make f(1) return 2", "never …", "rather than f(1) returning 2" |
 | condition or question | "make sure that if f(1) returns 2 …", "should f(1) return 2?" |
 | unresolved | a bare "f(1) returns 2." (v1 limitation), "f(1) still returns 2.", "fix f, for example f(1) returns 2." |
-| two different results for the same call | "Make f(1) return 3. Make f(1) return 2." |
+| two different results for the same call (**L1 error**: QB asks which is wanted; staged stops before any model call; 10812) | "Make f(1) return 3. Make f(1) return 2." |
 
 **Clauses:** `;`, `but`, `while` and similar start a new clause, so "f(1) returns 2 today; make f(1) return 3" enforces only 3. **Quoted error messages** outside a call example follow the same rule.
 

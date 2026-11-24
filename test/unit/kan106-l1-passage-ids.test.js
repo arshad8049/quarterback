@@ -38,6 +38,9 @@ const FIX = path.join(__dirname, '..', 'fixtures', 'kan106');
 const REQUEST = fs.readFileSync(path.join(FIX, 'request.txt'), 'utf8').trim();
 const MALFORMED = fs.readFileSync(path.join(FIX, 'malformed-draft.json'), 'utf8');
 const PASSAGE = fs.readFileSync(path.join(FIX, 'passage-draft.json'), 'utf8');
+const FAITHFUL = fs.readFileSync(path.join(FIX, 'faithful-draft.json'), 'utf8');
+// 10812: a SYNTHETIC first draft with a consistent scope (test/fixtures/kan107/synthetic/README.md), not model output
+const SYNTHETIC_FIRST = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'kan107', 'synthetic', 'consistent-scope-first-draft.json'), 'utf8');
 const SMOKE_ERRORS = JSON.parse(fs.readFileSync(path.join(FIX, 'smoke-errors.json'), 'utf8'));
 const QB = path.join(__dirname, '..', '..', 'qb.js');
 const PRELOAD_OLLAMA = path.join(__dirname, '..', 'helpers', 'preload-ollama.js');
@@ -238,7 +241,7 @@ describe('KAN-106: L1 timings and the L1 budget', () => {
     let clock = 10_000;
     const now = () => clock;
     // The model "takes" 1500 ms for the draft and 2500 ms for the repair.
-    const { s } = await compileWith([MALFORMED, PASSAGE], { session: { now }, onCall: (k) => { clock += k === 0 ? 1500 : 2500; } });
+    const { s } = await compileWith([SYNTHETIC_FIRST, FAITHFUL], { session: { now }, onCall: (k) => { clock += k === 0 ? 1500 : 2500; } });
     assert.equal(s.state, 'finalized', JSON.stringify(s.errors));
     const t = s.timings;
     assert.equal(t.schema, 'qb-l1-timings/1');
@@ -247,6 +250,17 @@ describe('KAN-106: L1 timings and the L1 budget', () => {
     assert.equal(t.validation_ms, 0, 'no clock time passes during validation on the fake clock');
     assert.equal(t.l1_ms, 4000);
     assert.deepEqual(t.calls.map((c) => [c.kind, c.round, c.ms, c.outcome]), [['initial', 1, 1500, 'invalid'], ['repair', 1, 2500, 'finalized']]);
+  });
+
+  test('10812: the RECORDED first draft (protects lib/**/* and test/**/* for behaviour constraints) is blocked when the correction drops them; same timings', async () => {
+    let clock = 10_000;
+    const { s, calls } = await compileWith([MALFORMED, PASSAGE], { session: { now: () => clock }, onCall: (k) => { clock += k === 0 ? 1500 : 2500; } });
+    assert.equal(calls, 2, 'one correction, no further call');
+    assert.equal(s.state, 'invalid');
+    assert.match(s.errors.join('\n'), /protected path "lib\/\*\*\/\*" enforces constraint 0 .*a correction may not remove it/);
+    assert.match(s.errors.join('\n'), /protected path "test\/\*\*\/\*" enforces constraint 1 .*a correction may not remove it/);
+    assert.deepEqual(s.timings.calls.map((c) => [c.kind, c.ms, c.outcome]), [['initial', 1500, 'invalid'], ['repair', 2500, 'invalid']]);
+    assert.equal(s.timings.l1_ms, 4000);
   });
 
   test('fake clock: no repair → repair_call_ms is empty; validation time is measured around the validator', async () => {
