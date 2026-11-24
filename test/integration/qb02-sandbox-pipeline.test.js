@@ -136,6 +136,24 @@ describe('QB-02 done-when through the real pipeline', { skip: !ENABLED && 'set Q
     }
   });
 
+  test('KAN-44 10814: a (dummy) credential written into the workspace is reported in the run evidence, bound to the exact patch; the bytes are unchanged', async () => {
+    const repo = fixtureRepo();
+    const dummy = ['sk', 'ant', 'oat01', 'DUMMYDUMMYDUMMY0000'].join('-');
+    try {
+      const r = await runSandboxed({ repoPath: repo.dir, briefing: 'x', stateDir, verify: false,
+        agentStage: hostileAgent(`printf 'const k = "%s"\\n' '${dummy}' > /work/src/leak.js`) });
+      assert.equal(r.status, 'completed', JSON.stringify(r.reason));
+      const c = r.sandbox.credential_scan;
+      assert.equal(c.status, 'finding', JSON.stringify(c));
+      assert.deepEqual(c.findings.map((f) => [f.kind, f.file]), [['anthropic_key', 'src/leak.js']]);
+      assert.deepEqual(c.exact, { mode: 'none', status: 'not_applicable' }, 'no credential is given to a scripted agent');
+      assert.equal(c.patch_sha256, crypto.createHash('sha256').update(r.patch_raw).digest('hex'));
+      assert.ok(r.patch_raw.includes(Buffer.from(dummy)), 'the authoritative bytes are not redacted');
+      assert.ok(!JSON.stringify(r.sandbox).includes(dummy));
+      assert.ok(['enabled', 'disabled', 'unknown'].includes(r.sandbox.live_restore));
+    } finally { repo.cleanup(); }
+  });
+
   test('a nested .git path is captured as unsupported and cannot pass', async () => {
     const repo = fixtureRepo();
     try {

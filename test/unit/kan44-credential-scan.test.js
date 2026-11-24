@@ -134,7 +134,7 @@ describe('qb patch', () => {
     process.stderr.write = (x) => { errs.push(String(x)); return true; };
     process.stdout.write = (x) => { out = Buffer.concat([out, Buffer.from(x)]); return true; };
     let code; const file = path.join(r.dir, 'out', 'p.patch');
-    try { code = await require('../../lib/sandbox/cli').patch([r.id, ...(args.length ? args : ['--out', file])], { loadRun: (id) => store.loadRun(id, { runsDir: r.runsDir }), env: {}, ...deps }); }
+    try { code = await require('../../lib/sandbox/cli').patch([r.id, ...(args.length ? args : ['--out', file])], { loadRun: (id) => store.loadRun(id, r.runsDir), env: {}, ...deps }); }
     finally { process.stderr.write = ew; process.stdout.write = ow; if (prev === undefined) delete process.env.QB_RUNS_DIR; else process.env.QB_RUNS_DIR = prev; }
     return { code, err: errs.join(''), out, file: fs.existsSync(file) ? fs.readFileSync(file) : null };
   }

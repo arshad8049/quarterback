@@ -282,6 +282,13 @@ async function main() {
   run.setContract(contract);
   if (opts.save) saveArtifact('intent/contracts', contract);
 
+  // KAN-44 10814: say it before the run, not after. Read only; the run record keeps the state.
+  if (opts.agent === 'claude-code') {
+    const LR = require('./lib/sandbox/live-restore');
+    const w = LR.warning(await LR.liveRestore());
+    if (w) console.log(`\n  ! ${w}\n`);
+  }
+
   // ── L5 recall → L2 → L3/L4 repair loop → L5 persist: one API shared with the benchmark (QB-28)
   const { blocked, execution, report, attempt } = await runPipeline({
     contract, repoPath, agent: opts.agent, maxRetries, run, budgetRun, baseSha, memory,
@@ -307,6 +314,11 @@ async function main() {
         log(isRetry ? 'L3↩' : 'L3', `Execution done  (${ms}ms)  status=${execution.status}`);
         execution.changes.forEach(c => console.log(`     ${c.file.padEnd(38)} +${c.additions} -${c.deletions}`));
         if (opts.save) saveArtifact('agent/executions', execution, `${execution.id}_attempt${attempt}`);
+      },
+      credentialFound(scan) {
+        console.log('\n  ✗ The captured patch appears to contain a credential. `qb patch` will refuse to export it, and QB makes no further attempt.');
+        for (const d of new Set(require('./lib/credential-scan').describeFindings(scan.findings))) console.log(`      - ${d}`);
+        console.log('    If it is real, revoke or rotate it now. The local run record is sensitive.');
       },
       verifyStart() { log('L4', 'Verification...'); },
       verified(report, attempt, ms) {

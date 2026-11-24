@@ -104,6 +104,31 @@ describe('T-AUTH (fake credential)', { skip: !ENABLED && 'set QB_INTEGRATION=1 (
     assert.ok(!c.credentialArgs.join(' ').includes('FAKE'));
   });
 
+  test('KAN-44 10814: the run\'s own credential in a patch is found in a trusted container; only a word comes back', async () => {
+    const { exactModeS } = require('../../lib/sandbox/credential-check');
+    const w = await newWs();
+    await writeFakeCredential(3 * 3600_000);
+    await A.credentialsForRun(w, stateDir, { stageDeadlineMs: 600_000, refresh: ok, env: {} });
+    const o = { image: w.image, runId: w.runId, authVolume: A.AUTH_VOLUME, labels: D.runLabels(w.runId, 'credential-check') };
+    assert.equal(await exactModeS(Buffer.from('+const a = 1\n'), o), 'absent');
+    assert.equal(await exactModeS(Buffer.from(`+const a = '${FAKE_ACCESS}'\n`), o), 'found');
+    assert.equal(await exactModeS(Buffer.from('+sk-ant-ort01-FAKErefresh000\n'), o), 'found', 'the refresh token too');
+    assert.equal(await exactModeS(Buffer.concat([Buffer.from([0, 255]), Buffer.from(FAKE_ACCESS)]), o), 'found', 'binary-safe');
+    assert.equal(await exactModeS(Buffer.alloc(5 * 1024 * 1024, 'x'), o), 'absent', 'a large patch');
+    // an agent that overwrites or breaks its copy cannot hide the stored credential
+    for (const body of ['{"claudeAiOauth":{"accessToken":"attacker-value-0000000000"}}', 'not json', '']) {
+      const r = await D.op(['run', '--rm', '-i', '--user', '10001:10001', '-v', `${w.runId}-cred:/c`, BUSYBOX, 'sh', '-c', 'cat > /c/.credentials.json'], { input: body });
+      assert.ok(r.ok, r.stderr);
+      assert.equal(await exactModeS(Buffer.from(FAKE_ACCESS), o), 'found', body);
+      assert.equal(await exactModeS(Buffer.from('clean'), o), 'absent', body);
+    }
+    // no stored credential to compare with: an error, never absent
+    const empty = `qb-k44-empty-${process.pid}`;
+    await D.op(['volume', 'create', empty]);
+    try { assert.equal(await exactModeS(Buffer.from('clean'), { ...o, authVolume: empty, runId: null }), 'error'); }
+    finally { await D.op(['volume', 'rm', '-f', empty]); }
+  });
+
   test('not logged in → AUTH_NOT_LOGGED_IN', async () => {
     await D.op(['volume', 'rm', '-f', A.AUTH_VOLUME]);
     await assert.rejects(A.credentialsForRun(ws, stateDir, { stageDeadlineMs: 600_000, refresh: ok, env: {} }),
