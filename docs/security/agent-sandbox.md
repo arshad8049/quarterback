@@ -44,7 +44,7 @@ The credential arrangement used for the KAN-109 research runs was a separate, ow
 | **§5.5 authentication obligations** | No conclusion with sources is recorded. An owner decision to accept a risk for research does not answer it. | The check itself, recorded in §5.5. It is a beta blocker for Mode S. |
 | **Copied-secret reporting** (§5.4, T-AUTH) | **Not implemented.** There is no credential scan of the patch, and `qb patch` reports none. The run record redacts a few known key formats in text artifacts; the exact patch bytes are stored and exported unredacted. | Implement the scan and its T-AUTH test, or withdraw the promise. |
 | **`live-restore` warning** (G5c, §12) | **Not implemented.** QB does not check the Docker setting. | Implement it or withdraw it. |
-| **OOM classification** (§8.4) | A child killed for memory can be recorded as `completed` when Docker's `OOMKilled` flag is late (KAN-96; 4 of 16 `main` CI runs from 2026-10-24 to 2026-11-22). It is not recorded as a passed task: verification still decides. | KAN-96 diagnostic and fix. |
+| **OOM classification** (§8.4) | A child killed for memory can be recorded as `completed` when Docker does not report the kill (KAN-96; 4 of 16 `main` CI runs from 2026-10-24 to 2026-11-22, and 4 of 50 in diagnostic run 45503431684, where the container's own counter showed the kill and Docker's flag stayed false). It is not recorded as a passed task: verification still decides. | The KAN-96 fix (design in review). |
 | **Release candidate** | None is pinned. | On the pinned candidate: no host or Docker socket access, mount and network policy, and cancellation, timeout and crash cleanup, with dummy secrets (KAN-44 comment 10798), plus a fresh-machine walkthrough. |
 
 ### What this document does not claim
