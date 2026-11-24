@@ -48,6 +48,26 @@ OOM is: `OOMKilled` true, **or** a positive `oom_kill` delta for this exact cont
 
 **I suggest A, with the decision part first.** It needs one more bounded, branch-only batch to measure A's capture rate before relying on it, and I have not been approved for that. On hosts where the counters cannot be read (Docker Desktop, seen here), the result stays `inspect` or `unavailable`, and this is not a resolved guarantee there.
 
+## Observer experiment (option A), run 45509067778
+
+One batch, 50 of 50, no rerun, commit `27304a9` on `kan96-oom-diagnostic`. Docker 28.0.4, cgroup v2, systemd, x86_64, image `ubuntu24 20261116.376.1`. The workload waited on one line of stdin until the observer was armed (a disclosed change to the fixture); the observer ran on the host in its own thread and did not poll.
+
+| Case | Ran | Armed | Kill captured | Final observation | Docker reported OOM | Wrong |
+|---|---|---|---|---|---|---|
+| OOM | 30 | 30 | **27 (3 missed)** | 27 | 25 | 0 |
+| Healthy exit | 8 | 8 | 0 | 8 | 0 | 0 |
+| SIGKILL, not OOM | 6 | 6 | 0 | 5 (1 missed, so `unavailable`) | 0 | 0 |
+| Observer unavailable (OOM workload) | 6 | 0 | 0 | 0 | 5 | 0 |
+
+"Wrong" means an OOM called `none`, or a non-OOM called `oom`. Cleanup complete 50/50. Observer active time: median 0.62 ms, max 3.3 ms per iteration; arming at most 0.84 ms; at most 3 reads. These are its own event-loop times, not whole-process CPU.
+
+* All 30 OOM runs were decided `oom`, 5 of them **only** because of the observer. In its 3 misses Docker happened to report the kill. **That is luck, not coverage:** nothing shows the two misses are independent, and a joint miss gives `completed` / `unavailable`, as in row 16.
+* In all 3 misses the memory notification read 0, no second one came, and the cgroup was gone 5 to 6 ms later. In 18 captures the same first read was 0 and the empty-cgroup notification saved it. A likely cause is that the kernel limits how often it notifies for one file; **not verified**.
+
+**Possible next step, not approved:** after a memory notification, re-read for a few milliseconds (bounded, only when notified, never standing polling). It would need its own batch.
+
+**Not covered:** other Docker, kernel or cgroup versions, long stages, parallel runs, real agent workloads, observer loss in CI (tested only in a local VM, 2 of 2 gave no false claim), and the cost of the stdin gate for the agent stage, which already uses stdin.
+
 ## Not proposed
 
 No change to timeouts, hardening, the fixture or verification; no CI retry; G5c and timing flakes stay separate.
