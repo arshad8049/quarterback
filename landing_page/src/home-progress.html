@@ -1,39 +1,38 @@
-<!-- PROGRESS, dated. "Available now" = merged into main and verified there (CLI), or deployed with a recorded version (site).
-     Sources: PRs #19-#21 (2026-11-04, d946ff3), #23 (2026-11-05, eea8a5c), #30 (2026-11-08, 784e721, Worker version 4b842e11);
-     run e01b3273 (2026-10-15, 3fc08fd); docs/support.md validated commits (54c2f24, 2026-10-12); research.html. -->
+<!-- PROGRESS, dated 2026-11-18 America/Chicago (senior brief KAN-67 10737, corrections 10750). Three cards only; detail lives on research.html.
+     Sources: pair run 44211149405 (KAN-114 10715, accepted 10720); L1 diagnostic c5399f25 (KAN-106 10733, BLOCKED, 333.8 s);
+     demo milestone KAN-44 10736; rehearsal run 0e9eede7 (KAN-44 10746, evidence https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal); research halted by the owner (KAN-114 10738). -->
 <section id="progress" class="qbh-sec qbh-sec-light" aria-labelledby="progress-h">
   <div class="qbh-wrap">
     <header class="qbh-head qb-reveal">
-      <p class="qbh-eyebrow">Progress · November 8, 2026</p>
+      <p class="qbh-eyebrow">Progress · November 18, 2026</p>
       <h2 id="progress-h" class="qbh-h2">Where Quarterback stands.</h2>
     </header>
 
     <div class="qbh-cards">
       <article class="qbh-card qb-reveal" style="--d:0">
-        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#2f7d5c"/></svg>Available now</p>
-        <h3 class="qbh-h3">Run, check and review a change</h3>
+        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#2f7d5c"/></svg>Research milestone</p>
+        <h3 class="qbh-h3">A fair side-by-side comparison now runs end to end</h3>
         <ul>
-          <li>The workflow in the run above. <a href="#run">See it</a></li>
-          <li>Clear stops when a requirements list is invalid or only allows off-limits files. <span class="qbh-dim">Merged November 4 and 5.</span> <a href="https://github.com/arshad8049/quarterback/pull/21">Evidence</a></li>
-          <li>Signing up emails you the setup guide. <span class="qbh-dim">Live since November 8.</span></li>
+          <li>On one task we had already worked on, Claude Code alone and Claude Code with Quarterback both solved it, checked by an independent grader. <a href="https://github.com/arshad8049/quarterback/actions/runs/44211149405">Run</a></li>
+          <li>This shows the comparison works. It does not show that Quarterback helps or saves cost. The checklist was written by a model and reviewed by an AI reviewer. <a href="./research.html">Details</a></li>
         </ul>
       </article>
 
       <article class="qbh-card qb-reveal" style="--d:1">
-        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#a8501a" stroke-width="1.5"/><path d="M6 1.75a4.25 4.25 0 0 1 0 8.5z" fill="#a8501a"/></svg>Being improved</p>
-        <h3 class="qbh-h3">Writing requirements automatically</h3>
+        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#a8501a" stroke-width="1.5"/><path d="M6 1.75a4.25 4.25 0 0 1 0 8.5z" fill="#a8501a"/></svg>Known limitation</p>
+        <h3 class="qbh-h3">Automatic checklist drafting is not reliable yet</h3>
         <ul>
-          <li>Most automatic drafts are still rejected, so trials start from a list a person writes or reviews. <a href="./developers#progress">Measurements</a></li>
-          <li>The full setup walkthrough last passed on October 12. We’re confirming it on the current version. <a href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#validated-commits">Record</a></li>
+          <li>Our latest test request was still blocked after about 334 seconds, so today a person writes or reviews the checklist before a run. <a href="./developers#progress">Measurements</a></li>
         </ul>
       </article>
 
       <article class="qbh-card qb-reveal" style="--d:2">
-        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Being evaluated</p>
-        <h3 class="qbh-h3">Does it save review time?</h3>
+        <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Next</p>
+        <h3 class="qbh-h3">One supervised rehearsal completed</h3>
         <ul>
-          <li>Not established. Two small early comparisons with Claude Code alone showed no measured advantage. <a href="./research.html">Evaluation notes</a></li>
-          <li>Next: compare the two on tasks whose results are checked independently.</li>
+          <li>On a Mac, with a checklist a person wrote and reviewed: verified on the first attempt in 136 seconds. Setup was assisted and the sandbox was already installed. <a href="https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal">Evidence</a></li>
+          <li>One run, not a reliability rate. Self-service beta is not ready.</li>
+          <li>Research on new tasks is paused while we do this. <a href="./research.html">Evaluation notes</a></li>
         </ul>
       </article>
     </div>

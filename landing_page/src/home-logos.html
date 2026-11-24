@@ -1,18 +1,30 @@
-<!-- LOGO STRIP (revision 5, owner decision 2026-11-10). Exactly these items; see media/logos/SOURCES.md.
-     "Works with" shows compatibility, not endorsement. The group labels stay visible.
+<!-- LOGO STRIP (revision 6, owner decision 2026-11-19). Coding agents: Claude Code is supported today; Cursor, Codex and
+     Gemini are planned adapters, labelled "planned" and linked to docs/support.md#agents---agent. Cursor, Codex
+     (OpenAI mark) and Gemini use logo files (see SOURCES.md). GitHub Copilot removed for now (owner, 2026-11-19).
+     "Currently supported" (owner, 2026-11-19) mirrors docs/support.md: Node.js 20+, Linux x86_64, Docker, node:test.
+     Owner rule (2026-11-19): every item in this strip is a logo or a mark+name lockup; no plain text items. Not an endorsement; see media/logos/SOURCES.md. The group labels stay visible.
      Without JavaScript or under reduced motion it is a static, wrapped row. interactions.js adds the moving
      copy (aria-hidden, inert) and the Pause button. -->
-<section class="qbh-logos" data-qbh-marquee aria-label="Works with, and research collaborations">
+<section class="qbh-logos" data-qbh-marquee aria-label="Coding agents, currently supported platforms, and research collaborations">
   <div class="qbh-marquee">
     <div class="qbh-marquee-track">
       <div class="qbh-marquee-set">
         <div class="qbh-logo-group">
-          <p class="qbh-logo-label" id="logos-works">Works with</p>
+          <p class="qbh-logo-label" id="logos-works">Coding agents</p>
           <ul class="qbh-logo-list" aria-labelledby="logos-works">
-            <li class="qbh-logo"><img src="./media/logos/claude-code.svg" alt="Claude Code" width="160" height="22" style="--h: 22px" decoding="async"></li>
-            <li class="qbh-logo"><img src="./media/logos/nodejs.svg" alt="Node.js" width="107" height="32" style="--h: 32px" decoding="async"></li>
+            <li class="qbh-logo"><img src="./media/logos/claude-code.svg" alt="Claude Code (supported)" width="160" height="22" style="--h: 22px" decoding="async"></li>
+            <li class="qbh-logo"><a class="qbh-logo-link" href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#agents---agent" aria-label="Cursor: planned, see supported agents"><img src="./media/logos/cursor.svg" alt="Cursor" width="101" height="24" style="--h: 24px" decoding="async"><span class="qbh-logo-plan">planned</span></a></li>
+            <li class="qbh-logo"><a class="qbh-logo-link qbh-lockup" href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#agents---agent" aria-label="OpenAI Codex: planned, see supported agents"><img src="./media/logos/openai.svg" alt="" width="22" height="22" style="--h: 22px" decoding="async"><span class="qbh-lockup-name">Codex</span><span class="qbh-logo-plan">planned</span></a></li>
+            <li class="qbh-logo"><a class="qbh-logo-link qbh-lockup" href="https://github.com/arshad8049/quarterback/blob/main/docs/support.md#agents---agent" aria-label="Gemini: planned, see supported agents"><img src="./media/logos/gemini.png" alt="" width="22" height="22" style="--h: 22px" decoding="async"><span class="qbh-lockup-name">Gemini</span><span class="qbh-logo-plan">planned</span></a></li>
+          </ul>
+        </div>
+        <div class="qbh-logo-group">
+          <p class="qbh-logo-label" id="logos-supported">Currently supported</p>
+          <ul class="qbh-logo-list" aria-labelledby="logos-supported">
+            <li class="qbh-logo"><img src="./media/logos/nodejs.svg" alt="Node.js 20 or newer" width="107" height="32" style="--h: 32px" decoding="async"></li>
+            <li class="qbh-logo"><span class="qbh-lockup"><img src="./media/logos/linux-tux.svg" alt="" width="24" height="28" style="--h: 28px" decoding="async"><span class="qbh-lockup-name">Linux</span></span></li>
             <li class="qbh-logo"><img src="./media/logos/docker.svg" alt="Docker" width="131" height="28" style="--h: 28px" decoding="async"></li>
-            <li class="qbh-logo"><img src="./media/logos/github.svg" alt="GitHub" width="123" height="28" style="--h: 28px" decoding="async"></li>
+            <li class="qbh-logo"><span class="qbh-lockup"><img src="./media/logos/nodejs-icon.svg" alt="" width="22" height="25" style="--h: 25px" decoding="async"><span class="qbh-lockup-name">node:test</span></span></li>
           </ul>
         </div>
         <div class="qbh-logo-group">
