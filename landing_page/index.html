@@ -274,43 +274,76 @@
   <!-- ============================================================ -->
   <!-- SECTION: HOME-PROGRESS → edit: src/home-progress.html -->
   <!-- ============================================================ -->
-  <!-- PROGRESS, dated 2026-11-18 America/Chicago (senior brief KAN-67 10737, corrections 10750). Three cards only; detail lives on research.html.
-       Sources: pair run 44211149405 (KAN-114 10715, accepted 10720); L1 diagnostic c5399f25 (KAN-106 10733, BLOCKED, 333.8 s; the OLD whole-contract path, labelled as such per KAN-67 10757);
-       demo milestone KAN-44 10736; rehearsal run 0e9eede7 (KAN-44 10746, evidence https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal); research halted by the owner (KAN-114 10738). -->
+  <!-- PROGRESS, dated 2026-11-24. Three current cards, then earlier evidence. Copy approved for KAN-67; every public link is pinned.
+       1 Checklist safeguards: branch kan107-consistency-design @ 2150ab6 (not merged; nothing about its CI is claimed here).
+       2 Memory failures: run 45503431684 (b661872), annotations copied at 277de65. One batch of 50; 4 (iterations 6, 20, 30, 38) not reported within the 5 s observed.
+         A diagnostic sample, not a customer failure rate and not a shipped fix. Never "Docker could not report it".
+       3 Beta safety: docs/security/agent-sandbox.md @ e7a6a69 (branch kan44-sandbox-status, not merged). The credential scan and the live-restore check do not exist.
+       Earlier evidence: pair run 44211149405 (2026-11-18 00:50 UTC, Nov 17 America/Chicago); rehearsal run 0e9eede7; diagnostic c5399f25 (333.8 s, the OLD whole-checklist method, KAN-67 10757; no public record).
+       Not mentioned on purpose: PR #27 (merged as 7f938da, not a user-visible release), any success rate, any newer single-run time. -->
   <section id="progress" class="qbh-sec qbh-sec-light" aria-labelledby="progress-h">
     <div class="qbh-wrap">
       <header class="qbh-head qb-reveal">
-        <p class="qbh-eyebrow">Progress · November 18, 2026</p>
+        <p class="qbh-eyebrow">Progress · November 24, 2026</p>
         <h2 id="progress-h" class="qbh-h2">Where Quarterback stands.</h2>
+        <p class="qbh-sub">Nothing on these three cards has shipped. Each links to the public record it describes.</p>
       </header>
   
       <div class="qbh-cards">
-        <article class="qbh-card qb-reveal" style="--d:0">
-          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#2f7d5c"/></svg>Research milestone</p>
-          <h3 class="qbh-h3">A fair side-by-side comparison now runs end to end</h3>
-          <ul>
-            <li>On one task we had already worked on, Claude Code alone and Claude Code with Quarterback both solved it, checked by an independent grader. <a href="https://github.com/arshad8049/quarterback/actions/runs/44211149405">Run</a></li>
-            <li>This shows the comparison works. It does not show that Quarterback helps or saves cost. The checklist was written by a model and reviewed by an AI reviewer. <a href="./research.html">Details</a></li>
-          </ul>
+        <article class="qbh-card qb-reveal" style="--d:0" aria-labelledby="pg-1">
+          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#a8501a" stroke-width="1.5"/><path d="M6 1.75a4.25 4.25 0 0 1 0 8.5z" fill="#a8501a"/></svg><span>Status: <strong>In review</strong></span></p>
+          <h3 class="qbh-h3" id="pg-1">Checklist safeguards</h3>
+          <p class="qbh-card-text">We added checks for mismatched examples and unclear targets. Integration testing continues. Automatic checklist drafting is not reliable enough for self-service use.</p>
+          <dl class="qbh-facts">
+            <div><dt>Date</dt><dd><time datetime="2026-11-24">November 24, 2026</time></dd></div>
+            <div><dt>Scope</dt><dd>On a review branch. Not merged into main.</dd></div>
+            <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/commit/2150ab6690c4444c7cc5b9ba45e375d00d5e36a3">Commit 2150ab6</a>, <a href="https://github.com/arshad8049/quarterback/compare/main...kan107-consistency-design">branch changes</a></dd></div>
+          </dl>
         </article>
   
-        <article class="qbh-card qb-reveal" style="--d:1">
-          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#a8501a" stroke-width="1.5"/><path d="M6 1.75a4.25 4.25 0 0 1 0 8.5z" fill="#a8501a"/></svg>Known limitation</p>
-          <h3 class="qbh-h3">Automatic checklist drafting is not reliable yet</h3>
-          <ul>
-            <li>A diagnostic of our older drafting method, which writes the whole checklist in one model reply: its latest test request was still blocked after about 334 seconds. Today a person writes or reviews the checklist before a run. <a href="./developers#progress">Measurements</a></li>
-          </ul>
+        <article class="qbh-card qb-reveal" style="--d:1" aria-labelledby="pg-2">
+          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#2f5f7d"/></svg><span>Status: <strong>Diagnosed</strong></span></p>
+          <h3 class="qbh-h3" id="pg-2">Memory failures</h3>
+          <p class="qbh-card-text">We reproduced a case where Docker misses a memory-killed process. A more direct check is being tested.</p>
+          <dl class="qbh-facts">
+            <div><dt>Date</dt><dd><time datetime="2026-11-24">November 24, 2026</time></dd></div>
+            <div><dt>Scope</dt><dd>A diagnostic, not a shipped fix and not a customer failure rate.</dd></div>
+            <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/actions/runs/45503431684">Diagnostic run</a>, <a href="https://github.com/arshad8049/quarterback/blob/277de6588baf7f481489af44c7ed2c504b033c56/bench/kan96-oom-diagnostic/evidence/run-45503431684-annotations.json">recorded results</a></dd></div>
+          </dl>
+          <details class="qbh-more-info">
+            <summary>What the diagnostic measured</summary>
+            <p>One batch of 50 iterations on ubuntu-24.04 (x86_64) with Docker 28.0.4. In 4 of them, Docker had not reported the kill within the five seconds we observed. It says nothing about how often this happens in real use.</p>
+          </details>
         </article>
   
-        <article class="qbh-card qb-reveal" style="--d:2">
-          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Next</p>
-          <h3 class="qbh-h3">One supervised rehearsal completed</h3>
-          <ul>
-            <li>On a Mac, with a checklist a person wrote and reviewed: verified on the first attempt in 136 seconds. Setup was assisted and the sandbox was already installed. <a href="https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal">Evidence</a></li>
-            <li>One run, not a reliability rate. Self-service beta is not ready.</li>
-            <li>Research on new tasks is paused while we do this. <a href="./research.html">Evaluation notes</a></li>
-          </ul>
+        <article class="qbh-card qb-reveal" style="--d:2" aria-labelledby="pg-3">
+          <p class="qbh-card-tag"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.25" fill="none" stroke="#4a504d" stroke-width="1.5" stroke-dasharray="2 2"/></svg><span>Status: <strong>In preparation</strong></span></p>
+          <h3 class="qbh-h3" id="pg-3">Beta safety</h3>
+          <p class="qbh-card-text">We documented current sandbox limits and identified remaining credential-output and cleanup checks. Private-code beta qualification is still open.</p>
+          <dl class="qbh-facts">
+            <div><dt>Date</dt><dd><time datetime="2026-11-24">November 24, 2026</time></dd></div>
+            <div><dt>Scope</dt><dd>Documentation on a review branch. The remaining checks are not in Quarterback yet.</dd></div>
+            <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/blob/e7a6a69c90617d56621e84d6480df4b69ae442ad/docs/security/agent-sandbox.md#current-status">Sandbox status</a>, <a href="https://github.com/arshad8049/quarterback/blob/e7a6a69c90617d56621e84d6480df4b69ae442ad/docs/security/agent-sandbox.md#open-before-a-customer-uses-private-code">open items</a></dd></div>
+          </dl>
         </article>
+      </div>
+  
+      <div class="qbh-history qb-reveal" id="progress-history" role="group" aria-labelledby="history-h">
+        <h3 class="qbh-h3" id="history-h">Earlier evidence</h3>
+        <ul>
+          <li>
+            <p class="qbh-history-what"><time datetime="2026-11-18">November 18, 2026</time><strong>One supervised rehearsal</strong></p>
+            <p>On a Mac, with a hand-written checklist: verified on the first attempt in 136 seconds. Setup was assisted and the sandbox was already installed. One run, not a reliability rate. <a href="https://github.com/arshad8049/quarterback/tree/ea6e66b071f03a2ce40882a423bde05e400831d2/docs/demo/evidence/2026-11-18-velora-rehearsal">Redacted evidence</a></p>
+          </li>
+          <li>
+            <p class="qbh-history-what"><time datetime="2026-11-17">November 17, 2026</time><strong>One side-by-side comparison</strong></p>
+            <p>On one task we had already worked on, Claude Code alone and Claude Code with Quarterback both passed an independent grader. This does not show an advantage for Quarterback. The checklist was written by a model and reviewed by an AI reviewer. Research on new tasks is paused. <a href="https://github.com/arshad8049/quarterback/actions/runs/44211149405">Run</a>, <a href="./research.html">evaluation notes</a></p>
+          </li>
+          <li>
+            <p class="qbh-history-what"><time datetime="2026-11">November 2026</time><strong>An older drafting method</strong></p>
+            <p>A diagnostic of the older method, which wrote the whole checklist in one model reply: a test request was still blocked after about 334 seconds. It is not a current speed. Its raw record is not public; the published <a href="./developers#evidence">drafting measurements</a> are from November 4.</p>
+          </li>
+        </ul>
       </div>
     </div>
   </section>
