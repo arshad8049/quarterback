@@ -1,0 +1,95 @@
+{
+  "format": "qb-kan106-eval-plan/2",
+  "status": "PLAN ONLY, NOT AUTHORIZED: no model run; frozen only after senior approval on KAN-106",
+  "doc": "docs/research/kan106/eval-plan-v2.md",
+  "written_on": { "branch": "kan106-eval-plan", "base": "2150ab6690c4444c7cc5b9ba45e375d00d5e36a3", "base_branch": "kan107-consistency-design", "note": "contains unmerged KAN-106 prototype f907d97" },
+  "decision": {
+    "source": "KAN-106 10815",
+    "l1_development_candidate": { "model": "qwen2.5-coder:14b", "digest": "9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849", "quantization": "Q4_K_M", "digest_listed": "owner Mac 2026-11-19, Ollama 0.40.16 (bench/kan106-eval-v1/FREEZE.json); re-list at run time, refuse on mismatch" },
+    "customer_default": false,
+    "qualified": false,
+    "global_default_unchanged": { "QB_MODEL_fallback": "deepseek-r1:7b", "files": ["intent/compiler.js", "intent/staged.js", "context/builder.js", "verify/judge.js", "lib/doctor.js", "lib/budget.js"] },
+    "l1_isolation_now": "built child env sets QB_MODEL; --no-llm-context --no-llm-verify keep L2/L4 model-free, so only L1 calls the model",
+    "role_specific_l1_model_setting": { "exists_at_base": false, "proposed_not_built": ["l1_model + l1_model_digest on the L1 profile or QB_L1_MODEL, read only by intent/compiler.js and intent/staged.js", "digest check before the first L1 call", "manifest records the L1 model separately", "qb doctor checks both models"] }
+  },
+  "qb_under_test": { "sha": null, "rule": "one exact SHA named at freeze (107 combined head or its merged successor); no edits to intent/, lib/budget.js, verify/, qb.js or harness between the H hash and the end of scoring; never pool SHAs" },
+  "sets": {
+    "development_D": {
+      "reported_as_held_out": false,
+      "items": ["S1-slug", "S2-formatter", "S3-percent", "S4-parsebool", "S5-clock", "S6-money", "U1-userrepo", "U2-roundto"],
+      "items_dir": "bench/kan106-eval-v1/items",
+      "freeze": "bench/kan106-eval-v1/FREEZE.json (v3 at base; v4 labels-only only on kan106-staged-l1 @ e5c460d)",
+      "other_recorded_fixtures": ["test/fixtures/kan106/ (see FIXTURES.md)", "docs/research/kan106/2026-11-18-staged-69e576f5/", "test/fixtures/kan105/", "test/fixtures/kan107/", "bench/l1-eval/tasks.json"],
+      "offline_tools": ["bench/kan106-eval-v1/validate-controls.js", "bench/kan106-eval-v1/check-freeze.js", "bench/kan106-eval-v1/replay-validators.js --pack <e5c460d pack>"],
+      "model_runs": "only as a separately labelled development batch, if authorized; never pooled with H"
+    },
+    "held_out_H": {
+      "author": "not the junior; proposed: senior or owner, or a fresh session without access to intent/, D results or prototype prompts (KAN-117 packet method)",
+      "author_delivers": ["request.txt", "item.json spec: category, expected finalize|refuse, semantic requirements, must_allow/must_protect, intended refusal reason"],
+      "junior_builds": ["base/", "controls/", "reference.test.js"],
+      "base_and_controls_checked_by": "author or senior",
+      "hash_before_any_use": "sha256 of every request.txt and item.json + manifest hash posted on KAN-106 before the prototype touches the requests in any form (model, fake model or replay); full freeze before the first model call",
+      "edits_after_hash": "never; a replacement is a new item id, both kept",
+      "after_evaluation": "H is retired into D; next evaluation needs a new H",
+      "proposed_size": { "supported": 8, "refusal": 4 },
+      "proposed_supported_coverage": ["array/object argument (S2 gap)", "request-quoted error message on a new export (S3 gap)", "explicit protection", "requested tests", "default-class method", "preservation-heavy", "author's choice x2"],
+      "proposed_refusal_coverage": ["ambiguous: vague qualifier", "ambiguous: missing expected value", "unsupported call shape", "impossible/conflicting scope (KAN-105)"]
+    }
+  },
+  "launch": {
+    "reuse": "bench/kan106-eval-v1/batch.js pattern (built env, digest check before/after, intent/.env refusal, no retry)",
+    "flags": ["--agent", "dry-run", "--no-llm-context", "--no-llm-verify", "--l1-profile", "qwen-14b-staged", "--l1-budget", "420", "--deadline", "15"],
+    "not_used": ["--l1-warmup"],
+    "model_options_in_code": { "num_ctx": 8192, "temperature": 0, "where": "intent/staged.js callModel" },
+    "per_call_ms": 240000, "l1_total_ms": 420000,
+    "proposed_env_pins": { "QB_MODEL_CONCURRENCY": "1" }
+  },
+  "scoring": {
+    "rule": "finalized is never correctness; success = finalized AND mechanical gates AND human-ruled acceptable against the full request",
+    "dimensions": {
+      "D1": "faithful requirement coverage (sampled coverage labelled, per 10770)",
+      "D2": "real target/API and argument binding (module, export/method, new vs call, arg count/shape/type)",
+      "D3": "consistent permissions/scope (must_allow, must_protect, no weakening, contractState consistent)",
+      "D4": "required tests represented (adequacy human-reviewed)",
+      "D5": "genuine ambiguity/refusal (intended_refusal with frozen decision; refusal on a supported item is not success)",
+      "D6": "no forbidden/invented defaults (every value traced to request or grounded source)",
+      "mechanical": "correct control passes all checks; base fails >=1; no wrong-* passes all"
+    },
+    "review": { "proposed_by": "junior (semantic-review-proposed.json)", "ruled_by": "senior (semantic-review-ruled.json)", "blind_to_latency_and_load_until_ruled": true },
+    "reuse": ["bench/kan106-eval-v1/score.js", "bench/kan106-eval-v1/rubric.md"],
+    "proposed_not_built": ["bench/kan106-eval-v2/batch.js (H roster)", "bench/kan106-eval-v2/score.js (D1-D6 fields)"]
+  },
+  "load_record": {
+    "per_batch_before_after": ["model name + digest (/api/tags)", "quantization + parameter size (/api/show details)", "Ollama version (/api/version)", "loaded models size vs size_vram = CPU/GPU offload (/api/ps)", "OS, CPU model/count, physical RAM", "free memory, swap, memory pressure (macOS vm_stat, sysctl vm.swapusage, memory_pressure; Linux /proc/meminfo, /proc/pressure/memory)", "Docker running + allocation (docker info MemTotal, NCPU)", "top processes by RSS, other loaded models"],
+    "per_call": "l1.timings event: ms, limit_ms, load_ms (cold/warm where Ollama reports load_duration)",
+    "cold_warm": "model unloaded before batch; item 1 cold by design; reported with and without",
+    "proposed_not_built": ["bench/kan106-eval-v2/host-snapshot.js (read-only, no model call)"],
+    "profiles": {
+      "P-Mac": "owner Mac, 18 GB, Docker Desktop idle; development profile",
+      "P-Linux": "docs/support.md beta profile: Linux x86_64 + Docker Engine, >=16 GB, CPU-only unless GPU recorded; run-batch.sh is zsh, so zsh must be installed or a POSIX launcher frozen"
+    },
+    "infer_one_profile_from_the_other": false
+  },
+  "sequencing": {
+    "parallel": false,
+    "docker_workloads_during_batch": false,
+    "sandbox": "none (dry-run); a later agent stage needs lib/model-release.js releaseLocalModel then lib/sandbox/admission.js, separate plan",
+    "resource_gate_per_item_proposed": ["no other model loaded", "free memory >= model size (/api/ps or /api/show) + 2 GiB", "swap growth below a declared bound"],
+    "gate_fail": "resource_blocked: not launched, not a semantic failure, never rerun, profile incomplete",
+    "execution_failed": "OOM/transport/timeout, with snapshot; never a refusal or success",
+    "invalid_record": "record mismatch or corrupt evidence; never a refusal or success"
+  },
+  "batch": { "items": 12, "runs_per_item": 1, "profiles": 2, "total_runs": 24, "reruns": "none", "l1_ceiling_minutes_per_profile": 84 },
+  "gates_proposed_senior_sets_final": {
+    "Q1": ">=7/8 supported acceptable on D1-D4,D6 and 0 invented defaults",
+    "Q2": "0 incorrect control acceptance, 0 protected-scope weakening",
+    "Q3": ">=3/4 intended refusals and both ambiguous items refused",
+    "Q4_latency_separate": "median L1 <=120 s, each <=180 s over timed items; missing timings counted; cold item shown both ways",
+    "Q5_completeness": "<=1 execution_failed/invalid_record/resource_blocked, else profile inconclusive"
+  },
+  "recording": ["every attempt", "every fact-call repair", "every refusal + recorded decision", "every OOM/timeout", "load snapshots", "runs.json, batch.json, manifests, events"],
+  "no_cherry_picking": ["all items reported, fixed denominators 8 and 4 per profile", "no single run (e.g. 69e576f5, 84.5 s) quoted as latency or quality", "no best-run or best-profile substitution"],
+  "would_show": "for one QB SHA, one model digest/settings and each named profile: faithful, scope-consistent, reviewable checklists on 8 new third-party-authored supported requests; right-reason refusals on 4; latency under recorded load",
+  "would_not_show": ["population reliability (n=8+4, one run)", "run-to-run stability", "public/customer repository performance", "coding-task success (dry-run)", "fitness as customer default", "L2/L4 with Qwen", "any profile not run", "beta qualification"],
+  "approvals_needed": ["senior approves plan and sets gates", "H author named; H hashes posted, then full freeze", "proposed harness pieces built test-first offline", "owner approves model time per profile and names the Linux host"]
+}
