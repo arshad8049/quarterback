@@ -1,0 +1,55 @@
+<!-- SEE WHAT HAPPENED IN A RUN (KAN-67 10824/10826). Run 0e9eede7, 2026-11-18, Quarterback 2f01d93, files pinned at d30deb8.
+     QUOTED from those files ("…" marks a cut, long lines wrap): the terminal text, the quoted request and 30000 ms as "30s", the
+     src/duration.js lines, outcome=VERIFIED, the two file names. EDITORIAL SUMMARIES: every other sentence, and "Check summary".
+     Text is HTML at its final size; outlines and connectors are SVG, placed by blueprint.js from the real node positions. -->
+<span id="run" class="qbo-anchor"></span>
+<section id="open-run" class="qbh-sec bp" aria-labelledby="bp-h" data-bp>
+  <div class="bp-track" data-bp-track>
+  <div class="bp-pin">
+    <header class="bp-head">
+      <p class="qbh-eyebrow">A recorded rehearsal · November 18, 2026</p>
+      <h2 id="bp-h" class="bp-h">See what happened in a run.</h2>
+    </header>
+
+    <div class="bp-scene" data-bp-scene>
+      <svg class="bp-svg" data-bp-svg aria-hidden="true" focusable="false">
+        <defs><pattern id="bp-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" /></pattern></defs>
+        <g class="bp-ticks" data-bp-ticks></g>
+        <path class="bp-link" data-bp-link="rc" pathLength="1"/><path class="bp-link" data-bp-link="cw" pathLength="1"/><path class="bp-link" data-bp-link="wk" pathLength="1"/><path class="bp-link" data-bp-link="kp" pathLength="1"/><path class="bp-link" data-bp-link="py" pathLength="1"/>
+        <rect class="bp-frame" data-bp-frame rx="14"/><clipPath id="bp-wipe"><rect data-bp-wipe /></clipPath><rect class="bp-mesh" data-bp-mesh rx="14" fill="url(#bp-grid)"/><rect class="bp-dark" data-bp-dark rx="14" clip-path="url(#bp-wipe)"/><path class="bp-bar" data-bp-bar/><path class="bp-edge" data-bp-edge/>
+        <g class="bp-dots" data-bp-dots></g><g class="bp-arrows" data-bp-arrows></g><circle class="bp-head-dot" data-bp-tracer r="5"/>
+      </svg>
+
+      <figure class="bp-rec" data-bp-rec>
+        <figcaption>Interaction prototype; recording pending. Text poster of the recorded terminal.</figcaption>
+        <pre tabindex="0" data-bp-log aria-label="Recorded terminal output, excerpt">QUARTERBACK&#10;Request: "Show durations under one minute as seconds only, for example&#10;30000 ms as "30s" instead of "0m 30s". Durations of one minute or more&#10;keep the current format, for example 90000 ms stays "1m 30s"."&#10;Agent:   claude-code  (sandboxed: …)&#10;&#10;[L1]   Contract ready  (7ms)&#10;[L1]   Oracle approved (contract-file)&#10;[L2]   Context ready  (30238ms)&#10;[L3]   Execution done  (105756ms)  status=completed&#10;[L4]   Verdict: ✓ PASS  (67ms)&#10;&#10;Attempts: 1 / 3&#10;Total time: 136.3s</pre>
+      </figure>
+
+      <ol class="bp-nodes">
+        <li class="bp-node" data-bp-node="request"><h3>Request</h3><p>“Show durations under one minute as seconds only …”</p><code>30000 ms as "30s"</code></li>
+        <li class="bp-node" data-bp-node="checklist"><h3>Reviewed checklist</h3><p>Three criteria, seven checks, and which files may change.</p><p class="bp-tag">Check summary</p><code>30000 must return "30s"</code></li>
+        <li class="bp-node bp-core" data-bp-node="core"><h3>Isolated workspace</h3><div><p>Claude Code works on a copy, in a Docker sandbox. <a href="#bp-limits" data-bp-open>Sandbox limits</a></p><figure class="bp-file"><figcaption>src/duration.js, excerpt of the change</figcaption><pre aria-label="Excerpt of the change to src/duration.js">function formatDuration(ms) {&#10;  …&#10;<ins>+ if (minutes === 0) return `${seconds}s`;</ins>&#10;  return `${minutes}m ${seconds}s`;&#10;}</pre></figure></div></li>
+        <li class="bp-node" data-bp-node="checks"><h3>Checks</h3><p>All three criteria and the project’s tests passed.</p><code>outcome=VERIFIED</code></li>
+        <li class="bp-node" data-bp-node="patch"><h3>Patch</h3><p>The captured change, not applied.</p><code>src/duration.js</code> <code>test/duration.test.js</code></li>
+        <li class="bp-node bp-you" data-bp-node="you"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg><h3>You review and apply it.</h3></li>
+      </ol>
+    </div>
+
+    <footer class="bp-foot">
+      <ol class="bp-steps" aria-label="Stages"><li>Request</li><li>Reviewed checklist</li><li>Isolated run</li><li>Checks</li><li>Patch</li></ol>
+      <p class="bp-note">One supervised rehearsal. Checklist owner sign-off followed the run. <a href="#bp-run" data-bp-open>View run details</a></p>
+    </footer>
+  </div>
+  </div>
+
+  <details class="bp-details" id="bp-details">
+    <summary>Run details</summary>
+    <dl>
+      <div id="bp-run" tabindex="-1"><dt>Run</dt><dd>0e9eede7, Quarterback 2f01d93, on the owner’s Mac. Verified on attempt 1 of 3 in 136.3 seconds. Setup time is not included. One run, not a reliability rate. The checkout was unmodified after the run. <code>30000 must return "30s"</code> in the diagram is our summary of check CHK-30S.</dd></div>
+      <div><dt>Checklist</dt><dd>Hand-written and reviewed. The owner signed it off after the run; “Oracle approved (contract-file)” in the log is the tool accepting the supplied file. AC-1: <code>formatDuration</code> is still exported. AC-2: 30000, 1000 and 0 return <code>"30s"</code>, <code>"1s"</code>, <code>"0s"</code>. AC-3: 90000, 60000 and 3600000 return <code>"1m 30s"</code>, <code>"1m 0s"</code>, <code>"60m 0s"</code>. Allowed: <code>src/duration.js</code>, <code>test/**</code>.</dd></div>
+      <div id="bp-limits" tabindex="-1"><dt>Sandbox limits</dt><dd>Code in the sandbox can read the Claude credential it runs with. The sandbox limits what the agent can reach; it is not a guarantee against malicious code, and private-code use is not qualified. Test files were editable in this run. Replay re-checks the stored verdict; it does not run Claude or the tests again. The diagram explains the workflow. <a href="https://github.com/arshad8049/quarterback/blob/fb6b6210685c5a6953be550b00a9776a9e745acd/docs/security/agent-sandbox.md">Sandbox status</a></dd></div>
+      <div><dt>Terminal, excerpt</dt><dd><pre class="bp-log" tabindex="0" aria-label="Recorded terminal output, excerpt">QUARTERBACK&#10;Request: "Show durations under one minute as seconds only, for example&#10;30000 ms as "30s" instead of "0m 30s". Durations of one minute or more&#10;keep the current format, for example 90000 ms stays "1m 30s"."&#10;Agent:   claude-code  (sandboxed: …)&#10;[L1]   Contract ready  (7ms)&#10;[L1]   Oracle approved (contract-file)&#10;[L2]   Context ready  (30238ms)&#10;[L3]   Execution done  (105756ms)  status=completed&#10;[L4]   Verdict: ✓ PASS  (67ms)&#10;Attempts: 1 / 3&#10;Total time: 136.3s</pre></dd></div>
+      <div><dt>Evidence</dt><dd><a href="https://github.com/arshad8049/quarterback/tree/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal">All files</a>, <a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/velora-duration-contract.json">checklist</a>, <a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/candidate.diff">full diff</a></dd></div>
+    </dl>
+  </details>
+</section>
