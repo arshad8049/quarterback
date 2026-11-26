@@ -24,7 +24,6 @@ const { makeRepo } = require('../helpers/tmprepo');
 const { compileIntent } = require('../../intent/session');
 const { contractFromObject } = require('../../intent/compiler');
 const { contractState } = require('../../intent/contract-state');
-const { formatOracle } = require('../../intent/oracle-view');
 const { evaluatePolicy, matchesAny } = require('../../verify/policy');
 const { validateCheckResults } = require('../../verify/checks/results');
 
@@ -116,19 +115,16 @@ describe('KAN-104: malformed model JSON gets the one shared correction', () => {
   });
 
   describe('malformed → parseable but wrong: each defect alone, and where it is stopped today', () => {
-    test('contradictory check greeting("test") → "Hello, Arshad!": NOT stopped at L1 (validator gap); visible in the approval view; fails a correct implementation at L4', async () => {
+    // KAN-107 (10771): this was the known gap. Until d19865e the contradictory correction FINALIZED here (it was
+    // stopped only at approval, and after the agent ran, when the faithful implementation failed CHK-1). The
+    // gap TODO is closed: it is now stopped at L1, with the request example named.
+    test('contradictory check greeting("test") → "Hello, Arshad!": stopped at L1 since KAN-107 (the correction was the last draft); it would also fail a correct implementation at L4', async () => {
       const { s, calls } = await compileWith([MALFORMED, CONTRADICTORY]);
       assert.equal(calls, 2);
-      // GAP: the existing L1 validator accepts it. Nothing compares a check's call with the request.
-      assert.equal(s.state, 'finalized');
-      // Stopped (1): it is shown to the human before approval, verbatim.
-      assert.match(formatOracle(s.contract), /call_returns \{"module":"src\/greeting\.js","export":"greeting","args":\["test"\],"expect":"Hello, Arshad!"\}/);
-      // Stopped (2), only after the agent ran: the faithful implementation fails it.
-      assert.deepEqual(runChecks(FAITHFUL_IMPL, s.contract.checks), { 'CHK-1': 'fail', 'CHK-2': 'pass' });
-    });
-    test('KNOWN GAP: L1 should reject a call_returns check that contradicts the request\'s own example', { todo: 'KAN-104 gap: no L1 validator cross-checks check calls against the request' }, async () => {
-      const { s } = await compileWith([MALFORMED, CONTRADICTORY]);
       assert.equal(s.state, 'invalid');
+      assert.match(s.errors.join('\n'), /the request's example greeting\("Arshad"\) returns "Hello, Arshad!" \(P1\) has no check with those arguments \(CHK-1 calls greeting\("test"\) instead\)/);
+      // why it matters: the faithful implementation fails that check
+      assert.deepEqual(runChecks(FAITHFUL_IMPL, s.contract.checks), { 'CHK-1': 'fail', 'CHK-2': 'pass' });
     });
 
     test('protected_paths ["**"]: stopped at L1 since KAN-105 (the correction is the last draft, so QB blocks before approval or the agent)', async () => {

@@ -19,6 +19,7 @@ const { testPolicyErrors } = require('../verify/tests');
 const { preservationErrors } = require('../verify/preservation');
 const { validateTraceability, validateDefaults } = require('./requirements');
 const { clarificationErrors } = require('./dsa');
+const { exampleErrors } = require('./request-examples');
 
 function contractState(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c)) return { state: 'invalid', errors: ['contract is not an object'] };
@@ -55,7 +56,8 @@ function contractState(c) {
     for (const e of validateExamples(c).errors) errors.push(`${e.where} example is wrong: ${e.claim} (correct: ${e.correct})`);
   }
   // QB-14: every request clause traced; no uncovered requirement, unsupported addition or duplicate AC.
-  if (!errors.length) errors.push(...validateDefaults(c).errors, ...validateTraceability(c).errors);
+  if (!errors.length) errors.push(...validateDefaults(c).errors, ...validateTraceability(c).errors,
+    ...exampleErrors(c));   // KAN-107 (10766/10771): a supported request example must be the check, not a different one
   return errors.length ? { state: 'invalid', errors } : { state: 'finalized' };
 }
 

@@ -1,0 +1,257 @@
+{
+  "goal": "Modify Serializer.asNumber() to throw a number conversion error for empty strings or whitespace-only strings instead of returning 0, while preserving the behavior for numeric 0, string '0', and valid numeric strings.",
+  "required_behavior": [
+    "Serializer.asNumber() throws a number conversion error for an empty string.",
+    "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+    "Serializer.asNumber() returns 0 for numeric 0.",
+    "Serializer.asNumber() returns 0 for the string '0'.",
+    "Serializer.asNumber() returns the correct number for valid numeric strings."
+  ],
+  "constraints": [
+    "Only lib/serializer.js and test/asNumber.test.js change.",
+    "package.json does not change."
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Serializer.asNumber() throws a number conversion error for an empty string.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Serializer.asNumber() throws a number conversion error for a string containing only whitespace.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-2"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Serializer.asNumber() returns 0 for numeric 0.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-3"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Serializer.asNumber() returns 0 for the string '0'.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-4"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Serializer.asNumber() returns the correct number for valid numeric strings.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-1",
+        "R-5"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "criterion": "test/asNumber.test.js has new node:test cases for the empty string, a whitespace-only string, numeric 0, string \"0\" and a valid numeric string, and they pass.",
+      "met": null,
+      "kind": "behavioral",
+      "requirement_ids": [
+        "R-6"
+      ],
+      "adds_tests": {
+        "files": [
+          "test/asNumber.test.js"
+        ]
+      }
+    }
+  ],
+  "verification_plan": [
+    "Run the checks for Serializer.asNumber() in lib/serializer.js: empty and whitespace-only strings throw; 0, \"0\" and valid numeric strings convert.",
+    "Run the test suite: test/asNumber.test.js has changed and its tests pass."
+  ],
+  "relevant_context": [
+    "lib/serializer.js",
+    "test/asNumber.test.js"
+  ],
+  "ambiguity_flags": [],
+  "clarifying_question": null,
+  "scope": {
+    "allowed_changes": [
+      "lib/serializer.js",
+      "test/asNumber.test.js"
+    ],
+    "protected_paths": [
+      "package.json"
+    ]
+  },
+  "constraint_policy": [
+    {
+      "constraint": 0,
+      "enforced_by": [
+        {
+          "kind": "allowed_changes"
+        }
+      ]
+    },
+    {
+      "constraint": 1,
+      "enforced_by": [
+        {
+          "kind": "protected_paths",
+          "ref": "package.json"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-1",
+      "passage_ids": [
+        "P1"
+      ]
+    },
+    {
+      "id": "R-2",
+      "passage_ids": [
+        "P2"
+      ]
+    },
+    {
+      "id": "R-3",
+      "passage_ids": [
+        "P3"
+      ]
+    },
+    {
+      "id": "R-4",
+      "passage_ids": [
+        "P4"
+      ]
+    },
+    {
+      "id": "R-5",
+      "passage_ids": [
+        "P5"
+      ]
+    },
+    {
+      "id": "R-6",
+      "passage_ids": [
+        "P6"
+      ]
+    }
+  ],
+  "proposed_defaults": [],
+  "checks": [
+    {
+      "id": "CHK-1",
+      "ac_id": "AC-1",
+      "adapter": "call_throws",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          ""
+        ],
+        "message_includes": "The value \"\" cannot be converted to a number."
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-2",
+      "ac_id": "AC-2",
+      "adapter": "call_throws",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "   "
+        ],
+        "message_includes": "The value \"   \" cannot be converted to a number."
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-3",
+      "ac_id": "AC-3",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          0
+        ],
+        "expect": 0
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-4",
+      "ac_id": "AC-4",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "0"
+        ],
+        "expect": 0
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-5",
+      "ac_id": "AC-5",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "12.5"
+        ],
+        "expect": 12.5
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-6",
+      "ac_id": "AC-5",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          "-7"
+        ],
+        "expect": -7
+      },
+      "plan_item": 0
+    },
+    {
+      "id": "CHK-7",
+      "ac_id": "AC-5",
+      "adapter": "call_returns",
+      "params": {
+        "module": "lib/serializer.js",
+        "export": "asNumber",
+        "args": [
+          " 123 "
+        ],
+        "expect": 123
+      },
+      "plan_item": 0
+    }
+  ]
+}
