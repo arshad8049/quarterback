@@ -129,3 +129,14 @@
 /* WebKit keeps a stale scroll width from the moved cards after a resize */
 .qbi { overflow-x: clip; }
 .qbi-dialog .qbh-btn:hover, .qbi-dialog .qbh-btn:focus-visible { background: var(--ink) !important; }
+
+/* Card photos (illustrative stock, media/evidence/SOURCES.md). Orbit: the photo fills the card with its name on it; the text
+   excerpt moves to the details dialog. Grid and row: the photo sits above the card's text. */
+.qbi-note { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
+.qbi.is-orbit .qbi-note { position: absolute; left: 0; bottom: -4px; margin: 0; z-index: 3; }
+.qbi-photo { display: block; width: calc(100% + 36px); height: auto; aspect-ratio: 16 / 10; margin: -18px -18px 14px; object-fit: cover; border-radius: 13px 13px 0 0; background: var(--ink-2); }
+.qbi.is-orbit .qbi-card { padding: 0; overflow: hidden; background: var(--ink-2); }
+.qbi.is-orbit .qbi-photo { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; aspect-ratio: auto; border-radius: inherit; }
+.qbi.is-orbit .qbi-card h3 { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 26px 14px 10px; font-size: 17px; line-height: 1.2; color: #fff; background: linear-gradient(rgba(12, 14, 14, 0), rgba(12, 14, 14, 0.78)); }
+.qbi.is-orbit .qbi-card .qbi-crop { display: none; }
+.qbi-dialog .qbi-photo { display: none; }
