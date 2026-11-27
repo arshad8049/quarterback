@@ -34,9 +34,12 @@ const nameOf = (x) => { const m = path.join(DIR, `id-${x}`); return fs.existsSyn
 const readState = (name) => JSON.parse(fs.readFileSync(file(name, 'state.json'), 'utf8'));
 const writeState = (name, st) => fs.writeFileSync(file(name, 'state.json'), JSON.stringify(st));
 const cgDir = (id) => path.join(process.env.FAKE_CGROUP_ROOT, 'system.slice', `docker-${id}.scope`);
+// Atomic, like a kernfs read: writeFileSync truncates first, and an observer woken by that truncation could read an
+// empty file (seen once in CI 46031239493 under the parallel unit suite) — a fixture artifact, not a kernel behaviour.
+const atomic = (f, text) => { const t = `${f}.${process.pid}.tmp`; fs.writeFileSync(t, text); fs.renameSync(t, f); };
 const events = (id, oom, populated) => {
-  fs.writeFileSync(path.join(cgDir(id), 'memory.events'), `low 0\nhigh 0\nmax ${oom}\noom ${oom}\noom_kill ${oom}\noom_group_kill 0\n`);
-  fs.writeFileSync(path.join(cgDir(id), 'cgroup.events'), `populated ${populated}\nfrozen 0\n`);
+  atomic(path.join(cgDir(id), 'memory.events'), `low 0\nhigh 0\nmax ${oom}\noom ${oom}\noom_kill ${oom}\noom_group_kill 0\n`);
+  atomic(path.join(cgDir(id), 'cgroup.events'), `populated ${populated}\nfrozen 0\n`);
 };
 const out = (s) => process.stdout.write(s);
 const done = (code) => process.exit(code);

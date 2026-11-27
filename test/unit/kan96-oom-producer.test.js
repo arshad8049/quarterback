@@ -276,9 +276,9 @@ describe('KAN-96 run record: the stage evidence is kept (pipeline stageOom)', ()
   const { stageOom } = require('../../lib/sandbox/pipeline');
   test('positive, zero and unavailable all survive with their reason; a missing stage is unavailable, never none', async () => {
     const pos = await stage('oom-at-once', { oomObserver: { force: true, ...roots() } }).run;
-    assert.deepEqual([stageOom(pos).oom_signal, stageOom(pos).oom_evidence.baseline, stageOom(pos).oom_evidence.last], ['cgroup', 0, 1]);
+    assert.deepEqual([stageOom(pos).oom_signal, stageOom(pos).oom_evidence.baseline, stageOom(pos).oom_evidence.last], ['cgroup', 0, 1], JSON.stringify(pos.oom_evidence));
     const zero = await stage('healthy', { oomObserver: { force: true, ...roots() } }).run;
-    assert.equal(stageOom(zero).oom_signal, 'none');
+    assert.equal(stageOom(zero).oom_signal, 'none', JSON.stringify(zero.oom_evidence));
     const off = await stage('healthy', { oomObserver: { enabled: false } }).run;
     assert.equal(stageOom(off).oom_signal, 'unavailable');
     assert.match(stageOom(off).oom_unavailable, /turned off/);
