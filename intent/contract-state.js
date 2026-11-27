@@ -20,6 +20,7 @@ const { preservationErrors } = require('../verify/preservation');
 const { validateTraceability, validateDefaults } = require('./requirements');
 const { clarificationErrors } = require('./dsa');
 const { exampleErrors } = require('./request-examples');
+const { groundingIdentity } = require('./api-grounding');
 
 function contractState(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c)) return { state: 'invalid', errors: ['contract is not an object'] };
@@ -81,6 +82,10 @@ function approvedContent(c) {
     ...(c?.proposed_defaults !== undefined ? { proposed_defaults: c.proposed_defaults } : {}),
     // QB-17 re-review 2: the user's clarified choices and values (e.g. the numeric target)
     ...(c?.clarifications !== undefined ? { clarifications: c.clarifications } : {}),
+    // KAN-107 (senior 10847 a): QB's grounding decides whether request examples can be tied to a target, so its
+    // validator-relevant contents and source identity are approved with the oracle (absent -> not hashed, so
+    // contracts and approvals from before KAN-107 keep their hash; they are never migrated).
+    ...(c?.api_grounding !== undefined ? { api_grounding: groundingIdentity(c.api_grounding) } : {}),
   };
 }
 function contractHash(c) {

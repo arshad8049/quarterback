@@ -16,6 +16,25 @@ This document describes the fix as built on `kan107-consistency-design` (2150ab6
 * `laterStageErrors` (KAN-106 10677) is not on main, so the single correction receives the example errors only when the earlier stages pass. The corrected draft is still validated in full, so nothing is accepted that the combined branch would refuse.
 * The compiler attaches QB's grounding to each draft, but the model is **not** shown it: there are no grounding excerpts or passage listings in the prompt, and no `system.md` change.
 
+### Grounding and the approval boundary (senior 10847)
+
+`api_grounding` can decide whether a contract is valid, so it is never trusted as carried (`intent/grounding-binding.js`). QB does two things:
+
+* **It binds the grounding to approval.** When the field is present, `approvedContent` includes `groundingIdentity(api_grounding)`. That covers each module's path, sha256, bytes, status, reason, format, named exports, and the default export's kind, name, form, methods, accessors, statics and `ctor_args`. Editing any of these after approval voids the approval. Excerpt line ranges and `ctor_stores` are not bound: they are provenance, and request-examples never reads them.
+    * When the field is absent, nothing is hashed. Contracts and approvals from before KAN-107 keep their hash (pinned in a test) and are never migrated.
+* **It recomputes the grounding before each decision.** QB runs `groundApi` on the target repository's working tree before:
+    * a `--contract-file` is used;
+    * the agent CLI uses a stored contract;
+    * `qb.js` runs the pipeline.
+
+  If the grounding the contract carries differs from the recomputed one, the contract is refused. The difference may come from an edit, from a caller writing the field, or from the repository changing since the grounding was recorded. Nothing runs, and the user is asked to review the contract again and approve it again.
+* **How `--contract-file` is handled:**
+    * A grounding written in the file is the caller's claim. It is compared with QB's recomputation and never used as proof.
+    * If the file has no grounding, QB attaches its own, prints the example mapping, and the approval then binds it.
+    * `proposed-contract.json` records QB's grounding, so a later run detects drift since the review.
+* **Old approvals are not migrated.** A contract approved before KAN-107 has no grounding and is left without one. Its class-method examples are refused (fail-closed).
+* **Verification does not recompute.** The task is expected to change the target files.
+
 ## Module and where it runs
 
 **`intent/request-examples.js`** (no eval; no repository code executed). Exports:

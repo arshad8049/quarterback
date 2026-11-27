@@ -26,6 +26,8 @@ const runStore         = require('./run/store');
 const { artifactFile } = require('./lib/fsafe');
 const { contractState, stateReason, approve } = require('./intent/contract-state');
 const { loadContractFile, proposalForReview } = require('./intent/contract-file');
+const { checkGrounding } = require('./intent/grounding-binding');
+const { exampleLines } = require('./intent/oracle-view');
 const { formatOracle } = require('./intent/oracle-view');
 const { runPipeline } = require('./lib/qb-pipeline');   // QB-28: L2–L5 shared with the benchmark
 const { git: gitProc }  = require('./lib/proc');
@@ -166,8 +168,25 @@ async function main() {
   // QB-17: grounded in a repository survey, with bounded clarification rounds.
   // Answers come from --clarify (one per round, in order) or an interactive prompt.
   let contract;
-  if (fileContract) contract = fileContract.contract;
-  else {
+  if (fileContract) {
+    // KAN-107 (senior 10847 b): the request examples are tied to targets with QB's OWN grounding of the target
+    // repository, recomputed here. A grounding in the file is the caller's claim: one that differs is refused.
+    const g = checkGrounding(fileContract.contract, repoPath, { claimed: fileContract.claimed_grounding });
+    if (!g.ok) {
+      console.log(`\n  ✗ The contract file ${opts.contractFile} cannot be used: ${g.reason}.\n`);
+      run.event('contract.grounding_mismatch', { changed: g.changed });
+      run.finish('BLOCKED', { reason: `grounding_mismatch: ${g.changed.join(', ')}` });
+      process.exitCode = 2;
+      return;
+    }
+    contract = g.contract;
+    // (the recomputed grounding is recorded with the contract itself, run.setContract; no extra event, QB-28 golden)
+    const lines = exampleLines(contract);
+    if (lines.length) {
+      log('L1', 'Request examples, tied with QB\'s grounding of this repository:');
+      lines.forEach((x) => console.log(`     - ${x}`));
+    }
+  } else {
     const showQuestion = (h) => {
       console.log(`\n  ⚠  Ambiguity detected (round ${h.round} of ${h.max_rounds}):\n`);
       (h.ambiguity_flags || []).forEach(f => console.log(`     • ${f}`));
@@ -252,7 +271,7 @@ async function main() {
   // verifies nothing and needs no oracle.
   if (opts.agent !== 'dry-run') {
     if (fileContract) {
-      contract = fileContract.approved();
+      contract = fileContract.approved(contract);   // binds the recomputed grounding (KAN-107 10847)
     } else {
       printOracle(contract);
       if (process.stdin.isTTY) {
@@ -277,6 +296,17 @@ async function main() {
       }
     }
     log('L1', `Oracle approved (${contract.approval.via}); frozen as ${contract.approval.contract_hash.slice(0, 12)}`);
+  }
+
+  // KAN-107 (senior 10847 a): the execution decision. The grounding the contract (and its approval) carries must
+  // still be what the target repository shows; otherwise nothing runs.
+  const drift = checkGrounding(contract, repoPath);
+  if (!drift.ok) {
+    console.log(`\n  ✗ ${drift.reason}. Nothing was run.\n`);
+    run.event('contract.grounding_mismatch', { changed: drift.changed });
+    run.finish('BLOCKED', { reason: `grounding_mismatch: ${drift.changed.join(', ')}` });
+    process.exitCode = 2;
+    return;
   }
 
   run.setContract(contract);

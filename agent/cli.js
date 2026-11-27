@@ -8,6 +8,7 @@ const { orchestrate } = require('./orchestrator');
 const { executionGate } = require('./runner');
 const { approve } = require('../intent/contract-state');
 const { formatOracle } = require('../intent/oracle-view');
+const { checkGrounding } = require('../intent/grounding-binding');
 const { AGENT_IDS, adapterProblem } = require('./adapters');
 
 program
@@ -37,6 +38,23 @@ async function run() {
     process.exitCode = 2;
     return;
   }
+  const context  = options.context
+    ? JSON.parse(fs.readFileSync(path.resolve(options.context), 'utf8'))
+    : null;
+
+  const repoPath = options.repo
+    || context?.repo_path
+    || process.cwd();
+
+  // KAN-107 (senior 10847 a): a stored contract's api_grounding is not proof. QB recomputes it from the target
+  // repository; a carried one that differs (edited, or the repository changed) is refused before anything runs.
+  const g = checkGrounding(contract, repoPath);
+  if (!g.ok) {
+    console.error(`\n  ✗ ${g.reason}.\n`);
+    process.exitCode = 2;
+    return;
+  }
+  contract = g.contract;
   if (options.agent !== 'dry-run' && options.approveContract) {
     console.log(formatOracle(contract));
     contract = approve(contract, { via: 'agent-cli' });
@@ -47,13 +65,6 @@ async function run() {
     process.exitCode = 2;
     return;
   }
-  const context  = options.context
-    ? JSON.parse(fs.readFileSync(path.resolve(options.context), 'utf8'))
-    : null;
-
-  const repoPath = options.repo
-    || context?.repo_path
-    || process.cwd();
 
   const DIVIDER = '─'.repeat(72);
 

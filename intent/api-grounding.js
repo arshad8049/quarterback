@@ -492,5 +492,20 @@ function apiGroundingErrors(c) {
   return errors;
 }
 
-module.exports = { groundApi, groundSource: (rel, text, names = []) => withForm(groundSource(rel, text, names)), groundingExcerpt, apiGroundingErrors, apiSummary, contractGrounding,
+/**
+ * KAN-107 (senior 10847 a): the validator-relevant contents of a grounding and its source identity, canonical:
+ * what an approval binds (intent/contract-state.js approvedContent) and what a recomputation is compared with
+ * (intent/grounding-binding.js). Per module: path, sha256, bytes, status, reason, format, named exports and the
+ * default export's kind, name, form, methods, accessors, statics and ctor_args. NOT included: excerpt line ranges
+ * and ctor_stores (provenance and the input of ctor_args; request-examples never reads them).
+ */
+function groundingIdentity(g) {
+  if (!g || typeof g !== 'object' || !Array.isArray(g.modules)) return g ?? null;
+  const pick = (o, keys) => (o && typeof o === 'object' ? Object.fromEntries(keys.map((k) => [k, o[k] ?? null])) : o ?? null);
+  return { schema: g.schema ?? null, modules: g.modules.map((m) => ({ ...pick(m, ['path', 'sha256', 'bytes', 'status', 'reason', 'format']),
+    named: Array.isArray(m && m.named) ? m.named.map((x) => pick(x, ['name', 'kind'])) : (m && m.named) ?? null,
+    default: pick(m && m.default, ['kind', 'name', 'form', 'methods', 'accessors', 'statics', 'ctor_args']) })) };
+}
+
+module.exports = { groundApi, groundingIdentity, groundSource: (rel, text, names = []) => withForm(groundSource(rel, text, names)), groundingExcerpt, apiGroundingErrors, apiSummary, contractGrounding,
   requestModules, requestNames, SCHEMA, MAX_BYTES, EXCERPT_MAX_LINES, EXCERPT_MAX_TOTAL_LINES };

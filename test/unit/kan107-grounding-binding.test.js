@@ -165,7 +165,7 @@ describe('(b) --contract-file: trusted repository grounding, never the caller\'s
     try {
       fs.writeFileSync(file, JSON.stringify(RAW()));
       const r = qb(repo, file);
-      assert.equal(r.status, 0, r.out);
+      assert.equal(r.manifest.outcome, 'DRY_RUN', r.out);
       assert.match(r.out, /Request examples/);
       assert.match(r.out, /lib\/formatter\.js new Formatter\(\)\.join\(\[\[\]\]\) returns "" -> CHK-1 \(checked\)/);
       assert.equal(r.fetched, false, 'no model call');
@@ -193,7 +193,7 @@ describe('(b) --contract-file: trusted repository grounding, never the caller\'s
       const proposal = proposalForReview(produced(repo.dir));
       assert.ok(proposal.api_grounding, 'the reviewable file records QB\'s grounding');
       fs.writeFileSync(file, JSON.stringify(proposal));
-      assert.equal(qb(repo, file).status, 0, 'unchanged repository: accepted');
+      assert.equal(qb(repo, file).manifest.outcome, 'DRY_RUN', 'unchanged repository: accepted');
       fs.writeFileSync(path.join(repo.dir, 'lib/formatter.js'), FORMATTER_DRIFT);
       const r = qb(repo, file);
       assert.equal(r.status, 2, r.out);
