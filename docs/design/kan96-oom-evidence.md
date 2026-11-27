@@ -1,6 +1,6 @@
 # KAN-96: OOM evidence
 
-The decision part was approved in 10813 and is implemented in `lib/sandbox/states.js`. **Nothing produces cgroup evidence in the product yet**, so every stage reads `inspect` or `unavailable`: the observer is one approved experiment (option A), and adopting it waits for that batch's review.
+The decision part was approved in 10813 and is implemented in `lib/sandbox/states.js`. Since 10836 the observer is wired into the real stage path (`lib/sandbox/docker.js` runStage, every caller) as **supplementary, fallible** evidence: see "Real producer (10836)" below. It is not a reliable negative detector and not a complete fix: `unavailable` is never "no OOM", and a kill both Docker and the observer miss (row 16 of run 45509067778) still reads `completed` / `unavailable`. The integration OOM assertion is unchanged until this is reviewed.
 
 ## What the diagnostic showed
 
@@ -71,3 +71,17 @@ One batch, 50 of 50, no rerun, commit `27304a9` on `kan96-oom-diagnostic`. Docke
 ## Not proposed
 
 No change to timeouts, hardening, the fixture or verification; no CI retry; G5c and timing flakes stay separate.
+
+## Real producer (10836)
+
+Files: `lib/sandbox/gate.js` (start gate), `lib/sandbox/oom-observer.js` (observer thread), `lib/sandbox/docker.js` runStage, `lib/sandbox/pipeline.js` (run record). Fixtures: `test/unit/kan96-oom-producer.test.js`.
+
+**Control channel.** On a host that can see container cgroups (Linux, cgroup v2 at /sys/fs/cgroup, local daemon) runStage creates a per-stage host directory (0755) with `gate.sh` and a FIFO `go` (0644), and bind-mounts it read-only at `/qb-gate`. The container runs `/bin/sh /qb-gate/gate.sh <the original command>`; the original entrypoint is taken from `--entrypoint` or, without one, from the image's own Entrypoint/Cmd. After `docker create`, the container's Path/Args must be exactly the gate plus the original command, or it is removed and created again ungated. The host waits (bounded) until `docker inspect` says running, arms the observer on that container id and its init pid, then writes `go`. The gate execs the command; **stdin is never read by the gate** and reaches the command byte for byte (fixture: a prompt starting with `go\n`, NUL bytes, no final newline).
+
+**Threat model.** Task code is untrusted; the host, Docker, the image's /bin/sh and gate.sh are trusted. Before release only docker-init and the gate run in the container, so nothing untrusted can release it early. The host learns "running" from Docker, never from the container. The directory is mounted into that one container only, read-only, and removed after the stage; uid 10001 cannot write the FIFO, and writing to it after release changes nothing. Evidence is read on the host from the container's own cgroup files, which the container cannot write. The gate exits 70 without running the command unless it read exactly `go`.
+
+**Fallbacks (all `unavailable` with the reason, the work still runs):** host unsupported (macOS / Docker Desktop: "observer unavailable on this host"), arguments not understood, gated create refused (run again with the caller's own arguments), wrong Path/Args, observer not armed (bad identity, no clean baseline), observer thread crashed or silent (2 s limits). A container that never reaches the gate ends `infra_error` and is killed. A positive read survives the observer dying later. The observer thread and gate directory are removed in `finally` on every path.
+
+**Re-reads (frozen before batch 3):** after each memory.events notification, re-read at 1, 2, 3, 4, 6, 8, 10 ms, at most 64 per stage, stopping at a positive or a final read; nothing without a notification. Lifecycle reads: once when `docker start -a` returns, once at finish.
+
+**Run record:** `sandbox.stages.seed`, `.agent`, `sandbox.capture`, `sandbox.deps.install`, `sandbox.verification` (and `.base`), `sandbox.checks` carry `oom_signal`, `oom_unavailable` and `oom_evidence` (gate, observer, container, cgroup path, baseline, last, final, reads, re-reads, notifications, steps, timings).
