@@ -75,6 +75,7 @@
 .qbi-head { margin-bottom: 24px; }
 .qbi-h { margin: 0; font-size: clamp(32px, 3.7vw, 52px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; }
 .qbi-live { display: none; }
+.qbi-photo { display: none; }
 .qbi-words { display: inline-grid; justify-items: start; }
 .qbi-words > span { grid-area: 1 / 1; opacity: 0; transition: opacity 220ms linear; padding-bottom: 2px; border-bottom: 4px solid var(--accent); }
 .qbi-words > span.is-on { opacity: 1; }
@@ -100,21 +101,25 @@
 .qbi-card:has(.qbi-open:hover), .qbi-card:has(.qbi-open:focus-visible) { border-color: var(--ink); box-shadow: 0 14px 34px rgba(12, 14, 14, 0.16); z-index: 2; }
 .qbi.is-orbit .qbi-card .qbi-detail, .qbi.is-row .qbi-card .qbi-detail, .qbi.is-orbit .qbi-blueprint, .qbi.is-row .qbi-blueprint { display: none; }
 /* Orbit */
-.qbi.is-orbit .qbi-stage { position: relative; height: clamp(400px, calc(100svh - var(--header) - 200px), 620px); }
+.qbi.is-orbit .qbi-stage { position: relative; height: clamp(560px, calc(100svh - var(--header) - 120px), 820px); }
 .qbi.is-orbit .qbi-live { pointer-events: none; }
-.qbi.is-orbit .qbh-wrap { position: relative; }
+.qbi.is-orbit .qbh-wrap { position: relative; max-width: 1680px; }
 .qbi.is-orbit .qbi-head { margin-bottom: 8px; }
 .qbi.is-orbit { padding-top: 40px; padding-bottom: 32px; scroll-margin-top: var(--header); }
 .qbi.is-orbit .qbi-static { font-size: 22px; letter-spacing: -0.01em; }
-.qbi.is-orbit .qbi-live { display: block; font-size: clamp(32px, 3.7vw, 52px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; position: absolute; left: 50%; top: 50%; width: 5.6em; transform: translate(-50%, -50%); text-align: center; }
-.qbi.is-orbit .qbi-words { display: grid; justify-items: center; }
+.qbi.is-orbit .qbi-live { display: block; z-index: 1; font-size: clamp(56px, 6.2vw, 104px); font-weight: 400; line-height: 1.08; letter-spacing: -0.045em; position: absolute; left: 50%; top: 50%; width: 8em; transform: translate(-50%, -50%); text-align: center; }
+.qbi.is-orbit .qbi-words { display: grid; justify-items: center; color: var(--accent-ink); }
+.qbi.is-orbit .qbi-words > span { border-bottom: 0; }
 .qbi.is-orbit .qbi-cards { display: block; position: absolute; inset: 0; }
-.qbi.is-orbit .qbi-card { position: absolute; left: 50%; top: 50%; width: 232px; height: 128px; margin: -64px 0 0 -116px; padding: 12px 14px; will-change: transform; }
+.qbi.is-orbit .qbi-card { position: absolute; left: 50%; top: 50%; width: clamp(112px, 13vw, 208px); aspect-ratio: 1; height: auto; margin: 0; padding: 0; border: 0; border-radius: 14px; background: transparent; will-change: transform; }
+/* Photo-only tiles: names remain on the buttons and in the evidence dialog. */
+.qbi.is-orbit .qbi-photo, .qbi.is-row .qbi-photo { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
+.qbi.is-orbit .qbi-card > h3, .qbi.is-orbit .qbi-card > .qbi-crop,
+.qbi.is-row .qbi-card > h3, .qbi.is-row .qbi-card > .qbi-crop { display: none; }
 .qbi.is-orbit .qbi-card h3 { margin-bottom: 6px; font-size: 15px; }
-.qbi.is-orbit .qbi-crop { padding: 0; font-size: 12px; background: transparent; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
 /* Row */
 .qbi.is-row .qbi-cards { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 4px 12px; }
-.qbi.is-row .qbi-card { flex: 0 0 min(84%, 320px); scroll-snap-align: start; scroll-margin-left: 4px; }
+.qbi.is-row .qbi-card { flex: 0 0 min(64%, 240px); padding: 0; border: 0; background: transparent; scroll-snap-align: start; scroll-margin-left: 4px; }
 /* Detail dialog */
 .qbi-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100svh - 48px); padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--text); font-family: var(--sans); }
 .qbi-dialog::backdrop { background: rgba(12, 14, 14, 0.5); }
