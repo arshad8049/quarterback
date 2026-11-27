@@ -158,6 +158,36 @@ describe('T-LIFE: product supervisor with Docker', { skip: !ENABLED && 'set QB_I
     await new Promise((res) => (d.child.exitCode !== null ? res() : d.child.on('exit', res)));
   });
 
+  test('Docker down before the CLI\'s wait starts → its proposal is not committed until Docker confirms (G5c)', async () => {
+    // Deterministic form of the G5c CI flake: the driver prints STARTED and only then spawns
+    // `docker wait`; if the daemon is gone by the time that command runs, the wait and the inspect
+    // fail at once and the driver proposes infra_error. Here `wait` always starts after "down".
+    const stub = path.join(root, 'docker-down-before-wait-stub');
+    const down = path.join(root, 'docker-is-down-before-wait');
+    const real = spawnSync('sh', ['-c', 'command -v docker'], { encoding: 'utf8' }).stdout.trim();
+    fs.writeFileSync(stub, `#!/bin/sh\nif [ "$1" = wait ]; then while [ ! -e '${down}' ]; do sleep 0.05; done; fi\nif [ -e '${down}' ]; then echo 'Cannot connect to the Docker daemon' >&2; exit 1; fi\nexec '${real}' "$@"\n`, { mode: 0o755 });
+    const d = startDriver(120_000, { QB_DOCKER_BIN: stub }, '60');
+    try {
+      await d.started;
+      fs.writeFileSync(down, '');
+      const proposed = await until(() => fs.existsSync(path.join(d.dir, 'proposal.json')), 10_000);
+      assert.ok(proposed, `the driver did not propose: ${d.output()}`);
+      await sleep(2000);                                       // ten supervisor ticks
+      assert.equal(P.terminal(d.dir), null, `committed while Docker could not confirm enforcement: ${JSON.stringify(P.terminal(d.dir))}`);
+      assert.ok((await D.runContainers(d.id, { running: true })).length > 0, 'residual: the workload runs while Docker is unreachable');
+    } finally {
+      fs.rmSync(down, { force: true });
+    }
+    const t = await until(() => P.terminal(d.dir), 30_000);
+    assert.equal(t.state, 'infra_error');
+    assert.match(t.reason, /^docker_unavailable \(cli_proposal: container state unavailable\)$/);
+    const e = await until(() => P.readJson(path.join(d.dir, 'enforcement.json')), 30_000);
+    assert.equal(e.docker_unavailable, true);
+    assert.deepEqual(e.left, { containers: 0, networks: 0, volumes: 0 });
+    assert.equal((await D.runContainers(d.id)).length, 0);
+    await new Promise((res) => (d.child.exitCode !== null ? res() : d.child.on('exit', res)));
+  });
+
   test('first docker kill hangs → enforcement continues after the Docker op timeout', async () => {
     const stub = path.join(root, 'docker-stub');
     const marker = path.join(root, 'hung-once');
