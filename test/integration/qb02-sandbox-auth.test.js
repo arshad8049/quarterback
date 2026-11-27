@@ -158,14 +158,25 @@ describe('T-AUTH (fake credential)', { skip: !ENABLED && 'set QB_INTEGRATION=1 (
     const w = await newWs();
     await writeFakeCredential(3 * 3600_000);
     const left = async (owner) => (await D.op(['ps', '-aq', '--filter', `label=qb.run=${owner}`])).stdout.trim();
-    const big = Buffer.alloc(64 * 1024 * 1024, 'x');   // slow to read: the deadline hits while it runs
+    // A real container that does not answer: the comparison script is swapped for one that reads its input and then
+    // hangs (test only), so the deadline and the cancellation really hit a running container.
+    const hang = async (args, o) => D.op(args[0] === 'create' ? args.map((x) => (String(x).startsWith('set -eu') ? 'cat > /dev/null; sleep 120' : x)) : args, o);
+    const running = async (owner) => (await D.op(['ps', '-q', '--filter', `label=qb.run=${owner}`, '--filter', 'status=running'])).stdout.trim();
     const t = `qb-k44-timeout-${process.pid}`; runs.push(t);
-    assert.equal(await exactModeS(big, { image: w.image, authVolume: A.AUTH_VOLUME, labels: D.runLabels(t, 'credential-check'), timeoutMs: 200 }), 'error');
+    let seenT = '';
+    const probeT = setTimeout(async () => { seenT = await running(t); }, 1500);
+    assert.equal(await exactModeS(Buffer.from('x'), { image: w.image, authVolume: A.AUTH_VOLUME, labels: D.runLabels(t, 'credential-check'), op: hang, timeoutMs: 3000 }), 'error');
+    clearTimeout(probeT);
+    assert.notEqual(seenT, '', 'the container was really running before the deadline');
     assert.equal(await left(t), '', 'no container left after the timeout');
     const ac = new AbortController();
     const cn = `qb-k44-cancel-${process.pid}`; runs.push(cn);
-    setTimeout(() => ac.abort(new Error('test cancel')), 300);
-    assert.equal(await exactModeS(big, { image: w.image, authVolume: A.AUTH_VOLUME, labels: D.runLabels(cn, 'credential-check'), signal: ac.signal, timeoutMs: 60_000 }), 'error');
+    let seenC = '';
+    setTimeout(async () => { seenC = await running(cn); ac.abort(new Error('test cancel')); }, 1500);
+    const t0 = Date.now();
+    assert.equal(await exactModeS(Buffer.from('x'), { image: w.image, authVolume: A.AUTH_VOLUME, labels: D.runLabels(cn, 'credential-check'), op: hang, signal: ac.signal, timeoutMs: 60_000 }), 'error');
+    assert.ok(Date.now() - t0 < 30_000, 'the cancellation ended it, not the 60 s deadline');
+    assert.notEqual(seenC, '', 'the container was really running before the cancellation');
     assert.equal(await left(cn), '', 'no container left after the cancellation');
     for (const id of [t, cn]) assert.equal((await D.op(['volume', 'ls', '-q', '--filter', `name=${id}`])).stdout.trim(), '', 'and no volume was created');
   });
