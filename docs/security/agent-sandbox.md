@@ -657,6 +657,8 @@ The runtime/image identity and Claude's version are separate fields.
 
 ### 8.1 Storage budget and admission
 
+**Open earlier runs (KAN-44 10846).** Admission also refuses (`BLOCKED unresolved_workload`, or `unresolved_workload_unknown` when Docker cannot answer) while an earlier run without a terminal state still has a running container, so a workload left over from a Docker outage is not forgotten when new work is admitted. Read only, under the admission lock; see [patch-credential-check.md](patch-credential-check.md).
+
 Every per-run byte that can live in host RAM is budgeted. Per-volume caps alone do not stop N concurrent runs from exhausting the host.
 
 | Item | Backing | Default cap |

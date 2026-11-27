@@ -135,6 +135,7 @@ async function verify(contract, context, execution, options = {}) {
     executionStatus:    execStatus,
     unsupportedChanges: Boolean(execution?.unsupported_changes?.length),
     verification,
+    ...(held ? { securityHold: held.status } : {}),
   });
 
   // ── Repair hints (for failed ACs) ────────────────────────────────────────
@@ -166,6 +167,7 @@ async function verify(contract, context, execution, options = {}) {
     scope_violations: [...policy.protected_touched, ...policy.out_of_scope],
     policy,
     repair_hints:     [...repairHints, ...policyRepairs(policy), ...testRepairs(execution, testOpts)],
+    ...(held ? { security_hold: { status: held.status, export: 'denied' } } : {}),   // KAN-44 10846 (4)
   };
 
   return VerificationReportSchema.parse(report);

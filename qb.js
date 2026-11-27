@@ -375,13 +375,15 @@ async function main() {
   budget.endRun();
   run.finish(
     runStore.outcomeFor(report?.verdict, { dryRun: opts.agent === 'dry-run' }),
-    { legacy_verdict: report?.verdict || null },
+    { legacy_verdict: report?.verdict || null, ...(report?.security_hold ? { reason: `security_hold: ${report.security_hold.status}; export denied` } : {}) },
   );
 
   // ── Final summary ──────────────────────────────────────────────────────────
   const totalMs = Date.now() - totalStart;
   console.log(`\n${DIVIDER2}`);
   console.log(`  RESULT: ${verdictIcon(report?.verdict)} ${(report?.verdict || 'unknown').toUpperCase()}`);
+  // KAN-44 10846 (4): a security hold is never presented as a pass; export is denied.
+  require('./lib/credential-scan').resultLines(report).forEach(l => console.log(`  ${l}`));
   console.log(`  Attempts: ${attempt} / ${maxRetries}`);
   console.log(`  Total time: ${(totalMs / 1000).toFixed(1)}s`);
   console.log(`  Run:      ${run.id}  outcome=${run.manifest.outcome}`);

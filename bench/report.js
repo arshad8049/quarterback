@@ -31,7 +31,8 @@ const { loadExperiment, graderHash, diffPaths, fingerprintPins, launchProblems }
 const { analyze } = require('./stats');
 
 const ARM_ORDER = S.ARM_IDS;
-const ATTRITION = ['needs_adjudication', 'grader_error', 'grade_infra_error', 'ungraded', 'agent_error', 'timeout', 'trial_infra_error', 'missing', 'incomplete', 'not_recorded'];
+// KAN-44 10846: security_hold = a patch on credential hold, never scored.
+const ATTRITION = ['needs_adjudication', 'grader_error', 'grade_infra_error', 'ungraded', 'agent_error', 'timeout', 'trial_infra_error', 'security_hold', 'missing', 'incomplete', 'not_recorded'];
 
 const byArm = (a, b) => ARM_ORDER.indexOf(a) - ARM_ORDER.indexOf(b);
 const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -304,7 +305,7 @@ function legacyReport(dir, { format = 'table' } = {}) {
   return `${L.join('\n')}\n`;
 }
 
-module.exports = { buildReport, reportData, legacyReport, legacyData, LEGACY_LABEL };
+module.exports = { buildReport, reportData, legacyReport, legacyData, LEGACY_LABEL, ATTRITION, categorize };
 
 if (require.main === module) {
   const { program } = require('commander');

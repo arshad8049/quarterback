@@ -99,6 +99,7 @@ const VerificationReportSchema = z.object({
   verification_plan_status: z.array(PlanItemStatusSchema).optional(),
   scope_violations: z.array(z.string()),
   repair_hints:     z.array(RepairHintSchema),
+  security_hold:    z.object({ status: z.string(), export: z.literal('denied') }).optional(),   // KAN-44 10846
 });
 
 module.exports = { VerificationReportSchema, CriterionResultSchema, RepairHintSchema };

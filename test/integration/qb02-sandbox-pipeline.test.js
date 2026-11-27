@@ -172,6 +172,29 @@ describe('QB-02 done-when through the real pipeline', { skip: !ENABLED && 'set Q
     } finally { repo.cleanup(); }
   });
 
+  test('KAN-44 10846: no new run is admitted while an earlier open run still has a REAL running container; it is once that stops', async () => {
+    const P = require('../../lib/sandbox/protocol');
+    const sd = fs.mkdtempSync(path.join(os.tmpdir(), 'qb-k44-open-'));
+    const old = `qb-k44-open-${process.pid}`;
+    const rd = path.join(sd, 'runs', old); fs.mkdirSync(rd, { recursive: true });
+    // an earlier run whose supervisor (this process) is alive and whose enforcement is unconfirmed: the reaper leaves it alone
+    fs.writeFileSync(path.join(rd, 'run.json'), JSON.stringify({ run_id: old, cli: { pid: 999999, start: 'gone' }, supervisor: P.identity(process.pid) }));
+    fs.writeFileSync(path.join(rd, 'enforcement.json'), JSON.stringify({ state: 'unresolved', unresolved: true, reason: 'enforcement_unconfirmed: docker_unavailable' }));
+    const c = await D.op(['run', '-d', '--rm', ...D.runLabels(old, 'workload'), '--network', 'none', 'busybox:1.36.1', 'sleep', '300']);
+    assert.ok(c.ok, c.stderr);
+    const repo = fixtureRepo();
+    try {
+      const both = await Promise.all([1, 2].map(() => runSandboxed({ repoPath: repo.dir, briefing: 'x', stateDir: sd, verify: false, agentStage: hostileAgent('true') })));
+      for (const r of both) { assert.equal(r.status, 'blocked', JSON.stringify(r.reason)); assert.match(r.reason, /^(unresolved_workload: .*qb-k44-open|run_in_progress)/); }
+      assert.ok(both.some((r) => /^unresolved_workload/.test(r.reason)));
+      const mine = fs.readdirSync(path.join(sd, 'runs')).filter((d) => d !== old);
+      assert.deepEqual(mine, [], 'no run directory, supervisor or container was created for the blocked runs');
+      await D.removeRun(old);   // the earlier workload stops (what its supervisor does when Docker answers)
+      const r = await runSandboxed({ repoPath: repo.dir, briefing: 'x', stateDir: sd, verify: false, agentStage: hostileAgent('true') });
+      assert.notEqual(r.status, 'blocked', JSON.stringify(r.reason));
+    } finally { await D.removeRun(old); repo.cleanup(); fs.rmSync(sd, { recursive: true, force: true }); }
+  });
+
   test('a nested .git path is captured as unsupported and cannot pass', async () => {
     const repo = fixtureRepo();
     try {

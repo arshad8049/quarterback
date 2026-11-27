@@ -170,7 +170,8 @@ describe('B3: a failed own-credential check is cleared only against the same cre
     const binding = { schema: 'qb-credential-binding/1', mode: 'S', salt: 'ef'.repeat(16), fingerprints: ['1'.repeat(64), '2'.repeat(64)] };
     for (const [word, want] of [['UNBOUND\n', 'unbound'], ['ABSENT\n', 'absent'], ['FOUND\n', 'found'], ['ABSENT', 'error']]) {
       const calls = [];
-      const op = async (args) => { calls.push(args); return args[0] === 'start' ? { ok: true, stdout: word, stderr: '' } : { ok: true, stdout: 'id\n', stderr: '' }; };
+      // `info` answers live-restore disabled (KAN-44 10846: the recheck container is gated on it)
+      const op = async (args) => { calls.push(args); return args[0] === 'start' ? { ok: true, stdout: word, stderr: '' } : args[0] === 'info' ? { ok: true, stdout: 'false\n', stderr: '' } : { ok: true, stdout: 'id\n', stderr: '' }; };
       const r = await recheckExact(raw, { mode: 'S', status: 'error', binding }, { op, image: 'tools' });
       assert.equal(r.status, want, word);
       const create = calls.find((a) => a[0] === 'create').join(' ');

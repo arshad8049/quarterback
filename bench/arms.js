@@ -228,8 +228,9 @@ async function runArm(o) {
     const failed = agentFailure(r.execution);   // the LAST attempt's agent failed (same rule as A–D)
     if (failed) return { ...failed, patch: (r.execution && r.execution.diff) || '', attempts: r.attempt, agent_ms: r.agent_ms, timing: r.timing,
       internal_verdict: r.report ? r.report.verdict : null, memory };
+    const hold = securityHold(r.execution);   // KAN-44 10846 (4): recorded so the trial is never scored
     return { status: 'completed', patch: (r.execution && r.execution.diff) || '', attempts: r.attempt, agent_ms: r.agent_ms, timing: r.timing,
-      internal_verdict: r.report ? r.report.verdict : null, memory };
+      internal_verdict: r.report ? r.report.verdict : null, memory, ...(hold ? { credential_hold: hold.status } : {}) };
   } finally {
     if (copy) copy.cleanup();
   }

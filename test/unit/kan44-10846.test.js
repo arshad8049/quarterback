@@ -75,9 +75,12 @@ describe('1. auth and patch-recheck containers refuse on live-restore enabled/un
     const cli = require('../../lib/sandbox/cli');
     const st = await captureStderr(() => cli.main(['auth', 'status']));
     assert.doesNotMatch(st.err, /live_restore/);
-    const lo = await captureStderr(() => cli.main(['auth', 'logout']));
-    assert.doesNotMatch(lo.err, /live_restore/);
-    assert.ok(log().some((l) => /^volume rm/.test(l)), 'logout removed the login volume');
+    // The fake Docker cannot run the egress proxy, so logout fails later on; what matters is that it was not refused
+    // by the gate and went on to start its containers.
+    let thrown = null;
+    const lo = await captureStderr(() => cli.main(['auth', 'logout']).catch((e) => { thrown = e; return 1; }));
+    assert.doesNotMatch(`${lo.err} ${thrown && thrown.message}`, /live_restore/);
+    assert.ok(log().some((l) => /^(network create|run -d)/.test(l)), 'logout went on to start its containers');
   });
   test('qb patch with a Mode S recheck refused: export refused with the live-restore reason', async () => {
     process.env.FAKE_LR = 'true';
@@ -122,7 +125,7 @@ describe('2 and 3. fingerprints stay local; an unbound recheck asks for a new ru
     assert.ok(ev);
     const text = JSON.stringify(ev) + shown.join('\n');
     assert.ok(!text.includes(salt) && !text.includes(binding.fingerprints[0]), 'no salt or fingerprint in the event or on screen');
-    assert.equal(ev.exact && ev.exact.status, 'error', 'the event still says what happened');
+    assert.equal(ev.data.exact.status, 'error', 'the event still says what happened'); assert.equal(ev.data.exact.bound, true);
   });
   test('qb patch, recheck unbound: refused, a new run asked for, the stored patch called unchanged and NOT sanitised; no fingerprint', async () => {
     const raw = Buffer.from('diff --git a/a b/a\n--- a/a\n+++ b/a\n@@ -1 +1 @@\n-a\n+b\n');

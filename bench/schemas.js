@@ -60,7 +60,7 @@ const ARM_IDS = ['A', 'B', 'C', 'D', 'E', 'F'];
 /** Grader outcomes. Only pass/fail are scores; the error outcomes are attrition, never scores. */
 const GRADE_OUTCOMES = ['pass', 'fail', 'needs_adjudication', 'grader_error', 'infra_error'];
 const SCORED_OUTCOMES = ['pass', 'fail'];
-const TRIAL_STATUSES = ['completed', 'missing', 'agent_error', 'infra_error', 'timeout'];
+const TRIAL_STATUSES = ['completed', 'missing', 'agent_error', 'infra_error', 'timeout', 'security_hold'];   // security_hold: KAN-44 10846, never scored
 
 // ── qb-task-spec/1 ────────────────────────────────────────────────────────────
 
