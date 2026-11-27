@@ -51,6 +51,24 @@ describe('sandbox docker foundation', { skip: !ENABLED && 'set QB_INTEGRATION=1 
     assert.match(r.stdout, /LAST-LINE\s*$/);
   });
 
+  test('KAN-96: through the start gate, stdin reaches the command byte for byte, and the evidence is bound to this container', async () => {
+    const prompt = Buffer.concat([Buffer.from('go\nfirst line\n'), Buffer.from([0, 1, 2, 255]), Buffer.from('no final newline')]);
+    const r = await D.runStage(`${RUN}-stdin`, [...HARDEN, ...D.runLabels(RUN, 'workload'), IMAGE, 'sh', '-c', 'cat | od -An -tx1 | tr -d " \\n"'],
+      { input: prompt, waitTimeoutMs: 60_000 });
+    assert.equal(r.state, 'completed', JSON.stringify(r));
+    assert.equal(r.stdout.trim(), prompt.toString('hex'));
+    const linux = require('../../lib/sandbox/oom-observer').hostSupport().ok;
+    if (linux) {
+      assert.equal(r.oom_evidence.gate, 'released', JSON.stringify(r.oom_evidence));
+      assert.equal(r.oom_evidence.observer, 'armed', JSON.stringify(r.oom_evidence));
+      assert.ok(r.oom_evidence.cgroup_path.includes(r.oom_evidence.container), JSON.stringify(r.oom_evidence));
+      assert.ok(['none', 'unavailable'].includes(r.oom_signal), 'a healthy stage is never positive');
+    } else {
+      assert.equal(r.oom_signal, 'unavailable');
+      assert.match(r.oom_unavailable, /unavailable on this host/);
+    }
+  });
+
   test('removeRun leaves nothing behind', async () => {
     await D.op(['volume', 'create', ...D.runLabels(RUN), `${RUN}-vol`]);
     await D.op(['network', 'create', '--internal', ...D.runLabels(RUN), `${RUN}-net`]);
