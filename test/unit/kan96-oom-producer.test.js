@@ -16,7 +16,6 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const crypto = require('crypto');
 
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'qb-kan96-'));
 process.env.QB_DOCKER_BIN = path.join(__dirname, '..', 'helpers', 'fake-docker-gate.js');
@@ -29,7 +28,8 @@ const { classifyStage } = require('../../lib/sandbox/states');
 
 const IMAGE = 'fake/image:1';
 const WORKERS = path.join(__dirname, '..', 'helpers', 'oom-workers');
-const idOf = (name) => crypto.createHash('sha256').update(name).digest('hex');
+const idsOf = (name) => fs.readFileSync(path.join(dir, `${name}.ids`), 'utf8').split('\n').filter(Boolean);
+const idOf = (name) => idsOf(name).at(-1);
 // a prompt that starts with the gate's own token, has NUL bytes and no final newline: the gate must not touch it
 const PROMPT = Buffer.concat([Buffer.from('go\nfix the bug\n'), Buffer.from([0, 1, 2, 255]), Buffer.from('last line, no newline')]);
 let n = 0;
@@ -301,5 +301,111 @@ describe('KAN-96 CI 45933453765: the gate directory outlives the stage until its
     assert.equal(liveGates(), 0);
     await D.removeRun(run);
     assert.equal(fs.existsSync(src), false, 'removed with the run');
+  });
+});
+
+describe('KAN-96 10848: the integration assertion: Docker OOMKilled=true OR validated cgroup-positive evidence from THAT container', () => {
+  const { oomEvidenced } = require('../../lib/sandbox/states');
+  const C = 'e'.repeat(64);
+  const pos = (o = {}) => ({ state: 'oom', exit_code: 0, oom_killed: false, oom_signal: 'cgroup',
+    oom_evidence: { observer: 'armed', gate: 'released', container: C, cgroup_path: `/system.slice/docker-${C}.scope`, baseline: 0, last: 1, final: true, ...o } });
+  test('Docker OOMKilled=true satisfies it', () => {
+    assert.equal(oomEvidenced({ state: 'oom', oom_killed: true, oom_signal: 'inspect', oom_evidence: null }, C), true);
+  });
+  test('validated positive evidence from the same container satisfies it', () => assert.equal(oomEvidenced(pos(), C), true));
+  test('exit code alone does not (137, or the "child exit 137" a fixture prints)', () => {
+    assert.equal(oomEvidenced({ state: 'execution_error', exit_code: 137, oom_killed: false, oom_signal: 'unavailable', stdout: 'child exit 137' }, C), false);
+    assert.equal(oomEvidenced({ state: 'oom', exit_code: 137, oom_killed: false, oom_signal: 'unavailable', oom_evidence: { observer: 'armed', container: C } }, C), false);
+  });
+  test('unavailable does not, whatever else the record claims', () => {
+    assert.equal(oomEvidenced({ ...pos(), oom_signal: 'unavailable' }, C), false);
+    assert.equal(oomEvidenced(pos({ observer: 'not_armed' }), C), false);
+    assert.equal(oomEvidenced(pos({ observer: 'not_used', gate: 'not_used' }), C), false);
+  });
+  test('the known injected fixture type does not: a case label or a state of "oom" is not evidence', () => {
+    assert.equal(oomEvidenced({ case: 'oom', truth: 'oom', state: 'oom', oom_killed: false, oom_signal: 'cgroup' }, C), false);
+    assert.equal(oomEvidenced({ state: 'oom', oom_killed: false }, C), false);
+  });
+  test('evidence for another container, or one not named after it, or without a clean baseline, does not', () => {
+    assert.equal(oomEvidenced(pos(), 'f'.repeat(64)), false);
+    assert.equal(oomEvidenced(pos(), undefined), false);
+    assert.equal(oomEvidenced(pos({ cgroup_path: '/system.slice/docker-other.scope' }), C), false);
+    assert.equal(oomEvidenced(pos({ baseline: 1, last: 2 }), C), false);
+    assert.equal(oomEvidenced(pos({ baseline: null }), C), false);
+    assert.equal(oomEvidenced(pos({ last: 0 }), C), false);
+    assert.equal(oomEvidenced(pos({ last: '1' }), C), false);
+    assert.equal(oomEvidenced(null, C), false);
+  });
+  test('through the real producer: Docker missed it, the observer saw it: satisfied only for that container', async () => {
+    const s = stage('oom-at-once', { oomObserver: { force: true, ...roots() } });
+    const r = await s.run;
+    assert.equal(oomEvidenced(r, idOf(s.name)), true);
+    assert.equal(oomEvidenced(r, 'f'.repeat(64)), false);
+  });
+  test('through the real producer: the same OOM with the observer unavailable is not satisfied (joint miss stays a failure)', async () => {
+    const s = stage('oom-missed', { oomObserver: { enabled: false } });
+    const r = await s.run;
+    assert.equal(r.oom_killed, false);
+    assert.equal(oomEvidenced(r, idOf(s.name)), false);
+  });
+});
+
+describe('KAN-96 10848: the ungated fallback is unavailable and never reuses the replaced container\'s evidence', () => {
+  const { oomEvidenced } = require('../../lib/sandbox/states');
+  for (const scenario of ['wrong-path', 'reject-mount']) {
+    test(`${scenario}: recorded unavailable, bound to the container that ran, nothing from a replaced one`, async () => {
+      const s = stage(scenario, { oomObserver: { force: true, ...roots() } });
+      const r = await s.run;
+      const ids = scenario === 'wrong-path' ? idsOf(s.name) : [idOf(s.name)];
+      if (scenario === 'wrong-path') assert.equal(ids.length, 2, 'the gated container was replaced');
+      const ran = ids.at(-1);
+      assert.equal(r.oom_signal, 'unavailable');
+      assert.match(r.oom_unavailable, /not gated/);
+      assert.deepEqual([r.oom_evidence.gate, r.oom_evidence.observer], ['not_used', 'not_used']);
+      assert.equal(r.oom_evidence.container, ran, 'the evidence names the container that actually ran');
+      assert.deepEqual([r.oom_evidence.baseline, r.oom_evidence.last, r.oom_evidence.final, r.oom_evidence.reads], [null, null, false, 0]);
+      for (const id of ids) assert.equal(oomEvidenced(r, id), false);
+      if (scenario === 'wrong-path') {
+        // the replaced container's cgroup said oom_kill 1: it must not appear anywhere in the result
+        assert.equal(JSON.stringify(r).includes(ids[0]), false, 'no trace of the replaced container');
+        assert.equal(r.state, 'completed');
+      }
+      assert.ok(stdinOf(s.name).equals(PROMPT));
+      await settled();
+      assert.equal(O.liveObservers(), 0);
+      assert.equal(liveGates(), 0);
+    });
+  }
+});
+
+describe('KAN-96 10848: gate setup leaves the original command, permissions and stdin unchanged', () => {
+  const CALLER = ['--user', '10001:10001', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--read-only', '--tmpfs', '/tmp:rw,nosuid,nodev,size=16m',
+    '--init', '--pids-limit', '64', '-e', 'A=1', '-v', 'vol:/work:ro', '-w', '/work', '--entrypoint', '/entry.sh', IMAGE, 'run', '--flag', 'with space', ''];
+  test('every caller flag is kept, in order; only the gate mount and /bin/sh entrypoint are added; the command is exact', async () => {
+    const s = stage('healthy', { oomObserver: { force: true, ...roots() } }, CALLER);
+    await s.run;
+    const a = created(s.name).slice(3);   // after --name <name> -i
+    const callerFlags = CALLER.slice(0, CALLER.indexOf('--entrypoint'));
+    const m = a.indexOf('--mount');
+    assert.deepEqual(a.slice(0, m), callerFlags, 'user, capabilities, no-new-privileges, read-only root, tmpfs, init, pids, env, mounts, workdir: unchanged');
+    assert.deepEqual(a.slice(m + 2, m + 4), ['--entrypoint', '/bin/sh']);
+    assert.equal(a.length, m + 4 + 1 + 1 + 5, 'nothing else added: image, gate.sh, the five original argv entries');
+    assert.deepEqual(a.slice(a.indexOf(IMAGE) + 1), ['/qb-gate/gate.sh', '/entry.sh', 'run', '--flag', 'with space', '']);
+    assert.ok(stdinOf(s.name).equals(PROMPT));
+  });
+  test('the gate directory, script and FIFO: owned by the host user, 0755 / 0644 / 0644 FIFO, mounted read-only', () => {
+    const { openGate } = require('../../lib/sandbox/gate');
+    const g = openGate();
+    try {
+      const st = (f) => fs.statSync(path.join(g.dir, f));
+      assert.equal(fs.statSync(g.dir).mode & 0o777, 0o755);
+      assert.equal(st('gate.sh').mode & 0o777, 0o644);
+      assert.equal(st('go').mode & 0o777, 0o644);
+      assert.equal(st('go').isFIFO(), true);
+      if (typeof process.getuid === 'function') for (const f of ['gate.sh', 'go']) assert.equal(st(f).uid, process.getuid());
+      assert.match(g.mountArgs[1], /,readonly$/);
+      assert.deepEqual(fs.readdirSync(g.dir).sort(), ['gate.sh', 'go']);
+    } finally { g.cleanup(); }
+    assert.equal(fs.existsSync(g.dir), false);
   });
 });

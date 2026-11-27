@@ -20,7 +20,15 @@ const IMAGE = 'fake/image:1';
 const PID = 4242;
 const argv = process.argv.slice(2);
 fs.appendFileSync(path.join(DIR, 'calls.jsonl'), `${JSON.stringify(argv)}\n`);
-const idOf = (name) => crypto.createHash('sha256').update(name).digest('hex');
+// a new id for every create (a replaced container never shares its predecessor's id); <name>.ids lists them in order
+const newId = (name) => {
+  const f = path.join(DIR, `${name}.ids`);
+  const ids = fs.existsSync(f) ? fs.readFileSync(f, 'utf8').split('\n').filter(Boolean) : [];
+  const id = crypto.createHash('sha256').update(`${name}#${ids.length}`).digest('hex');
+  fs.appendFileSync(f, `${id}\n`);
+  return id;
+};
+const idOf = (name) => fs.readFileSync(path.join(DIR, `${name}.ids`), 'utf8').split('\n').filter(Boolean).pop();
 const file = (name, ext) => path.join(DIR, `${name}.${ext}`);
 const nameOf = (x) => { const m = path.join(DIR, `id-${x}`); return fs.existsSync(m) ? fs.readFileSync(m, 'utf8') : x; };
 const readState = (name) => JSON.parse(fs.readFileSync(file(name, 'state.json'), 'utf8'));
@@ -47,7 +55,7 @@ if (cmd === 'image' && rest[0] === 'inspect') { out('{"Entrypoint":null,"Cmd":["
 if (cmd === 'create') {
   const name = rest[rest.indexOf('--name') + 1];
   if (SCEN === 'reject-mount' && rest.includes('--mount')) { process.stderr.write('invalid mount config\n'); done(125); }
-  const id = idOf(name);
+  const id = newId(name);
   fs.writeFileSync(file(name, 'create.json'), JSON.stringify(rest));
   fs.writeFileSync(path.join(DIR, `id-${id}`), name);
   writeState(name, { Status: 'created', Running: false, Pid: 0, ExitCode: 0, OOMKilled: false });
@@ -55,7 +63,7 @@ if (cmd === 'create') {
   fs.mkdirSync(path.join(process.env.FAKE_PROC_ROOT, String(PID)), { recursive: true });
   fs.writeFileSync(path.join(process.env.FAKE_PROC_ROOT, String(PID), 'cgroup'), `0::/system.slice/docker-${id}.scope\n`);
   fs.writeFileSync(path.join(cgDir(id), 'cgroup.procs'), `${PID}\n`);
-  events(id, 0, 1);
+  events(id, SCEN === 'wrong-path' && rest.includes('--mount') ? 1 : 0, 1);
   out(`${id}\n`); done(0);
 }
 if (cmd === 'inspect') {
@@ -65,10 +73,11 @@ if (cmd === 'inspect') {
   if (f.includes('.State')) { out(`${JSON.stringify(readState(name))}\n`); done(0); }
   if (f.includes('.Path')) {
     const v = processView(JSON.parse(fs.readFileSync(file(name, 'create.json'), 'utf8')));
-    if (SCEN === 'wrong-path') v.Path = '/bin/bash';
+    if (SCEN === 'wrong-path' && JSON.parse(fs.readFileSync(file(name, 'create.json'), 'utf8')).includes('--mount')) v.Path = '/bin/bash';
     out(`${JSON.stringify(v.Path)}\n${JSON.stringify(v.Args)}\n`); done(0);
   }
   if (f.includes('.Image')) { out('sha256:fake\n'); done(0); }
+  if (f.includes('.Id')) { out(`${idOf(name)}\n`); done(0); }
   done(1);
 }
 if (cmd === 'start') {
