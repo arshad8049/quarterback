@@ -4,7 +4,7 @@ const CriterionResultSchema = z.object({
   id:        z.string(),
   criterion: z.string(),
   met:       z.boolean().nullable(),
-  method:    z.enum(['deterministic', 'llm', 'test-runner', 'no-diff', 'not-run', 'llm-vote-3', 'llm-vote-5', 'check', 'no-check']),
+  method:    z.enum(['deterministic', 'llm', 'test-runner', 'no-diff', 'not-run', 'llm-vote-3', 'llm-vote-5', 'check', 'no-check', 'security-hold']),
   evidence:  z.string(),
   votes:     z.array(z.boolean().nullable()).optional(),
   repair:    z.string().nullable().optional(),

@@ -24,7 +24,7 @@ describe('scanPatch', () => {
   test('clean patch: clean, bound to the exact bytes, limits stated', () => {
     const p = patchOf([' a', '+b']);
     const r = S().scanPatch(p);
-    assert.equal(r.schema, 'qb-credential-scan/1');
+    assert.equal(r.schema, 'qb-credential-scan/2');
     assert.equal(r.status, 'clean');
     assert.equal(r.patch_sha256, sha(p));
     assert.deepEqual(r.findings, []);
@@ -35,7 +35,7 @@ describe('scanPatch', () => {
       const r = S().scanPatch(patchOf([' a', `+const k = '${v}'`]));
       assert.equal(r.status, 'finding');
       assert.equal(r.findings.length, 1);
-      assert.equal(r.findings[0].file, 'lib/a.js');
+      assert.equal(r.findings[0].file_index, 1); assert.equal(r.findings[0].where, 'content');
     });
   }
   test('a private key block header, and a credential in a file NAME', () => {
@@ -92,17 +92,17 @@ describe('checkCaptured: the exact per-run credential', () => {
   });
   test('Mode S: compared in a trusted container with no network, against the stored login and the run copy; only a word comes back', async () => {
     const calls = [];
-    const op = async (args, o) => { calls.push({ args, o }); return { ok: true, stdout: 'FOUND\n', stderr: '' }; };
+    const op = async (args, o) => { calls.push({ args, o }); return { ok: true, stdout: args[0] === 'start' ? 'FOUND\n' : 'id\n', stderr: '' }; };
     const r = await C().checkCaptured(raw, { cred: { mode: 'S' }, ws: { runId: 'r1', image: 'tools' }, authVolume: 'vol', op });
     assert.deepEqual(r.exact, { mode: 'S', status: 'found' });
     assert.equal(r.status, 'finding');
-    const a = calls[0].args.join(' ');
+    const a = calls.find((c) => c.args[0] === 'create').args.join(' ');
     assert.match(a, /--network none/); assert.match(a, /--read-only/); assert.match(a, /--cap-drop ALL/);
     assert.match(a, /-v vol:\/stored:ro/); assert.match(a, /-v r1-cred:\/run-copy:ro/);
-    assert.ok(!a.includes(EXACT)); assert.ok(Buffer.isBuffer(calls[0].o.input) && calls[0].o.input.equals(raw));
+    assert.ok(!a.includes(EXACT)); const st = calls.find((c) => c.args[0] === 'start'); assert.ok(Buffer.isBuffer(st.o.input) && st.o.input.equals(raw));
   });
   test('Mode S: anything but exactly FOUND or ABSENT is an error, never absent', async () => {
-    for (const out of [{ ok: true, stdout: '' }, { ok: true, stdout: 'ABSENT FOUND' }, { ok: false, stdout: 'ABSENT\n', stderr: 'x' }, { ok: true, stdout: `${EXACT}\n` }]) {
+    for (const out of [{ ok: true, stdout: '' }, { ok: true, stdout: 'ABSENT FOUND' }, { ok: false, stdout: 'ABSENT\n', stderr: 'x' }, { ok: true, stdout: `${EXACT}\n` }, { ok: true, stdout: 'UNBOUND\n' }]) {
       const r = await C().checkCaptured(clean, { cred: { mode: 'S' }, ws: { runId: 'r', image: 'i' }, authVolume: 'v', op: async () => ({ stderr: '', ...out }) });
       assert.equal(r.exact.status, 'error'); assert.ok(!JSON.stringify(r).includes(EXACT));
     }
@@ -204,14 +204,14 @@ describe('run wiring', () => {
     let agentCalls = 0; const verifyOpts = []; const seen = [];
     const contract = { goal: 'g', acceptance_criteria: [] };
     const r = await runPipeline({ contract, repoPath: dir, agent: 'claude-code', maxRetries: 3, run, noLlmVerify: false,
-      hooks: { credentialFound: (scan) => seen.push(scan) },
+      hooks: { credentialHold: (scan) => seen.push(scan) },
       deps: { buildContext: async () => ({ relevant_files: [], symbol_map: {} }), refreshContext: async (c) => c,
-        orchestrate: async () => { agentCalls++; return { id: 'e', status: 'completed', changes: [], diff: 'd', sandbox: { run_id: 'r', stages: {}, credential_scan: { status: 'finding', findings: [{ kind: 'anthropic_key', count: 1, file: 'lib/a.js' }] } } }; },
+        orchestrate: async () => { agentCalls++; return { id: 'e', status: 'completed', changes: [], diff: 'd', sandbox: { run_id: 'r', stages: {}, credential_scan: { status: 'finding', findings: [{ kind: 'anthropic_key', count: 1, file_index: 1, where: 'content' }] } } }; },
         verify: async (c, x, e, o) => { verifyOpts.push(o); return { verdict: 'fail', criteria_results: [], repair_hints: [], failures: [] }; } } });
     assert.equal(agentCalls, 1);
     assert.equal(verifyOpts[0].noLlm, true);
     assert.equal(seen.length, 1);
     assert.equal(r.report.verdict, 'fail', 'the verdict itself is unchanged');
-    assert.ok(fs.readFileSync(path.join(run.dir, 'events.jsonl'), 'utf8').includes('credential.found'));
+    assert.ok(fs.readFileSync(path.join(run.dir, 'events.jsonl'), 'utf8').includes('"credential.hold"'));
   });
 });

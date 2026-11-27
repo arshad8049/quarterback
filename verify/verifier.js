@@ -9,6 +9,7 @@ const { evaluatePolicy } = require('./policy');
 const { buildEvidence, candidateFiles, manifestEntry } = require('./evidence');
 const { decidePreservation } = require('./preservation');
 const { openCache } = require('./judge-cache');
+const { securityHold } = require('../lib/credential-scan');
 const { VerificationReportSchema } = require('./schema');
 const { contractState, stateReason, contractHash, approvalState } = require('../intent/contract-state');
 
@@ -51,6 +52,9 @@ async function verify(contract, context, execution, options = {}) {
   const judgeCache  = options.judgeCache ? openCache(options.judgeCache) : null;
   let criteriaResults;
 
+  // KAN-44 10837 B2: a patch on credential hold (a finding, or a scan that could not finish) is never shown to a model
+  // judge, whoever calls verify() (runPipeline, the benchmark baseline, the verify CLI).
+  const held = securityHold(execution);
   const execStatus = execution?.status ?? null;
   const notRun     = FAILED_EXECUTION.has(execStatus);
   const material   = execStatus === 'no_change' ? snapshotMaterial(execution) : null;
@@ -67,7 +71,17 @@ async function verify(contract, context, execution, options = {}) {
     }
   };
 
-  if (execStatus === 'no_change' && snapshot) {
+  if (held) {
+    criteriaResults = criteria.map(ac => ({
+      id:        ac.id,
+      criterion: ac.criterion,
+      met:       null,
+      method:    'security-hold',
+      evidence:  held.status === 'finding'
+        ? 'Not judged: the captured patch appears to contain a credential, so it is not sent to any model.'
+        : 'Not judged: the credential check of the captured patch could not finish, so it is not sent to any model.',
+    }));
+  } else if (execStatus === 'no_change' && snapshot) {
     // QB-22: the agent changed nothing. Judge the CURRENT files; the verdict also
     // needs the sandbox tests (run on the unchanged tree) to have passed.
     evidenceFor(true);

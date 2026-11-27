@@ -298,6 +298,7 @@ async function main() {
   }
 
   // ── L5 recall → L2 → L3/L4 repair loop → L5 persist: one API shared with the benchmark (QB-28)
+  let held = false;   // KAN-44 10837: set by the credentialHold hook; names are withheld from the summary
   const { blocked, execution, report, attempt } = await runPipeline({
     contract, repoPath, agent: opts.agent, maxRetries, run, budgetRun, baseSha, memory,
     noLlmContext: !opts.llmContext, noLlmVerify: !opts.llmVerify, judgeCache: defaultJudgeCacheDir(),
@@ -320,13 +321,14 @@ async function main() {
       },
       executed(execution, attempt, isRetry, ms) {
         log(isRetry ? 'L3↩' : 'L3', `Execution done  (${ms}ms)  status=${execution.status}`);
-        execution.changes.forEach(c => console.log(`     ${c.file.padEnd(38)} +${c.additions} -${c.deletions}`));
+        // KAN-44 10837 B1: no file names while the patch is on credential hold (a name can itself be a secret)
+        require('./lib/credential-scan').changeListing(execution).forEach(l => console.log(`     ${l}`));
         if (opts.save) saveArtifact('agent/executions', execution, `${execution.id}_attempt${attempt}`);
       },
-      credentialFound(scan) {
-        console.log('\n  ✗ The captured patch appears to contain a credential. `qb patch` will refuse to export it, and QB makes no further attempt.');
-        for (const d of new Set(require('./lib/credential-scan').describeFindings(scan.findings))) console.log(`      - ${d}`);
-        console.log('    If it is real, revoke or rotate it now. The local run record is sensitive.');
+      credentialHold(scan) {
+        held = true;
+        console.log('');
+        for (const l of require('./lib/credential-scan').holdMessage(scan)) console.log(`  ${l}`);
       },
       verifyStart() { log('L4', 'Verification...'); },
       verified(report, attempt, ms) {
@@ -390,7 +392,7 @@ async function main() {
       console.log(`  ${execution.changes.length} file(s) changed.`);
     }
   } else if (report?.failures?.length) {
-    console.log(`\n  Still failing: ${report.failures.join(', ')}`);
+    console.log(held ? `\n  Still failing: ${report.failures.length} item(s); details withheld (credential hold; the run record is sensitive)` : `\n  Still failing: ${report.failures.join(', ')}`);
     console.log(`  Human review required.`);
   }
 

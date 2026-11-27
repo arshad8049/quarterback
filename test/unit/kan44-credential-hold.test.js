@@ -123,8 +123,9 @@ describe('B2: a scan that could not finish is a security hold, never clean', () 
     const f = gradingFixture();
     try {
       const run = store.createRun({ kind: 'bench-arm', request: 'x', repoPath: f.repo.dir, baseSha: f.repo.head(), runsDir: fs.mkdtempSync(path.join(os.tmpdir(), 'k44a-')) });
-      const ORACLE = { approved_by: 'qb-test-oracle', goal: 'g', required_behavior: ['x'], acceptance_criteria: [{ id: 'AC-1', criterion: 'x', kind: 'non_behavioral', requirement_ids: ['R-1'] }],
-        requirements: [{ id: 'R-1', quote: 'g' }], verification_plan: ['t'], scope: { allowed_changes: ['**'] } };
+      const ORACLE = { approved_by: 'qb-test-oracle', goal: 'formatDuration should show 30,000 ms as 30s', required_behavior: ['formatDuration(30000) returns "30s"'],
+        acceptance_criteria: [{ id: 'AC-1', criterion: 'formatDuration(30000) returns "30s"', kind: 'non_behavioral', requirement_ids: ['R-1'] }],
+        requirements: [{ id: 'R-1', quote: 'formatDuration should show 30,000 ms as 30s' }], verification_plan: ['run the tests'], scope: { allowed_changes: ['**'] } };
       let calls = 0;
       const failing = { status: 'ran', state: 'execution_error', exit_code: 1, report: null, report_error: 'no_report', output: 'fail' };
       const r = await runArm({ arm: 'B', spec: { ...f.spec, oracle: ORACLE }, repoPath: f.repo.dir, run, agentTimeMs: 60_000,
@@ -174,7 +175,7 @@ describe('B3: a failed own-credential check is cleared only against the same cre
       assert.equal(r.status, want, word);
       const create = calls.find((a) => a[0] === 'create').join(' ');
       assert.match(create, new RegExp(`QB_FP_SALT=${binding.salt}`)); assert.match(create, /QB_FP_EXPECT=1{64} 2{64}/);
-      assert.match(create, /--network none/); assert.doesNotMatch(create, /run-copy/, 'the run copy is gone at export');
+      assert.match(create, /--network none/); assert.doesNotMatch(create, /-cred:\/run-copy/, 'the run copy is gone at export: not mounted');
     }
     assert.equal((await recheckExact(raw, { mode: 'S', status: 'error' }, { op: async () => { throw new Error('must not run'); }, image: 't' })).status, 'unbound');
   });
@@ -249,5 +250,22 @@ describe('the temporary scan container is always removed (timeout, cancellation,
     const op = async (args) => { calls.push(args); if (args[0] === 'create') throw new Error('daemon'); return { ok: true, stdout: '', stderr: '' }; };
     assert.equal(await C().exactModeS(Buffer.from('x'), { image: 'i', authVolume: 'v', op }), 'error');
     assert.equal(calls.at(-1)[0], 'rm');
+  });
+});
+
+describe('found by the real-container cleanup check: a killed client must not crash QB', () => {
+  test('runBounded: input to a process that exits (or is killed) early is not an uncaught EPIPE', async () => {
+    const { runBounded } = require('../../lib/proc');
+    const errors = [];
+    const onErr = (e) => errors.push(e);
+    process.on('uncaughtException', onErr);
+    try {
+      const r = await runBounded('sh', ['-c', 'exit 0'], { input: Buffer.alloc(32 * 1024 * 1024, 'x'), timeoutMs: 10_000 });
+      assert.equal(r.status, 0);
+      const k = await runBounded('sh', ['-c', 'sleep 5'], { input: Buffer.alloc(32 * 1024 * 1024, 'x'), timeoutMs: 100 });
+      assert.equal(k.timedOut, true);
+      await new Promise((res) => setTimeout(res, 200));
+      assert.deepEqual(errors.map((e) => e.code), []);
+    } finally { process.removeListener('uncaughtException', onErr); }
   });
 });

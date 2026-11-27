@@ -145,12 +145,30 @@ describe('QB-02 done-when through the real pipeline', { skip: !ENABLED && 'set Q
       assert.equal(r.status, 'completed', JSON.stringify(r.reason));
       const c = r.sandbox.credential_scan;
       assert.equal(c.status, 'finding', JSON.stringify(c));
-      assert.deepEqual(c.findings.map((f) => [f.kind, f.file]), [['anthropic_key', 'src/leak.js']]);
+      assert.deepEqual(c.findings.map((f) => [f.kind, f.file_index, f.where]), [['anthropic_key', 1, 'content']]);
       assert.deepEqual(c.exact, { mode: 'none', status: 'not_applicable' }, 'no credential is given to a scripted agent');
       assert.equal(c.patch_sha256, crypto.createHash('sha256').update(r.patch_raw).digest('hex'));
       assert.ok(r.patch_raw.includes(Buffer.from(dummy)), 'the authoritative bytes are not redacted');
       assert.ok(!JSON.stringify(r.sandbox).includes(dummy));
       assert.ok(['enabled', 'disabled', 'unknown'].includes(r.sandbox.live_restore));
+    } finally { repo.cleanup(); }
+  });
+
+  test('KAN-44 10837 B1: a (dummy) credential as a FILE NAME plus a known format inside it: neither the name nor the value is in the evidence', async () => {
+    const repo = fixtureRepo();
+    const own = 'plain-dummy-own-credential-0123456789';
+    const gh = ['gh' + 'p', 'D'.repeat(36)].join('_');
+    try {
+      const r = await runSandboxed({ repoPath: repo.dir, briefing: 'x', stateDir, verify: false,
+        agentStage: hostileAgent(`printf 'a = "%s"\\nb = "%s"\\n' '${gh}' '${['np' + 'm', 'D'.repeat(36)].join('_')}' > '/work/src/${own}.js'`) });
+      assert.equal(r.status, 'completed', JSON.stringify(r.reason));
+      const c = r.sandbox.credential_scan;
+      assert.equal(c.status, 'finding');
+      assert.deepEqual(c.findings.map((f) => f.kind).sort(), ['github_token', 'npm_token']);
+      assert.ok(c.findings.every((f) => f.file_index === 1));
+      const text = JSON.stringify(c) + require('../../lib/credential-scan').describeFindings(c.findings).join('\n');
+      assert.ok(!text.includes(own) && !text.includes(gh), text);
+      assert.ok(r.patch_raw.includes(Buffer.from(own)), 'the authoritative bytes are unchanged');
     } finally { repo.cleanup(); }
   });
 

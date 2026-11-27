@@ -34,6 +34,7 @@ const { approve } = require('../intent/contract-state');
 const { contractFromObject } = require('../intent/compiler');
 const { createMemory } = require('../memory');
 const { runPipeline, agentStageMs } = require('../lib/qb-pipeline');
+const { securityHold } = require('../lib/credential-scan');
 const { FAILED_EXECUTION } = require('../verify/verdict');
 const S = require('./schemas');
 
@@ -153,7 +154,7 @@ async function nativeArm(def, o) {
     const context = def.context ? await buildContext(contract, repoPath, { noLlm: Boolean(o.noLlmContext) }) : null;
     base = buildBriefing(contract, context, { repairHints: [], attempt: 1 });
   }
-  let agentMs = 0; let attempt = 0; let execution = null; let feedback = null; const timing = [];
+  let agentMs = 0; let attempt = 0; let execution = null; let feedback = null; const timing = []; let held = null;
   while (attempt < def.max_attempts) {
     const remaining = o.agentTimeMs - agentMs;
     if (remaining <= 0) { run.event('budget.agent_time_exhausted', { after_attempt: attempt, agent_time_ms: o.agentTimeMs, agent_ms: agentMs }); break; }
@@ -173,13 +174,16 @@ async function nativeArm(def, o) {
     if (r.status === 'blocked' || r.status === 'infra_error') return { status: r.status === 'blocked' ? 'agent_error' : 'infra_error', detail: r.error, patch: r.diff || '', attempts: attempt, agent_ms: agentMs, timing };
     const failed = agentFailure(r);
     if (failed) return { ...failed, patch: r.diff || '', attempts: attempt, agent_ms: agentMs, timing, internal_verdict: null };
+    // KAN-44 10837 B2: a patch on credential hold (finding, or a scan that could not finish) gets no further attempt.
+    const hold = securityHold(r);
+    if (hold) { held = hold.status; run.event('credential.hold', { attempt, status: hold.status, findings: hold.findings || [] }); break; }
     if (def.feedback !== 'visible_tests') break;
     const vt = visibleTests(r);
     if (vt.outcome === 'passed' || vt.outcome === 'not_run') break;   // nothing to feed back
     feedback = vt;
   }
   return { status: 'completed', patch: (execution && execution.diff) || '', attempts: attempt, agent_ms: agentMs, timing,
-    internal_verdict: null, visible_tests: execution ? visibleTests(execution).outcome : null };
+    internal_verdict: null, visible_tests: execution ? visibleTests(execution).outcome : null, ...(held ? { credential_hold: held } : {}) };
 }
 
 /**
