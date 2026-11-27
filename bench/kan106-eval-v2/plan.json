@@ -1,23 +1,22 @@
 {
-  "format": "qb-kan106-eval-plan/3",
+  "format": "qb-kan106-eval-plan/4",
   "doc": "docs/research/kan106/eval-plan-v2.md",
-  "_label": "FREEZE CANDIDATE, NOT AUTHORIZED. Revision 3 of the evaluation v2 plan, for senior comment KAN-106 10838. No model run is authorized. The document and this file must agree (bench/kan106-eval-v2/plan-check.js); any disagreement REFUSES launch.",
+  "_label": "FREEZE CANDIDATE, NOT AUTHORIZED. Revision 4 of the evaluation v2 plan, for senior comment KAN-106 10849. No model run is authorized. The document and this file must agree (bench/kan106-eval-v2/plan-check.js); any disagreement REFUSES launch.",
   "supersedes": {
-    "format": "qb-kan106-eval-plan/2",
-    "commit": "5ff9d7d",
+    "format": "qb-kan106-eval-plan/3",
+    "commit": "2a43693 (rebuilt from 9bdbfa6 onto the KAN-118-integrated candidate)",
     "changes": [
-      "resource gate: residency-aware (warm = reserve only; cold = frozen runtime estimate + reserve); actual available memory; pressure and swap recorded and bounded; unknown capacity blocks",
-      "document/JSON disagreement refuses launch (withdrawn: the JSON wins)",
-      "gates set by the senior in 10838 (Q1-Q5), replacing the junior proposal",
-      "authorship: owner authors the 12 specs; junior builds bases, controls and harness only; harness frozen before the junior sees any spec",
-      "serialization is shown with an instrumented fake model server, not by setting QB_MODEL_CONCURRENCY",
-      "POSIX launcher; zsh not required",
-      "carry-over of 4b50bbb, cec4c60, e5c460d onto this branch; pinned rescore"
+      "candidate: 2150ab6 + KAN-118 (PR #35 @ 5ebb8c8) merged as f1ddad4; compiler and harness hashes regenerated",
+      "keep-alive policy: warm admission requires the pinned model to stay resident for the whole item ceiling (1260 s), which needs the owner to set OLLAMA_KEEP_ALIVE for the window; otherwise the cold rule; unplanned reloads detected and reported",
+      "Mac-first: P-Mac is the only authorized-to-stage profile; P-Linux optional, separately authorized later, never pooled",
+      "qb_under_test.sha stays null (senior sets it); proposed value recorded outside normative; the launch head must descend from it and differ only in plan.json, held-out/ and docs/",
+      "the 11 GiB cold figure is a provisional conservative admission assumption; insufficient memory = resource_blocked/incomplete, never a model failure",
+      "pinned historical rescore accepted; CI reproduces it in a dedicated job that fetches e5c460d explicitly; current-validator drift kept as a separately labelled file"
     ]
   },
   "normative": {
     "status": {
-      "version": 3,
+      "version": 4,
       "kind": "freeze candidate",
       "frozen": false,
       "authorizes_model_runs": false
@@ -33,7 +32,13 @@
     "qb_under_test": {
       "sha": null,
       "compiler_source_rev": "2150ab6690c4444c7cc5b9ba45e375d00d5e36a3",
-      "no_edits_after_harness_freeze": true
+      "kan118_integrated": "5ebb8c872d6cb0100a8e358e5eb3293b15aa32ab",
+      "no_edits_after_harness_freeze": true,
+      "launch_head_may_change_only": [
+        "bench/kan106-eval-v2/plan.json",
+        "bench/kan106-eval-v2/held-out/",
+        "docs/"
+      ]
     },
     "launch": {
       "ollama_url": "http://127.0.0.1:11434",
@@ -71,11 +76,16 @@
       "supported": 8,
       "refusal": 4,
       "runs_per_item": 1,
-      "profiles": 2,
-      "total_runs": 24,
       "retries": 0,
       "replacements": 0,
-      "pooling_across_profiles": false
+      "pooling_across_profiles": false,
+      "staging_order": [
+        "P-Mac"
+      ],
+      "authorized_profiles": [],
+      "optional_profiles": [
+        "P-Linux"
+      ]
     },
     "held_out": {
       "items_dir": "bench/kan106-eval-v2/held-out",
@@ -107,7 +117,7 @@
       "reserve_bytes": 2147483648,
       "cold_runtime_bytes": 11811160064,
       "num_ctx": 8192,
-      "warm_min_remaining_s": 120,
+      "warm_min_remaining_s": 1260,
       "swap_growth_max_bytes": 268435456,
       "darwin": {
         "available": "(vm_stat Pages free + Pages inactive) x page size",
@@ -120,7 +130,20 @@
         "warm_max_full_avg10": 10
       },
       "unknown_capacity": "blocks",
-      "other_model_loaded": "blocks"
+      "other_model_loaded": "blocks",
+      "cold_runtime_status": "provisional conservative admission assumption (not measured)",
+      "insufficient_memory": "resource_blocked: profile incomplete, never a model failure",
+      "keep_alive": {
+        "qb_sends_keep_alive": false,
+        "server_default_s": 300,
+        "owner_sets": "OLLAMA_KEEP_ALIVE=-1 (or a duration >= 21m) on the Ollama server for the window",
+        "warm_requires_remaining_s": 1260,
+        "basis": "child_timeout_ms 1200 s + 60 s margin: the expiry timer runs only while the model is idle and is reset after each request, so 1260 s remaining covers the whole item even with no call",
+        "otherwise": "cold rule (a possible reload is charged in full)",
+        "reload_detect_load_ms": 1000,
+        "release_after_batch": true,
+        "verify_against_pinned_ollama_before_launch": true
+      }
     },
     "profiles": {
       "P-Mac": {
@@ -130,7 +153,8 @@
         "host_label": null,
         "owner_approval": null,
         "window_start_utc": null,
-        "window_end_utc": null
+        "window_end_utc": null,
+        "status": "staged first (packet and window still to be authorized)"
       },
       "P-Linux": {
         "platform": "linux",
@@ -139,13 +163,13 @@
         "host_label": null,
         "owner_approval": null,
         "window_start_utc": null,
-        "window_end_utc": null
+        "window_end_utc": null,
+        "status": "optional; not scheduled; needs its own authorization; never pooled with P-Mac"
       }
     }
   },
   "notes": {
     "cold_runtime_estimate": "11 GiB = weights 8,988,124,298 B (Q4_K_M file; /api/tags size) + f16 KV cache 48 layers x 8 KV heads x 128 dims x 2 (K,V) x 2 B x 8192 tokens = 1.5 GiB + compute buffers, rounded up. An estimate, NOT measured: measuring needs a model load, which is a model call. Disk size alone is never the requirement.",
-    "linux_min_memory": "a 16 GB host reports about 15.6 GiB MemTotal, so the frozen minimum is 15 GiB",
     "would_not_show": [
       "population reliability (n=8+4, one run each)",
       "run-to-run stability",
@@ -155,6 +179,13 @@
       "L2/L4 with Qwen",
       "any profile not run",
       "beta readiness"
-    ]
+    ],
+    "keep_alive_source": "Ollama main, fetched 2026-11-27: server/sched.go processCompleted (expireTimer = time.AfterFunc(sessionDuration) / Reset when refCount reaches 0; expiresAt = now + sessionDuration), useLoadedRunner (expireTimer.Stop() when a request reuses the runner; sessionDuration replaced only if the request sends keep_alive), envconfig.KeepAlive (default 5m; OLLAMA_KEEP_ALIVE as a Go duration or seconds; negative = infinite; 0 = none). NOT verified against the pinned server version: re-check its source/version before launch.",
+    "linux": "P-Linux is optional; no Linux host is assumed to exist. Its frozen minimum would be 15 GiB (a 16 GB host reports about 15.6 GiB)."
+  },
+  "proposed": {
+    "_label": "NOT normative: proposals for the senior",
+    "qb_under_test_sha": null,
+    "qb_under_test_note": "filled with the CI-green code head that this freeze candidate was built on"
   }
 }

@@ -1,0 +1,34 @@
+{
+  "_label": "CURRENT-VALIDATOR DRIFT, not a new result and not a replacement for the original analysis. The recorded 881a51a contracts re-scored with the v1 scorer under the CURRENT checkout validators (KAN-107 10812 onward, on the KAN-106 evaluation candidate). The original analysis stays scores-freeze-v4.json (reproduced byte for byte at e5c460d by bench/kan106-eval-v2/rescore-pinned.js). No model was run.",
+  "original": "docs/research/kan106/2026-11-19-eval-v1-881a51a/scores-freeze-v4.json",
+  "original_sha256": "66f7dd25450229f137ce413f8e692ee3866750c5c85e03b28282301abbdd89fa",
+  "reproduce_original": "node bench/kan106-eval-v2/rescore-pinned.js --rev e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0 --batch-dir docs/research/kan106/2026-11-19-eval-v1-881a51a --out <file> --expect docs/research/kan106/2026-11-19-eval-v1-881a51a/scores-freeze-v4.json",
+  "reproduce_drift": "node bench/kan106-eval-v1/score.js --batch-dir docs/research/kan106/2026-11-19-eval-v1-881a51a --out <file> (at this checkout), then compare rows with the original",
+  "cause": "bench/kan106-eval-v1/score.js reads contractState from the running checkout; the current validators no longer finalize these recorded contracts, and the v1 scorer labels a DRY_RUN without a finalized contract invalid_record. All three were already ruled failures (S2, S3 semantic failures; U2 not refused).",
+  "rows": [
+    {
+      "id": "S2-formatter",
+      "original_result": "checklist",
+      "current_validator_result": "invalid_record",
+      "problems": [
+        "outcome DRY_RUN without a finalized contract artifact"
+      ]
+    },
+    {
+      "id": "S3-percent",
+      "original_result": "checklist",
+      "current_validator_result": "invalid_record",
+      "problems": [
+        "outcome DRY_RUN without a finalized contract artifact"
+      ]
+    },
+    {
+      "id": "U2-roundto",
+      "original_result": "not_refused",
+      "current_validator_result": "invalid_record",
+      "problems": [
+        "outcome DRY_RUN without a finalized contract artifact"
+      ]
+    }
+  ]
+}

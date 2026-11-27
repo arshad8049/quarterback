@@ -2,7 +2,7 @@
   "format": "qb-kan106-eval-v2-harness-freeze/1",
   "_label": "Harness freeze, made BEFORE the junior sees any held-out spec. The batch refuses if any listed file changes. Not a run authorization.",
   "compiler_source_rev": "2150ab6690c4444c7cc5b9ba45e375d00d5e36a3",
-  "note": "qb.js, intent/, verify/, context/, lib/, the check runner and package*.json are byte-identical to 2150ab6; bench/kan106-eval-v1/score.js and FREEZE.json are the v1 freeze v4 (labels only) carried from e5c460d as a87a194",
+  "note": "candidate f1ddad4 = 2150ab6 + KAN-118 (5ebb8c8): qb.js, intent/, verify/, context/ byte-identical to 2150ab6; lib/sandbox/* from KAN-118; bench/kan106-eval-v1/score.js and FREEZE.json are v1 freeze v4 (labels only) carried from e5c460d",
   "compiler": {
     "qb.js": "99d51f290379fd9c015201b1cc62350cc8f7e669faffd800c630414cc95a4b08",
     "intent/api-grounding.js": "08854041e7dc50c17af56b2656e25e0395bbf5be58146532b9eeff195b491823",
@@ -77,13 +77,13 @@
     "lib/sandbox/cli.js": "eec7d3626d6cbf27149287ea5f8d31230fc3111051e92ca578dbaa26820ca60b",
     "lib/sandbox/docker.js": "496b90acaf4880c894e83fa196c71ff23ba032c5c65ebf4af4df1f112e50eef6",
     "lib/sandbox/egress.js": "7c7042b7775f2902bc03d589ba283d69cd8b2fe05be8e02f8484f82d2f773a07",
-    "lib/sandbox/lease.js": "cb1118b2f499edbfd39352836d50215ac5e471d55d91c6c359fd3975157a2ba8",
-    "lib/sandbox/pipeline.js": "411428f0ca357fc372206a1c22baab91d6d6c8c1f0f56394a86ec67a22ef3cbf",
+    "lib/sandbox/lease.js": "a3e8a1b8f2faab133beea200830f1ca07764db1163e64fcdc01b7db8b48a143b",
+    "lib/sandbox/pipeline.js": "a16a4b832512d874fb92be6e5acc6ae41c850e15df149b16a66e5074a0091f98",
     "lib/sandbox/protocol.js": "420cf9776c831d2dceab7f59b2650bece15683383b1db030d6130cc5d4410fdf",
-    "lib/sandbox/reaper.js": "b5e60a507928832bcea64db618613d7c65e089d3e0d883a0a5a0ac51b95afb44",
+    "lib/sandbox/reaper.js": "56dcb59f6ba79091c5dc630324abb0dbd8f7f6c2d5a891d555167dc51e391dee",
     "lib/sandbox/stages.js": "119d472525132629d15b4fa115e3c7b33fdb47aadf77b28e10a5af99171ce55f",
     "lib/sandbox/states.js": "ffd8f3bcafa54aace025d4a90a136f16ff65987470545f54a831ac9c9cee62be",
-    "lib/sandbox/supervisor.js": "242af03ed5d5ab98317f5b64a8e32374bd2ca7d7f80adbc00cf7946306c486b3",
+    "lib/sandbox/supervisor.js": "d114a9646f6e37ca90e8d2ab1e1c34f5c3976dcc754be613c0d2ed0a37776595",
     "lib/sandbox/tar.js": "af9a97230cef53649febe7baebe029ed87d29857d8f2b0a5a8da6e4d2f9655af",
     "lib/sandbox/workspace.js": "7eda86d3d3906bb0190d6f7e1a3e9e31519ee5a92a7e6de7f756c60d68cdd005",
     "lib/short-text.js": "a49087abcc383f1dfbc3a867e86a1510f3e8babafea3c4259a18f384597687cb",
@@ -96,17 +96,17 @@
     "package-lock.json": "92db85b633af6c0ca932b0ec6cee6631d4e67099e5bc1e2887891bd29e037ed3"
   },
   "harness": {
-    "bench/kan106-eval-v2/batch.js": "a6d48231de8856a9b4553174367fbbeb92b737fa74d36485ccab405bf22ae941",
+    "bench/kan106-eval-v2/batch.js": "b0a6bccb9184b7c3a3c376424cfefe34804004e50b8c2946dd1429f58610f765",
     "bench/kan106-eval-v2/host-snapshot.js": "6b26a60c10beaf345682f7f2591e2df559a51d9bfbcd15a0ce6d14350e370849",
     "bench/kan106-eval-v2/resource-gate.js": "5344d6c2adc9f32363490a60725056b620be7534982ef841d6d61afba9ba0b13",
     "bench/kan106-eval-v2/plan-check.js": "0a0340506a0437a0cad5c8897c66b4def0f792f43c4d16013794c0f82ccce4dc",
-    "bench/kan106-eval-v2/freeze.js": "9dec61b21708b6d48bddbf54fc974443f17fd4dd4b1f5b35f673eb14a802f88c",
-    "bench/kan106-eval-v2/gates.js": "0df759d57b0d8d8380c0724380d946807191c0bcc48fcc5ab29089fb7a9ade05",
-    "bench/kan106-eval-v2/score.js": "f2c77e3259d8b8b04013e100c204feae81e31601bddff94f62fcaf42df2d48f0",
+    "bench/kan106-eval-v2/freeze.js": "3b5a414fe5305d7aaa704976e380a1afcdc61afb83a586ce1e05cef0de249499",
+    "bench/kan106-eval-v2/gates.js": "2b93372b9a73a15563e43c4a090f4bfc5c81187255e7dd5691fa94a4498f9c3a",
+    "bench/kan106-eval-v2/score.js": "aaddbc477674509c81456f6204b145eb006c7f756ece10d2e76a1dad8052ce7c",
     "bench/kan106-eval-v2/items.js": "3e32071bf800ab3f0956d98a808d2af91b03c8a6778d62f236eff08fb6a34b00",
     "bench/kan106-eval-v2/rescore-pinned.js": "309b3f71c1ea6332b4f3431ab9e44d26455b5bdfec1a2bac7169da703a2f4a41",
     "bench/kan106-eval-v2/run-batch.sh": "45437fe1398eb1dc252cbaf0b08804ef8f3b488641d4477b9cf1dae50151f4b5"
   },
-  "compiler_manifest_sha256": "2d85c876ed6f4b6918145bfbf8a79e10acd48b7d5244050c77cb7405981de221",
-  "harness_manifest_sha256": "df2c4ef711da713c5dbfa4e9811f8657d4f98cb0377fde5b206fa1f76c1f45bf"
+  "compiler_manifest_sha256": "aa8a467fdd77bd590aab0ea94b82ed9bc51593f652eea790859a1bc5d8837ada",
+  "harness_manifest_sha256": "49050f219328aa53b9f48757c4d98470cf742792ca37389bcea96429f90942c7"
 }

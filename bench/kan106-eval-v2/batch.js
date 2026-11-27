@@ -8,7 +8,8 @@
  *
  * Refuses BEFORE any model contact (exit 2) on any of:
  *   - the plan document and plan.json disagree (plan-check.js; never "the JSON wins");
- *   - plan.json is not marked frozen, or EXPECTED_SHA is not its qb_under_test.sha;
+ *   - plan.json is not marked frozen; the launch head EXPECTED_SHA does not descend from qb_under_test.sha or differs from
+ *     it outside plan.json, held-out/ and docs/ (freeze.js revisionProblems; the plan cannot contain its own commit SHA);
  *   - the compiler or harness differs from HARNESS-FREEZE.json (freeze.js);
  *   - the held-out packet or its spec manifest differs from the frozen hashes, or the materialized base SHAs differ;
  *   - PROFILE is unknown, has no owner-named host label, no owner approval reference, or now is outside its window;
@@ -18,7 +19,8 @@
  * model server in test/unit/kan106-eval-v2-serial.test.js):
  *   unload the pinned model once (item 1 is cold by design; --l1-warmup is never used), and for each frozen item:
  *   read-only host snapshot -> residency-aware resource gate -> launch qb.js, or record resource_blocked (never
- *   launched, never retried, never replaced) -> snapshot after. No retry of anything.
+ *   launched, never retried, never replaced) -> snapshot after. No retry of anything. After the last item the pinned model
+ *   is unloaded again (the keep-alive policy may hold it indefinitely).
  * The child environment is BUILT (PATH, HOME, TMPDIR, LANG only) plus QB_OLLAMA_URL, QB_MODEL, QB_RUNS_DIR and
  * QB_MODEL_CONCURRENCY=1 (defence in depth; NOT the evidence of serialization).
  */
@@ -87,7 +89,7 @@ async function defaultFetchJson(url) {
  * @param {string[]} o.harnessProblems freeze.js checkHarness problems (any -> refuse)
  * @param {object} o.packetInfo       { manifest_sha256, spec_manifest_sha256, base_shas } as computed now
  */
-async function runBatch({ out, expectedSha, profile, plan, planProblems = [], harnessProblems = [], packetInfo, itemsRoot,
+async function runBatch({ out, expectedSha, profile, plan, planProblems = [], harnessProblems = [], revisionProblems = [], packetInfo, itemsRoot,
   inherited = process.env, qbEntry = path.join(QB_ROOT, 'qb.js'), fetchJson = defaultFetchJson, takeSnapshot, releaseModel,
   spawnChild = defaultSpawnChild, dotenvPath = path.join(QB_ROOT, 'intent', '.env'), now = () => Date.now(), log = (m) => process.stdout.write(m),
   childTimeoutMs = CHILD_TIMEOUT_MS }) {
@@ -95,7 +97,7 @@ async function runBatch({ out, expectedSha, profile, plan, planProblems = [], ha
   fs.mkdirSync(path.join(out, 'snapshots'), { recursive: true });
   const runsDir = path.join(out, 'runs');
   const n = (plan && plan.normative) || {};
-  const batch = { format: 'qb-kan106-eval-v2-batch/1', profile, qb_revision: expectedSha, started_utc: utc(new Date(now())), refused: false, preflight: [], items: [] };
+  const batch = { format: 'qb-kan106-eval-v2-batch/1', profile, qb_revision: expectedSha, qb_under_test: n.qb_under_test ? n.qb_under_test.sha : null, started_utc: utc(new Date(now())), refused: false, preflight: [], items: [] };
   const refuse = (reasons) => {
     Object.assign(batch, { refused: true, reasons, finished_utc: utc(new Date(now())) });
     writeJson(path.join(out, 'batch.json'), batch);
@@ -108,7 +110,8 @@ async function runBatch({ out, expectedSha, profile, plan, planProblems = [], ha
   pre.push(...planProblems.map((x) => `plan: ${x}`));
   if (!n.status || n.status.frozen !== true) pre.push('plan: not frozen (normative.status.frozen is not true); no run is authorized');
   pre.push(...harnessProblems.map((x) => `harness freeze: ${x}`));
-  if (!n.qb_under_test || expectedSha !== n.qb_under_test.sha) pre.push(`QB revision ${expectedSha} is not the frozen qb_under_test.sha ${n.qb_under_test ? n.qb_under_test.sha : null}`);
+  pre.push(...revisionProblems.map((x) => `revision: ${x}`));
+  if (!n.batch || !(n.batch.authorized_profiles || []).includes(profile)) pre.push(`${profile}: not in batch.authorized_profiles ${JSON.stringify(n.batch ? n.batch.authorized_profiles : null)}`);
   const h = n.held_out || {};
   if (!packetInfo) pre.push('held-out packet: not computed');
   else {
@@ -175,6 +178,7 @@ async function runBatch({ out, expectedSha, profile, plan, planProblems = [], ha
     writeJson(path.join(out, 'runs.json'), runs); writeJson(path.join(out, 'batch.json'), batch);
     log(`exit ${r.status === null ? r.signal : r.status}, run ${runs[id].run_id || 'none'}\n`);
   }
+  try { batch.model_release_after = await releaseModel(); } catch (e) { batch.model_release_after = { released: false, error: String(e && e.message) }; }
   const afterTags = await fetchJson(`${n.launch.ollama_url}/api/tags`);
   writeJson(path.join(out, 'ollama-tags-after.json'), afterTags);
   const changed = tagProblems(afterTags, n);
@@ -188,7 +192,8 @@ if (require.main === module) {
   const [out, sha, profile] = process.argv.slice(2);
   if (!out || !/^[0-9a-f]{40}$/.test(String(sha)) || !profile) { console.error('usage: node bench/kan106-eval-v2/batch.js OUT EXPECTED_SHA PROFILE'); process.exit(2); }
   const { checkFiles } = require('./plan-check');
-  const { checkHarness, packet } = require('./freeze');
+  const { checkHarness, packet, revisionProblems } = require('./freeze');
+  const proc = require('../../lib/proc');
   const { snapshot } = require('./host-snapshot');
   const { releaseLocalModel } = require('../../lib/model-release');
   const pc = checkFiles();
@@ -201,7 +206,10 @@ if (require.main === module) {
     packetInfo = { manifest_sha256: packet(itemsRoot).manifest_sha256, spec_manifest_sha256: packet(itemsRoot, { specsOnly: true }).manifest_sha256, base_shas: baseShas };
   } catch { packetInfo = null; }
   const url = n.launch ? n.launch.ollama_url : 'http://127.0.0.1:11434';
-  runBatch({ out, expectedSha: sha, profile, plan, planProblems: pc.problems, harnessProblems: checkHarness(), packetInfo, itemsRoot,
+  const git = (args) => proc.run('git', args, { cwd: QB_ROOT });
+  const head = git(['rev-parse', 'HEAD']).stdout.trim();
+  const revProblems = head === sha ? revisionProblems({ frozenSha: n.qb_under_test && n.qb_under_test.sha, head, git }) : [`checkout HEAD ${head} is not the launch head ${sha}`];
+  runBatch({ out, expectedSha: sha, profile, plan, planProblems: pc.problems, harnessProblems: checkHarness(), revisionProblems: revProblems, packetInfo, itemsRoot,
     takeSnapshot: () => snapshot({ ollamaUrl: url }),
     releaseModel: () => releaseLocalModel({ url, model: n.model && n.model.name }) })
     .then((r) => process.exit(r.refused ? 2 : 0), (e) => { console.error(`✗ batch.js: ${e.message}`); process.exit(1); });

@@ -45,6 +45,36 @@ jobs:
             ci-evidence.json
             unit.tap
 
+  kan106-offline-evidence:
+    # KAN-106 10849: offline evidence only (no model, no Docker, no secrets). Re-scores the carried 881a51a
+    # evidence pack with the scorer as it was at the analysis revision, which is FETCHED EXPLICITLY (the default
+    # checkout is shallow), and requires a byte-for-byte match with scores-freeze-v4.json. Nothing is skipped here:
+    # QB_KAN106_PINNED_REQUIRED=1 turns a missing commit into a failure.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch the pinned scorer commit (analysis freeze v4)
+        run: |
+          git fetch --no-tags --depth=1 origin e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0
+          git cat-file -e e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0^{commit}
+      - name: Install root + layer packages
+        run: |
+          npm ci
+          for d in intent agent context verify memory bench; do (cd "$d" && npm ci); done
+      - name: Pinned re-score, byte for byte
+        run: |
+          P=docs/research/kan106/2026-11-19-eval-v1-881a51a
+          node bench/kan106-eval-v2/rescore-pinned.js --rev e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0 --batch-dir "$P" --out "$RUNNER_TEMP/rescore.json" --expect "$P/scores-freeze-v4.json"
+          sha256sum "$RUNNER_TEMP/rescore.json" "$P/scores-freeze-v4.json"
+      - name: Pack tests with the pinned reproduction required
+        run: node --test --test-reporter=spec test/unit/kan106-eval-v1-pack.test.js
+        env:
+          QB_KAN106_PINNED_REQUIRED: '1'
+
   integration:
     # Sandbox integration suite (QB-02): real Docker Engine on the supported
     # platform, no model credentials. Runs on every push and on demand.

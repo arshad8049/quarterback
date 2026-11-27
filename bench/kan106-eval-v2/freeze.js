@@ -29,6 +29,8 @@ const COMPILER = ['qb.js', 'intent', 'verify', 'context', 'lib', 'sandbox/agent/
 const HARNESS = ['bench/kan106-eval-v2/batch.js', 'bench/kan106-eval-v2/host-snapshot.js', 'bench/kan106-eval-v2/resource-gate.js',
   'bench/kan106-eval-v2/plan-check.js', 'bench/kan106-eval-v2/freeze.js', 'bench/kan106-eval-v2/gates.js', 'bench/kan106-eval-v2/score.js',
   'bench/kan106-eval-v2/items.js', 'bench/kan106-eval-v2/rescore-pinned.js', 'bench/kan106-eval-v2/run-batch.sh'];
+/** After qb_under_test.sha, the launch head may change ONLY these (the plan, the held-out packet, documents). */
+const LAUNCH_HEAD_MAY_CHANGE = [/^bench\/kan106-eval-v2\/plan\.json$/, /^bench\/kan106-eval-v2\/held-out\//, /^docs\//];
 const SKIP = (name) => name === 'node_modules' || name === '.DS_Store' || /^\.env/.test(name);
 const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 
@@ -70,6 +72,21 @@ function writeHarness({ root = ROOT, freezeFile = FREEZE_FILE, compilerSourceRev
   return out;
 }
 
+/**
+ * The launch head cannot be qb_under_test.sha itself (plan.json, which names that SHA, is committed after it). The
+ * head must DESCEND from it and differ from it only in LAUNCH_HEAD_MAY_CHANGE; the byte check of every compiler and
+ * harness file is checkHarness(). `git` is injected for tests.
+ */
+function revisionProblems({ frozenSha, head, git }) {
+  if (!/^[0-9a-f]{40}$/.test(String(frozenSha))) return [`qb_under_test.sha is not set (${JSON.stringify(frozenSha)})`];
+  if (!/^[0-9a-f]{40}$/.test(String(head))) return [`launch head ${JSON.stringify(head)} is not a full SHA`];
+  if (git(['merge-base', '--is-ancestor', frozenSha, head]).status !== 0) return [`launch head ${head} does not descend from qb_under_test.sha ${frozenSha}`];
+  const d = git(['diff', '--name-only', frozenSha, head]);
+  if (d.status !== 0) return [`git diff ${frozenSha}..${head} failed`];
+  const bad = d.stdout.split('\n').filter(Boolean).filter((f) => !LAUNCH_HEAD_MAY_CHANGE.some((re) => re.test(f)));
+  return bad.map((f) => `changed after qb_under_test.sha: ${f} (only plan.json, held-out/ and docs/ may change)`);
+}
+
 /** The held-out packet: every file under DIR (or only request.txt/spec.json per item), one manifest hash. */
 function packet(dir, { specsOnly = false } = {}) {
   const all = walk(dir, '');
@@ -93,4 +110,4 @@ if (require.main === module) {
   if (i >= 0) { process.stdout.write(JSON.stringify(packet(path.resolve(a[i + 1]), { specsOnly: a.includes('--specs-only') }), null, 2) + '\n'); process.exit(0); }
   console.error('usage: freeze.js --check-harness | --write-harness [--source-rev SHA] | --packet DIR [--specs-only]'); process.exit(2);
 }
-module.exports = { checkHarness, writeHarness, currentHarness, packet, manifestHash, COMPILER, HARNESS, FREEZE_FILE };
+module.exports = { revisionProblems, LAUNCH_HEAD_MAY_CHANGE, checkHarness, writeHarness, currentHarness, packet, manifestHash, COMPILER, HARNESS, FREEZE_FILE };

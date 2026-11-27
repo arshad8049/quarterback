@@ -104,6 +104,9 @@ function evaluateProfile({ profile, roster, rows, rulings = {}, policy }) {
   const notComplete = view.filter((v) => !v.complete).map((v) => ({ id: v.id, result: v.r.result }));
   const pending = view.filter((v) => v.pending).map((v) => v.id);
   const Q5 = { complete: view.filter((v) => v.complete).length, of: roster.length, not_complete: notComplete, pending_ruling: pending,
+    // keep-alive policy: a model load the admission did not plan for is REPORTED here (its time is already inside Q4's
+    // full l1_ms); whether it should also make the profile incomplete is a senior decision (not applied).
+    unplanned_reloads: view.filter((v) => v.r.unplanned_reload === true).map((v) => v.id),
     status: notComplete.length || pending.length || problems.length ? 'fail' : 'pass' };
 
   const gates = { Q1, Q2, Q3, Q4, Q5 };

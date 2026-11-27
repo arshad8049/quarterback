@@ -25,14 +25,22 @@ function expectFromPlan(n, qbRevision) {
 function rosterOf(n, itemsRoot) {
   return n.held_out.order.map((id) => ({ id, expected: JSON.parse(fs.readFileSync(path.join(itemsRoot, id, 'item.json'), 'utf8')).expected }));
 }
-/** Secondary timing facts: load-excluded L1 time and whether the item paid a cold load. */
-function timingExtras(runDir) {
+/**
+ * Secondary timing facts: load-excluded L1 time, whether the item paid a model load, and whether a load happened
+ * that the admission did not plan for (keep-alive policy, plan.json resource_gate.keep_alive): ANY load in an item
+ * admitted under the warm rule, or a load after the first call in an item admitted under the cold rule.
+ */
+function timingExtras(runDir, { admittedRule = null, loadMs = 1000 } = {}) {
   try {
     const t = v1.loadRun(runDir).timings;
     if (!t) return {};
-    const loads = (t.calls || []).map((c) => c.load_ms).filter(Number.isFinite);
+    const calls = t.calls || [];
+    const loads = calls.map((c) => c.load_ms).filter(Number.isFinite);
     const sum = loads.reduce((a, b) => a + b, 0);
-    return { l1_load_excluded_ms: Number.isFinite(t.l1_ms) ? t.l1_ms - sum : null, load_ms_total: sum, cold_load: loads.some((x) => x >= 1000) };
+    const big = calls.map((c, i) => ({ i, ms: c.load_ms })).filter((x) => Number.isFinite(x.ms) && x.ms >= loadMs);
+    const unplanned = admittedRule === 'warm' ? big.length > 0 : admittedRule === 'cold' ? big.some((x) => x.i > 0) : null;
+    return { l1_load_excluded_ms: Number.isFinite(t.l1_ms) ? t.l1_ms - sum : null, load_ms_total: sum, cold_load: big.length > 0,
+      admitted_rule: admittedRule, unplanned_reload: unplanned, load_calls: big.map((x) => ({ call: x.i + 1, load_ms: x.ms })) };
   } catch { return {}; }
 }
 
@@ -56,7 +64,8 @@ function scoreProfile({ batch, runs, runsRoot, itemsRoot, plan, profile, rulings
       row = { id, expected, result: 'resource_blocked', gate: it ? it.gate : null, problems: [] };
     } else {
       try { row = v1.scoreItem(id, entry, { runsRoot, itemsRoot, expect }); } catch (e) { row = { id, expected, result: 'invalid_record', problems: [`scorer error: ${e.message}`] }; }
-      if (entry.run_id) Object.assign(row, timingExtras(path.join(runsRoot, entry.run_id)));
+      const it = ((batch && batch.items) || []).find((x) => x.id === id);
+      if (entry.run_id) Object.assign(row, timingExtras(path.join(runsRoot, entry.run_id), { admittedRule: it && it.gate ? it.gate.rule : null, loadMs: n.resource_gate.keep_alive.reload_detect_load_ms }));
     }
     if (problems.length && !['missing', 'resource_blocked', 'invalid_record'].includes(row.result)) { row.result_before_batch_check = row.result; row.result = 'invalid_record'; row.problems = [...(row.problems || []), ...problems]; }
     return row;

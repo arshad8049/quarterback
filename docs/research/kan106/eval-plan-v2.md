@@ -1,134 +1,151 @@
-# KAN-106 post-integration L1 evaluation v2: plan revision 3 (FREEZE CANDIDATE, NOT AUTHORIZED)
+# KAN-106 post-integration L1 evaluation v2: plan revision 4 (FREEZE CANDIDATE, NOT AUTHORIZED)
 
-Written for senior comment KAN-106 10838, which approved **offline preparation only**. **No model run is authorized by this document.** It becomes the frozen plan only when the senior freezes it on KAN-106 (`status.frozen` becomes `true`, a new plan version). Revision 2 is commit `5ff9d7d`.
+Written for senior comment KAN-106 10849. Revision 3 (10838) was `9bdbfa6`, kept as branch `kan106-eval-plan-pre118`. **No model run is authorized by this document.** It becomes the frozen plan only when the senior sets `status.frozen` to `true` and names `qb_under_test.sha`, as a new plan version. The junior sets neither.
 
-**This document and `bench/kan106-eval-v2/plan.json` must agree.** `bench/kan106-eval-v2/plan-check.js` compares the "Normative values" table below with `plan.json` `normative`, key by key, and checks that the plan.json sha256 named below is the file's exact hash. **If they disagree, the batch refuses to launch.** Revision 2's rule that one file silently takes precedence is withdrawn. Prose outside the table is not machine-checked; reviewers check it against the table.
+**This document and `bench/kan106-eval-v2/plan.json` must agree.** `bench/kan106-eval-v2/plan-check.js` compares the "Normative values" table below with `plan.json` `normative`, key by key. It also checks that the plan.json sha256 named below is the file's exact hash. **Any disagreement refuses launch.** Nothing silently takes precedence. Prose outside the table is not machine-checked; reviewers check it against the table.
 
-Branch `kan106-eval-plan`, on the evaluation candidate `2150ab6` (KAN-107 combined head, unmerged; it contains the KAN-106 prototype `f907d97`). The compiler is unchanged from `2150ab6`. This branch adds only the carried evidence, the v2 harness and this plan.
+## 0. Decision being evaluated (10815, 10838, 10849)
+- **`qwen2.5-coder:14b` stays the pinned L1 development candidate.** Digest `9ec8897f…8716849`, Q4_K_M. It is re-listed at run time, and a different digest refuses the batch.
+- **No customer-default switch to Qwen.** The `QB_MODEL` fallback stays `deepseek-r1:7b`, unchanged.
+- **L2 and L4 stay model-disabled** (`--no-llm-context --no-llm-verify`).
+- **What it tests:** checklist quality only. Not coding success (dry-run), and not beta readiness.
 
-## 0. Decision being evaluated (10815, 10838)
-- **`qwen2.5-coder:14b` stays the pinned L1 development candidate.** Digest `9ec8897f…8716849`, Q4_K_M. It is not a customer default and is not qualified. The digest is re-listed at run time; a different digest refuses the batch.
-- **L2 and L4 stay model-disabled** (`--no-llm-context --no-llm-verify`), so the pinned model can reach only L1. **No default changes**: `QB_MODEL` still falls back to `deepseek-r1:7b`.
-- **What it tests:** checklist quality from the staged L1 on 12 new requests. It does **not** test coding success (dry-run, no agent) or beta readiness.
-
-## 1. Code under evaluation and the two freezes
-- **One exact QB SHA** (`qb_under_test.sha`, named by the senior at freeze). Results from different SHAs are never pooled.
-- **Freeze 1, the harness freeze, comes BEFORE the junior sees any held-out spec.** `bench/kan106-eval-v2/HARNESS-FREEZE.json` holds the sha256 of every file of the compiler under test (`qb.js`, `intent/`, `verify/`, `context/`, `lib/`, the check runner, the v1 scorer it reuses, `package*.json`) and of every harness file. `freeze.js --check-harness` runs in the launcher and in the batch. Any change refuses the batch. This is what stops control-building from turning into compiler tuning.
-- **Freeze 2, the packet freeze, comes BEFORE any model call.** It is the sha256 manifest of the complete held-out packet: every request, spec, base, control, reference test and `item.json` (`freeze.js --packet`). It also covers the materialized base SHAs. These go into `plan.json` together with the host approvals, and the senior freezes that new version.
+## 1. Evaluation candidate and the freezes
+- **Candidate:** `2150ab6` (KAN-107 combined head, unchanged on `kan107-consistency-design`), plus KAN-118 (PR #35, `g5c-docker-down-commit` @ `5ebb8c8`).
+  - They are merged as `f1ddad4` on branch `kan106-eval-candidate-118`.
+  - The merge changes only `lib/sandbox/*` (G5c), their tests, `docs/security/agent-sandbox.md`, and website files from main `ff3585c`.
+  - `qb.js`, `intent/`, `verify/` and `context/` are byte-identical to `2150ab6`.
+- **This plan branch:** `kan106-eval-plan-118`, rebuilt on `f1ddad4`. It adds the carried evidence, the v2 harness and this plan.
+- **Freeze 1, the harness freeze, comes BEFORE the 12 requests are revealed.**
+  - `HARNESS-FREEZE.json` holds the sha256 of every compiler file under test (`qb.js`, `intent/`, `verify/`, `context/`, `lib/`, the check runner, the v1 scorer it reuses, `package*.json`) and of every harness file.
+  - It is regenerated at the integrated head **after CI passes there**.
+  - Any change refuses the batch. The compiler is never tuned after the requests are seen.
+- **The qb_under_test binding.** `plan.json` cannot contain its own commit's SHA. So the senior names `qb_under_test.sha` as the CI-green code commit, and the launch head must satisfy both of these, or launch refuses (`freeze.js` `revisionProblems`):
+  - it **descends** from `qb_under_test.sha`;
+  - it differs from it **only** in `bench/kan106-eval-v2/plan.json`, `bench/kan106-eval-v2/held-out/` and `docs/`.
+  - The junior's proposed value is in `plan.json` `proposed` (not normative).
+- **Freeze 2, the packet freeze, comes before any model call.** It is the hash manifest of the complete held-out packet (`freeze.js --packet`) plus the base SHAs. The owner's spec-only manifest is posted first.
 
 ## 2. Two sets that are never mixed
-### 2.1 Development set D (known; may be tuned against; never reported as held-out)
-- The eight v1 items `bench/kan106-eval-v1/items/` and their evidence pack `docs/research/kan106/2026-11-19-eval-v1-881a51a/`. The pack is now carried onto this branch (§8).
-- The fixtures under `test/fixtures/kan105|kan106|kan107/`, the staged run `2026-11-18-staged-69e576f5` and `bench/l1-eval/tasks.json`.
-- The fake-model serialization proof replays D items only (S1, S4, S5), never H.
-
-### 2.2 Held-out set H: a fresh owner-authored engineering set, not a blinded benchmark
-- **Author.** The owner writes all 12 specs. A separate fresh drafting session may help, but it gets **only** the supported product interface and the 8+4 category mix: no contracts, no internal prompts, no prior outputs.
-  - Per item, the owner writes `held-out/<ID>/request.txt` and `spec.json`. The spec gives the category, `expected` (`finalize` or `refuse`), the semantic requirements, `must_allow` and `must_protect`, and, for a refusal, the reason that makes it intended.
-- **The junior never writes the requests.** After freeze 1 the junior builds `base/`, `controls/` (correct, plus `wrong-*` and scope controls), `reference.test.js` and `item.json` from each spec.
-  - The controls are validated **independently of QB**: `items.js validate` uses Node built-ins only, with no compiler module and no model.
-  - The senior checks the bases and controls against the specs and freezes the specs and the final semantic rulings.
-- **Hashing.** The owner posts the spec manifest (`freeze.js --packet held-out --specs-only`) on KAN-106 before the junior receives the specs. The full packet hash is posted before any model call. A request is never edited after it is hashed. A replacement gets a new ID, and both IDs stay in the record.
-- **Composition: 8 supported + 4 refusal.** The owner may change the mix within the supported scope before hashing.
-  - Supported: an array or object argument; a request-quoted error message on a new export; an explicit protection; requested tests; a default-class method; a preservation-heavy item; two of the owner's choice.
-  - Refusal: two genuinely ambiguous (a vague qualifier; a missing expected value), one unsupported call shape, and one impossible or conflicting scope.
-  - Known-gap items are included on purpose.
-- **Retired after one evaluation.** H then joins D.
+- **D, development.** The eight v1 items, the evidence pack `2026-11-19-eval-v1-881a51a` (carried, §8), and the fixtures under `test/fixtures/kan105|kan106|kan107`. The fake-model serialization proof uses D items only.
+- **H, held-out: a fresh owner-authored engineering set, not a blinded benchmark.**
+  - **Authoring.** The owner writes all 12 specs (`request.txt` and `spec.json`). A fresh drafting session may help if it is given only the supported interface and the 8+4 mix.
+  - **The junior's part.** The junior builds bases, controls, reference tests and `item.json` only. The controls are validated independently of the compiler (`items.js`).
+  - **Freezing and retirement.** The senior freezes the specs and the final rulings. No request is ever edited after hashing. H is retired into D after one evaluation.
+  - **Composition: 8 supported + 4 refusal.**
+    - Supported: an array or object argument; a request-quoted error on a new export; an explicit protection; requested tests; a default-class method; a preservation-heavy item; two of the owner's choice.
+    - Refusal: two genuinely ambiguous, one unsupported call shape, one impossible or conflicting scope.
 
 ## 3. Gates (senior, 10838), per machine, never pooled (`gates.js`)
-- **Q1.** At least 7 of the 8 supported requests produce a checklist that is mechanically valid **and** human-approved as faithful.
+- **Q1.** At least 7/8 supported requests produce checklists that are mechanically valid **and** human-approved as faithful.
   - A safe refusal on a supported request is a failure.
-  - No finalized checklist, on any item, may invent a requirement or default, or omit a required protection. One such checklist fails Q1 outright.
-  - Only the final checklist is judged. A bad intermediate draft that was correctly repaired is not automatically a failure.
-- **Q2.** Zero incorrect-control acceptance and zero protected-scope weakening (mechanical or ruled).
-- **Q3.** All 4 refusal items stop for the correct frozen reason (`intended_refusal`, and ruled correct). Any fabricated answer to ambiguity fails Q3, and so does a finalized checklist on a refusal item.
-- **Q4.** Median ≤ 120 s and every item ≤ 180 s, using the **full elapsed L1 time including the cold load** (`l1_ms`).
-  - Load-excluded numbers are secondary only.
-  - The 420 s L1 budget is a kill limit, not the latency target.
-- **Q5.** A profile can pass only if all 12 records are complete and scorable.
-  - Any `resource_blocked`, `execution_failed` or `invalid_record`, or a missing row or ruling, makes the profile **incomplete**.
-  - Every observed failure is still reported.
-  - No absent run becomes a successful refusal. Denominators stay 8 and 4. No replacement and no retry.
-- **Gate status** is `pass`, `fail` (an observed failure) or `incomplete`. A profile passes only if Q1–Q5 all pass. It fails if any of Q1–Q4 fails, and is otherwise incomplete.
+  - Any finalized checklist that invents a requirement or default, or omits a required protection, fails Q1 outright.
+  - A bad intermediate draft that was correctly repaired is not automatically a failure.
+- **Q2.** Zero incorrect-control acceptance and zero protected-scope weakening.
+- **Q3.** All 4 refusal items stop for the correct frozen reason. Any fabricated answer to ambiguity fails Q3.
+- **Q4.** Median ≤ 120 s and every item ≤ 180 s, on the **full elapsed L1 time including the cold load and any reload**. Load-excluded numbers are secondary. 420 s is a kill limit, not the target.
+- **Q5.** A profile passes only if all 12 records are complete and scorable.
+  - `resource_blocked`, `execution_failed`, `invalid_record` or a missing row or ruling makes the profile **incomplete**.
+  - Observed failures are still reported.
+  - No absent run is a successful refusal. Denominators stay 8 and 4. No replacement and no retry.
+  - Unplanned model reloads are listed here (§4).
 
-Scoring reuses the v1 scorer's per-item checks (`score.js` `scoreItem`: record identity, artifact hashes, generated checks run unchanged on base and controls). **Scoring runs at the frozen QB SHA.** The v1 scorer reads `contractState` from the checkout it runs in (§8). Reviewers see the request, the contract and the control results, and do not see latency or load until the semantic ruling is recorded.
+**Scoring runs at the frozen code** (§8).
 
-## 4. Resource gate, residency-aware (10838 fix 1; `resource-gate.js`, `host-snapshot.js`)
-The revision 2 rule ("free ≥ model size + 2 GiB before every item") double-counted a resident model and could wrongly block a warm 18 GB Mac. Before each item, a read-only snapshot is taken: OS counters plus Ollama `/api/version` and `/api/ps` (listing only, never inference). From it:
-- **Warm:** the pinned model (name **and** full digest) is resident, expires at least 120 s ahead, and was not loaded with a different context length. The requirement is then the reserve only (2 GiB). The resident model's memory is already outside "available", so it is not charged twice.
-- **Cold** (anything else, including item 1, which is unloaded on purpose): the requirement is the frozen runtime estimate of 11 GiB plus the 2 GiB reserve.
-  - The 11 GiB is weights 8.99 GB, plus an f16 KV cache at 8192 tokens = 1.5 GiB, plus compute buffers, rounded up.
-  - **It is an estimate, not a measurement**, because measuring needs a model load. The disk size is never used as runtime memory.
+## 4. Resource gate and keep-alive policy (10838 fix 1, revised for 10849)
+Before each item there is a read-only snapshot: OS counters plus Ollama `/api/version` and `/api/ps` (listings only).
+- **Cold rule** (item 1, which is unloaded on purpose, and any item not provably warm): requires 11 GiB + the 2 GiB reserve.
+  - The **11 GiB is a provisional, conservative engineering admission assumption, not a measurement.** It is weights 8.99 GB + f16 KV at 8192 tokens 1.5 GiB + buffers. Measuring it needs a model load.
+  - Disk size is never used as runtime memory.
+- **Insufficient memory makes the item `resource_blocked`.** The item is not launched and the profile is incomplete. It is **never a model failure**.
 - **Available memory:**
-  - macOS: (vm_stat free + inactive) × page size, psutil's definition;
+  - macOS: (vm_stat free + inactive) × page size. This is **an estimate**, so the pressure and swap checks are kept.
   - Linux: `MemAvailable`.
 - **Pressure:**
-  - macOS `kern.memorystatus_vm_pressure_level`: cold needs level 1 (normal); warm blocks above level 2 (warn);
-  - Linux PSI `full avg10`: cold needs ≤ 1, warm ≤ 10.
-- **Swap:** the gate blocks on growth of more than 256 MiB since the previous item. Swap use is recorded every time.
-- **These block:** unknown capacity, pressure or swap (unknown is unavailable, never sufficient); an unavailable `/api/ps`; any other resident model.
-  - A blocked item is `resource_blocked`. It is not launched, never retried, and never replaced, and the profile is incomplete.
-- Fixture-tested cold and warm cases on both OSes: `test/unit/kan106-eval-v2-gate.test.js`.
-- **Recorded per item, before and after:** memory, swap, pressure, top processes by RSS (basenames only), Docker state and allocation, and the Ollama version and loaded models (`size` vs `size_vram`). No hostname or user name is recorded.
+  - macOS level: cold needs ≤ 1, warm blocks above 2;
+  - Linux PSI full avg10: cold ≤ 1, warm ≤ 10.
+- **Swap:** growth over 256 MiB since the previous item blocks.
+- **Unknown values block:** unknown capacity, pressure, swap or `/api/ps` all block, and so does any other resident model.
+- **Keep-alive (10849).** A loaded model may expire during a 420 s item, so 120 s of remaining residency was not enough.
+  - What QB does: it sends no `keep_alive`, so the server's setting governs.
+  - What Ollama does (verified from its source, main branch, fetched 2026-11-27; **not yet verified against the pinned server version**):
+    - `envconfig.KeepAlive` defaults to 5 min. `OLLAMA_KEEP_ALIVE` takes a Go duration or seconds; a negative value means infinite and 0 means none.
+    - `server/sched.go` `useLoadedRunner` stops the expiry timer while a request uses the runner.
+    - `processCompleted` restarts it (`expiresAt = now + sessionDuration`) only when the last request finishes.
+  - **Frozen policy:**
+    - The owner starts the server for the window with `OLLAMA_KEEP_ALIVE=-1`, or a duration of at least 21 min.
+    - An item is admitted **warm** only if `/api/ps` shows the pinned name and digest resident with **at least 1260 s** left (the 1200 s child ceiling + 60 s).
+    - That covers the whole item even if no call refreshes the timer.
+    - Anything less, including Ollama's default 5 min, is held to the **cold rule**, so a possible reload is charged in full.
+  - **Detection:** any model load ≥ 1 s that the admission did not plan for (any load in a warm-admitted item, or a second load in a cold one) is recorded as `unplanned_reload` and reported in Q5. Its time is already in Q4.
+  - The pinned model is unloaded again after the last item.
+  - Whether an unplanned reload should also make the profile incomplete is a senior decision. It is not applied.
+- Fixture tests cover cold, warm and keep-alive on macOS and Linux (`test/unit/kan106-eval-v2-gate.test.js`).
 
-## 5. Launch and serialization (10838 fix 2 and the serialization point)
-- **Launcher:** `sh bench/kan106-eval-v2/run-batch.sh <PROFILE> <SHA>` is POSIX `sh`, so zsh is not required.
-  - It refuses unless HEAD is the SHA, the tree is clean, the plan document and plan.json agree, and the harness freeze matches.
-  - It then materializes the bases and calls `batch.js`.
+## 5. Launch and serialization
+- **Launcher:** `sh bench/kan106-eval-v2/run-batch.sh <PROFILE> <launch head SHA>` is POSIX `sh` (dash-tested).
 - **`batch.js` refuses before any model contact** in any of these cases:
-  - the plan is not frozen, or the SHA is not `qb_under_test.sha`;
-  - the packet or spec manifest, or the base SHAs, differ from the frozen ones;
-  - the profile has no owner-named host label, no owner approval reference, or now is outside its approved window;
-  - the host does not match the profile (platform, arch, minimum RAM);
+  - the plan is not frozen;
+  - the revision binding fails (§1);
+  - the profile is not in `batch.authorized_profiles`;
+  - the packet, spec or base hashes do not match;
+  - the profile lacks an owner host label, an approval reference, or a current window;
+  - the host does not match the profile;
   - `intent/.env` exists;
-  - the endpoint does not list the pinned digest.
-- **Sequential:** one item at a time, each child awaited before the next starts. No warm-up, no retry. Item 1 is cold by design: the model is unloaded once before the batch.
-- **Built child environment:** PATH, HOME, TMPDIR and LANG, plus the pinned endpoint, model, runs dir and `QB_MODEL_CONCURRENCY=1`.
-- **Serialization is shown by measurement, not by the variable.** Setting `QB_MODEL_CONCURRENCY` proves nothing by itself. `test/unit/kan106-eval-v2-serial.test.js` runs the real `batch.js` and the real `qb.js` against an **instrumented fake model server** that records every `/api/chat` and `/api/generate` call's start and end and the peak number in flight.
-  - Three D items: peak 1, no overlapping intervals.
-  - The same with the plan's concurrency set to 8: still peak 1, because the staged L1 awaits each fact call.
-  - An instrument self-test confirms the counter does detect two concurrent calls.
-- **The owner must keep other Ollama clients idle during the window**, including other QB agents and sibling worktrees. The gate detects another *model* being resident, but it cannot see another client using the *same* model.
+  - the digest does not match.
+- Items run strictly one at a time, each child awaited, with no warm-up and no retry. The child environment is built rather than inherited, with `QB_MODEL_CONCURRENCY=1` (defence in depth only).
+- **Serialization is measured** (`test/unit/kan106-eval-v2-serial.test.js`): the real `batch.js` and the real `qb.js` run on 3 D items against an instrumented fake model server.
+  - Peak in flight is 1, with no overlap.
+  - With concurrency set to 8: still 1.
+  - The instrument self-test detects 2.
+- **The owner keeps other Ollama clients idle during the window**, including QB agents and sibling worktrees.
 
-## 6. Batch size
-H = 12 items × 1 run × 2 profiles = **24 runs**: the same 12 requests once on each profile, with no pooling. The L1 kill limit is 12 × 420 s = 84 min per profile; wall time also includes setup and scoring. The owner names and approves each host and its local-model time before launch, in `plan.json` `profiles.<P>`.
+## 6. Profiles: Mac first; Linux optional, separate, never pooled
+- **P-Mac is staged first.** It runs only after its packet and window are authorized (`batch.authorized_profiles` is empty in this candidate).
+- **The batch for P-Mac:** 12 items × 1 run = 12 runs. The L1 kill limit is 84 min; wall time also includes setup and scoring.
+- **P-Linux is optional and not scheduled.** No Linux host is assumed to exist. If one is named later, it gets its own authorization and its own 12 runs. It is never pooled with P-Mac or inferred from it.
 
 ## 7. What this would and would not show
-- **It would show**, for one pinned QB SHA, the pinned model digest and each named profile, whether the staged L1 produces faithful, scope-consistent checklists on 8 new owner-authored supported requests, refuses 4 for the right reason, and how long that takes under recorded load.
+- **It would show**, for one pinned code commit, the pinned model and each profile run, whether the staged L1 writes faithful, scope-consistent checklists on 8 new owner-authored requests and refuses 4 for the right reason, with latency under recorded load.
 - **It would not show:**
   - a population reliability rate (n = 8 + 4, one run each);
   - run-to-run stability;
-  - performance on public or customer repositories;
-  - coding-task success;
+  - public or customer repositories;
+  - coding success;
   - fitness as a customer default;
-  - anything about L2/L4 with Qwen;
-  - anything about a profile that was not run;
+  - L2/L4 with Qwen;
+  - any profile not run;
   - beta readiness.
 
-## 8. Carried evidence (10838 carry-over)
-`4b50bbb` → `fcec0fc`, `cec4c60` → `66c066d` and `e5c460d` → `a87a194` were cherry-picked in that order with `-x` from `origin/kan106-staged-l1`, which is kept unchanged.
-- **Every resulting blob is identical to the originals.** The three commits' changed paths (64, 1 and 7) have the same blob ids.
-- **Every `HASHES.json` entry matches** (63 of 63), and the 38 artifacts are each named by their sha256.
-- The raw replies, the contracts and the v2/v3/v4 scores are unchanged.
-- `db18ecf` and `5975220` were not carried: they are patch-equivalent to `8e6c864` and `1ff7c66`, which are already in `2150ab6`.
-
-**Rescore finding.**
-- At this branch, the carried one-command rescore (`score.js --batch-dir <pack>`) does **not** reproduce `scores-freeze-v4.json`. S2, S3 and U2 become `invalid_record` ("outcome DRY_RUN without a finalized contract artifact").
-- The cause: the scorer reads `contractState` from the running checkout, and at `2150ab6` the KAN-107 10812 validators no longer finalize those three recorded contracts. All three were already ruled failures.
-- `bench/kan106-eval-v2/rescore-pinned.js --rev e5c460d` re-scores the carried records with the scorer tree as it was at the analysis revision. **It reproduces `scores-freeze-v4.json` byte for byte.**
-- The pack test now asserts both results: the pinned byte-for-byte match, and exactly this three-row drift at the current checkout. The pinned case is skipped where `e5c460d` is not in the clone (CI's shallow checkout).
+## 8. Carried evidence and historical re-scoring (10838, 10849)
+- **Carry-over.** `4b50bbb`, `cec4c60` and `e5c460d` were carried in that order (first as `fcec0fc`, `66c066d`, `a87a194`; rebuilt here as `7f9f4ee`, `11b4e74`, `78abfef`). The source branch `kan106-staged-l1` is unchanged.
+  - Every resulting blob id is identical to the originals, `HASHES.json` matches 63/63, and the raw replies, contracts and old scores are unchanged.
+  - `db18ecf` and `5975220` were not duplicated: they are patch-equivalent to `8e6c864` and `1ff7c66`, which are already in `2150ab6`.
+- **The original result** (`scores-freeze-v4.json`) is reproduced byte for byte with the scorer tree of its analysis revision: `bench/kan106-eval-v2/rescore-pinned.js --rev e5c460d`. **The senior accepted this in 10849.**
+  - The CI job `kan106-offline-evidence` **fetches `e5c460d` explicitly** and runs it with `QB_KAN106_PINNED_REQUIRED=1`, so a missing commit fails there.
+  - In the shallow unit jobs the test skips with the message "NOT RUN", and is never reported as having run there.
+- **Current-validator drift is kept separately:** `docs/research/kan106/eval-v1-881a51a-current-validator-drift.json`, labelled "not a new result".
+  - Under the current validators, S2 and S3 (`checklist`) and U2 (`not_refused`) become `invalid_record`, because the recorded contracts are no longer finalized.
+  - All three were already ruled failures.
 
 ## 9. Approvals and inputs needed before any run (none is given here)
-1. The senior reviews this freeze candidate and the harness freeze, and names `qb_under_test.sha`.
-2. The owner authors the 12 specs and posts the spec manifest hash. The junior builds the bases and controls, the senior checks them and freezes the specs, and the packet hash is posted.
-3. The owner names each host (a label, not a hostname) and approves its local-model time window, recorded in `profiles.<P>`. The senior freezes that plan version (`status.frozen: true`).
+1. **Senior:**
+   - review this candidate;
+   - name `qb_under_test.sha` (proposal in `plan.json` `proposed`);
+   - rule on unplanned reloads (§4);
+   - after the packet freeze, set `status.frozen` and `batch.authorized_profiles: ["P-Mac"]`.
+2. **Owner:**
+   - write the 12 specs and post the spec manifest hash;
+   - name the Mac by a label, not a hostname, and approve its local-model window (`profiles.P-Mac`);
+   - set `OLLAMA_KEEP_ALIVE` for the window and confirm the server version, so the keep-alive behaviour can be re-checked against its source.
+3. **Junior, after the specs arrive:** build the bases and controls, run `items.js validate` (no QB compiler), and post the packet hash.
 
 ## Normative values (machine-checked; launch refuses on any disagreement)
-plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67ac7c`
+plan.json sha256: `08137d7e57249f570037da062ef17d7a4893fe47948cc3051c70d07befcf4ab5`
 
 | key | value |
 |---|---|
-| `status.version` | `3` |
+| `status.version` | `4` |
 | `status.kind` | `"freeze candidate"` |
 | `status.frozen` | `false` |
 | `status.authorizes_model_runs` | `false` |
@@ -140,7 +157,9 @@ plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67a
 | `model.default_change` | `false` |
 | `qb_under_test.sha` | `null` |
 | `qb_under_test.compiler_source_rev` | `"2150ab6690c4444c7cc5b9ba45e375d00d5e36a3"` |
+| `qb_under_test.kan118_integrated` | `"5ebb8c872d6cb0100a8e358e5eb3293b15aa32ab"` |
 | `qb_under_test.no_edits_after_harness_freeze` | `true` |
+| `qb_under_test.launch_head_may_change_only` | `["bench/kan106-eval-v2/plan.json","bench/kan106-eval-v2/held-out/","docs/"]` |
 | `launch.ollama_url` | `"http://127.0.0.1:11434"` |
 | `launch.l1_profile` | `"qwen-14b-staged"` |
 | `launch.flags` | `["--agent","dry-run","--no-llm-context","--no-llm-verify","--l1-profile","qwen-14b-staged","--l1-budget","420","--deadline","15"]` |
@@ -161,11 +180,12 @@ plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67a
 | `batch.supported` | `8` |
 | `batch.refusal` | `4` |
 | `batch.runs_per_item` | `1` |
-| `batch.profiles` | `2` |
-| `batch.total_runs` | `24` |
 | `batch.retries` | `0` |
 | `batch.replacements` | `0` |
 | `batch.pooling_across_profiles` | `false` |
+| `batch.staging_order` | `["P-Mac"]` |
+| `batch.authorized_profiles` | `[]` |
+| `batch.optional_profiles` | `["P-Linux"]` |
 | `held_out.items_dir` | `"bench/kan106-eval-v2/held-out"` |
 | `held_out.spec_author` | `"owner"` |
 | `held_out.spec_review_and_freeze` | `"senior"` |
@@ -185,7 +205,7 @@ plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67a
 | `resource_gate.reserve_bytes` | `2147483648` |
 | `resource_gate.cold_runtime_bytes` | `11811160064` |
 | `resource_gate.num_ctx` | `8192` |
-| `resource_gate.warm_min_remaining_s` | `120` |
+| `resource_gate.warm_min_remaining_s` | `1260` |
 | `resource_gate.swap_growth_max_bytes` | `268435456` |
 | `resource_gate.darwin.available` | `"(vm_stat Pages free + Pages inactive) x page size"` |
 | `resource_gate.darwin.cold_max_pressure_level` | `1` |
@@ -195,6 +215,17 @@ plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67a
 | `resource_gate.linux.warm_max_full_avg10` | `10` |
 | `resource_gate.unknown_capacity` | `"blocks"` |
 | `resource_gate.other_model_loaded` | `"blocks"` |
+| `resource_gate.cold_runtime_status` | `"provisional conservative admission assumption (not measured)"` |
+| `resource_gate.insufficient_memory` | `"resource_blocked: profile incomplete, never a model failure"` |
+| `resource_gate.keep_alive.qb_sends_keep_alive` | `false` |
+| `resource_gate.keep_alive.server_default_s` | `300` |
+| `resource_gate.keep_alive.owner_sets` | `"OLLAMA_KEEP_ALIVE=-1 (or a duration >= 21m) on the Ollama server for the window"` |
+| `resource_gate.keep_alive.warm_requires_remaining_s` | `1260` |
+| `resource_gate.keep_alive.basis` | `"child_timeout_ms 1200 s + 60 s margin: the expiry timer runs only while the model is idle and is reset after each request, so 1260 s remaining covers the whole item even with no call"` |
+| `resource_gate.keep_alive.otherwise` | `"cold rule (a possible reload is charged in full)"` |
+| `resource_gate.keep_alive.reload_detect_load_ms` | `1000` |
+| `resource_gate.keep_alive.release_after_batch` | `true` |
+| `resource_gate.keep_alive.verify_against_pinned_ollama_before_launch` | `true` |
 | `profiles.P-Mac.platform` | `"darwin"` |
 | `profiles.P-Mac.arch` | `"arm64"` |
 | `profiles.P-Mac.min_total_memory_bytes` | `19327352832` |
@@ -202,6 +233,7 @@ plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67a
 | `profiles.P-Mac.owner_approval` | `null` |
 | `profiles.P-Mac.window_start_utc` | `null` |
 | `profiles.P-Mac.window_end_utc` | `null` |
+| `profiles.P-Mac.status` | `"staged first (packet and window still to be authorized)"` |
 | `profiles.P-Linux.platform` | `"linux"` |
 | `profiles.P-Linux.arch` | `"x64"` |
 | `profiles.P-Linux.min_total_memory_bytes` | `16106127360` |
@@ -209,3 +241,4 @@ plan.json sha256: `8ca0937d853feebb29ec590f4dc28f5f85610a8cbf27d2bc3d410f759b67a
 | `profiles.P-Linux.owner_approval` | `null` |
 | `profiles.P-Linux.window_start_utc` | `null` |
 | `profiles.P-Linux.window_end_utc` | `null` |
+| `profiles.P-Linux.status` | `"optional; not scheduled; needs its own authorization; never pooled with P-Mac"` |
