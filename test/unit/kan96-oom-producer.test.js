@@ -286,3 +286,20 @@ describe('KAN-96 run record: the stage evidence is kept (pipeline stageOom)', ()
     assert.equal(stageOom({ state: 'completed' }).oom_signal, 'unavailable');
   });
 });
+
+describe('KAN-96 CI 45933453765: the gate directory outlives the stage until its run is removed', () => {
+  // `docker cp` from a stopped container mounts its binds again: with the gate's source gone it fails
+  // ("Could not find the file /git/."), which broke seed and capture on Linux CI.
+  test('after runStage the (emptied) bind source still exists; removeRun of that run removes it', async () => {
+    const run = `kan96run-${process.pid}`;
+    const s = stage('healthy', { oomObserver: { force: true, ...roots() } }, ['--init', ...D.runLabels(run, 'workload'), IMAGE, 'run']);
+    await s.run;
+    const a = created(s.name);
+    const src = /source=([^,]+)/.exec(a[a.indexOf('--mount') + 1])[1];
+    assert.ok(fs.existsSync(src), 'the bind source is kept while the container may still be read');
+    assert.deepEqual(fs.readdirSync(src), [], 'but the FIFO and script are gone');
+    assert.equal(liveGates(), 0);
+    await D.removeRun(run);
+    assert.equal(fs.existsSync(src), false, 'removed with the run');
+  });
+});
