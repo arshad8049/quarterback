@@ -12,7 +12,7 @@ const POLICY = PLAN.normative.resource_gate;
 const MODEL = { name: PLAN.normative.model.name, digest: PLAN.normative.model.digest };
 const T = '2026-12-01T10:00:00.000Z';
 const inMin = (m) => new Date(Date.parse(T) + m * 60_000).toISOString();
-const resident = (o = {}) => ({ name: MODEL.name, digest: MODEL.digest, size: Math.round(10.6 * GiB), size_vram: Math.round(10.6 * GiB), expires_at: inMin(4), context_length: 8192, ...o });
+const resident = (o = {}) => ({ name: MODEL.name, digest: MODEL.digest, size: Math.round(10.6 * GiB), size_vram: Math.round(10.6 * GiB), expires_at: inMin(60), context_length: 8192, ...o });
 const mac = ({ avail, level = 1, swap = 0, loaded = [] } = {}) => ({ taken_utc: T, os: { platform: 'darwin', arch: 'arm64' },
   memory: { total_bytes: 18 * GiB, available_bytes: avail, swap_used_bytes: swap, pressure: { kind: 'darwin_level', level } }, ollama: { loaded } });
 const linux = ({ avail, psi = 0, swap = 0, loaded = [] } = {}) => ({ taken_utc: T, os: { platform: 'linux', arch: 'x64' },
@@ -24,7 +24,9 @@ test('frozen thresholds are explicit numbers (not derived from disk size)', () =
   assert.equal(POLICY.cold_runtime_bytes, 11 * GiB);
   assert.ok(POLICY.cold_runtime_bytes > 8988124298, 'the runtime estimate exceeds the Q4_K_M file size (disk size is not runtime memory)');
   assert.equal(POLICY.num_ctx, 8192);
-  assert.equal(POLICY.warm_min_remaining_s, 120);
+  assert.equal(POLICY.warm_min_remaining_s, 1260, 'the whole item ceiling (child timeout 1200 s) + 60 s, not 120 s (10849)');
+  assert.equal(POLICY.warm_min_remaining_s, POLICY.keep_alive.warm_requires_remaining_s);
+  assert.equal(POLICY.warm_min_remaining_s, PLAN.normative.launch.child_timeout_ms / 1000 + 60);
   assert.equal(POLICY.swap_growth_max_bytes, 256 * 1024 * 1024);
 });
 
@@ -65,7 +67,7 @@ test('another model resident blocks, including the pinned name with another dige
 });
 
 test('a resident model that is about to expire, or was loaded with another context length, is held to the cold rule', () => {
-  const soon = g(mac({ avail: 3.1 * GiB, loaded: [resident({ expires_at: inMin(1) })] }));
+  const soon = g(mac({ avail: 3.1 * GiB, loaded: [resident({ expires_at: inMin(15) })] }));
   assert.equal(soon.rule, 'cold'); assert.equal(soon.admit, false); assert.match(soon.resident.held_to_cold_rule, /expires too soon/);
   const ctx = g(mac({ avail: 3.1 * GiB, loaded: [resident({ context_length: 4096 })] }));
   assert.equal(ctx.rule, 'cold'); assert.match(ctx.resident.held_to_cold_rule, /context length/);
@@ -155,4 +157,16 @@ test('snapshot(): fixture probes only; no hostname, no user, basenames only; a f
   assert.equal(broken.memory.available_bytes, null);
   assert.equal(broken.ollama.loaded, null);
   assert.equal(gate({ snapshot: broken, policy: POLICY, model: MODEL }).admit, false);
+});
+
+test('keep-alive policy (10849): Ollama\'s default 5 min residency cannot cover a 420 s item, so it is held to the cold rule; an owner-set long or infinite keep-alive is warm', () => {
+  const dflt = g(mac({ avail: 3.1 * GiB, loaded: [resident({ expires_at: inMin(5) })] }));
+  assert.equal(dflt.rule, 'cold'); assert.equal(dflt.admit, false, 'a possible reload is charged in full');
+  assert.equal(g(mac({ avail: 14 * GiB, loaded: [resident({ expires_at: inMin(5) })] })).admit, true, 'enough memory for a reload: admitted under the cold rule');
+  assert.equal(g(mac({ avail: 3.1 * GiB, loaded: [resident({ expires_at: inMin(21) })] })).rule, 'warm', '21 min remaining covers the 1260 s item ceiling');
+  const forever = g(mac({ avail: 3.1 * GiB, loaded: [resident({ expires_at: '2262-04-11T23:47:16.854775807Z' })] }));
+  assert.equal(forever.rule, 'warm'); assert.equal(forever.admit, true, 'OLLAMA_KEEP_ALIVE=-1 (infinite)');
+  assert.equal(g(mac({ avail: 3.1 * GiB, loaded: [resident({ expires_at: null })] })).rule, 'cold', 'unknown expiry is not residency');
+  assert.equal(POLICY.keep_alive.qb_sends_keep_alive, false);
+  assert.equal(POLICY.keep_alive.release_after_batch, true);
 });

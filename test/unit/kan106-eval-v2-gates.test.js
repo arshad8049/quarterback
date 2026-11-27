@@ -123,3 +123,9 @@ test('a finalized checklist without its human ruling is pending, not passed', ()
   const r = ev(a);
   assert.equal(r.gates.Q1.status, 'incomplete'); assert.deepEqual(r.gates.Q5.pending_ruling, ['H08']); assert.equal(r.verdict, 'incomplete');
 });
+
+test('an unplanned model reload is reported in Q5 (its time is already in Q4); it does not by itself change the verdict', () => {
+  const a = allGood(); a.rows = set(a.rows, 'H05', { unplanned_reload: true });
+  const r = ev(a);
+  assert.deepEqual(r.gates.Q5.unplanned_reloads, ['H05']); assert.equal(r.verdict, 'pass');
+});

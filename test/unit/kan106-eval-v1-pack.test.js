@@ -68,8 +68,13 @@ test('generation 881a51a; the v2 and v3 analyses are kept; re-scoring at this ch
 
 const { rescorePinned, revAvailable } = require('../../bench/kan106-eval-v2/rescore-pinned');
 const ANALYSIS_REV = 'e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0';
+// 10849: never silently skipped where it is required. The dedicated CI job `kan106-offline-evidence` fetches the pinned
+// commit explicitly and sets QB_KAN106_PINNED_REQUIRED=1, so a missing commit FAILS there. Elsewhere (the shallow unit
+// jobs) the skip message says plainly that the reproduction did NOT run.
+const REQUIRED = process.env.QB_KAN106_PINNED_REQUIRED === '1';
 test('KAN-106 10838: one command re-scores the carried records at the analysis revision and reproduces scores-freeze-v4.json byte for byte',
-  { skip: revAvailable(ANALYSIS_REV) ? false : `analysis revision ${ANALYSIS_REV.slice(0, 7)} is not in this clone (shallow CI checkout); run locally` }, () => {
+  { skip: REQUIRED || revAvailable(ANALYSIS_REV) ? false : `NOT RUN: analysis revision ${ANALYSIS_REV.slice(0, 7)} is not in this clone; the kan106-offline-evidence CI job runs it with an explicit fetch` }, () => {
+    assert.ok(revAvailable(ANALYSIS_REV), `the pinned scorer commit ${ANALYSIS_REV} must be fetched (QB_KAN106_PINNED_REQUIRED=1)`);
     const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-pinned-')), 'rescore.json');
     try {
       const r = rescorePinned({ rev: ANALYSIS_REV, batchDir: PACK, out, expect: path.join(PACK, 'scores-freeze-v4.json') });
@@ -77,3 +82,17 @@ test('KAN-106 10838: one command re-scores the carried records at the analysis r
       assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
     } finally { fs.rmSync(path.dirname(out), { recursive: true, force: true }); }
   });
+
+test('10849: the current-validator drift is kept as a SEPARATELY LABELLED file, beside (never instead of) the original scores', () => {
+  const f = path.join(__dirname, '..', '..', 'docs', 'research', 'kan106', 'eval-v1-881a51a-current-validator-drift.json');
+  const drift = JSON.parse(fs.readFileSync(f, 'utf8'));
+  assert.match(drift._label, /CURRENT-VALIDATOR DRIFT/);
+  assert.match(drift._label, /not a new result/);
+  assert.equal(drift.original, 'docs/research/kan106/2026-11-19-eval-v1-881a51a/scores-freeze-v4.json');
+  assert.equal(drift.original_sha256, HASHES.files['scores-freeze-v4.json'].published_sha256);
+  const now = scoreBatchDir(PACK);
+  const v4 = JSON.parse(fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
+  const rows = now.items.filter((x, i) => JSON.stringify(x) !== JSON.stringify(v4.items[i]))
+    .map((x) => ({ id: x.id, original_result: v4.items.find((y) => y.id === x.id).result, current_validator_result: x.result, problems: x.problems }));
+  assert.deepEqual(drift.rows, rows, 'regenerate the drift file when the validators change');
+});

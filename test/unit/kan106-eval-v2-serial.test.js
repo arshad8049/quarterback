@@ -57,7 +57,7 @@ async function runDev({ concurrency, inherited }) {
   const base = items.materialize(itemsRoot, path.join(out, 'repos'));
   const plan = JSON.parse(JSON.stringify(PLAN));
   const n = plan.normative;
-  n.status.frozen = true; n.qb_under_test.sha = 'a'.repeat(40);
+  n.status.frozen = true; n.qb_under_test.sha = 'a'.repeat(40); n.batch.authorized_profiles = ['P-Mac'];
   Object.assign(n.model, { name: 'fake-model:1b', digest: 'f'.repeat(64) });
   n.launch.ollama_url = fake.url;
   n.launch.model_concurrency = concurrency;

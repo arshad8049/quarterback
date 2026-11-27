@@ -30,6 +30,7 @@ function frozenPlan(mut = (n) => n) {
   const n = p.normative;
   n.status.frozen = true;
   n.qb_under_test.sha = SHA;
+  n.batch.authorized_profiles = ['P-Mac'];
   Object.assign(n.held_out, { order: IDS, spec_manifest_sha256: 's'.repeat(64), packet_manifest_sha256: 'p'.repeat(64), base_shas: Object.fromEntries(IDS.map((id) => [id, 'b'.repeat(40)])) });
   Object.assign(n.profiles['P-Mac'], { host_label: 'TEST-HOST-LABEL', owner_approval: 'TEST-APPROVAL-NOT-REAL', window_start_utc: '2026-12-01T09:00:00Z', window_end_utc: '2026-12-01T12:00:00Z' });
   mut(n);
@@ -57,7 +58,7 @@ async function batch(o = {}) {
   const f = o.fakes || fakes();
   const itemsRoot = tmpItems();
   try {
-    const r = await runBatch({ out, expectedSha: SHA, profile: 'P-Mac', plan: o.plan || frozenPlan(), planProblems: o.planProblems || [], harnessProblems: o.harnessProblems || [],
+    const r = await runBatch({ out, expectedSha: SHA, profile: o.profile || 'P-Mac', plan: o.plan || frozenPlan(), planProblems: o.planProblems || [], harnessProblems: o.harnessProblems || [], revisionProblems: o.revisionProblems || [],
       packetInfo: o.packetInfo === undefined ? packetInfo() : o.packetInfo, itemsRoot, inherited: o.inherited || { PATH: '/usr/bin', HOME: '/tmp/h', SECRET_TOKEN: 'x', QB_MODEL_CONCURRENCY: '9' },
       fetchJson: f.fetchJson, takeSnapshot: f.takeSnapshot, releaseModel: f.releaseModel, spawnChild: f.spawnChild, dotenvPath: path.join(out, 'no.env'),
       now: () => NOW, log: () => {} });
@@ -91,10 +92,13 @@ test('a disagreement REFUSES launch, before any model-server contact and before 
 
 // ── the committed plan refuses as it stands ──
 test('the committed freeze candidate refuses: not frozen, no SHA, no packet, no host approval, no window', async () => {
-  const { r, f, batchJson } = await batch({ plan: JSON.parse(PLAN_BUF.toString('utf8')), packetInfo: null });
+  const committed = JSON.parse(PLAN_BUF.toString('utf8'));
+  const { r, f, batchJson } = await batch({ plan: committed, packetInfo: null, revisionProblems: freeze.revisionProblems({ frozenSha: committed.normative.qb_under_test.sha, head: SHA, git: () => ({ status: 0, stdout: '' }) }) });
   assert.equal(r.refused, true);
   const why = batchJson.reasons.join('\n');
-  for (const re of [/not frozen/, /is not the frozen qb_under_test\.sha null/, /held-out packet: not computed/, /held-out order has 0 items/, /no owner-named host label/, /no owner approval reference/, /no approved time window/]) assert.match(why, re);
+  assert.equal(committed.normative.status.frozen, false); assert.equal(committed.normative.qb_under_test.sha, null);
+  assert.deepEqual(committed.normative.batch.authorized_profiles, []);
+  for (const re of [/not frozen/, /revision: qb_under_test\.sha is not set/, /P-Mac: not in batch\.authorized_profiles/, /held-out packet: not computed/, /held-out order has 0 items/, /no owner-named host label/, /no owner approval reference/, /no approved time window/]) assert.match(why, re);
   assert.deepEqual([f.fetched.length, f.spawned.length], [0, 0]);
 });
 test('each launch precondition refuses on its own', async () => {
@@ -106,7 +110,8 @@ test('each launch precondition refuses on its own', async () => {
     [{ plan: frozenPlan((n) => { n.profiles['P-Mac'].window_end_utc = '2026-12-01T09:30:00Z'; }) }, /outside the approved window/],
     [{ plan: frozenPlan((n) => { n.profiles['P-Mac'].arch = 'x64'; }) }, /arch arm64, frozen x64/],
     [{ plan: frozenPlan((n) => { n.profiles['P-Mac'].min_total_memory_bytes = 32 * GiB; }) }, /physical memory .* < frozen minimum/],
-    [{ plan: frozenPlan((n) => { n.qb_under_test.sha = 'b'.repeat(40); }) }, /is not the frozen qb_under_test\.sha b+/],
+    [{ revisionProblems: ['changed after qb_under_test.sha: intent/staged.js (only plan.json, held-out/ and docs/ may change)'] }, /revision: changed after qb_under_test\.sha: intent\/staged\.js/],
+    [{ profile: 'P-Linux' }, /P-Linux: not in batch\.authorized_profiles \["P-Mac"\]/],
   ];
   for (const [o, re] of cases) {
     const { r, f, batchJson } = await batch(o);
@@ -123,7 +128,8 @@ test('each launch precondition refuses on its own', async () => {
 test('with everything frozen and approved: 12 items in order, one child each, built env with QB_MODEL_CONCURRENCY=1, nothing inherited', async () => {
   const { r, f, batchJson } = await batch();
   assert.equal(r.refused, false);
-  assert.equal(f.released, 1, 'item 1 is cold by design');
+  assert.equal(f.released, 2, 'unloaded before item 1 (cold by design) and again after the last item (keep-alive policy)');
+  assert.ok(batchJson.model_release && batchJson.model_release_after);
   assert.equal(f.spawned.length, 12);
   assert.deepEqual(batchJson.items.map((x) => x.id), IDS);
   assert.deepEqual(f.spawned[0].args.slice(1, 2), ['TEST REQUEST H01']);
@@ -245,5 +251,44 @@ test('score.js: resource_blocked stays resource_blocked, an absent entry is miss
     assert.equal(r.gates.gates.Q1.of, 8);
     const wrongProfile = scoreProfile({ batch, runs, runsRoot: path.join(d, 'runs'), itemsRoot: d, plan, profile: 'P-Linux' });
     assert.match(wrongProfile.batch_problems.join(), /batch profile P-Mac, scoring P-Linux/);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+test('revision binding: the launch head must descend from qb_under_test.sha and differ only in plan.json, held-out/ and docs/', () => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-v2-rev-'));
+  const env = { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.invalid', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.invalid', GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1' };
+  const git = (args) => { const r = spawnSync('git', ['-c', 'commit.gpgsign=false', ...args], { cwd: repo, env, encoding: 'utf8' }); return { status: r.status, stdout: r.stdout || '' }; };
+  const commit = (rel, body) => { fs.mkdirSync(path.dirname(path.join(repo, rel)), { recursive: true }); fs.writeFileSync(path.join(repo, rel), body); git(['add', '-A']); git(['commit', '-qm', rel]); return git(['rev-parse', 'HEAD']).stdout.trim(); };
+  try {
+    git(['init', '-q']);
+    const code = commit('intent/staged.js', 'a');
+    const planHead = commit('bench/kan106-eval-v2/plan.json', '{}');
+    const packetHead = commit('bench/kan106-eval-v2/held-out/H01/request.txt', 'r');
+    const docHead = commit('docs/research/x.md', 'd');
+    assert.deepEqual(freeze.revisionProblems({ frozenSha: code, head: docHead, git }), []);
+    assert.deepEqual(freeze.revisionProblems({ frozenSha: code, head: code, git }), []);
+    const tuned = commit('intent/staged.js', 'tuned');
+    assert.match(freeze.revisionProblems({ frozenSha: code, head: tuned, git }).join(), /changed after qb_under_test\.sha: intent\/staged\.js/);
+    assert.match(freeze.revisionProblems({ frozenSha: tuned, head: code, git }).join(), /does not descend/);
+    assert.match(freeze.revisionProblems({ frozenSha: null, head: code, git }).join(), /qb_under_test\.sha is not set/);
+    assert.ok(planHead && packetHead);
+  } finally { fs.rmSync(repo, { recursive: true, force: true }); }
+});
+
+test('score.js: a model load the admission did not plan for is detected and reported (keep-alive policy), never hidden', () => {
+  const { timingExtras } = require('../../bench/kan106-eval-v2/score');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-v2-reload-'));
+  try {
+    const run = (calls) => {
+      const dir = fs.mkdtempSync(path.join(d, 'r-'));
+      fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ artifacts: {} }));
+      fs.writeFileSync(path.join(dir, 'events.jsonl'), `${JSON.stringify({ type: 'l1.timings', data: { l1_ms: 90_000, calls } })}\n`);
+      return dir;
+    };
+    const coldOk = timingExtras(run([{ load_ms: 9000 }, { load_ms: 0 }]), { admittedRule: 'cold', loadMs: 1000 });
+    assert.deepEqual([coldOk.cold_load, coldOk.unplanned_reload, coldOk.l1_load_excluded_ms], [true, false, 81_000]);
+    assert.equal(timingExtras(run([{ load_ms: 9000 }, { load_ms: 8000 }]), { admittedRule: 'cold', loadMs: 1000 }).unplanned_reload, true);
+    assert.equal(timingExtras(run([{ load_ms: 0 }, { load_ms: 7000 }]), { admittedRule: 'warm', loadMs: 1000 }).unplanned_reload, true);
+    assert.equal(timingExtras(run([{ load_ms: 20 }, { load_ms: 0 }]), { admittedRule: 'warm', loadMs: 1000 }).unplanned_reload, false);
   } finally { fs.rmSync(d, { recursive: true, force: true }); }
 });
