@@ -46,6 +46,10 @@ function diffFor(c, dir) {
   return `${head}--- a/${c.file}\n+++ b/${c.file}\n@@ -0,0 +1,${lines.length} @@\n${lines.map((l) => `+${l}`).join('\n')}\n`;
 }
 
+// KAN-44 10837 A: qb.js reads Docker's live-restore before the run. The stand-in has no Docker, so the read is
+// answered here (test only); the real gate in runSandboxed is replaced along with the pipeline.
+require('../../lib/sandbox/live-restore').liveRestore = async () => 'disabled';
+
 pipeline.runSandboxed = async ({ repoPath, briefing }) => {
   const copy = fs.mkdtempSync(path.join(os.tmpdir(), 'qb-fake-sandbox-'));
   try {
