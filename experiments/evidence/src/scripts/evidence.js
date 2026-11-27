@@ -191,11 +191,15 @@
         const a = phase + (i / cards.length) * Math.PI * 2 - Math.PI / 2;
         const x = Math.cos(a) * rx, y = Math.sin(a) * ry;
         if (Math.sin(a) > best) { best = Math.sin(a); front = i; }
-        c.style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0) scale(' + (0.96 + 0.04 * Math.sin(a)).toFixed(4) + ')';
+        c.style.transform = 'translate(-50%, -50%) translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0) scale(' + (0.96 + 0.04 * Math.sin(a)).toFixed(4) + ')';
       });
       setWord(hover >= 0 ? hover : focus >= 0 ? focus : front);
     };
-    const size = () => { rx = Math.max(0, (stage.clientWidth - 236) / 2); ry = Math.max(0, (stage.clientHeight - 130) / 2); };
+    const size = () => {
+      const tile = cards[0];
+      rx = Math.max(0, (stage.clientWidth - tile.offsetWidth) / 2 - 4);
+      ry = Math.max(0, (stage.clientHeight - tile.offsetHeight) / 2 - 4);
+    };
     const held = () => userPaused || hover >= 0 || focus >= 0 || dlg.open;
     // One continuous phase: pausing only eases the speed to 0, resuming eases it back, so a card never jumps
     parts.push((dt) => {
