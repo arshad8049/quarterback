@@ -22,10 +22,15 @@ describe('probe', () => {
   }
   test('a probe that throws is unknown', async () => assert.equal(await LR().liveRestore({ op: async () => { throw new Error('x'); } }), 'unknown'));
   test('warning text: enabled and unknown are explicit; disabled says nothing', () => {
-    assert.match(LR().warning('enabled'), /live-restore is enabled.*not qualified/s);
-    assert.match(LR().warning('unknown'), /could not read.*live-restore.*not qualified/s);
+    assert.match(LR().warning('enabled'), /live-restore is enabled.*will not start a sandboxed run/s);
+    assert.match(LR().warning('unknown'), /could not read.*live-restore.*will not start a sandboxed run/s);
     assert.equal(LR().warning('disabled'), null);
     for (const s of ['enabled', 'unknown']) assert.match(LR().warning(s), /QB does not change/);
+  });
+  test('blockedReason: disabled runs; enabled and unknown are BLOCKED with a code, read-only wording', () => {
+    assert.equal(LR().blockedReason('disabled'), null);
+    assert.match(LR().blockedReason('enabled'), /^live_restore_enabled: .*daemon\.json yourself/);
+    for (const s of ['unknown', 'x', undefined]) assert.match(LR().blockedReason(s), /^live_restore_unknown: /);
   });
 });
 
@@ -35,11 +40,12 @@ describe('doctor', () => {
     const r = await doctor({ agent: 'claude-code', env: {} }, deps('enabled'));
     assert.equal(get(r).status, 'fail'); assert.equal(r.exitCode, 1); assert.match(get(r).fix, /daemon\.json/);
   });
-  test('unknown: an explicit warning, never ok', async () => {
+  test('unknown: fail, because the sandbox will not start (10837 A), never ok', async () => {
     const r = await doctor({ agent: 'claude-code', env: {} }, deps('unknown'));
-    assert.equal(get(r).status, 'warn'); assert.match(get(r).detail, /could not read/);
+    assert.equal(get(r).status, 'fail'); assert.equal(r.exitCode, 1); assert.match(get(r).detail, /could not read/);
+    assert.match(get(r).detail, /will not start a sandboxed run/);
   });
-  test('a doctor probe that throws is unknown', async () => assert.equal(get(await doctor({ agent: 'claude-code', env: {} }, deps('x', { liveRestore: async () => { throw new Error('x'); } }))).status, 'warn'));
+  test('a doctor probe that throws is unknown', async () => assert.equal(get(await doctor({ agent: 'claude-code', env: {} }, deps('x', { liveRestore: async () => { throw new Error('x'); } }))).status, 'fail'));
   test('skipped without Docker and for agents that do not use the sandbox', async () => {
     assert.equal(get(await doctor({ agent: 'claude-code', env: {} }, deps('enabled', { dockerVersion: async () => null }))).status, 'skip');
     assert.equal(get(await doctor({ agent: 'dry-run', env: {} }, deps('enabled'))).status, 'skip');

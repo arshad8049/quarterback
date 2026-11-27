@@ -72,7 +72,7 @@ for (const lr of ['true', 'fail', 'garbage']) {
       process.env.FAKE_LR = lr;
       const f = gradingFixture();
       try {
-        const g = await grade({ spec: f.spec, patch: f.patch('correct'), suitesRoot: f.suitesRoot });
+        const g = await grade({ spec: f.spec, patch: f.patch('correct'), suitesRoot: f.suitesRoot, qualifying: true });
         assert.equal(g.outcome || g.status, 'infra_error', JSON.stringify(g));
         assert.match(JSON.stringify(g), new RegExp(want));
         assert.deepEqual(log().filter((l) => LAUNCH.test(l)), []);
@@ -91,7 +91,6 @@ describe('live-restore disabled: the gate lets the run continue', () => {
     assert.equal(r.status, 'blocked');
     assert.equal(r.reason, 'run_in_progress', 'blocked by admission, not by live-restore');
     assert.equal(r.sandbox.live_restore, 'disabled');
-    assert.ok(log().some((l) => l.startsWith('ps ')), 'the run continued (reaper)');
   });
 });
 

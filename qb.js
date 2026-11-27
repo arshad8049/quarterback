@@ -282,11 +282,19 @@ async function main() {
   run.setContract(contract);
   if (opts.save) saveArtifact('intent/contracts', contract);
 
-  // KAN-44 10814: say it before the run, not after. Read only; the run record keeps the state.
+  // KAN-44 10837 A: stop before the context stage instead of after it. The enforcing check is the shared one in
+  // lib/sandbox/pipeline.js (it is repeated there, at the start of the sandboxed run). Read only.
   if (opts.agent === 'claude-code') {
     const LR = require('./lib/sandbox/live-restore');
-    const w = LR.warning(await LR.liveRestore());
-    if (w) console.log(`\n  ! ${w}\n`);
+    const state = await LR.liveRestore();
+    const why = LR.blockedReason(state);
+    if (why) {
+      console.log(`\n  ✗ Blocked: ${why}\n`);
+      run.event('sandbox.blocked', { reason: why, sandbox: { live_restore: state } });
+      run.finish('BLOCKED', { reason: why });
+      process.exitCode = 2;
+      return;
+    }
   }
 
   // ── L5 recall → L2 → L3/L4 repair loop → L5 persist: one API shared with the benchmark (QB-28)
