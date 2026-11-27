@@ -185,7 +185,7 @@
   },
   "proposed": {
     "_label": "NOT normative: proposals for the senior",
-    "qb_under_test_sha": null,
-    "qb_under_test_note": "filled with the CI-green code head that this freeze candidate was built on"
+    "qb_under_test_sha": "0d5a697277a07021f2e41df4b39f2e808ba8d631",
+    "qb_under_test_note": "the code head of this freeze candidate: CI run 46031170340 green on every job (unit Node 20/22/24, kan106-offline-evidence, integration); HARNESS-FREEZE.json regenerated there after CI, byte-identical. The launch head may add only plan.json, held-out/ and docs/ on top of it."
   }
 }
