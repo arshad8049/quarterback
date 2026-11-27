@@ -186,7 +186,7 @@ Inside an untrusted container the adversary has full control of every process ru
 |---|---|
 | **G5a: termination** | While the supervisor and Docker daemon are running, a `docker kill` is issued to every workload container of a run no later than `T_end + KILL_GRACE`, and the containers are confirmed stopped within a further `DOCKER_OP_TIMEOUT`. `T_end` is the **earlier of** the stage deadline and the last lease renewal + `LEASE_TIMEOUT`. Defaults: `KILL_GRACE` 10 s, `LEASE_TIMEOUT` 30 s, `DOCKER_OP_TIMEOUT` 30 s. This is the one bound E4 and T-LIFE test. Nothing inside a container can extend it, and lease renewal cannot extend a stage deadline (§8.3). |
 | **G5b: removal** | Stopped containers, the per-run network and all per-run volumes are removed by the supervisor as soon as the run is terminal. If the supervisor is not running, removal is **eventual**: at the next `qb` start, or by `qb doctor --reap`. |
-| **G5c: Docker unavailable** | Nothing can be killed or removed. The supervisor retries with backoff and records `infra_error`. Under daemon `live-restore`, workloads can keep running until the daemon returns; QB warns at start if `live-restore` is enabled (§12). |
+| **G5c: Docker unavailable** | Nothing can be killed or removed. The supervisor retries with backoff. No terminal state (a CLI proposal, a timeout or `ABANDONED`) is committed until Docker confirms nothing of the run is running; when Docker returns, the run is committed as `infra_error` / `docker_unavailable (…)`, e.g. `docker_unavailable (cli_proposal: …)`. If Docker is still unavailable after `DOCKER_DOWN_MAX` (default 10 min), the run is recorded as **enforcement unconfirmed** (§8.3) with no terminal state, and the supervisor goes on retrying; cleanup is not complete and is not reported as complete. Under daemon `live-restore`, workloads can keep running until the daemon returns; QB warns at start if `live-restore` is enabled (§12). |
 | **G5d: intentionally retained** | The `qb-claude-auth` volume (until `qb auth logout`), QB images, and run records under `run/`. Nothing else. |
 | **G5e: recorded end** | Every run ends in a recorded terminal state. A run found by the reaper with no terminal state is marked `ABANDONED`. |
 
@@ -771,12 +771,25 @@ It runs on the host as **the same user as the CLI**. What protects it is that co
   - Lease renewal carries no deadline field, so it cannot extend a deadline.
 - **Lease.** The CLI renews `run/<id>/lease.json` every 5 s with a sequence number. Every write is atomic (write temp, `fsync`, `rename`). The supervisor tracks renewal age on its monotonic clock.
 - **Enforcement.** At `T_end + KILL_GRACE` (G5a), the supervisor sends `docker kill` to every `qb.run=<id>` workload container, then stops Ⓟ/Ⓚ. `T_end` is the earlier of the stage deadline and the last renewal + `LEASE_TIMEOUT`.
-- **Bounded Docker operations.** Every Docker command the supervisor (or CLI) runs has a hard timeout (`DOCKER_OP_TIMEOUT`) and is killed on expiry. A hung Docker client or daemon is retried with backoff, recorded as `infra_error`, and can never block enforcement forever. This is the G5c case.
+- **Bounded Docker operations.** Every Docker command the supervisor (or CLI) runs has a hard timeout (`DOCKER_OP_TIMEOUT`) and is killed on expiry. A hung Docker client or daemon is retried with backoff and recorded; nothing is committed until Docker confirms that nothing of the run is running. This is the G5c case (see "Enforcement unconfirmed" below).
 - **Single terminal-state writer.**
   - The supervisor is the only writer of a run's terminal state while it is alive. The CLI *proposes* an outcome (`completed`, `execution_error`, `cancelled`, …) through a stage-result record.
   - The supervisor commits exactly one terminal state, with a create-exclusive `O_CREAT|O_EXCL` write of `run/<id>/terminal.json`. The first committed state wins; later proposals are recorded as events but cannot change it.
   - The reaper uses the same create-exclusive write when the supervisor is dead, so a terminal state can never be written twice.
-- **Normal end.** The supervisor commits the terminal state, performs G5b removal, confirms it, and exits.
+- **Normal end.** The supervisor confirms with Docker that nothing of the run is running, commits the terminal state, performs G5b removal, records what is left, and exits.
+
+**Enforcement unconfirmed (G5c retry exhaustion).** If Docker is still unavailable `DOCKER_DOWN_MAX` after enforcement began, the supervisor cannot confirm that the workloads stopped. It then:
+
+1. writes `run/<id>/enforcement.json` with `state: "unresolved"`, `unresolved: true`, `reason: "enforcement_unconfirmed: docker_unavailable"`, the outcome it was about to commit (`intended`), `stopped_confirmed: false`, `left: null`, and an `enforcement_unconfirmed` event;
+2. commits **no** `terminal.json`: neither the CLI's proposal nor anything that reads as a cleanup;
+3. keeps retrying (at most every 5 s). When Docker answers it kills what is still running, commits `infra_error` / `docker_unavailable (…)`, removes the run's resources and rewrites `enforcement.json` with the result.
+
+This is not a terminal state; it is an open run with a recorded obligation. Consumers:
+
+- the CLI's `propose()` returns no terminal state, and the pipeline reports the run as `infra_error` / `sandbox_enforcement_unconfirmed: …`, never as the proposed outcome. It does the same if nothing was committed within its wait for any other reason;
+- the reaper leaves the run alone while the supervisor is alive. If the supervisor is gone, the run has no terminal state, so the reaper takes the obligation over (below).
+
+A supervisor that never sees Docker return keeps running until Docker answers or the process is stopped; the run stays open in the meantime. Under `live-restore` the workload may keep running for that time (§12).
 
 **Recovery after supervisor failure.** The CLI watches the supervisor's identity. If the supervisor dies mid-run while the CLI is alive, the CLI:
 
@@ -791,7 +804,7 @@ If both are dead, see "Supervisor failure" below.
 **Supervisor failure** (e.g. the user kills it as well, or the host reboots):
 
 - A reboot stops the containers, and `--restart no` keeps them stopped.
-- The next `qb` start runs the reaper. It removes every `qb.run=*` resource whose run is terminal or whose supervisor and owner identities (§8.3: PID + start time) are both dead. It commits `ABANDONED` with the create-exclusive terminal write; if a state is already committed, it keeps that one.
+- The next `qb` start runs the reaper. It removes every `qb.run=*` resource whose run is terminal or whose supervisor and owner identities (§8.3: PID + start time) are both dead. It commits `ABANDONED` with the create-exclusive terminal write only after Docker confirms that none of the run's containers is running (a run the supervisor had recorded as enforcement unconfirmed gets `enforcement_unconfirmed: true` on that record). If Docker does not answer, or a container keeps running, nothing is committed and the run is retried at the next start. If a state is already committed, it keeps that one.
 - `qb doctor` lists any leftovers; `qb doctor --reap` removes them.
 
 This is eventual recovery, as G5b states.
