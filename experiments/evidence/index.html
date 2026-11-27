@@ -205,7 +205,7 @@
   <!-- ============================================================ -->
   <!-- SECTION: HOME-INSPECT → edit: src/home-inspect.html -->
   <!-- ============================================================ -->
-  <!-- INSPECT THE EVIDENCE (KAN-67 visual experiment, preview only). Same run and pinned evidence as #open-run. Crops are text copied
+  <!-- INSPECT THE EVIDENCE (KAN-67 visual experiment, preview only). Same run and pinned evidence as #open-run. Photographs are decorative; each tile opens the corresponding evidence. Crops are text copied
        from the files; "…" marks a cut. Without JavaScript or with reduced motion: a blueprint and a grid with every detail visible.
        evidence.js: orbit (wide, fine pointer), or a scroll-snap row with Previous/Next (small or coarse). -->
   <section id="inspect" class="qbh-sec qbi" aria-labelledby="inspect-h" data-qbi>
@@ -229,26 +229,31 @@
       <div class="qbi-stage">
         <ul class="qbi-cards" data-qbi-cards>
           <li class="qbi-card" data-word="0">
+            <img class="qbi-photo" src="./media/inspect/request.jpg" alt="" width="640" height="640" loading="lazy" decoding="async">
             <h3>Request</h3>
             <p class="qbi-crop">"request": "Show durations under one minute as seconds only, for example 30000 ms as \"30s\" …"</p>
             <div class="qbi-detail"><p>The plain-language request, stored word for word in the run manifest. It names one example to change and one to keep.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/manifest.redacted.json">Evidence: manifest.redacted.json</a></p></div>
           </li>
           <li class="qbi-card" data-word="1">
+            <img class="qbi-photo" src="./media/inspect/checklist.jpg" alt="" width="640" height="640" loading="lazy" decoding="async">
             <h3>Checklist</h3>
             <p class="qbi-crop">{ "id": "CHK-30S", "ac_id": "AC-2", "adapter": "call_returns", … "args": [30000], "expect": "30s" … }</p>
             <div class="qbi-detail"><p>Seven checks for three criteria, plus the files that may change. It was hand-written and reviewed. The owner signed it off after this rehearsal, not before.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/velora-duration-contract.json">Evidence: velora-duration-contract.json</a></p></div>
           </li>
           <li class="qbi-card" data-word="2">
+            <img class="qbi-photo" src="./media/inspect/checks.jpg" alt="" width="640" height="640" loading="lazy" decoding="async">
             <h3>Checks</h3>
             <p class="qbi-crop">attempt 1: recorded=pass replayed=pass OK … outcome=VERIFIED  reproduced</p>
             <div class="qbi-detail"><p>Replaying the record reproduces the stored verdict. It does not run Claude or the tests again. A pass covers only the checks that ran, and test files were editable in this run.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/replay.txt">Evidence: replay.txt</a></p></div>
           </li>
           <li class="qbi-card" data-word="3">
+            <img class="qbi-photo" src="./media/inspect/patch.jpg" alt="" width="640" height="640" loading="lazy" decoding="async">
             <h3>Patch</h3>
             <p class="qbi-crop">+  if (minutes === 0) return `${seconds}s`;</p>
             <div class="qbi-detail"><p>The captured change to <code>src/duration.js</code> and its test file. Quarterback never applied it. A person reviews it and applies it.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/candidate.diff">Evidence: candidate.diff</a></p></div>
           </li>
           <li class="qbi-card" data-word="4">
+            <img class="qbi-photo" src="./media/inspect/run.jpg" alt="" width="640" height="640" loading="lazy" decoding="async">
             <h3>Run</h3>
             <p class="qbi-crop">Outcome | VERIFIED, attempt 1 of 3, 136.3 s. …</p>
             <div class="qbi-detail"><p>One supervised rehearsal on the owner's Mac. Setup time, sign-in and checklist preparation are not in the 136.3 seconds. It does not qualify macOS or self-service use.</p><p><a href="https://github.com/arshad8049/quarterback/blob/d30deb8fb0d68ac4de180af56bd99e7fe6d34802/docs/demo/evidence/2026-11-18-velora-rehearsal/README.md">Evidence: README.md</a></p></div>
