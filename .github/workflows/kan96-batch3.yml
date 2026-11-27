@@ -1,0 +1,36 @@
+name: kan96-batch3
+
+# KAN-96, approved in 10836: ONE further fixed batch (at most 50 sequential iterations) through the REAL producer
+# (lib/sandbox/docker.js runStage), this branch only, no rerun. Started by a commit to run-request.txt. No secrets, no model.
+# Schedule and caps are frozen in bench/kan96-batch3/config.json, committed before the request. Never merged.
+on:
+  push:
+    branches: [kan96-oom-diagnostic]
+    paths: [bench/kan96-batch3/run-request.txt]
+
+permissions:
+  contents: read
+
+concurrency: { group: kan96-batch3, cancel-in-progress: false }
+
+jobs:
+  batch:
+    if: github.run_attempt == 1 && github.ref == 'refs/heads/kan96-oom-diagnostic'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Batch 3 (at most 50 sequential iterations, real runStage)
+        run: node bench/kan96-batch3/run.js --out out
+      - name: Publish (readable without a token)
+        if: always()
+        run: node bench/kan96-batch3/publish.js out
+      - name: Remove this run's labelled containers
+        if: always()
+        run: docker ps -aq --filter "label=qb.diag" --filter "name=kan96b3-${GITHUB_RUN_ID}-" | xargs -r docker rm -f
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: kan96-batch3, path: out }

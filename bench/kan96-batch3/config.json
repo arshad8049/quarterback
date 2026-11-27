@@ -1,0 +1,27 @@
+{
+  "schema": "kan96-batch3-config/1",
+  "approved_in": "KAN-96 comment 10836 (one further fixed diagnostic batch)",
+  "producer": "lib/sandbox/docker.js runStage (merged from kan96-oom-producer d0529bf); no experiment harness",
+  "max_iterations": 50,
+  "sequential": true,
+  "time_budget_min": 20,
+  "workflow_timeout_min": 30,
+  "cases": [
+    { "name": "oom", "n": 30, "truth": "oom" },
+    { "name": "healthy", "n": 8, "truth": "no_oom" },
+    { "name": "sigkill", "n": 6, "truth": "no_oom" },
+    { "name": "observer_unavailable", "n": 6, "truth": "oom", "cgroupRoot": "/nonexistent-cgroup-root" }
+  ],
+  "observer": {
+    "reread_delays_ms": [1, 2, 3, 4, 6, 8, 10],
+    "max_rereads_per_stage": 64,
+    "rereads_only_after_memory_notification": true,
+    "lifecycle_reads": ["exit", "finish"],
+    "arm_timeout_ms": 2000,
+    "finish_timeout_ms": 2000,
+    "gate_ready_limit_ms": 30000
+  },
+  "stage_wait_timeout_ms": 60000,
+  "retries": 0,
+  "model_calls": 0
+}
