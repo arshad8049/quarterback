@@ -201,10 +201,10 @@ test('packet manifest: the full packet and the owner spec-only manifest; any byt
     assert.equal(freeze.packet(d, { specsOnly: true }).manifest_sha256, specs.manifest_sha256);
   } finally { fs.rmSync(d, { recursive: true, force: true }); }
 });
-test('items.js (control validation, materialize) is independent of QB: Node built-ins only', () => {
-  const src = fs.readFileSync(path.join(V2, 'items.js'), 'utf8');
-  const reqs = [...src.matchAll(/require\(['"]([^'"]+)['"]\)/g)].map((m) => m[1]);
-  assert.deepEqual(reqs.sort(), ['child_process', 'fs', 'os', 'path']);
+test('items.js (control validation, materialize) is independent of the compiler: built-ins + the QB-01 subprocess wrapper only', () => {
+  const reqs = (f) => [...fs.readFileSync(f, 'utf8').matchAll(/require\(['"]([^'"]+)['"]\)/g)].map((m) => m[1]);
+  assert.deepEqual(reqs(path.join(V2, 'items.js')).sort(), ['../../lib/proc', 'fs', 'os', 'path']);
+  assert.deepEqual([...new Set(reqs(path.join(ROOT, 'lib', 'proc.js')))].sort(), ['child_process', 'fs', 'path'], 'lib/proc.js itself loads no QB module');
 });
 test('items.js validate: controls are checked against a hand-written reference test (fixture item, no QB)', () => {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-v2-val-'));
@@ -221,5 +221,29 @@ test('items.js validate: controls are checked against a hand-written reference t
     assert.equal(r.all_match, true, JSON.stringify(r, null, 1));
     fs.writeFileSync(path.join(it, 'item.json'), JSON.stringify({ expected: 'finalize', control_expect: { base: { change: 'pass' } } }));
     assert.equal(items.validate(d).all_match, false);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+// ── v2 scorer wiring (records -> rows -> gates) ──
+test('score.js: resource_blocked stays resource_blocked, an absent entry is missing, an unreadable record is invalid_record; never a refusal', () => {
+  const { scoreProfile } = require('../../bench/kan106-eval-v2/score');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-v2-score-'));
+  try {
+    for (const [i, id] of IDS.entries()) {
+      fs.mkdirSync(path.join(d, id));
+      fs.writeFileSync(path.join(d, id, 'request.txt'), `TEST REQUEST ${id}\n`);
+      fs.writeFileSync(path.join(d, id, 'item.json'), JSON.stringify({ id, category: 'test', expected: i < 8 ? 'finalize' : 'refuse', requirements: [], control_expect: {}, scope: { must_allow: [], must_protect: [] } }));
+    }
+    const plan = frozenPlan();
+    const runs = { H01: { status: 'resource_blocked', run_id: null }, H02: { status: 'launched', run_id: '00000000-0000-0000-0000-000000000000', exit_code: 1, signal: null } };
+    const batch = { profile: 'P-Mac', qb_revision: SHA, model_after: { digest_matches: true }, items: [{ id: 'H01', gate: { reasons: ['capacity_unknown'] } }] };
+    const r = scoreProfile({ batch, runs, runsRoot: path.join(d, 'runs'), itemsRoot: d, plan, profile: 'P-Mac' });
+    const by = Object.fromEntries(r.rows.map((x) => [x.id, x.result]));
+    assert.equal(by.H01, 'resource_blocked'); assert.equal(by.H02, 'invalid_record'); assert.equal(by.H12, 'missing');
+    assert.equal(r.gates.verdict, 'incomplete');
+    assert.equal(r.gates.gates.Q3.passed, 0); assert.equal(r.gates.gates.Q3.of, 4);
+    assert.equal(r.gates.gates.Q1.of, 8);
+    const wrongProfile = scoreProfile({ batch, runs, runsRoot: path.join(d, 'runs'), itemsRoot: d, plan, profile: 'P-Linux' });
+    assert.match(wrongProfile.batch_problems.join(), /batch profile P-Mac, scoring P-Linux/);
   } finally { fs.rmSync(d, { recursive: true, force: true }); }
 });
