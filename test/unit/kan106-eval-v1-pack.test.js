@@ -35,18 +35,25 @@ test('no private paths anywhere in the pack', () => {
   for (const f of walk(PACK)) assert.doesNotMatch(fs.readFileSync(path.join(PACK, f), 'utf8'), /\/Users\/|\/home\/|\/private\/var|\/var\/folders|qb-evidence\/kan106-eval-v1\/2026/, f);
 });
 
-test('generation 881a51a; the v2 and v3 analyses are kept; re-scoring the pack offline reproduces the current (freeze v4, labels-only) scores byte for byte', () => {
+test('generation 881a51a; the v2 and v3 analyses are kept; re-scoring at this checkout differs ONLY in the three rows the newer validators no longer finalize', () => {
   const runs = JSON.parse(fs.readFileSync(path.join(PACK, 'runs.json'), 'utf8'));
   for (const { run_id: id } of Object.values(runs)) {
     assert.equal(JSON.parse(fs.readFileSync(path.join(PACK, 'runs', id, 'manifest.json'), 'utf8')).qb_revision, '881a51a1149ccfcc1a757aefe0b17ea79fa3ef9e');
   }
   const original = JSON.parse(fs.readFileSync(path.join(PACK, 'scores.json'), 'utf8'));
   assert.equal(original.summary.supported.by_result.invalid_record, 6, 'the v2 analysis (exit-code erratum) is kept as it was');
-  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-pack-')), 'rescore.json');
-  try {
-    fs.writeFileSync(out, JSON.stringify(scoreBatchDir(PACK), null, 2) + '\n');
-    assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
-  } finally { fs.rmSync(path.dirname(out), { recursive: true, force: true }); }
+  // KAN-106 10838 (carried onto the 2150ab6 evaluation branch): the scorer reads contractState from the RUNNING
+  // checkout. At 2150ab6 the KAN-107 10812 validators no longer finalize the recorded S2, S3 and U2 contracts, so
+  // re-scoring here differs in exactly those three rows. The analysis is reproduced byte for byte at its own
+  // revision with rescore-pinned.js (next test).
+  const now = scoreBatchDir(PACK);
+  const v4now = JSON.parse(fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
+  const drift = now.items.filter((x, i) => JSON.stringify(x) !== JSON.stringify(v4now.items[i]));
+  assert.deepEqual(drift.map((x) => [x.id, x.result, x.problems]), [
+    ['S2-formatter', 'invalid_record', ['outcome DRY_RUN without a finalized contract artifact']],
+    ['S3-percent', 'invalid_record', ['outcome DRY_RUN without a finalized contract artifact']],
+    ['U2-roundto', 'invalid_record', ['outcome DRY_RUN without a finalized contract artifact']]]);
+  assert.deepEqual(drift.map((x) => v4now.items.find((y) => y.id === x.id).result), ['checklist', 'checklist', 'not_refused']);
   const v3 = JSON.parse(fs.readFileSync(path.join(PACK, 'scores-v3-f907d97.json'), 'utf8'));
   const v4 = JSON.parse(fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
   assert.deepEqual(v3.batch_problems, []);
@@ -58,3 +65,15 @@ test('generation 881a51a; the v2 and v3 analyses are kept; re-scoring the pack o
   assert.deepEqual(v3.items.map((x) => [x.id, x.result]), [['S1-slug', 'checklist'], ['S2-formatter', 'checklist'], ['S3-percent', 'checklist'], ['S4-parsebool', 'checklist'],
     ['S5-clock', 'checklist'], ['S6-money', 'checklist'], ['U1-userrepo', 'intended_refusal'], ['U2-roundto', 'not_refused']]);
 });
+
+const { rescorePinned, revAvailable } = require('../../bench/kan106-eval-v2/rescore-pinned');
+const ANALYSIS_REV = 'e5c460d7a29ef0d6f3a1ba0309c2a5975cf258b0';
+test('KAN-106 10838: one command re-scores the carried records at the analysis revision and reproduces scores-freeze-v4.json byte for byte',
+  { skip: revAvailable(ANALYSIS_REV) ? false : `analysis revision ${ANALYSIS_REV.slice(0, 7)} is not in this clone (shallow CI checkout); run locally` }, () => {
+    const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-pinned-')), 'rescore.json');
+    try {
+      const r = rescorePinned({ rev: ANALYSIS_REV, batchDir: PACK, out, expect: path.join(PACK, 'scores-freeze-v4.json') });
+      assert.equal(r.status, 0, r.message);
+      assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(PACK, 'scores-freeze-v4.json'), 'utf8'));
+    } finally { fs.rmSync(path.dirname(out), { recursive: true, force: true }); }
+  });
