@@ -282,7 +282,23 @@ async function main() {
   run.setContract(contract);
   if (opts.save) saveArtifact('intent/contracts', contract);
 
+  // KAN-44 10837 A: stop before the context stage instead of after it. The enforcing check is the shared one in
+  // lib/sandbox/pipeline.js (it is repeated there, at the start of the sandboxed run). Read only.
+  if (opts.agent === 'claude-code') {
+    const LR = require('./lib/sandbox/live-restore');
+    const state = await LR.liveRestore();
+    const why = LR.blockedReason(state);
+    if (why) {
+      console.log(`\n  ✗ Blocked: ${why}\n`);
+      run.event('sandbox.blocked', { reason: why, sandbox: { live_restore: state } });
+      run.finish('BLOCKED', { reason: why });
+      process.exitCode = 2;
+      return;
+    }
+  }
+
   // ── L5 recall → L2 → L3/L4 repair loop → L5 persist: one API shared with the benchmark (QB-28)
+  let held = false;   // KAN-44 10837: set by the credentialHold hook; names are withheld from the summary
   const { blocked, execution, report, attempt } = await runPipeline({
     contract, repoPath, agent: opts.agent, maxRetries, run, budgetRun, baseSha, memory,
     noLlmContext: !opts.llmContext, noLlmVerify: !opts.llmVerify, judgeCache: defaultJudgeCacheDir(),
@@ -305,8 +321,14 @@ async function main() {
       },
       executed(execution, attempt, isRetry, ms) {
         log(isRetry ? 'L3↩' : 'L3', `Execution done  (${ms}ms)  status=${execution.status}`);
-        execution.changes.forEach(c => console.log(`     ${c.file.padEnd(38)} +${c.additions} -${c.deletions}`));
+        // KAN-44 10837 B1: no file names while the patch is on credential hold (a name can itself be a secret)
+        require('./lib/credential-scan').changeListing(execution).forEach(l => console.log(`     ${l}`));
         if (opts.save) saveArtifact('agent/executions', execution, `${execution.id}_attempt${attempt}`);
+      },
+      credentialHold(scan) {
+        held = true;
+        console.log('');
+        for (const l of require('./lib/credential-scan').holdMessage(scan)) console.log(`  ${l}`);
       },
       verifyStart() { log('L4', 'Verification...'); },
       verified(report, attempt, ms) {
@@ -353,13 +375,15 @@ async function main() {
   budget.endRun();
   run.finish(
     runStore.outcomeFor(report?.verdict, { dryRun: opts.agent === 'dry-run' }),
-    { legacy_verdict: report?.verdict || null },
+    { legacy_verdict: report?.verdict || null, ...(report?.security_hold ? { reason: `security_hold: ${report.security_hold.status}; export denied` } : {}) },
   );
 
   // ── Final summary ──────────────────────────────────────────────────────────
   const totalMs = Date.now() - totalStart;
   console.log(`\n${DIVIDER2}`);
   console.log(`  RESULT: ${verdictIcon(report?.verdict)} ${(report?.verdict || 'unknown').toUpperCase()}`);
+  // KAN-44 10846 (4): a security hold is never presented as a pass; export is denied.
+  require('./lib/credential-scan').resultLines(report).forEach(l => console.log(`  ${l}`));
   console.log(`  Attempts: ${attempt} / ${maxRetries}`);
   console.log(`  Total time: ${(totalMs / 1000).toFixed(1)}s`);
   console.log(`  Run:      ${run.id}  outcome=${run.manifest.outcome}`);
@@ -370,7 +394,7 @@ async function main() {
       console.log(`  ${execution.changes.length} file(s) changed.`);
     }
   } else if (report?.failures?.length) {
-    console.log(`\n  Still failing: ${report.failures.join(', ')}`);
+    console.log(held ? `\n  Still failing: ${report.failures.length} item(s); details withheld (credential hold; the run record is sensitive)` : `\n  Still failing: ${report.failures.join(', ')}`);
     console.log(`  Human review required.`);
   }
 

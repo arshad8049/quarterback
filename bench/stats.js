@@ -14,7 +14,8 @@
  *
  *   operational   success per ASSIGNED repetition: over the repetitions planned for both arms,
  *                 anything but a pass (fail, agent error, timeout, infra/grader error, missing)
- *                 counts as no success. The complete-case primary drops a pair when either arm
+ *                 counts as no success. The complete-case analysis (labelled secondary and selection-limited,
+ *                 KAN-44 10865) drops a pair when either arm
  *                 has no score, so an arm that errors out on hard tasks could look better among
  *                 its surviving runs; this endpoint is reported next to it, with the same bootstrap.
  *
@@ -133,15 +134,17 @@ function analyze(d, m) {
   const seed = `${m.experiment_id}\0${m.trial_plan.seed}`;
   const effectsFor = (A, Bm) => taskEffects(d.rows, A, Bm).map((e) => ({ ...e, ...stratum(e.task_id) }));
   const primaryTasks = effectsFor(X, Y);
-  const primary = { comparison: [X, Y], role: 'primary (predeclared)', tasks: primaryTasks,
+  // KAN-44 10865: an analysis over completed pairs only drops every pair with attrition (a security hold included), so it
+  // is selection-limited and labelled secondary. The key stays `primary` (the predeclared comparison's arms) for readers.
+  const primary = { comparison: [X, Y], role: 'complete-case (completed pairs only): secondary, selection-limited', selection_limited: true, tasks: primaryTasks,
     unmatched_tasks: primaryTasks.filter((t) => t.effect === null).map((t) => t.task_id),
     ...clusterBootstrap(primaryTasks, { seed: `${seed}\0${X}\0${Y}` }) };
   const operationalTasks = operationalEffects(d.rows, X, Y).map((e) => ({ ...e, ...stratum(e.task_id) }));
-  const operational = { comparison: [X, Y], role: 'operational (predeclared; attrition counts as no success)', tasks: operationalTasks,
+  const operational = { comparison: [X, Y], role: 'operational (predeclared; planned denominator; attrition, security_hold included, counts as no success)', selection_limited: false, tasks: operationalTasks,
     ...clusterBootstrap(operationalTasks, { seed: `${seed}\0operational\0${X}\0${Y}` }) };
   const secondary = m.arms.map((a) => a.id).filter((a) => a !== X && a !== Y).map((Z) => {
     const tasks = effectsFor(X, Z);
-    return { comparison: [X, Z], role: 'secondary (exploratory ablation)', n_tasks: tasks.filter((t) => t.effect !== null).length,
+    return { comparison: [X, Z], role: 'secondary (exploratory ablation; completed pairs only, selection-limited)', selection_limited: true, n_tasks: tasks.filter((t) => t.effect !== null).length,
       ...clusterBootstrap(tasks, { seed: `${seed}\0${X}\0${Z}` }) };
   });
   const strata = (field) => {
