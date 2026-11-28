@@ -52,6 +52,7 @@ The arms are defined in `docs/bench/arms.md` (`bench/arms.js` `ARMS`). Each one 
   - only `pass`/`fail` are scores;
   - `grader_error`, `infra_error`, `needs_adjudication` (only for checks a spec reserves), missing, incomplete, agent errors and timeouts are **attrition**;
   - attrition is reported per arm next to completion rates and is never counted as a win or a loss.
+  - **`security_hold` (KAN-44 10865):** a patch on credential hold is not sent to the grader and gets no score. Only its SHA-256, size and reason go into the experiment directory; the exact patch stays in the local run record. It stays in the planned denominator as attrition and no success, never as a wrong-code grade or as evidence of success. The report shows hold counts by arm and how many planned pairs lack a usable pair. No replacement trial is run unless this protocol explicitly approves one.
 - **Adjudication:** blinded (no arm, trial or internal verdict). Every adjudicator's verdict is kept, and disagreements are reported, not resolved by majority.
 
 ## 5. Analysis (predeclared; `bench/stats.js`)
@@ -65,6 +66,7 @@ The arms are defined in `docs/bench/arms.md` (`bench/arms.js` `ARMS`). Each one 
 - **Operational endpoint (predeclared, reported next to the primary):** success per **assigned** repetition. Over the repetitions planned for both arms, anything but a pass (fail, agent error, timeout, infra or grader error, missing) counts as no success. Task effect `o_t = (successes of E − successes of A) / assigned pairs`; same estimate and cluster bootstrap as the primary (`bench/stats.js` `operationalEffects`).
   - Why: the primary is complete-case. It drops a pair when either arm has no score, so an arm that errors out on hard tasks could look better among its surviving runs.
 - **Strata:** mean effect and matched-task counts by task type and by repository.
+- **Labelling (KAN-44 10865):** every analysis over completed pairs only (the matched-pairs effect above, the ablations and the strata) is reported labelled **secondary and selection-limited**. Whether the operational endpoint becomes the primary is open for the reviewer ("Open items", item 4).
 - **Reported alongside correctness:** completion rate and attrition per arm, agent-stage time, elapsed time, QB model calls, tokens and cost where reported (unknown stays unknown), human interventions, and every failed or missing run.
 - **Interpretation:**
   - a claim of improvement requires the primary 95% CI to exclude 0 **and** the operational endpoint's 95% CI to exclude 0 in the same direction. When they disagree, both are reported and no improvement is claimed;

@@ -176,7 +176,13 @@ async function nativeArm(def, o) {
     if (failed) return { ...failed, patch: r.diff || '', attempts: attempt, agent_ms: agentMs, timing, internal_verdict: null };
     // KAN-44 10837 B2: a patch on credential hold (finding, or a scan that could not finish) gets no further attempt.
     const hold = securityHold(r);
-    if (hold) { held = hold.status; run.event('credential.hold', { attempt, status: hold.status, findings: hold.findings || [] }); break; }
+    if (hold) {
+      held = hold.status; run.event('credential.hold', { attempt, status: hold.status, findings: hold.findings || [] });
+      // KAN-44 10865: the experiment gets only the hash of a held patch, so the exact original is kept here, in the
+      // local run record (sensitive), as the QB arms' pipeline keeps it. Bytes, not a string: strings are redacted.
+      run.artifact(`a${attempt}-patch-raw`, r.patch_raw || Buffer.from(r.diff || ''), { ext: 'bin' });
+      break;
+    }
     if (def.feedback !== 'visible_tests') break;
     const vt = visibleTests(r);
     if (vt.outcome === 'passed' || vt.outcome === 'not_run') break;   // nothing to feed back
