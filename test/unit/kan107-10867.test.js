@@ -155,7 +155,9 @@ describe('10867 (1) every grounding field is either bound or shown not to decide
     } };
     for (const d of ['intent', 'agent', 'verify', 'lib', 'context', 'bench', 'run', 'memory']) if (fs.existsSync(path.join(ROOT, d))) walk(path.join(ROOT, d));
     files.push('qb.js');
-    const readers = (re) => files.filter((f) => re.test(fs.readFileSync(path.join(ROOT, f), 'utf8'))).sort();
+    // code only: comments may name the fields (to document them as provenance)
+    const code = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
+    const readers = (re) => files.filter((f) => re.test(code(f))).sort();
     assert.deepEqual(readers(/\bctor_stores\b/), ['intent/api-grounding.js', 'intent/ctor-args.js']);
     assert.deepEqual(readers(/\.excerpts\b|\bstart_line\b|\bblock_end_line\b/), ['intent/api-grounding.js', 'intent/ctor-args.js']);
     // ctor-args reads them only when groundApi calls it, on blocks it has just read from the working tree

@@ -20,20 +20,24 @@ This document describes the fix as built on `kan107-consistency-design` (2150ab6
 
 `api_grounding` can decide whether a contract is valid, so it is never trusted as carried (`intent/grounding-binding.js`). QB does two things:
 
-* **It binds the grounding to approval.** When the field is present, `approvedContent` includes `groundingIdentity(api_grounding)`. That covers each module's path, sha256, bytes, status, reason, format, named exports, and the default export's kind, name, form, methods, accessors, statics and `ctor_args`. Editing any of these after approval voids the approval. Excerpt line ranges and `ctor_stores` are not bound: they are provenance, and request-examples never reads them.
+* **It binds the grounding to approval.** When the field is present, `approvedContent` includes `groundingIdentity(api_grounding)`. That covers each module's path, sha256, bytes, status, reason, format, named exports, and the default export's kind, name, form, methods, accessors, statics and `ctor_args`. Editing any of these after approval voids the approval (a tamper test per field).
+    * These are every field that affects validation or target selection (`resolveTarget` reads path, status, the default export's kind, name, methods and `ctor_args`, and the named exports). Executable checks never read the grounding: they run `contract.checks`.
+    * **Not bound, and not authenticated by approval:** the excerpts (line ranges, truncation, symbol, source) and `default.ctor_stores`. They are **provenance**: `groundApi` uses them to compute `ctor_args` from the working tree when it produces the grounding. On a contract nothing reads them. A test shows that changing them changes no validation, target, gate or check, and a tripwire fails if new code reads them (senior 10867). If code ever uses one of them to decide something, it must be added to `groundingIdentity` with a tamper test in the same change.
     * When the field is absent, nothing is hashed. Contracts and approvals from before KAN-107 keep their hash (pinned in a test) and are never migrated.
 * **It recomputes the grounding before each decision.** QB runs `groundApi` on the target repository's working tree before:
     * a `--contract-file` is used;
     * the agent CLI uses a stored contract;
     * `qb.js` runs the pipeline.
 
-  If the grounding the contract carries differs from the recomputed one, the contract is refused. The difference may come from an edit, from a caller writing the field, or from the repository changing since the grounding was recorded. Nothing runs, and the user is asked to review the contract again and approve it again.
+  If the grounding the contract carries differs from the recomputed one, the contract is refused. The difference may come from an edit, from a caller writing the field, or from the repository changing since the grounding was recorded. Nothing runs, and the approval is not reused.
+    * This holds in every agent mode, `--agent manual` included (senior 10867): manual is not permission to reuse an approval against a different source.
+    * The message gives the way out: regenerate the contract from the current repository (`qb` with the request and `--repo`, without `--contract-file`, writes a new `proposed-contract.json`), review it, and approve it again (`--contract-file <that file>`, or `qb-agent --approve-contract`).
 * **How `--contract-file` is handled:**
     * A grounding written in the file is the caller's claim. It is compared with QB's recomputation and never used as proof.
     * If the file has no grounding, QB attaches its own, prints the example mapping, and the approval then binds it.
     * `proposed-contract.json` records QB's grounding, so a later run detects drift since the review.
 * **Old approvals are not migrated.** A contract approved before KAN-107 has no grounding and is left without one. Its class-method examples are refused (fail-closed).
-* **Verification does not recompute.** The task is expected to change the target files.
+* **The check is against the approved starting state.** Every recomputation runs before the agent: in `qb.js` before `runPipeline`, in the agent CLI before `orchestrate`. Nothing after the agent (the repair loop, context refresh, verification) recomputes it. The run's own edits are the resulting patch, never pre-run drift (senior 10867, pinned in `test/unit/kan107-10867.test.js`).
 
 ## Module and where it runs
 

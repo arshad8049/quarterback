@@ -434,7 +434,8 @@ function groundingExcerpt(g) {
   return lines.join('\n');
 }
 
-/** The grounding as recorded on a contract: provenance (path, sha256, ranges, flags), never source text. */
+/** The grounding as recorded on a contract, never source text. Approval binds only groundingIdentity (below); the
+ *  excerpt ranges and default.ctor_stores it also carries are provenance (not authenticated by approval). */
 function contractGrounding(g) {
   if (!g || !Array.isArray(g.modules)) return g;
   return { ...g, modules: g.modules.map((m) => (m.excerpts ? { ...m, excerpts: m.excerpts.map((b) => ({ ...b })) } : { ...m })) };
@@ -496,8 +497,14 @@ function apiGroundingErrors(c) {
  * KAN-107 (senior 10847 a): the validator-relevant contents of a grounding and its source identity, canonical:
  * what an approval binds (intent/contract-state.js approvedContent) and what a recomputation is compared with
  * (intent/grounding-binding.js). Per module: path, sha256, bytes, status, reason, format, named exports and the
- * default export's kind, name, form, methods, accessors, statics and ctor_args. NOT included: excerpt line ranges
- * and ctor_stores (provenance and the input of ctor_args; request-examples never reads them).
+ * default export's kind, name, form, methods, accessors, statics and ctor_args. These are every field that affects
+ * validation or target selection (request-examples.js resolveTarget reads path, status, default.kind/name/methods/
+ * ctor_args and named[].name); executable checks never read the grounding (they run contract.checks).
+ * NOT included, and NOT authenticated by approval: excerpts (all their fields) and default.ctor_stores. They are
+ * provenance: groundApi's own inputs to ctor_args, read from the working tree when the grounding is produced; no
+ * validator, target or check code reads them on a contract (KAN-107 10867; kan107-10867.test.js proves changing them
+ * changes no decision and has a tripwire). If code ever reads either one to decide something, add it here and give
+ * it a tamper test in the same change.
  */
 function groundingIdentity(g) {
   if (!g || typeof g !== 'object' || !Array.isArray(g.modules)) return g ?? null;

@@ -22,8 +22,23 @@
  * Why both: binding alone would trust whatever grounding a stored contract carried when it was approved (a forged
  * one, or one the repository no longer matches); recomputing alone would let an approval silently cover a different
  * repository. Recomputation is NOT done at verification time: the task is expected to change the target files.
+ *
+ * KAN-107 10867: what is compared is the APPROVED STARTING STATE. Every checkGrounding call runs before the agent
+ * (qb.js before runPipeline, agent/cli.js before orchestrate); nothing after the agent recomputes the grounding, so
+ * the run's own candidate edits are the resulting patch, never "pre-run drift" (test/unit/kan107-10867.test.js).
+ * Only the bound identity (api-grounding.js groundingIdentity) is compared. Excerpt ranges and default.ctor_stores
+ * are provenance (not authenticated by approval): they decide nothing, so they are neither bound nor compared.
  */
 const { groundApi, contractGrounding, groundingIdentity } = require('./api-grounding');
+
+/**
+ * KAN-107 10867 (2): the way out of a stale or edited grounding, in every agent mode (--agent manual included): the
+ * approval is never reused against a different source. Regenerate from the repository as it is now, review, approve.
+ */
+const REAPPROVE = 'QB does not use it, and the approval is not reused against a different source (in any agent mode, manual included). '
+  + 'To continue: regenerate the contract from the current repository (run qb with the same request and --repo, without --contract-file; '
+  + 'it writes a new proposed-contract.json), review it, then approve it again (run qb with --contract-file <that file>, '
+  + 'or qb-agent --approve-contract)';
 
 const canon = (v) => (Array.isArray(v) ? `[${v.map(canon).join(',')}]`
   : v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon(v[k])}`).join(',')}}`
@@ -55,7 +70,7 @@ function checkGrounding(contract, repoPath, { claimed } = {}) {
     const changed = groundingDiff(carried, recomputed);
     if (changed.length) {
       return { ok: false, changed, recomputed,
-        reason: `the contract's api_grounding of ${changed.join(', ')} does not match the repository (it was edited, written by the caller, or the repository changed since it was recorded). QB does not use it: review the contract against the current repository and approve it again` };
+        reason: `the contract's api_grounding of ${changed.join(', ')} does not match the repository (it was edited, written by the caller, or the repository changed since it was recorded). ${REAPPROVE}` };
     }
     return { ok: true, recomputed, contract: claimed !== undefined ? { ...contract, api_grounding: recomputed } : contract };
   }
