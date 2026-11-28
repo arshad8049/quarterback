@@ -23,13 +23,23 @@
  *     12 rows. Load-excluded times are reported as secondary only. The 420 s L1 budget is not the target.
  * Q5  all 12 rows complete and scorable.
  * Status per gate: pass | fail (an OBSERVED failure, reported even when the profile is incomplete) | incomplete.
- * Profile: pass only if Q1-Q5 all pass; fail if any of Q1-Q4 fails; otherwise incomplete.
+ * Profile: pass only if Q1-Q5 all pass AND there is no protocol deviation; fail if any of Q1-Q4 fails; otherwise
+ * incomplete.
+ *
+ * Unplanned reloads (senior ruling KAN-106 10868). Detection is score.js timingExtras: a per-call load_ms (Ollama's
+ * load_duration) >= reload_detect_load_ms; never inferred from elapsed time. A WARM-admitted item with such a load is an
+ * environment/protocol deviation: its evidence is kept and scored as usual, all its load time stays in Q4's full l1_ms,
+ * it is never a semantic model failure, and it makes the profile incomplete for a clean qualification claim (an
+ * observed Q1-Q4 failure is still a fail). No retry, no replacement. Cold-admitted items are never a deviation: the
+ * cold rule charged a load (item 1 is cold by design); a second load there is still reported in Q5.unplanned_reloads.
  */
 'use strict';
 
 const COMPLETE = new Set(['checklist', 'no_checklist', 'intended_refusal', 'blocked_other_reason', 'not_refused']);
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); const n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; };
 const finalizedRow = (r) => r.result === 'checklist' || (r.result === 'not_refused' && r.structural === 'finalized');
+/** 10868: a load recorded in an item the resource gate admitted under the WARM rule (detection: score.js timingExtras). */
+const warmReload = (v) => v.r.admitted_rule === 'warm' && v.r.unplanned_reload === true;
 const needsRuling = (r, expected) => finalizedRow(r) || (expected === 'refuse' && COMPLETE.has(r.result));
 
 function evaluateProfile({ profile, roster, rows, rulings = {}, policy }) {
@@ -104,15 +114,20 @@ function evaluateProfile({ profile, roster, rows, rulings = {}, policy }) {
   const notComplete = view.filter((v) => !v.complete).map((v) => ({ id: v.id, result: v.r.result }));
   const pending = view.filter((v) => v.pending).map((v) => v.id);
   const Q5 = { complete: view.filter((v) => v.complete).length, of: roster.length, not_complete: notComplete, pending_ruling: pending,
-    // keep-alive policy: a model load the admission did not plan for is REPORTED here (its time is already inside Q4's
-    // full l1_ms); whether it should also make the profile incomplete is a senior decision (not applied).
+    // keep-alive policy: every model load the admission did not plan for is REPORTED here (its time is already inside
+    // Q4's full l1_ms). Only a warm-admitted one is a protocol deviation (10868; see protocol_deviations).
     unplanned_reloads: view.filter((v) => v.r.unplanned_reload === true).map((v) => v.id),
+    warm_reload_deviations: view.filter(warmReload).map((v) => v.id),
     status: notComplete.length || pending.length || problems.length ? 'fail' : 'pass' };
 
+  const protocolDeviations = view.filter(warmReload).map((v) => ({ id: v.id, kind: 'unplanned_warm_reload',
+    note: 'environment/protocol deviation (10868): admitted warm, then a model load was recorded; evidence kept and scored, load time kept in Q4, not a semantic model failure; profile incomplete for a clean qualification claim; no retry or replacement',
+    load_calls: v.r.load_calls || [] }));
   const gates = { Q1, Q2, Q3, Q4, Q5 };
   const verdict = ['Q1', 'Q2', 'Q3', 'Q4'].some((g) => gates[g].status === 'fail') ? 'fail'
-    : Object.values(gates).every((g) => g.status === 'pass') ? 'pass' : 'incomplete';
-  return { schema: 'qb-kan106-eval-v2-gates/1', profile, verdict, roster_problems: problems, gates,
+    : Object.values(gates).every((g) => g.status === 'pass') && !protocolDeviations.length ? 'pass' : 'incomplete';
+  return { schema: 'qb-kan106-eval-v2-gates/2', profile, verdict, clean_qualification: verdict === 'pass', protocol_deviations: protocolDeviations,
+    roster_problems: problems, gates,
     note: 'One profile only; never pooled or inferred from another. An incomplete profile is not passed; observed failures are reported regardless.' };
 }
 
