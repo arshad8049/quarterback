@@ -292,3 +292,49 @@ test('score.js: a model load the admission did not plan for is detected and repo
     assert.equal(timingExtras(run([{ load_ms: 20 }, { load_ms: 0 }]), { admittedRule: 'warm', loadMs: 1000 }).unplanned_reload, false);
   } finally { fs.rmSync(d, { recursive: true, force: true }); }
 });
+
+test('10868: reload detection reads only the recorded per-call load_ms (Ollama load_duration), never the elapsed time', () => {
+  const { timingExtras } = require('../../bench/kan106-eval-v2/score');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-v2-slow-'));
+  try {
+    const run = (l1, calls) => {
+      const dir = fs.mkdtempSync(path.join(d, 'r-'));
+      fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ artifacts: {} }));
+      fs.writeFileSync(path.join(dir, 'events.jsonl'), `${JSON.stringify({ type: 'l1.timings', data: { l1_ms: l1, calls } })}\n`);
+      return dir;
+    };
+    const slow = timingExtras(run(400_000, [{ ms: 230_000, load_ms: 30 }, { ms: 169_000, load_ms: 0 }]), { admittedRule: 'warm', loadMs: 1000 });
+    assert.deepEqual([slow.cold_load, slow.unplanned_reload, slow.l1_load_excluded_ms], [false, false, 399_970], 'slow calls alone are not a reload');
+    const noLoadField = timingExtras(run(400_000, [{ ms: 239_000 }, { ms: 160_000, load_ms: null }]), { admittedRule: 'warm', loadMs: 1000 });
+    assert.deepEqual([noLoadField.cold_load, noLoadField.unplanned_reload], [false, false], 'an unreported load is not inferred');
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+test('10868 through the producer: score.js -> gates flags a warm-admitted item that reloads as a protocol deviation; a cold-admitted first load is not one', () => {
+  const { scoreProfile } = require('../../bench/kan106-eval-v2/score');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'kan106-v2-dev-'));
+  try {
+    for (const [i, id] of IDS.entries()) {
+      fs.mkdirSync(path.join(d, id));
+      fs.writeFileSync(path.join(d, id, 'request.txt'), `TEST REQUEST ${id}\n`);
+      fs.writeFileSync(path.join(d, id, 'item.json'), JSON.stringify({ id, category: 'test', expected: i < 8 ? 'finalize' : 'refuse', requirements: [], control_expect: {}, scope: { must_allow: [], must_protect: [] } }));
+    }
+    const runsRoot = path.join(d, 'runs');
+    const mk = (rid, calls) => {
+      fs.mkdirSync(path.join(runsRoot, rid), { recursive: true });
+      fs.writeFileSync(path.join(runsRoot, rid, 'manifest.json'), JSON.stringify({ artifacts: {} }));
+      fs.writeFileSync(path.join(runsRoot, rid, 'events.jsonl'), `${JSON.stringify({ type: 'l1.timings', data: { l1_ms: 90_000, calls } })}\n`);
+    };
+    const R1 = '00000000-0000-0000-0000-000000000001'; const R2 = '00000000-0000-0000-0000-000000000002';
+    mk(R1, [{ load_ms: 9000 }, { load_ms: 0 }]); mk(R2, [{ load_ms: 0 }, { load_ms: 7000 }]);
+    const runs = { H01: { status: 'launched', run_id: R1, exit_code: 0, signal: null }, H02: { status: 'launched', run_id: R2, exit_code: 0, signal: null } };
+    const batch = { profile: 'P-Mac', qb_revision: SHA, model_after: { digest_matches: true },
+      items: [{ id: 'H01', gate: { rule: 'cold', admit: true } }, { id: 'H02', gate: { rule: 'warm', admit: true } }] };
+    const r = scoreProfile({ batch, runs, runsRoot, itemsRoot: d, plan: frozenPlan(), profile: 'P-Mac' });
+    const by = Object.fromEntries(r.rows.map((x) => [x.id, x]));
+    assert.deepEqual([by.H01.admitted_rule, by.H01.cold_load, by.H01.unplanned_reload], ['cold', true, false]);
+    assert.deepEqual([by.H02.admitted_rule, by.H02.unplanned_reload], ['warm', true]);
+    assert.deepEqual(r.gates.protocol_deviations.map((x) => [x.id, x.kind]), [['H02', 'unplanned_warm_reload']]);
+    assert.equal(r.gates.clean_qualification, false);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});

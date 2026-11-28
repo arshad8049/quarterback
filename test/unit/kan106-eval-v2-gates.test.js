@@ -124,8 +124,41 @@ test('a finalized checklist without its human ruling is pending, not passed', ()
   assert.equal(r.gates.Q1.status, 'incomplete'); assert.deepEqual(r.gates.Q5.pending_ruling, ['H08']); assert.equal(r.verdict, 'incomplete');
 });
 
-test('an unplanned model reload is reported in Q5 (its time is already in Q4); it does not by itself change the verdict', () => {
-  const a = allGood(); a.rows = set(a.rows, 'H05', { unplanned_reload: true });
+// ── KAN-106 10868: the unplanned-reload ruling ──
+test('10868: a second load in a COLD-admitted item is reported in Q5 (its time is already in Q4) but is not a protocol deviation: the cold rule charged a reload', () => {
+  const a = allGood(); a.rows = set(a.rows, 'H05', { admitted_rule: 'cold', cold_load: true, unplanned_reload: true });
   const r = ev(a);
-  assert.deepEqual(r.gates.Q5.unplanned_reloads, ['H05']); assert.equal(r.verdict, 'pass');
+  assert.deepEqual(r.gates.Q5.unplanned_reloads, ['H05']); assert.deepEqual(r.protocol_deviations, []); assert.equal(r.verdict, 'pass');
+});
+
+test('10868: planned cold loading is normal: every item cold-loaded (item 1 by design, the rest held to the cold rule) -> no deviation, pass', () => {
+  const a = allGood(); a.rows = a.rows.map((x) => ({ ...x, admitted_rule: 'cold', cold_load: true, unplanned_reload: false }));
+  const r = ev(a);
+  assert.deepEqual(r.protocol_deviations, []); assert.deepEqual(r.gates.Q5.unplanned_reloads, []); assert.equal(r.verdict, 'pass');
+  assert.equal(r.clean_qualification, true);
+});
+
+test('10868: a WARM-admitted item that reloads is an environment/protocol deviation: evidence kept and scored, time kept in Q4, not a semantic failure, profile incomplete', () => {
+  const a = allGood(); a.rows = set(a.rows, 'H05', { admitted_rule: 'warm', cold_load: true, unplanned_reload: true, l1_ms: 95_000 });
+  const r = ev(a);
+  assert.deepEqual(r.protocol_deviations.map((x) => [x.id, x.kind]), [['H05', 'unplanned_warm_reload']]);
+  assert.match(r.protocol_deviations[0].note, /not a semantic model failure/);
+  for (const g of ['Q1', 'Q2', 'Q3', 'Q4']) assert.equal(r.gates[g].status, 'pass', `${g}: the reloaded item is still scored on its checklist evidence`);
+  assert.equal(r.gates.Q1.rows.find((x) => x.id === 'H05').status, 'pass', 'the reload alone is not a semantic model failure');
+  assert.equal(r.gates.Q4.max_ms, 95_000, 'all elapsed loading time stays in the full L1 time');
+  assert.deepEqual(r.gates.Q5.warm_reload_deviations, ['H05']);
+  assert.equal(r.verdict, 'incomplete', 'no clean overall qualification claim'); assert.equal(r.clean_qualification, false);
+});
+
+test('10868: a warm reload does not hide an observed failure: Q1-Q4 failures still make the verdict fail', () => {
+  const a = allGood(); a.rows = set(a.rows, 'H05', { admitted_rule: 'warm', unplanned_reload: true });
+  a.rows = set(a.rows, 'H01', { l1_ms: 200_000 });
+  const r = ev(a);
+  assert.equal(r.gates.Q4.status, 'fail'); assert.equal(r.verdict, 'fail'); assert.deepEqual(r.protocol_deviations.map((x) => x.id), ['H05']);
+});
+
+test('10868: a reload is never inferred from slowness: a slow warm item with no recorded load is not a deviation', () => {
+  const a = allGood(); a.rows = set(a.rows, 'H05', { admitted_rule: 'warm', cold_load: false, unplanned_reload: false, l1_ms: 179_000 });
+  const r = ev(a);
+  assert.deepEqual(r.protocol_deviations, []); assert.deepEqual(r.gates.Q5.unplanned_reloads, []); assert.equal(r.verdict, 'pass');
 });
