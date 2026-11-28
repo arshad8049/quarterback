@@ -28,7 +28,11 @@ function loadContractFile(file, request) {
   if (raw && typeof raw === 'object' && raw.clarifying_question) throw new Error('a contract file cannot contain an open clarifying_question');
   const contract = contractFromObject({ ...raw, clarifying_question: null }, request);
   const sha = crypto.createHash('sha256').update(buf).digest('hex');
-  return { contract, sha, approved: () => approve(contract, { via: 'contract-file', note: `sha256:${sha}` }) };
+  // KAN-107 (senior 10847 b): an api_grounding in the file is the CALLER's claim. contractFromObject never copies it;
+  // it is returned separately so QB can compare it with its own recomputation (intent/grounding-binding.js), never
+  // used as proof.
+  const claimed = raw && typeof raw === 'object' && raw.api_grounding !== undefined ? raw.api_grounding : undefined;
+  return { contract, sha, claimed_grounding: claimed, approved: (c = contract) => approve(c, { via: 'contract-file', note: `sha256:${sha}` }) };
 }
 
 /** The proposed contract, as the human-reviewable file `--contract-file` reads. */
@@ -36,6 +40,9 @@ function proposalForReview(contract) {
   const out = {};
   for (const k of REVIEW_FIELDS) if (contract[k] !== undefined) out[k] = contract[k];
   out.acceptance_criteria = (contract.acceptance_criteria || []).map((a) => ({ id: a.id, criterion: a.criterion, kind: a.kind || 'behavioral', requirement_ids: a.requirement_ids || [], ...(a.preserves !== undefined ? { preserves: a.preserves } : {}) }));
+  // KAN-107 (10847 b): QB's grounding at proposal time, so a run with this file can tell whether the repository
+  // changed since it was reviewed (it is compared, never trusted).
+  if (contract.api_grounding !== undefined) out.api_grounding = contract.api_grounding;
   return out;
 }
 

@@ -33,6 +33,7 @@
 const { compile, repair } = require('./compiler');
 const { contractState } = require('./contract-state');
 const { surveyRepository, surveySummary } = require('./survey');
+const { groundApi } = require('./api-grounding');
 const { parseSelection, answerText } = require('./dsa');
 const { validateDefaults } = require('./requirements');
 
@@ -51,11 +52,14 @@ const FORMAT = 'qb-intent-handoff/1';
  */
 async function compileIntent(request, { repoPath = null, answers = [], ask = null, maxRounds = MAX_ROUNDS } = {}) {
   const survey = repoPath ? surveyRepository(repoPath, request) : null;
+  // KAN-107 (10771 B): the static API grounding of the request-named modules (read, never executed), recorded on
+  // each draft by QB so the request-to-check consistency rules can tie an example to one target.
+  const api = repoPath ? groundApi(repoPath, request) : null;
   const grounding = surveySummary(survey);
   const history = [];
   for (let round = 1; ; round++) {
     const context = survey ? survey.text : null;
-    const first = await draft(() => compile(request, context, history));
+    const first = await draft(() => compile(request, context, history, { apiGrounding: api }));
     const result = first.contract;
     const cs = first.syntax ? { state: 'invalid' } : contractState(result);
     if (cs.state === 'finalized') return { format: FORMAT, state: 'finalized', contract: result, round, history, survey: grounding };
@@ -65,7 +69,7 @@ async function compileIntent(request, { repoPath = null, answers = [], ask = nul
       const rejected = [first.syntax ? syntaxEntry(first.syntax) : { kind: 'invalid', contract: result, errors: cs.errors }];
       const failure = first.syntax ? { kind: 'syntax', diagnostic: first.syntax.diagnostic } : { kind: 'invalid', contract: result, errors: cs.errors };
       let second;
-      try { second = await draft(() => repair(request, context, history, failure)); }
+      try { second = await draft(() => repair(request, context, history, failure, { apiGrounding: api })); }
       catch (e) {
         // Re-review 1: the correction itself failed (empty reply, network, cancellation). The first
         // draft and its errors travel with the error so the caller can keep them in the run record.

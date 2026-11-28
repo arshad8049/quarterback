@@ -19,6 +19,7 @@ const SEMANTIC_FIELDS = [
 ];
 const { modelCall } = require('../lib/budget');
 const { validateChecks } = require('../verify/checks/registry');
+const { contractGrounding } = require('./api-grounding');
 
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'), 'utf8');
 
@@ -27,7 +28,7 @@ const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts/system.md'),
  * @param {string|null} repoContext   the repository survey text (intent/survey.js, QB-17)
  * @param {string|Array<{question, answer}>|null} clarification  answers so far, round by round
  */
-async function compile(request, repoContext = null, clarification = null) {
+async function compile(request, repoContext = null, clarification = null, o = {}) {
   const history = Array.isArray(clarification) ? clarification
     : clarification ? [{ question: null, answer: String(clarification) }] : [];
   // DSA pre-pass (QB-17): a vague term blocks until the request or an answer defines it.
@@ -37,7 +38,7 @@ async function compile(request, repoContext = null, clarification = null) {
   const ambiguity = detectAmbiguity(request, bound);
   if (ambiguity) return ambiguity;
   const clar = resolveClarifications(request, bound);
-  return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry), clar);
+  return draftContract(request, buildUserContent(request, repoContext, history, clar.byEntry), clar, o.apiGrounding);
 }
 
 /**
@@ -50,12 +51,12 @@ async function compile(request, repoContext = null, clarification = null) {
  * The result is normalized exactly like a first draft; the caller validates it from scratch
  * (contractState). Never used for a user-supplied contract file.
  */
-async function repair(request, repoContext, clarification, failure) {
+async function repair(request, repoContext, clarification, failure, o = {}) {
   const history = Array.isArray(clarification) ? clarification
     : clarification ? [{ question: null, answer: String(clarification) }] : [];
   const clar = resolveClarifications(request, history.map((h) => ({ question_id: h.question_id ?? null, answer: h.answer })));
   const section = failure.kind === 'syntax' ? syntaxSection(failure.diagnostic) : repairSection(failure.contract, failure.errors);
-  return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar);
+  return draftContract(request, `${buildUserContent(request, repoContext, history, clar.byEntry)}\n\n${section}`, clar, o.apiGrounding);
 }
 
 function syntaxSection(diagnostic) {
@@ -99,7 +100,7 @@ function repairSection(rejected, errors) {
 }
 
 /** One model call for a contract draft, normalized by the same rules as every contract. */
-async function draftContract(request, userContent, clar) {
+async function draftContract(request, userContent, clar, apiGrounding = null) {
   // QB-21: deadline-bound, cancellable, concurrency-bounded (lib/budget.js)
   const data = await modelCall(`${OLLAMA_URL}/api/chat`, {
     model: MODEL,
@@ -119,6 +120,11 @@ async function draftContract(request, userContent, clar) {
   if (result && !result.clarifying_question) {
     if (clar.resolved.length) result.clarifications = clar.resolved;
     else delete result.clarifications;
+    // KAN-107 (10771 B): QB's static API grounding of the request-named modules (intent/api-grounding.js) is attached
+    // by QB, never taken from the model: request-to-check consistency ties examples to targets with it. Provenance
+    // only (path, sha256, export names, ctor_args); no source text. It is NOT shown to the model on this branch.
+    if (apiGrounding) result.api_grounding = contractGrounding(apiGrounding);
+    else delete result.api_grounding;
   }
   return result;
 }

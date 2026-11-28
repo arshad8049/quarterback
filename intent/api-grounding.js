@@ -84,10 +84,31 @@ function groundApi(repoPath, request) {
       if (!st.isFile()) return unknown({ path: rel, sha256: null, bytes: null }, 'not a regular file');
       if (st.size > MAX_BYTES) return unknown({ path: rel, sha256: null, bytes: st.size }, `larger than ${MAX_BYTES} bytes`);
       const buf = fs.readFileSync(file);
-      return withForm({ ...groundSource(rel, buf.toString('utf8'), names), sha256: sha(buf), bytes: buf.length });   // provenance: the file's own bytes
+      return withCtorArgs(withForm({ ...groundSource(rel, buf.toString('utf8'), names), sha256: sha(buf), bytes: buf.length }), buf.toString('utf8'));   // provenance: the file's own bytes
     } catch (e) { return unknown({ path: rel, sha256: null, bytes: null }, `could not be read (${e.code || 'error'})`); }
   });
   return { schema: SCHEMA, modules };
+}
+
+/**
+ * KAN-107 (10771 B): record the default class's constructor eligibility ON the grounding (default.ctor_args), so a
+ * contract's api_grounding (which carries no source text) still says whether QB may construct it with new and no
+ * arguments. The SAME bounded static reading as 10758 (constructorArgs: 'none' | 'appears_optional' |
+ * 'required_or_unknown'; intent/ctor-args.js, copied verbatim from staged.js for the 10835 split), applied to the
+ * class's own constructor source, not to whatever excerpt happened to be kept. Not a proof that construction succeeds.
+ */
+function withCtorArgs(r, text) {
+  if (!r || r.status !== 'known' || !r.default || r.default.kind !== 'class') return r;
+  const acorn = require('acorn');
+  let ast = null;
+  for (const sourceType of ['script', 'module']) {
+    try { ast = acorn.parse(text, { ecmaVersion: 'latest', sourceType, allowHashBang: true, allowReturnOutsideFunction: sourceType === 'script', locations: true }); break; } catch { /* try the other */ }
+  }
+  const classes = ast ? [...nodes(ast)].map(([n]) => n).filter((n) => (n.type === 'ClassDeclaration' || n.type === 'ClassExpression') && (!r.default.name || (n.id && n.id.name === r.default.name))) : [];
+  if (classes.length !== 1) return { ...r, default: { ...r.default, ctor_args: 'required_or_unknown' } };
+  const ctor = classes[0].body.body.find((x) => x.kind === 'constructor');
+  const excerpts = ctor ? [{ kind: 'constructor', symbol: 'constructor', start_line: ctor.loc.start.line, end_line: ctor.loc.end.line, text: text.slice(ctor.start, ctor.end) }] : [];
+  return { ...r, default: { ...r.default, ctor_args: ctor ? require('./ctor-args').constructorArgs({ default: r.default, excerpts }) : 'none' } };
 }
 
 /** The exports of one module's source text (see the header for the forms read). */
@@ -413,7 +434,8 @@ function groundingExcerpt(g) {
   return lines.join('\n');
 }
 
-/** The grounding as recorded on a contract: provenance (path, sha256, ranges, flags), never source text. */
+/** The grounding as recorded on a contract, never source text. Approval binds only groundingIdentity (below); the
+ *  excerpt ranges and default.ctor_stores it also carries are provenance (not authenticated by approval). */
 function contractGrounding(g) {
   if (!g || !Array.isArray(g.modules)) return g;
   return { ...g, modules: g.modules.map((m) => (m.excerpts ? { ...m, excerpts: m.excerpts.map((b) => ({ ...b })) } : { ...m })) };
@@ -471,5 +493,26 @@ function apiGroundingErrors(c) {
   return errors;
 }
 
-module.exports = { groundApi, groundSource: (rel, text, names = []) => withForm(groundSource(rel, text, names)), groundingExcerpt, apiGroundingErrors, apiSummary, contractGrounding,
+/**
+ * KAN-107 (senior 10847 a): the validator-relevant contents of a grounding and its source identity, canonical:
+ * what an approval binds (intent/contract-state.js approvedContent) and what a recomputation is compared with
+ * (intent/grounding-binding.js). Per module: path, sha256, bytes, status, reason, format, named exports and the
+ * default export's kind, name, form, methods, accessors, statics and ctor_args. These are every field that affects
+ * validation or target selection (request-examples.js resolveTarget reads path, status, default.kind/name/methods/
+ * ctor_args and named[].name); executable checks never read the grounding (they run contract.checks).
+ * NOT included, and NOT authenticated by approval: excerpts (all their fields) and default.ctor_stores. They are
+ * provenance: groundApi's own inputs to ctor_args, read from the working tree when the grounding is produced; no
+ * validator, target or check code reads them on a contract (KAN-107 10867; kan107-10867.test.js proves changing them
+ * changes no decision and has a tripwire). If code ever reads either one to decide something, add it here and give
+ * it a tamper test in the same change.
+ */
+function groundingIdentity(g) {
+  if (!g || typeof g !== 'object' || !Array.isArray(g.modules)) return g ?? null;
+  const pick = (o, keys) => (o && typeof o === 'object' ? Object.fromEntries(keys.map((k) => [k, o[k] ?? null])) : o ?? null);
+  return { schema: g.schema ?? null, modules: g.modules.map((m) => ({ ...pick(m, ['path', 'sha256', 'bytes', 'status', 'reason', 'format']),
+    named: Array.isArray(m && m.named) ? m.named.map((x) => pick(x, ['name', 'kind'])) : (m && m.named) ?? null,
+    default: pick(m && m.default, ['kind', 'name', 'form', 'methods', 'accessors', 'statics', 'ctor_args']) })) };
+}
+
+module.exports = { groundApi, groundingIdentity, groundSource: (rel, text, names = []) => withForm(groundSource(rel, text, names)), groundingExcerpt, apiGroundingErrors, apiSummary, contractGrounding,
   requestModules, requestNames, SCHEMA, MAX_BYTES, EXCERPT_MAX_LINES, EXCERPT_MAX_TOTAL_LINES };
