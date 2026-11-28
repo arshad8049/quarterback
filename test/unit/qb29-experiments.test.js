@@ -215,7 +215,7 @@ describe('QB-29: the report', () => {
     const d = rep().reportData(e.dir);
     assert.deepEqual([d.arms.A.scored, d.arms.E.scored, d.arms.E.fail, d.arms.E.pass], [0, 1, 1, 0]);
     assert.deepEqual(d.arms.A.attrition, { needs_adjudication: 0, grader_error: 1, grade_infra_error: 1, ungraded: 0, agent_error: 0, timeout: 1,
-      trial_infra_error: 0, missing: 0, incomplete: 1, not_recorded: 2 });
+      trial_infra_error: 0, security_hold: 0, missing: 0, incomplete: 1, not_recorded: 2 });
     assert.deepEqual([d.arms.E.attrition.needs_adjudication, d.arms.E.attrition.ungraded], [1, 1]);
     assert.deepEqual(d.arms.E.internal_verdicts, { pass: 2 });
     assert.equal(d.matched_pairs.count, 0);

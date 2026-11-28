@@ -84,9 +84,8 @@ async function run() {
 
   if (result.changes.length) {
     console.log(`\n  CHANGES (${result.changes.length} files):`);
-    result.changes.forEach(c => {
-      console.log(`    ${c.file.padEnd(40)} +${c.additions} -${c.deletions}`);
-    });
+    // KAN-44 10837 B1: no file names while the patch is on credential hold
+    require('../lib/credential-scan').changeListing(result).forEach(l => console.log(`    ${l}`));
   }
 
   if (result.error) {

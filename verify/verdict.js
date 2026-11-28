@@ -31,6 +31,14 @@ const { classifyTestRun } = require('./tests');
 const TESTS_OK = new Set(['passed', 'preexisting_failures']);
 
 function aggregate(input) {
+  const r = aggregateWithoutHold(input);
+  // KAN-44 10846 (4): a credential hold (a finding, or a scan that could not finish) is never an overall PASS: the
+  // result is unresolved (an execution error stays an error). Stored inputs without the field replay as before.
+  if (input.securityHold && r.verdict !== 'error') return { ...r, verdict: 'unresolved' };
+  return r;
+}
+
+function aggregateWithoutHold(input) {
   const r = aggregateCore(input);
   const rules = input.rules || 1;
   // Rules 6 (QB-11): a criterion left unknown because material evidence was missing
@@ -135,6 +143,7 @@ function inputFromReport(report, execution) {
     executionStatus:    execution?.status ?? null,
     unsupportedChanges: Boolean(execution?.unsupported_changes?.length),
     verification:       verificationInput(execution, { preexisting: report.test_outcome?.preexisting_policy === 'waive' ? 'waive' : 'block' }),
+    ...(report.security_hold ? { securityHold: report.security_hold.status } : {}),
   };
 }
 

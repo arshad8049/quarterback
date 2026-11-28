@@ -90,6 +90,8 @@ describe('QB-31: the sandbox releases the local model BEFORE admission', () => {
     const stubbed = [
       stub('sandbox/docker', { ...require(path.join(dir, 'sandbox', 'docker')), available: async () => '29.0.0' }),
       stub('sandbox/reaper', { reap: async () => [] }),
+      // KAN-44 10837 A: the live-restore gate comes first; answered here so the test does not depend on host Docker
+      stub('sandbox/live-restore', { ...require(path.join(dir, 'sandbox', 'live-restore')), liveRestore: async () => 'disabled' }),
       stub('sandbox/admission', { ...real, admit: () => { order.push('admit'); return { ok: false, reason: 'insufficient_host_resources' }; } }),
       stub('model-release', { releaseLocalModel: async () => { order.push('release'); return { status: 'released' }; } }),
     ];
