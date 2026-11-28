@@ -1,25 +1,31 @@
 {
-  "format": "qb-kan106-eval-plan/4",
+  "format": "qb-kan106-eval-plan/5",
   "doc": "docs/research/kan106/eval-plan-v2.md",
-  "_label": "FREEZE CANDIDATE, NOT AUTHORIZED. Revision 4 of the evaluation v2 plan, for senior comment KAN-106 10849. No model run is authorized. The document and this file must agree (bench/kan106-eval-v2/plan-check.js); any disagreement REFUSES launch.",
+  "_label": "FREEZE CANDIDATE, NOT AUTHORIZED. Revision 5 of the evaluation v2 plan, applying senior ruling KAN-106 10868. No model run is authorized. The document and this file must agree (bench/kan106-eval-v2/plan-check.js); any disagreement REFUSES launch.",
   "supersedes": {
-    "format": "qb-kan106-eval-plan/3",
-    "commit": "2a43693 (rebuilt from 9bdbfa6 onto the KAN-118-integrated candidate)",
+    "format": "qb-kan106-eval-plan/4",
+    "commit": "bc87c94db8f488723ff6531d850dbb7edf1e2762 (freeze-candidate plan revision on kan106-eval-plan-main; its code+harness revision d30e8ed; kept unchanged)",
     "changes": [
-      "candidate: 2150ab6 + KAN-118 (PR #35 @ 5ebb8c8) merged as f1ddad4; compiler and harness hashes regenerated",
-      "keep-alive policy: warm admission requires the pinned model to stay resident for the whole item ceiling (1260 s), which needs the owner to set OLLAMA_KEEP_ALIVE for the window; otherwise the cold rule; unplanned reloads detected and reported",
-      "Mac-first: P-Mac is the only authorized-to-stage profile; P-Linux optional, separately authorized later, never pooled",
-      "qb_under_test.sha stays null (senior sets it); proposed value recorded outside normative; the launch head must descend from it and differ only in plan.json, held-out/ and docs/",
-      "the 11 GiB cold figure is a provisional conservative admission assumption; insufficient memory = resource_blocked/incomplete, never a model failure",
-      "pinned historical rescore accepted; CI reproduces it in a dedicated job that fetches e5c460d explicitly; current-validator drift kept as a separately labelled file"
+      "unplanned-reload ruling (10868) applied in the harness (gates.js, e0fd9b8): a warm-admitted item with a recorded model load is an environment/protocol deviation; evidence kept and scored, load time kept in Q4, not a semantic model failure, profile incomplete for a clean qualification claim; no retry or replacement; planned cold loads never trigger it; never inferred from elapsed time",
+      "that is a code+harness change, so d30e8ed (the senior's pin in 10868) is no longer the code under test: qb_under_test.sha stays null and needs re-selection; proposed = e0fd9b8",
+      "product candidate and code+harness revision recorded under different names: product_candidate.sha (564ea03, kan106-eval-candidate-main) vs qb_under_test.sha (the plan-branch commit the launch head descends from)",
+      "pre-launch gates listed (status.prelaunch_gates), including keep-alive and reload-detection verification against the pinned Ollama version"
     ]
   },
   "normative": {
     "status": {
-      "version": 4,
+      "version": 5,
       "kind": "freeze candidate",
       "frozen": false,
-      "authorizes_model_runs": false
+      "authorizes_model_runs": false,
+      "prelaunch_gates": [
+        "all 12 owner specs hashed (held_out.spec_manifest_sha256)",
+        "senior review of the complete held-out packet (held_out.packet_manifest_sha256, base_shas)",
+        "host, Ollama server and window authorized by the owner (profiles.<P>.host_label, owner_approval, window_*_utc)",
+        "keep-alive behaviour and the reload detection rule verified against the pinned Ollama server version (its source at that version), not only main",
+        "CI evidence for qb_under_test.sha recorded, and any pending CI named",
+        "senior sets qb_under_test.sha, status.frozen=true and batch.authorized_profiles"
+      ]
     },
     "model": {
       "name": "qwen2.5-coder:14b",
@@ -29,8 +35,17 @@
       "customer_default": false,
       "default_change": false
     },
+    "product_candidate": {
+      "branch": "kan106-eval-candidate-main",
+      "sha": "564ea03107f9a3ff8a870bf44e1a35a4edce525e",
+      "composition": "f1ddad4 (2150ab6 + KAN-118 5ebb8c8) + main bb56ff6",
+      "is_qb_under_test_sha": false,
+      "meaning": "the product source the evaluation is about; the plan branch merges it and adds only the harness, the plan and docs"
+    },
     "qb_under_test": {
       "sha": null,
+      "sha_means": "the code+harness revision on kan106-eval-plan-main (product candidate merged + v2 harness) that the launch head descends from; NOT product_candidate.sha",
+      "branch": "kan106-eval-plan-main",
       "compiler_source_rev": "2150ab6690c4444c7cc5b9ba45e375d00d5e36a3",
       "kan118_integrated": "5ebb8c872d6cb0100a8e358e5eb3293b15aa32ab",
       "no_edits_after_harness_freeze": true,
@@ -111,7 +126,8 @@
       "q4_median_ms": 120000,
       "q4_max_ms": 180000,
       "q4_basis": "full elapsed L1 time (l1_ms), cold load included",
-      "q5_all_records_complete": true
+      "q5_all_records_complete": true,
+      "warm_reload_blocks_clean_pass": true
     },
     "resource_gate": {
       "reserve_bytes": 2147483648,
@@ -142,7 +158,11 @@
         "otherwise": "cold rule (a possible reload is charged in full)",
         "reload_detect_load_ms": 1000,
         "release_after_batch": true,
-        "verify_against_pinned_ollama_before_launch": true
+        "verify_against_pinned_ollama_before_launch": true,
+        "reload_detection_basis": "per-call load_ms (Ollama load_duration) >= reload_detect_load_ms; never inferred from elapsed time or slowness",
+        "planned_cold_loads": "normal (item 1 by design; any item held to the cold rule); never a deviation",
+        "unplanned_warm_reload": "environment/protocol deviation (10868): evidence kept and scored; all load time kept in Q4; not a semantic model failure; profile incomplete for a clean qualification claim",
+        "retry_or_replace_on_deviation": false
       }
     },
     "profiles": {
@@ -185,7 +205,11 @@
   },
   "proposed": {
     "_label": "NOT normative: proposals for the senior",
-    "qb_under_test_sha": "d30e8eda4af1932937677752ceea88cc53775c75",
-    "qb_under_test_note": "the code head of this freeze candidate (kan106-eval-plan-main, built on candidate 564ea03 = f1ddad4 + main bb56ff6): CI run 46104807881 green on every job (unit Node 20/22/24, kan106-offline-evidence, integration); HARNESS-FREEZE.json regenerated there after CI, byte-identical. The launch head may add only plan.json, held-out/ and docs/ on top of it."
+    "qb_under_test_sha": "e0fd9b89c09b5afdf665d634f1866c9cb90d765a",
+    "qb_under_test_note": "the code+harness head of this candidate on kan106-eval-plan-main: bc87c94 + the 10868 reload rule (red 8ab7cd7, green e0fd9b8); HARNESS-FREEZE.json regenerated in e0fd9b8 (written twice, identical bytes); compiler manifest unchanged from d30e8ed, only gates.js and the harness manifest changed. CI: see ci_on_proposed. The launch head may add only plan.json, held-out/ and docs/ on top of it.",
+    "ci_on_proposed": "CI run 46107683251 on e0fd9b8: success on every job (unit Node 20: 1492 tests, 1479 pass, 0 fail, 13 skipped; Node 22 and 24: 1580 tests, 1577 pass, 0 fail, 3 skipped; kan106-offline-evidence: pinned re-score byte-identical, pack tests 5/5 with QB_KAN106_PINNED_REQUIRED=1; integration: success). qb30-reproduce run 46107683368 on e0fd9b8 recorded separately.",
+    "senior_pin_10868": "d30e8eda4af1932937677752ceea88cc53775c75",
+    "senior_pin_status": "predates the 10868 reload rule (its gates.js reports a warm reload but never makes the profile incomplete); needs re-selection; d30e8ed and bc87c94 are kept unchanged",
+    "product_candidate_sha": "564ea03107f9a3ff8a870bf44e1a35a4edce525e"
   }
 }

@@ -1,6 +1,6 @@
-# KAN-106 post-integration L1 evaluation v2: plan revision 4 (FREEZE CANDIDATE, NOT AUTHORIZED)
+# KAN-106 post-integration L1 evaluation v2: plan revision 5 (FREEZE CANDIDATE, NOT AUTHORIZED)
 
-Written for senior comment KAN-106 10849. Revision 3 (10838) was `9bdbfa6`, kept as branch `kan106-eval-plan-pre118`. **No model run is authorized by this document.** It becomes the frozen plan only when the senior sets `status.frozen` to `true` and names `qb_under_test.sha`, as a new plan version. The junior sets neither.
+Written for senior ruling KAN-106 10868. Revision 4 (10849) is `bc87c94` (code+harness `d30e8ed`) on this branch, kept unchanged. Revision 3 (10838) was `9bdbfa6`, kept as branch `kan106-eval-plan-pre118`. **No model run is authorized by this document.** It becomes the frozen plan only when the senior sets `status.frozen` to `true` and names `qb_under_test.sha`, as a new plan version. The junior sets neither.
 
 **This document and `bench/kan106-eval-v2/plan.json` must agree.** `bench/kan106-eval-v2/plan-check.js` compares the "Normative values" table below with `plan.json` `normative`, key by key. It also checks that the plan.json sha256 named below is the file's exact hash. **Any disagreement refuses launch.** Nothing silently takes precedence. Prose outside the table is not machine-checked; reviewers check it against the table.
 
@@ -15,7 +15,9 @@ Written for senior comment KAN-106 10849. Revision 3 (10838) was `9bdbfa6`, kept
   - They are merged as `f1ddad4` on branch `kan106-eval-candidate-118`.
   - The merge changes only `lib/sandbox/*` (G5c), their tests, `docs/security/agent-sandbox.md`, and website files from main `ff3585c`.
   - `qb.js`, `intent/`, `verify/` and `context/` are byte-identical to `2150ab6`.
-- **This plan branch:** `kan106-eval-plan-118`, rebuilt on `f1ddad4`. It adds the carried evidence, the v2 harness and this plan.
+- **Product candidate (normative `product_candidate`):** `kan106-eval-candidate-main` @ `564ea03107f9a3ff8a870bf44e1a35a4edce525e` = `f1ddad4` + main `bb56ff6`. This is the product source the evaluation is about. It is **not** `qb_under_test.sha`.
+- **This plan branch:** `kan106-eval-plan-main`. It merges `564ea03` and adds the carried evidence, the v2 harness and this plan. The older branch `kan106-eval-plan-118` (on `f1ddad4`) is kept unchanged.
+- **Code+harness revision (normative `qb_under_test.sha`):** a commit on `kan106-eval-plan-main` that contains the product candidate plus the v2 harness. The launch head descends from it. The two SHAs have different field names so they cannot be confused.
 - **Freeze 1, the harness freeze, comes BEFORE the 12 requests are revealed.**
   - `HARNESS-FREEZE.json` holds the sha256 of every compiler file under test (`qb.js`, `intent/`, `verify/`, `context/`, `lib/`, the check runner, the v1 scorer it reuses, `package*.json`) and of every harness file.
   - It is regenerated at the integrated head **after CI passes there**.
@@ -23,7 +25,9 @@ Written for senior comment KAN-106 10849. Revision 3 (10838) was `9bdbfa6`, kept
 - **The qb_under_test binding.** `plan.json` cannot contain its own commit's SHA. So the senior names `qb_under_test.sha` as the CI-green code commit, and the launch head must satisfy both of these, or launch refuses (`freeze.js` `revisionProblems`):
   - it **descends** from `qb_under_test.sha`;
   - it differs from it **only** in `bench/kan106-eval-v2/plan.json`, `bench/kan106-eval-v2/held-out/` and `docs/`.
-  - The junior's proposed value is in `plan.json` `proposed` (not normative): `d30e8eda4af1932937677752ceea88cc53775c75` (branch `kan106-eval-plan-main`, on candidate `564ea03` = `f1ddad4` + main `bb56ff6`), the code head on which CI run 46104807881 passed every job. The earlier proposal `0d5a697` (branch `kan106-eval-plan-118`) is kept there unchanged. `HARNESS-FREEZE.json` was regenerated there after CI and is byte-identical.
+  - **The senior's pin in 10868 was `d30e8ed`. It predates the reload rule and needs re-selection.** Applying the rule (§4) changed `bench/kan106-eval-v2/gates.js`, which is harness code. A launch head with that change would fail `revisionProblems` against `d30e8ed`, so `qb_under_test.sha` stays `null`.
+  - The junior's proposed value is in `plan.json` `proposed` (not normative): `e0fd9b89c09b5afdf665d634f1866c9cb90d765a`, i.e. `bc87c94` + red `8ab7cd7` + green `e0fd9b8`. The compiler manifest is unchanged from `d30e8ed`; only `gates.js` and the harness manifest changed. `HARNESS-FREEZE.json` was regenerated there (written twice, identical bytes). Its CI run is recorded in `proposed.ci_on_proposed`.
+  - `d30e8ed` and `bc87c94` are kept unchanged, and so is the earlier proposal `0d5a697` (branch `kan106-eval-plan-118`).
 - **Freeze 2, the packet freeze, comes before any model call.** It is the hash manifest of the complete held-out packet (`freeze.js --packet`) plus the base SHAs. The owner's spec-only manifest is posted first.
 
 ## 2. Two sets that are never mixed
@@ -48,7 +52,7 @@ Written for senior comment KAN-106 10849. Revision 3 (10838) was `9bdbfa6`, kept
   - `resource_blocked`, `execution_failed`, `invalid_record` or a missing row or ruling makes the profile **incomplete**.
   - Observed failures are still reported.
   - No absent run is a successful refusal. Denominators stay 8 and 4. No replacement and no retry.
-  - Unplanned model reloads are listed here (§4).
+  - Unplanned model reloads are listed here (§4). A reload in a **warm-admitted** item also makes the profile incomplete (10868, §4).
 
 **Scoring runs at the frozen code** (§8).
 
@@ -77,9 +81,16 @@ Before each item there is a read-only snapshot: OS counters plus Ollama `/api/ve
     - An item is admitted **warm** only if `/api/ps` shows the pinned name and digest resident with **at least 1260 s** left (the 1200 s child ceiling + 60 s).
     - That covers the whole item even if no call refreshes the timer.
     - Anything less, including Ollama's default 5 min, is held to the **cold rule**, so a possible reload is charged in full.
-  - **Detection:** any model load ≥ 1 s that the admission did not plan for (any load in a warm-admitted item, or a second load in a cold one) is recorded as `unplanned_reload` and reported in Q5. Its time is already in Q4.
+  - **Detection:** a call's recorded `load_ms` (Ollama's `load_duration`) of at least 1 s. A reload is **never inferred from elapsed time or slowness**, and a call with no reported load is not a load.
+    - Any such load in a warm-admitted item, or a second one in a cold-admitted item, is recorded as `unplanned_reload` and reported in Q5. Its time is already in Q4.
+  - **Unplanned-reload ruling (senior, 10868), applied in `gates.js`:**
+    - A **warm-admitted** item with a recorded load is an **environment/protocol deviation** (`protocol_deviations`, kind `unplanned_warm_reload`; also `Q5.warm_reload_deviations`).
+    - Its checklist evidence is kept and scored as usual. All its load time stays in Q4. The reload alone is **not a semantic model failure**.
+    - The profile is then **incomplete** for a clean overall qualification claim (`clean_qualification: false`). An observed Q1-Q4 failure is still reported as a fail.
+    - No automatic retry or replacement.
+    - **Planned cold loading is normal and never triggers this:** item 1 is cold by design, and any item held to the cold rule was charged a load. A second load in a cold item is reported in Q5 only.
   - The pinned model is unloaded again after the last item.
-  - Whether an unplanned reload should also make the profile incomplete is a senior decision. It is not applied.
+  - The keep-alive behaviour and this detection rule (including what `load_duration` reports) must be re-checked against the **pinned Ollama server version** before launch (pre-launch gate, §9).
 - Fixture tests cover cold, warm and keep-alive on macOS and Linux (`test/unit/kan106-eval-v2-gate.test.js`).
 
 ## 5. Launch and serialization
@@ -131,8 +142,7 @@ Before each item there is a read-only snapshot: OS counters plus Ollama `/api/ve
 ## 9. Approvals and inputs needed before any run (none is given here)
 1. **Senior:**
    - review this candidate;
-   - name `qb_under_test.sha` (proposal in `plan.json` `proposed`);
-   - rule on unplanned reloads (§4);
+   - re-select `qb_under_test.sha`: the 10868 pin `d30e8ed` predates the reload rule (proposal in `plan.json` `proposed`);
    - after the packet freeze, set `status.frozen` and `batch.authorized_profiles: ["P-Mac"]`.
 2. **Owner:**
    - write the 12 specs and post the spec manifest hash;
@@ -140,22 +150,38 @@ Before each item there is a read-only snapshot: OS counters plus Ollama `/api/ve
    - set `OLLAMA_KEEP_ALIVE` for the window and confirm the server version, so the keep-alive behaviour can be re-checked against its source.
 3. **Junior, after the specs arrive:** build the bases and controls, run `items.js validate` (no QB compiler), and post the packet hash.
 
+**Pre-launch gates (normative `status.prelaunch_gates`).** `status.frozen` stays `false`, `batch.authorized_profiles` stays `[]` and `status.authorizes_model_runs` stays `false` until all of these hold:
+1. all 12 owner specs are hashed;
+2. the senior has reviewed the complete packet;
+3. the host, the Ollama server and the window are authorized by the owner;
+4. keep-alive behaviour and the reload detection rule are verified against the pinned Ollama server version (its source at that version), not only main;
+5. CI evidence for `qb_under_test.sha` is recorded, and any pending CI is named;
+6. the senior sets `qb_under_test.sha`, `status.frozen` and `batch.authorized_profiles`.
+
 ## Normative values (machine-checked; launch refuses on any disagreement)
-plan.json sha256: `b19344e56a8c1b5d1e81baf0206e1b4fa0a767b1f42cc3f6c7e14c25d3d15590`
+plan.json sha256: `9893311f127e9e00d189070b5e89d7bb9d33a4d3b7693a6bd93a3e5f16849249`
 
 | key | value |
 |---|---|
-| `status.version` | `4` |
+| `status.version` | `5` |
 | `status.kind` | `"freeze candidate"` |
 | `status.frozen` | `false` |
 | `status.authorizes_model_runs` | `false` |
+| `status.prelaunch_gates` | `["all 12 owner specs hashed (held_out.spec_manifest_sha256)","senior review of the complete held-out packet (held_out.packet_manifest_sha256, base_shas)","host, Ollama server and window authorized by the owner (profiles.<P>.host_label, owner_approval, window_*_utc)","keep-alive behaviour and the reload detection rule verified against the pinned Ollama server version (its source at that version), not only main","CI evidence for qb_under_test.sha recorded, and any pending CI named","senior sets qb_under_test.sha, status.frozen=true and batch.authorized_profiles"]` |
 | `model.name` | `"qwen2.5-coder:14b"` |
 | `model.digest` | `"9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849"` |
 | `model.quantization` | `"Q4_K_M"` |
 | `model.role` | `"pinned L1 development candidate"` |
 | `model.customer_default` | `false` |
 | `model.default_change` | `false` |
+| `product_candidate.branch` | `"kan106-eval-candidate-main"` |
+| `product_candidate.sha` | `"564ea03107f9a3ff8a870bf44e1a35a4edce525e"` |
+| `product_candidate.composition` | `"f1ddad4 (2150ab6 + KAN-118 5ebb8c8) + main bb56ff6"` |
+| `product_candidate.is_qb_under_test_sha` | `false` |
+| `product_candidate.meaning` | `"the product source the evaluation is about; the plan branch merges it and adds only the harness, the plan and docs"` |
 | `qb_under_test.sha` | `null` |
+| `qb_under_test.sha_means` | `"the code+harness revision on kan106-eval-plan-main (product candidate merged + v2 harness) that the launch head descends from; NOT product_candidate.sha"` |
+| `qb_under_test.branch` | `"kan106-eval-plan-main"` |
 | `qb_under_test.compiler_source_rev` | `"2150ab6690c4444c7cc5b9ba45e375d00d5e36a3"` |
 | `qb_under_test.kan118_integrated` | `"5ebb8c872d6cb0100a8e358e5eb3293b15aa32ab"` |
 | `qb_under_test.no_edits_after_harness_freeze` | `true` |
@@ -202,6 +228,7 @@ plan.json sha256: `b19344e56a8c1b5d1e81baf0206e1b4fa0a767b1f42cc3f6c7e14c25d3d15
 | `gates.q4_max_ms` | `180000` |
 | `gates.q4_basis` | `"full elapsed L1 time (l1_ms), cold load included"` |
 | `gates.q5_all_records_complete` | `true` |
+| `gates.warm_reload_blocks_clean_pass` | `true` |
 | `resource_gate.reserve_bytes` | `2147483648` |
 | `resource_gate.cold_runtime_bytes` | `11811160064` |
 | `resource_gate.num_ctx` | `8192` |
@@ -226,6 +253,10 @@ plan.json sha256: `b19344e56a8c1b5d1e81baf0206e1b4fa0a767b1f42cc3f6c7e14c25d3d15
 | `resource_gate.keep_alive.reload_detect_load_ms` | `1000` |
 | `resource_gate.keep_alive.release_after_batch` | `true` |
 | `resource_gate.keep_alive.verify_against_pinned_ollama_before_launch` | `true` |
+| `resource_gate.keep_alive.reload_detection_basis` | `"per-call load_ms (Ollama load_duration) >= reload_detect_load_ms; never inferred from elapsed time or slowness"` |
+| `resource_gate.keep_alive.planned_cold_loads` | `"normal (item 1 by design; any item held to the cold rule); never a deviation"` |
+| `resource_gate.keep_alive.unplanned_warm_reload` | `"environment/protocol deviation (10868): evidence kept and scored; all load time kept in Q4; not a semantic model failure; profile incomplete for a clean qualification claim"` |
+| `resource_gate.keep_alive.retry_or_replace_on_deviation` | `false` |
 | `profiles.P-Mac.platform` | `"darwin"` |
 | `profiles.P-Mac.arch` | `"arm64"` |
 | `profiles.P-Mac.min_total_memory_bytes` | `19327352832` |
