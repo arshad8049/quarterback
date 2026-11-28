@@ -416,6 +416,9 @@ async function main() {
   };
   if (opts.telemetryDryRun) {
     console.log(`  Telemetry dry run — nothing sent. This run would send (with your token, which is linked to your email):\n  ${JSON.stringify(telemetryPayload)}`);
+  } else if (opts.telemetry && opts.agent === 'dry-run') {
+    // KAN-44 10814: it runs no agent and verifies nothing; the legacy payload would report it as a failed attempt.
+    console.log('  Telemetry not sent: a dry run is not uploaded.');
   } else if (opts.telemetry && !telemetryToken) {
     console.log('  Telemetry not sent: no telemetry token (--telemetry-token or QB_TELEMETRY_TOKEN).');
   } else if (opts.telemetry && telemetryToken) {

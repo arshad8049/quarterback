@@ -63,6 +63,17 @@ describe('QB-32: telemetry consent shows the actual payload', () => {
     assert.match(payload.run_id, /^[0-9a-f-]{36}$/);
     assert.doesNotMatch(m[1], /clamp|@|task_hash/i);
   });
+  test('KAN-44 10814: an ordinary dry run uploads nothing even with --telemetry and a token, and says so', () => {
+    const { out, fetched } = runQb(['--telemetry'], { QB_TELEMETRY_TOKEN: `qbt_${'a'.repeat(64)}` });
+    assert.doesNotMatch(fetched, /api\/metrics/);
+    assert.match(out, /Telemetry not sent: a dry run is not uploaded/);
+    assert.doesNotMatch(out, /Telemetry: sending/);
+  });
+  test('KAN-44 10814: the preview still works on a dry run and says that this dry run itself is not uploaded', () => {
+    const { out, fetched } = runQb(['--telemetry', '--telemetry-dry-run'], { QB_TELEMETRY_TOKEN: `qbt_${'a'.repeat(64)}` });
+    assert.doesNotMatch(fetched, /api\/metrics/);
+    assert.match(out, /Telemetry dry run — nothing sent/);
+  });
   test('telemetry is off by default: an ordinary run sends nothing to the metrics endpoint', () => {
     const { fetched } = runQb([], { QB_TELEMETRY_TOKEN: `qbt_${'a'.repeat(64)}` });
     assert.doesNotMatch(fetched, /api\/metrics/);
