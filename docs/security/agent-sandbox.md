@@ -186,7 +186,7 @@ Inside an untrusted container the adversary has full control of every process ru
 |---|---|
 | **G5a: termination** | While the supervisor and Docker daemon are running, a `docker kill` is issued to every workload container of a run no later than `T_end + KILL_GRACE`, and the containers are confirmed stopped within a further `DOCKER_OP_TIMEOUT`. `T_end` is the **earlier of** the stage deadline and the last lease renewal + `LEASE_TIMEOUT`. Defaults: `KILL_GRACE` 10 s, `LEASE_TIMEOUT` 30 s, `DOCKER_OP_TIMEOUT` 30 s. This is the one bound E4 and T-LIFE test. Nothing inside a container can extend it, and lease renewal cannot extend a stage deadline (§8.3). |
 | **G5b: removal** | Stopped containers, the per-run network and all per-run volumes are removed by the supervisor right after it commits the terminal state. Removal is a separate step after the terminal write, recorded on its own (`left` in `enforcement.json`); a committed terminal state does not mean removal has finished. If the supervisor is not running, removal is **eventual**: by the reaper at the start of the next sandboxed run. There is no separate recovery command. |
-| **G5c: Docker unavailable** | Nothing can be killed or removed. The supervisor retries with backoff. No terminal state (a CLI proposal, a timeout or `ABANDONED`) is committed until Docker confirms nothing of the run is running; when Docker returns, the run is committed as `infra_error` / `docker_unavailable (…)`, e.g. `docker_unavailable (cli_proposal: …)`. If Docker is still unavailable after `DOCKER_DOWN_MAX` (default 10 min), the run is recorded as **enforcement unconfirmed** (§8.3) with no terminal state, and the supervisor goes on retrying; cleanup is not complete and is not reported as complete. Under daemon `live-restore`, workloads can keep running until the daemon returns; QB warns at start if `live-restore` is enabled (§12). |
+| **G5c: Docker unavailable** | Nothing can be killed or removed. The supervisor retries with backoff. No terminal state (a CLI proposal, a timeout or `ABANDONED`) is committed until Docker confirms nothing of the run is running; when Docker returns, the run is committed as `infra_error` / `docker_unavailable (…)`, e.g. `docker_unavailable (cli_proposal: …)`. If Docker is still unavailable after `DOCKER_DOWN_MAX` (default 10 min), the run is recorded as **enforcement unconfirmed** (§8.3) with no terminal state, and the supervisor goes on retrying; cleanup is not complete and is not reported as complete. Under daemon `live-restore`, workloads can keep running until the daemon returns. Since KAN-44 10837 (branch `kan44-safety-controls`), `runSandboxed` refuses to start (BLOCKED `live_restore_enabled` / `live_restore_unknown`) when the setting is enabled or cannot be read, for every caller; QB only reads it. This is checked once, at the start of a run: a daemon reconfigured or restarted with `live-restore` during a run is not detected (§12). |
 | **G5d: intentionally retained** | The `qb-claude-auth` volume (until `qb auth logout`), QB images, and run records under `run/`. Nothing else. |
 | **G5e: recorded end** | Every run ends in a recorded terminal state once Docker can confirm that its workloads have stopped. During a Docker outage that outlasts `DOCKER_DOWN_MAX` (G5c), a run can stay open with no terminal state, recorded as enforcement unconfirmed (§8.3), until the supervisor or, if it is gone, the reaper gets that confirmation. A run the reaper finds with no terminal state and dead owners is marked `ABANDONED` only after that confirmation. |
 
@@ -505,7 +505,7 @@ Code inside ③ can read the credential, and Claude Code's own documentation war
 
 - **Network:** send it only to INFERENCE hosts, and use it there for any operation the credential allows (§4.1).
 - **Output channels:** write it into the workspace, and so into the patch or generated files, or into stdout/stderr and logs that the user later reads or exports. The network policy does not cover these.
-  - Mitigation: the captured patch, the capture manifest and exported logs get a best-effort scan for known credential formats. Matches are reported in the run record and by `qb patch` (on stderr). This is detection, not prevention.
+  - Mitigation (KAN-44, branch `kan44-safety-controls`; see [patch-credential-check.md](patch-credential-check.md)): the captured patch only (not the capture manifest or logs) is scanned for known credential formats and for the run's own credential. A finding, or a scan that could not finish, holds the patch: no model judge, no further attempt, no export by `qb patch`. Findings name kinds and file numbers, never values or file names. This is defence in depth, not credential isolation: a clean result is not proof, and the credential stays readable inside ③.
 - **Other stages:** QB does not intentionally provision credentials to ①, ②, ④ or ⑤. But agent-produced files may contain copied secrets, and those files are read by ④ and checked out for ⑤. Detection is best-effort.
 - **Recommendation:** a dedicated account or workspace for QB use, stated in user docs.
 
@@ -656,6 +656,8 @@ The runtime/image identity and Claude's version are separate fields.
 ## 8. Resources, lifecycle and cleanup
 
 ### 8.1 Storage budget and admission
+
+**Open earlier runs (KAN-44 10846).** Admission also refuses (`BLOCKED unresolved_workload`, or `unresolved_workload_unknown` when Docker cannot answer) while an earlier run without a terminal state still has a running container, so a workload left over from a Docker outage is not forgotten when new work is admitted. Read only, under the admission lock; see [patch-credential-check.md](patch-credential-check.md).
 
 Every per-run byte that can live in host RAM is budgeted. Per-volume caps alone do not stop N concurrent runs from exhausting the host.
 
@@ -1159,7 +1161,7 @@ The E4 cases, as regressions.
 
 - **Provisioning.** QB mounts or passes no credential to ①②④⑤. Checked by inspecting each container's mounts and environment, not by searching contents.
 - **No write-back.** Nothing written to `qb-<id>-cred` during a run is present in `qb-claude-auth` afterwards. A fixture overwrites every auth file with well-formed attacker values, and the next run uses the original credential.
-- **Copied-secret reporting.** A fixture agent writes a fake credential, in a known format, into a source file and into stdout. The run record and `qb patch` report both. The patch is still exported, because the scan is detection, not a block.
+- **Copied-secret reporting.** A fixture agent writes a fake credential, in a known format, into a source file (and, separately, a dummy credential as a file name). The run record reports the kind and file number, never the value or the name, and `qb patch` refuses to export (KAN-44 10814/10837). stdout and logs are not scanned.
 - **Mode K.** QB writes no env file or other credential file on the host.
 - **Lock.** Login during a run's refresh+copy waits, or fails with `auth_busy`. Concurrent runs follow E1 case 5.
 
@@ -1184,7 +1186,7 @@ The shipped CLI ignores `QB_AGENT_COMMAND` and `NODE_ENV=test` (§10).
   Mitigated by the workspace containing only the repository, per-policy scoping, the best-effort credential scan, user review of the patch, and the dedicated-account recommendation.
 - **Credential theft within the agent container** (§5.4).
 - **tmpfs-backed caps consume host RAM.** Contents may reach host swap (§8.2). Bounded by admission (§8.1), which is per installation and point-in-time: other users, other installations, and unrelated applications can still push the host into memory pressure.
-- **Docker `live-restore`.** Workloads can outlive a daemon outage beyond G5a's bound (G5c). QB warns when it is enabled.
+- **Docker `live-restore`.** Workloads can outlive a daemon outage beyond G5a's bound (G5c). QB refuses to start a sandboxed run when it is enabled or unreadable (KAN-44 10837), but checks only at run start: later host or daemon reconfiguration is not detected.
 - **Supervisor killed by the user or a host-level fault.** Cleanup becomes eventual (G5b).
 - **Manual patch application** is not atomic (§9.3).
 - **Dependency builds that read application source** are not detected (§3.2). Stale artifacts behind a matching fingerprint are possible for such packages.

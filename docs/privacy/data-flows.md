@@ -39,6 +39,7 @@ Retention is up to you: delete the directories. `qb runs` lists the run records.
   ```
 
   There is no email in the payload, no task text, no task hash, no file names and no code. The old deterministic `task_hash` (a 32-bit hash of the request text, linkable across runs) has been removed.
+- **Dry runs are not uploaded** (KAN-44). Earlier versions sent them as `passed: false`, `attempts: 1`. In those rows, and in this payload generally, `attempts` is at least 1 even if no attempt ran, and `layers_used` is constant: **these fields are unreliable and the rows are not a success rate.** They are not backfilled or pooled.
 - **Consent preview:** `--telemetry-dry-run` prints exactly this payload and sends nothing. With `--telemetry`, the payload is printed as it is sent.
 - **Not anonymous:** records are tied to the token, and the token is linked to the email that confirmed it. All copy says so.
 - **Identifiers:** the run id is random per run (the run record's UUID), not derived from content.

@@ -9,7 +9,11 @@ const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
 
-const { auth } = require('../../lib/sandbox/cli');
+const cli = require('../../lib/sandbox/cli');
+// KAN-44 10846: sign-in is gated on Docker live-restore; these tests are about the stored credential, so the read is
+// answered here instead of by the host's Docker (the gate itself: kan44-10846.test.js).
+const LR = { ...require('../../lib/sandbox/live-restore'), liveRestore: async () => 'disabled' };
+const auth = (sub, deps) => cli.auth(sub, { LR, ...deps });
 
 async function capture(fn) {
   const orig = process.stderr.write.bind(process.stderr);
