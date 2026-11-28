@@ -256,6 +256,24 @@ describe('QB-02 done-when through the real pipeline', { skip: !ENABLED && 'set Q
     } finally { repo.cleanup(); }
   });
 
+  test('KAN-96: every recorded stage carries its OOM evidence from the real producer (gated and armed on a Linux cgroup v2 host)', async () => {
+    const repo = fixtureRepo(NODE_TEST);
+    try {
+      const r = await runSandboxed({ repoPath: repo.dir, briefing: 'x', stateDir, agentStage: hostileAgent('true') });
+      const linux = require('../../lib/sandbox/oom-observer').hostSupport().ok;
+      const recorded = { seed: r.sandbox.stages.seed, agent: r.sandbox.stages.agent, capture: r.sandbox.capture, verification: r.sandbox.verification };
+      for (const [k, st] of Object.entries(recorded)) {
+        assert.ok(['inspect+cgroup', 'cgroup', 'inspect', 'none', 'unavailable'].includes(st.oom_signal), `${k}: ${JSON.stringify(st.oom_signal)}`);
+        assert.ok(st.oom_evidence, `${k} keeps the evidence record`);
+        if (st.oom_signal === 'unavailable') assert.ok(st.oom_unavailable || st.oom_evidence.why, `${k}: unavailable says why`);
+        if (linux) {
+          assert.equal(st.oom_evidence.gate, 'released', `${k}: ${JSON.stringify(st.oom_evidence)}`);
+          assert.equal(st.oom_evidence.observer, 'armed', `${k}: ${JSON.stringify(st.oom_evidence)}`);
+        } else assert.equal(st.oom_evidence.gate, 'not_used');
+      }
+    } finally { repo.cleanup(); }
+  });
+
   test('QB-22 review: a host edit after seeding is never judged — material and tests come from the seeded snapshot', async () => {
     const repo = fixtureRepo(NODE_TEST);
     const original = fs.readFileSync(path.join(repo.dir, 'src/double.js'));
