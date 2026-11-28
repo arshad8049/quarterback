@@ -21,6 +21,7 @@
  * with its status (timeout / infra_error) — attrition is never dropped.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { createWorkspace } = require('../lib/workspace');
@@ -154,6 +155,9 @@ async function runExperiment(expDir, o) {
     } finally {
       if (ws) ws.cleanup();
     }
+    // KAN-44 10846 (4): a patch on credential hold is never scored: the trial is attrition (security_hold), it is not
+    // graded, and its bytes stay in the local run record only (trialArtifacts withholds them from the experiment).
+    if (out.status === 'completed' && out.credential_hold) out = { ...out, status: 'security_hold', detail: `security_hold: ${out.credential_hold}; export denied, not graded` };
     // QB-27: the same external grader for every arm; nothing about the arm reaches it.
     // It runs inside the trial's budget run: the trial deadline cancels grading too.
     try {
@@ -170,7 +174,7 @@ async function runExperiment(expDir, o) {
     }
     const finished = new Date();
     // The trial's runtime evidence: its own preflight identity plus every container it actually launched.
-    const artifacts = { 'patch.diff': out.patch || '', 'usage.json': usage, 'runtime.json': { ...runtime, launched } };
+    const artifacts = trialArtifacts(out, usage, { ...runtime, launched });
     if (g) artifacts['grade.json'] = g;
     if (run) artifacts['run.json'] = { run_id: run.id, outcome: run.manifest.outcome, attempts: run.manifest.attempts.length };
     results.push(recordTrial(expDir, {
@@ -182,6 +186,19 @@ async function runExperiment(expDir, o) {
     }, artifacts));
   }
   return results;
+}
+
+/**
+ * The files recorded for one arm-trial. KAN-44 10846: a held patch (credential finding, or a scan that could not
+ * finish) is not copied into the experiment record, which may be shared; only its SHA-256 and the reason are. The
+ * exact bytes stay in the local run record, which is sensitive. Not a sanitised copy: nothing is rewritten.
+ */
+function trialArtifacts(out, usage, runtime) {
+  const patch = out.patch || '';
+  const withheld = out.credential_hold
+    ? { 'patch.withheld.json': { reason: `security_hold: ${out.credential_hold}`, patch_sha256: crypto.createHash('sha256').update(patch).digest('hex'), bytes: Buffer.byteLength(patch) } }
+    : { 'patch.diff': patch };
+  return { ...withheld, 'usage.json': usage, 'runtime.json': runtime };
 }
 
 async function main(argv) {
@@ -224,4 +241,4 @@ async function main(argv) {
 
 if (require.main === module) main(process.argv).catch((e) => { console.error(`experiment-run: ${e.message}`); process.exit(1); });
 
-module.exports = { runExperiment, taskEntries, armDefinitions, trialUsage, parseShard, taskShards, configPaths };
+module.exports = { runExperiment, taskEntries, armDefinitions, trialUsage, parseShard, taskShards, configPaths, trialArtifacts };

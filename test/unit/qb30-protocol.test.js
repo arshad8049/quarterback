@@ -139,9 +139,9 @@ describe('QB-30: the task is the unit of analysis', () => {
     const rows = [row('T-1', 1, 'A', 'fail'), row('T-1', 1, 'E', 'pass'), row('T-1', 1, 'B', 'fail'), row('T-2', 1, 'A', 'pass'), row('T-2', 1, 'E', null), row('T-2', 1, 'B', 'pass')];
     const arms = { A: { planned: 2, scored: 2, pass: 1, attrition: {} }, B: { planned: 2, scored: 2, pass: 1, attrition: {} }, E: { planned: 2, scored: 1, pass: 1, attrition: { infra_error: 1 } } };
     const an = analyze({ primary_comparison: ['A', 'E'], rows, arms }, m);
-    assert.equal(an.primary.role, 'primary (predeclared)');
+    assert.equal(an.primary.role, 'complete-case (completed pairs only): secondary, selection-limited');   // KAN-44 10865
     assert.deepEqual(an.primary.unmatched_tasks, ['T-2']);
-    assert.deepEqual(an.secondary.map((s2) => [s2.comparison.join(''), s2.role]), [['AB', 'secondary (exploratory ablation)']]);
+    assert.deepEqual(an.secondary.map((s2) => [s2.comparison.join(''), s2.role]), [['AB', 'secondary (exploratory ablation; completed pairs only, selection-limited)']]);
     assert.deepEqual(an.strata.by_type.map((s2) => s2.type), ['addition', 'bug_fix']);
     assert.deepEqual(an.strata.by_repository.map((s2) => [s2.repository, s2.tasks_matched]), [['repo-a', 1], ['repo-b', 0]]);
     assert.deepEqual([an.completion.E.completion_rate, an.completion.E.attrition], [0.5, { infra_error: 1 }]);
@@ -167,7 +167,7 @@ describe('QB-30: the operational endpoint counts attrition against the arm (comp
     const arms = { A: { planned: 2, scored: 2, pass: 1, attrition: {} }, E: { planned: 2, scored: 1, pass: 1, attrition: { infra_error: 1 } } };
     const an = analyze({ primary_comparison: ['A', 'E'], rows, arms }, m);
     assert.equal(an.primary.estimate, 1);
-    assert.equal(an.operational.role, 'operational (predeclared; attrition counts as no success)');
+    assert.equal(an.operational.role, 'operational (predeclared; planned denominator; attrition, security_hold included, counts as no success)');
     assert.equal(an.operational.estimate, 0);
     assert.equal(an.operational.method, 'cluster bootstrap (repositories, then tasks)');
     assert.deepEqual(an.operational.comparison, ['A', 'E']);

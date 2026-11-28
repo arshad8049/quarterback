@@ -14,7 +14,9 @@
  *   grader_error, grade infra_error, ungraded, agent_error, timeout, trial infra_error,
  *   missing, incomplete, not recorded — is attrition, reported per arm, never a win or a loss.
  *   QB's own L4 verdict (`internal_verdict`) is shown separately and never scored.
- * - The primary comparison uses matched pairs only (same task + repetition, both arms scored).
+ * - The matched-pairs comparison (same task + repetition, both arms scored) is completed pairs only, so it is labelled
+ *   secondary and selection-limited (KAN-44 10865); planned pairs and those without a usable pair are counted.
+ * - security_hold (a patch on credential hold) is attrition: never graded, no success, counted by arm.
  * - Output is a pure function of the stored files: no clock, stable ordering, so the same
  *   experiment always gives byte-identical output. (Re-running agents is NOT reproducible.)
  * - The old bench/results/*.json files are shown only with --legacy, per file, labelled
@@ -31,7 +33,8 @@ const { loadExperiment, graderHash, diffPaths, fingerprintPins, launchProblems }
 const { analyze } = require('./stats');
 
 const ARM_ORDER = S.ARM_IDS;
-const ATTRITION = ['needs_adjudication', 'grader_error', 'grade_infra_error', 'ungraded', 'agent_error', 'timeout', 'trial_infra_error', 'missing', 'incomplete', 'not_recorded'];
+// KAN-44 10846: security_hold = a patch on credential hold, never scored.
+const ATTRITION = ['needs_adjudication', 'grader_error', 'grade_infra_error', 'ungraded', 'agent_error', 'timeout', 'trial_infra_error', 'security_hold', 'missing', 'incomplete', 'not_recorded'];
 
 const byArm = (a, b) => ARM_ORDER.indexOf(a) - ARM_ORDER.indexOf(b);
 const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -141,10 +144,20 @@ function reportData(expDir, { allowMixed = false } = {}) {
     if (!groups.has(g)) groups.set(g, { task_id: r.task_id, repetition: r.repetition, arms: {} });
     if (!groups.get(g).arms[r.arm]) groups.get(g).arms[r.arm] = r;
   }
-  const pairs = { count: 0, both_pass: 0, both_fail: 0, [`only_${X}`]: 0, [`only_${Y}`]: 0, unmatched: [] };
+  // KAN-44 10865: the planned denominator is never shrunk silently: planned pairs, and how many of them lack a usable
+  // (both-scored) pair, with how many of those involve a security hold.
+  const pairs = { count: 0, both_pass: 0, both_fail: 0, [`only_${X}`]: 0, [`only_${Y}`]: 0, unmatched: [],
+    planned_pairs: 0, planned_pairs_without_usable_pair: 0, planned_pairs_without_usable_pair_security_hold: 0 };
   const perTask = new Map();
   for (const g of [...groups.values()].sort((a, b) => cmpStr(a.task_id, b.task_id) || a.repetition - b.repetition)) {
     const x = g.arms[X]; const y = g.arms[Y];
+    if (x && y && x.planned && y.planned) {
+      pairs.planned_pairs++;
+      if (!(x.score && y.score)) {
+        pairs.planned_pairs_without_usable_pair++;
+        if (x.category === 'security_hold' || y.category === 'security_hold') pairs.planned_pairs_without_usable_pair_security_hold++;
+      }
+    }
     if (!perTask.has(g.task_id)) perTask.set(g.task_id, { task_id: g.task_id, repetitions: [], matched: 0, pass: { [X]: 0, [Y]: 0 } });
     const pt = perTask.get(g.task_id);
     pt.repetitions.push({ repetition: g.repetition, [X]: x ? x.category : 'not_planned', [Y]: y ? y.category : 'not_planned' });
@@ -183,6 +196,8 @@ function reportData(expDir, { allowMixed = false } = {}) {
     budget: m.budget,
     primary_comparison: [X, Y],
     arms,
+    // KAN-44 10865: a hold is not graded and is no success; it is neither a wrong-code grade nor evidence of success.
+    security_holds_by_arm: Object.fromEntries(Object.entries(arms).map(([a, s]) => [a, s.attrition.security_hold])),
     matched_pairs: pairs,
     per_task: [...perTask.values()].map((pt) => ({ ...pt, split: task(pt.task_id) ? task(pt.task_id).split : null })),
     rows,
@@ -221,11 +236,13 @@ function lines(d, md) {
   }
   L.push('');
   L.push(`Internal QB verdicts (recorded, never scored): ${Object.entries(d.arms).map(([a, s]) => `${a} ${JSON.stringify(s.internal_verdicts)}`).join('; ')}`);
+  L.push(`Security holds by arm (not graded; counted in planned as attrition and no success; not a wrong-code grade): ${Object.entries(d.security_holds_by_arm).map(([a, n]) => `${a} ${n}`).join(', ')}.`);
   L.push('');
 
-  h(`Primary comparison ${X} vs ${Y} — matched pairs only`);
   const p = d.matched_pairs;
-  L.push(`Matched pairs: ${p.count} (both pass ${p.both_pass}, both fail ${p.both_fail}, only ${X} ${p[`only_${X}`]}, only ${Y} ${p[`only_${Y}`]}).`);
+  h(`Comparison ${X} vs ${Y}`);
+  L.push(`Planned pairs: ${p.planned_pairs}; without a usable pair: ${p.planned_pairs_without_usable_pair} (${p.planned_pairs_without_usable_pair_security_hold} with a security hold).`);
+  L.push(`Matched pairs (completed pairs only; secondary, selection-limited): ${p.count} (both pass ${p.both_pass}, both fail ${p.both_fail}, only ${X} ${p[`only_${X}`]}, only ${Y} ${p[`only_${Y}`]}).`);
   L.push(`Unmatched (excluded from the comparison, counted above as attrition): ${p.unmatched.length}`);
   for (const u of p.unmatched) L.push(`${md ? '- ' : '  '}${u.task_id} r${u.repetition}: ${X} ${u[X]}, ${Y} ${u[Y]}`);
   L.push('');
@@ -233,17 +250,17 @@ function lines(d, md) {
   const an = d.analysis;
   h(`Analysis — unit: ${an.unit}`);
   const fmtCI = (c) => (c.estimate === null ? `no estimate (${c.note || 'no matched task'})` : `mean task effect ${c.estimate} (95% CI ${c.ci95[0]} to ${c.ci95[1]}; ${c.method}, B=${c.B}; ${c.n_tasks} task(s), ${c.n_repositories} repositor${c.n_repositories === 1 ? 'y' : 'ies'})${c.note ? ` — ${c.note}` : ''}`);
-  L.push(`Primary ${an.primary.comparison.join(' vs ')} (predeclared): ${fmtCI(an.primary)}.`);
+  L.push(`Complete-case ${an.primary.comparison.join(' vs ')} (completed pairs only; secondary, selection-limited): ${fmtCI(an.primary)}.`);
   L.push(`Tasks without a matched pair (no effect, not counted as 0): ${an.primary.unmatched_tasks.length ? an.primary.unmatched_tasks.join(', ') : 'none'}.`);
-  L.push(`Operational ${an.operational.comparison.join(' vs ')} (predeclared; success per assigned repetition, attrition counts as no success): ${fmtCI(an.operational)}.`);
-  for (const s2 of an.secondary) L.push(`Secondary ${s2.comparison.join(' vs ')} (exploratory ablation): ${fmtCI(s2)}.`);
+  L.push(`Operational ${an.operational.comparison.join(' vs ')} (predeclared; planned denominator: success per assigned repetition, attrition including security_hold counts as no success): ${fmtCI(an.operational)}.`);
+  for (const s2 of an.secondary) L.push(`Ablation ${s2.comparison.join(' vs ')} (exploratory; completed pairs only; secondary, selection-limited): ${fmtCI(s2)}.`);
   L.push(`Not used: ${an.not_used}.`);
   L.push('Completion and attrition per arm (completion = scored / planned):');
   for (const [a, c] of Object.entries(an.completion)) {
     L.push(`${md ? '- ' : '  '}${a}: completion ${c.completion_rate ?? '—'} (${c.scored}/${c.planned}); pass rate of scored ${c.pass_rate_of_scored ?? '—'}; attrition ${Object.entries(c.attrition).filter(([, n]) => n).map(([k, n]) => `${k} ${n}`).join(', ') || 'none'}`);
   }
   for (const [label, rows2, key] of [['By task type', an.strata.by_type, 'type'], ['By repository', an.strata.by_repository, 'repository']]) {
-    L.push(`${label}: ${rows2.map((r) => `${r[key]} — ${r.tasks_matched}/${r.tasks} tasks matched, mean effect ${r.mean_effect ?? '—'}`).join('; ') || 'none'}`);
+    L.push(`${label} (complete-case, completed pairs only; secondary, selection-limited): ${rows2.map((r) => `${r[key]} — ${r.tasks_matched}/${r.tasks} tasks matched, mean effect ${r.mean_effect ?? '—'}`).join('; ') || 'none'}`);
   }
   L.push('');
 
@@ -304,7 +321,7 @@ function legacyReport(dir, { format = 'table' } = {}) {
   return `${L.join('\n')}\n`;
 }
 
-module.exports = { buildReport, reportData, legacyReport, legacyData, LEGACY_LABEL };
+module.exports = { buildReport, reportData, legacyReport, legacyData, LEGACY_LABEL, ATTRITION, categorize };
 
 if (require.main === module) {
   const { program } = require('commander');

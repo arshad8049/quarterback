@@ -21,6 +21,7 @@ const healthy = (over = {}) => ({
   authVolumeExists: async () => true,
   modelTags: async () => ['deepseek-r1:7b', 'llama3:latest'],
   memAvailable: async () => 14 * GiB,
+  liveRestore: async () => 'disabled',
   ...over,
 });
 const byId = (r) => Object.fromEntries(r.checks.map((c) => [c.id, c]));
@@ -28,7 +29,7 @@ const byId = (r) => Object.fromEntries(r.checks.map((c) => [c.id, c]));
 describe('QB-31: qb doctor', () => {
   test('a healthy machine for claude-code: every check ok, exit 0', async () => {
     const r = await doctor({ agent: 'claude-code', env: {} }, healthy());
-    assert.deepEqual(r.checks.map((c) => c.id), ['runtime', 'git', 'docker', 'memory', 'agent-auth', 'model', 'agent-adapter', 'check-registry']);
+    assert.deepEqual(r.checks.map((c) => c.id), ['runtime', 'git', 'docker', 'live-restore', 'memory', 'agent-auth', 'model', 'agent-adapter', 'check-registry']);
     // Credentials can only be shown PRESENT here; a successful authenticated call proves them valid.
     assert.deepEqual(r.checks.filter((c) => c.status !== 'ok').map((c) => [c.id, c.status]), [['agent-auth', 'warn']]);
     assert.match(r.checks.find((c) => c.id === 'agent-auth').detail, /login credential stored; validity not verified/);
