@@ -23,7 +23,7 @@ Written for senior comment KAN-106 10849. Revision 3 (10838) was `9bdbfa6`, kept
 - **The qb_under_test binding.** `plan.json` cannot contain its own commit's SHA. So the senior names `qb_under_test.sha` as the CI-green code commit, and the launch head must satisfy both of these, or launch refuses (`freeze.js` `revisionProblems`):
   - it **descends** from `qb_under_test.sha`;
   - it differs from it **only** in `bench/kan106-eval-v2/plan.json`, `bench/kan106-eval-v2/held-out/` and `docs/`.
-  - The junior's proposed value is in `plan.json` `proposed` (not normative): `0d5a697277a07021f2e41df4b39f2e808ba8d631`, the code head on which CI run 46031170340 passed every job. `HARNESS-FREEZE.json` was regenerated there after CI and is byte-identical.
+  - The junior's proposed value is in `plan.json` `proposed` (not normative): `d30e8eda4af1932937677752ceea88cc53775c75` (branch `kan106-eval-plan-main`, on candidate `564ea03` = `f1ddad4` + main `bb56ff6`), the code head on which CI run 46104807881 passed every job. The earlier proposal `0d5a697` (branch `kan106-eval-plan-118`) is kept there unchanged. `HARNESS-FREEZE.json` was regenerated there after CI and is byte-identical.
 - **Freeze 2, the packet freeze, comes before any model call.** It is the hash manifest of the complete held-out packet (`freeze.js --packet`) plus the base SHAs. The owner's spec-only manifest is posted first.
 
 ## 2. Two sets that are never mixed
@@ -141,7 +141,7 @@ Before each item there is a read-only snapshot: OS counters plus Ollama `/api/ve
 3. **Junior, after the specs arrive:** build the bases and controls, run `items.js validate` (no QB compiler), and post the packet hash.
 
 ## Normative values (machine-checked; launch refuses on any disagreement)
-plan.json sha256: `06975354da1b7082631e20b15a8d8038dceeb68e86741d630beb385719e8424c`
+plan.json sha256: `b19344e56a8c1b5d1e81baf0206e1b4fa0a767b1f42cc3f6c7e14c25d3d15590`
 
 | key | value |
 |---|---|
